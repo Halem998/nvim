@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "status detection mode with self-match and LSP safety",
+  "started_at": "2026-08-25T16:08:00Z",
+  "last_updated": "2026-08-25T16:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "status mode via non-blocking flock probe, ps snapshot, descendant scoping, self-exclusion, named predicates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "note": "Verified manually: clean fixture exit 0/no output; wrapper argv containing 'lake build' still exit 0 (lock-state anchored, no argv scan at all); long-lived fake lean --worker process does not trigger false positive; nested-subdirectory lock derivation resolves to nearest package, not parent or git root."
+}

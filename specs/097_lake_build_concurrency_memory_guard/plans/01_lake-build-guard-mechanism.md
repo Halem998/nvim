@@ -332,30 +332,30 @@ the staleness policy.
 
 ---
 
-### Phase 4: `status` detection mode with self-match and LSP safety [NOT STARTED]
+### Phase 4: `status` detection mode with self-match and LSP safety [COMPLETED]
 
 **Goal**: Implement detection that reports an in-flight guarded build without launching one, and
 that cannot be fooled by the guard's own process tree or by ambient long-lived LSP `lean` workers.
 
 **Tasks**:
-- [ ] Implement `status` as the primary, race-free check: attempt a non-blocking `flock -n` on the
+- [x] Implement `status` as the primary, race-free check: attempt a non-blocking `flock -n` on the *(completed)*
       lock in a subshell. Lock free -> no guarded build in flight -> **exit 0 with no output**.
       Lock held -> exit `10` with a single-line report.
-- [ ] Add supplementary diagnostics under `--verbose` only, from a **single atomic**
+- [x] Add supplementary diagnostics under `--verbose` only, from a **single atomic** *(completed)*
       `ps -eo pid,ppid,uid,comm,args` snapshot taken once per invocation (the `claude-refresh.sh`
       discipline) — every decision reads that snapshot; no candidate PID is ever re-queried.
-- [ ] Scope process reporting to descendants of the holder PID recorded in the result record.
+- [x] Scope process reporting to descendants of the holder PID recorded in the result record. *(completed)*
       MUST NOT use a bare `pgrep lean` or `pgrep -f 'lake build'`. Record inline why: during
       research, four `lean --worker`/`lean --server` LSP processes aged up to ~11.5 hours were
       live in the same project directory and a naive match would have reported a build that did
       not exist. Match on `comm` (executable identity), never on an argv substring — the same
       trap that made a plain `pgrep -af latexmk` match only the searching agent's own bash
       wrapper because its argv merely contained the string.
-- [ ] Implement zero-query self-exclusion: any snapshot row whose `pid` or `ppid` equals `$$` or
+- [x] Implement zero-query self-exclusion: any snapshot row whose `pid` or `ppid` equals `$$` or *(completed)*
       `$PPID` (both known at parse time) is skipped before any further predicate runs.
-- [ ] Refuse loudly (exit `79`) rather than falling back to an unsafe argv match if the platform's
+- [x] Refuse loudly (exit `79`) rather than falling back to an unsafe argv match if the platform's *(completed)*
       `ps` cannot produce the required columns, mirroring `claude-refresh.sh`'s posture.
-- [ ] Expose the candidacy predicates as separately named, sourceable functions so the suite can
+- [x] Expose the candidacy predicates as separately named, sourceable functions so the suite can *(completed)*
       call them directly rather than through a subprocess per case.
 
 **Timing**: 0.75 hours
