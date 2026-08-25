@@ -1,0 +1,13 @@
+{
+  "phase": 5,
+  "phase_name": "Memory preflight and opt-in cgroup bounding",
+  "started_at": "2026-08-25T16:08:00Z",
+  "last_updated": "2026-08-25T16:32:00Z",
+  "objectives": [
+    {"id": 1, "description": "preflight mode (PSI + meminfo/swap), ratio-only thresholds, warn-vs-defer, opt-in systemd-run --user --scope cgroup wrapper with mandatory --quiet --collect, probe with real invocation, degradation notices", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "note": "Verified manually: preflight silent+exit0 on unloaded machine; LAKE_BUILD_GUARD_PSI_PATH pointed at nonexistent file degrades to meminfo-only without crash; --memory-bound with systemd-run stripped from PATH emits stderr notice and completes an unbounded build; --memory-bound with systemd-run present propagates fake lake's exit 7 end to end; grep for GB/MB/G/M-suffixed numeric constants returns zero matches (MemoryHigh/MemoryMax expressed as systemd percentage strings, never bytes)."
+}

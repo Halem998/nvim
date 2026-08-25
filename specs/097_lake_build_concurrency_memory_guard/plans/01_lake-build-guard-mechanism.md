@@ -378,43 +378,43 @@ that cannot be fooled by the guard's own process tree or by ambient long-lived L
 
 ---
 
-### Phase 5: Memory preflight and opt-in cgroup bounding [NOT STARTED]
+### Phase 5: Memory preflight and opt-in cgroup bounding [COMPLETED]
 
 **Goal**: Add the pressure preflight and the opt-in `systemd-run --user --scope` memory bound,
 both degrading audibly where the needed signal or tool is unavailable, and neither hardcoding a
 byte value.
 
 **Tasks**:
-- [ ] Implement `preflight` mode reading `$LAKE_BUILD_GUARD_PSI_PATH` (`/proc/pressure/memory`):
+- [x] Implement `preflight` mode reading `$LAKE_BUILD_GUARD_PSI_PATH` (`/proc/pressure/memory`): *(completed)*
       parse `some avg10` and `full avg10`. Combine with `$LAKE_BUILD_GUARD_MEMINFO_PATH`:
       `MemAvailable`/`MemTotal` ratio and swap-in-use (`SwapTotal - SwapFree`) as a fraction of
       `SwapTotal`. Record inline why bare availability is insufficient: on the machine that
       motivated this work, `free` reported ample-looking availability while tens of gigabytes of
       swap were in use and the machine was thrash-bound rather than crash-bound — the failure
       presents as "everything is slow", which is why it went undiagnosed.
-- [ ] Express every threshold as a ratio or a PSI value with a configurable override
+- [x] Express every threshold as a ratio or a PSI value with a configurable override *(completed)*
       (`--memory-high`/`--memory-max`/env). MUST NOT hardcode any absolute byte figure. The
       measured 29.9 GB / 6.36 GB / 3.1 GB figures from the originating incident are illustrative
       only and belong in prose, never as a threshold — the source store deploys to roughly ten
       repositories with different memory profiles.
-- [ ] Default preflight behavior in `build` mode is **warn** (visible stderr notice, build
+- [x] Default preflight behavior in `build` mode is **warn** (visible stderr notice, build *(completed)*
       proceeds); `--defer-on-pressure` makes it defer instead, exiting `76` without launching.
       Under no pressure the preflight is completely silent.
-- [ ] Degrade when PSI is absent: fall back to the meminfo-only signal with a `--verbose`-level
+- [x] Degrade when PSI is absent: fall back to the meminfo-only signal with a `--verbose`-level *(completed)*
       notice, never crash.
-- [ ] Implement opt-in cgroup bounding behind `--memory-bound` (or
+- [x] Implement opt-in cgroup bounding behind `--memory-bound` (or *(completed)*
       `LAKE_BUILD_GUARD_MEMORY_BOUND=1`): wrap the build as
       `systemd-run --user --scope --quiet --collect -p MemoryHigh=<v> -p MemoryMax=<v> -- <lake ...>`.
       `--quiet` is **mandatory**, not cosmetic: without it systemd-run's own status chatter on
       stderr corrupts every `BUILD_OUTPUT="$(lake build 2>&1)"` call site this guard is meant to
       be droppable into.
-- [ ] Derive `MemoryHigh`/`MemoryMax` as fractions of `MemTotal` (suggested defaults 60% / 80%),
+- [x] Derive `MemoryHigh`/`MemoryMax` as fractions of `MemTotal` (suggested defaults 60% / 80%), *(completed)*
       overridable by flag. Never a hardcoded byte constant.
-- [ ] Probe availability with `command -v systemd-run` **plus** one cheap real invocation
+- [x] Probe availability with `command -v systemd-run` **plus** one cheap real invocation *(completed)*
       (`systemd-run --user --scope --quiet --collect -- true`), because presence does not imply
       the user session has cgroup delegation. On probe failure: emit a visible stderr notice and
       run the build unbounded.
-- [ ] Confirm exit-code propagation through the scope wrapper is preserved end to end (research
+- [x] Confirm exit-code propagation through the scope wrapper is preserved end to end (research *(completed)*
       confirmed `systemd-run --user --scope ... -- bash -c 'exit 7'` returns 7).
 
 **Timing**: 0.75 hours
