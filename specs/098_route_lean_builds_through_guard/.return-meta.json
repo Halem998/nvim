@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 98,
-  "session_id": "sess_1787672746_2d5892_98",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
-      "summary": "Five-phase, 3-hour plan routing lean-sorry-census.sh --cross-check through the lake build guard with a test-seam env var and three-way graceful degradation, recording the no-hook decision, and rewriting multi-instance-optimization.md as mechanism documentation with corrected memory figures."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3,
-  "dependency_waves": [[1, 3], [2, 4], [5]],
-  "memory_candidates": [
-    {
-      "content": "Cross-extension script dependency in this agent system: extension scripts from DIFFERENT source-store extensions (agent-system/extensions/<ext>/scripts/) deploy FLAT into a single .claude/scripts/ directory, so they are siblings only post-deploy. A script in extension A invoking a script from extension B must therefore resolve it via $(dirname \"${BASH_SOURCE[0]:-$0}\")/<name>.sh, which is correct and CWD-independent post-deploy but always fails when the script is exercised directly from the source store -- which is exactly how the test suites invoke it. The resolution is an overridable env-var test seam, `:-`-defaulted to the dirname-relative sibling (precedent: LAKE_BUILD_GUARD_LAKE_BIN in lake-build-guard.sh), letting tests inject a stub without a real toolchain. Related: extension lifecycle hooks are NOT a substitute for this wiring -- skill_get_extension_dir keys hook resolution strictly on task_type, so an extension's hook never fires for general/meta-typed tasks touching that extension's files, and hooks are non-blocking by design (non-zero exit downgraded to a WARNING), so they can detect but never enforce.",
-      "category": "PATTERN",
-      "source_artifact": "specs/098_route_lean_builds_through_guard/plans/01_guard-integration-and-anchor.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["cross-extension", "script-resolution", "test-seam", "flat-deploy", "lifecycle-hooks", "bash-source"]
-    }
-  ],
-  "next_steps": "Run /implement 98 to execute the plan"
+  "session_id": "sess_1787672746_2d5892",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }

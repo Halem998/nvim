@@ -1,19 +1,31 @@
 #!/usr/bin/env bash
-# test-lean-sorry-census.sh -- regression suite for lean-sorry-census.sh's warn.sorry
-# double-count defect: `\bsorry\b` fires at the `.`/`s` boundary inside dotted-qualified
-# names such as `warn.sorry` or `foo.sorry`, so an own-line `set_option warn.sorry false in`
-# suppression annotation is counted as a phantom sorry on top of the real sorry it suppresses.
+# test-lean-sorry-census.sh -- regression suite for lean-sorry-census.sh covering two distinct
+# regression concerns:
+#
+# (1) The warn.sorry double-count defect (Fixtures A-E): `\bsorry\b` fires at the `.`/`s`
+# boundary inside dotted-qualified names such as `warn.sorry` or `foo.sorry`, so an own-line
+# `set_option warn.sorry false in` suppression annotation is counted as a phantom sorry on top of
+# the real sorry it suppresses.
+#
+# (2) Guard routing of the `--cross-check` build (Fixtures F-I): the `--cross-check` branch's
+# `lake build` command substitution is routed through the shared `lake-build-guard.sh` when both
+# `lake` and the guard are available, and degrades gracefully to today's plain `lake build` when
+# either (or both) is absent. Fixtures F-I cover the three-way branch: lake absent (F), lake
+# present/guard absent (G), both present (H), and a guarded non-zero exit (I).
 #
 # This is the first regression fixture this script has ever had. Per the task's falsifiability
 # gate, this suite MUST be run once against the UNFIXED script (before the regex at line 144 is
-# touched) and is expected to show Fixtures A, D, and E FAIL while B and C PASS -- proving the
-# fixture actually discriminates the buggy behavior from the intended one, rather than being a
+# touched, and before the guard routing exists) and is expected to show Fixtures A, D, and E FAIL
+# while B and C PASS (warn.sorry concern), and Fixtures F and G PASS while H and I FAIL (guard
+# routing concern, since the guarded path does not exist yet) -- proving the fixtures actually
+# discriminate the buggy/pre-integration behavior from the intended one, rather than being a
 # vacuous suite that would pass either way.
 #
 # Anti-vacuous-test guard: Fixtures A and D additionally assert that the naive `\bsorry\b`
-# per-line count DIFFERS from the tool's reported count on the same fixture text, so a fixture
-# both implementations would agree on can never masquerade as coverage (per
-# context/standards/shell-script-testing.md's mutation-check discipline).
+# per-line count DIFFERS from the tool's reported count on the same fixture text, and Fixture H
+# additionally asserts its captured output DIFFERS from Fixture G's (the guard marker line is
+# present in exactly one), so a fixture both implementations would agree on can never masquerade
+# as coverage (per context/standards/shell-script-testing.md's mutation-check discipline).
 #
 # Follows the core shell-test convention (see
 # agent-system/extensions/core/scripts/tests/test-census-count.sh): pass()/fail()/info()
@@ -65,6 +77,99 @@ with open(sys.argv[1], "r", encoding="utf-8") as fh:
 naive_re = re.compile(r"\bsorry\b")
 print(sum(1 for l in lines if naive_re.search(l)))
 ' "$1"
+}
+
+# ---------------------------------------------------------------------
+# Helpers for Fixtures F-I (guard routing). These do not import the guard suite's own
+# FAKE_LAKE_* convention (test-lake-build-guard.sh) -- that is a different script's convention;
+# this suite keeps its own house style throughout.
+# ---------------------------------------------------------------------
+
+make_isolated_bin_without_lake() {
+  # make_isolated_bin_without_lake <dir> -- populate <dir> with symlinks to every tool the census
+  # script and this suite need (bash, python3, grep, find, ...), deliberately EXCLUDING `lake`,
+  # then print <dir> as a self-contained PATH value. A blanket "strip any PATH directory that
+  # contains lake" approach is unsafe here: on a system where a directory such as
+  # /run/current-system/sw/bin resolves BOTH `lake` and `bash` to the same symlink farm,
+  # removing that directory would remove bash itself. Mirrors the isolated-PATH convention
+  # test-lake-build-guard.sh's own suite already uses (there, to remove systemd-run only) --
+  # a general PATH-isolation technique, not that suite's FAKE_LAKE_* naming convention.
+  local dir="$1"
+  mkdir -p "$dir"
+  local tool
+  for tool in bash env cat echo grep find sort mkdir rm chmod dirname cut tail head wc date sed awk stat sleep python3 printf true false; do
+    local toolpath
+    toolpath="$(command -v "$tool" 2>/dev/null || true)"
+    if [ -n "$toolpath" ] && [ ! -e "$dir/$tool" ]; then
+      ln -sf "$toolpath" "$dir/$tool"
+    fi
+  done
+  echo "$dir"
+}
+
+make_synthetic_lean_project() {
+  # make_synthetic_lean_project <dir> -- populate <dir> with a minimal lakefile.toml and one
+  # .lean file with a known sorry, so the guard's own project-root resolution (a lakefile.lean or
+  # lakefile.toml found above --dir, which defaults to $PWD) succeeds when the guarded fixtures
+  # exercise it.
+  local dir="$1"
+  mkdir -p "$dir"
+  cat > "$dir/lakefile.toml" <<'EOF'
+name = "SyntheticFixture"
+defaultTargets = ["SyntheticFixture"]
+
+[[lean_lib]]
+name = "SyntheticFixture"
+EOF
+  cat > "$dir/Main.lean" <<'EOF'
+theorem placeholder : True := sorry
+EOF
+}
+
+make_stub_lake() {
+  # make_stub_lake <bindir> <sorry_count> <exit_status> -- fabricate a stub `lake` executable in
+  # <bindir> that, when invoked (with any args, e.g. "build"), echoes <sorry_count> synthetic
+  # "declaration uses 'sorry'" lines (mirroring real `lake build` warning output, so
+  # compiler_sorry_count parses as expected) and exits <exit_status>.
+  local bindir="$1" sorry_count="$2" exit_status="$3"
+  mkdir -p "$bindir"
+  cat > "$bindir/lake" <<STUBEOF
+#!/usr/bin/env bash
+i=1
+while [ "\$i" -le $sorry_count ]; do
+  echo "warning: Foo.lean:\$i:0: declaration uses 'sorry'"
+  i=\$((i + 1))
+done
+exit $exit_status
+STUBEOF
+  chmod +x "$bindir/lake"
+}
+
+make_stub_guard() {
+  # make_stub_guard <path> <sorry_count> <exit_status> -- fabricate a stub guard script honoring
+  # the real guard's `build [flags] -- <lake args>` calling convention (its first arg is the
+  # subcommand "build"; it does not otherwise parse flags or forwarded lake args, since this
+  # suite only needs to prove the guarded path was taken, not re-verify the guard's own argument
+  # parsing -- that is test-lake-build-guard.sh's job). Echoes a marker line to stdout so the
+  # test can prove the guarded path was actually taken, then <sorry_count> synthetic
+  # "declaration uses 'sorry'" lines so compiler_sorry_count still parses correctly from the
+  # combined capture, then exits <exit_status>.
+  local path="$1" sorry_count="$2" exit_status="$3"
+  cat > "$path" <<STUBEOF
+#!/usr/bin/env bash
+if [ "\$1" != "build" ]; then
+  echo "stub-guard: unexpected first arg: \$1" >&2
+  exit 77
+fi
+echo "STUB_GUARD_MARKER: guard invoked"
+i=1
+while [ "\$i" -le $sorry_count ]; do
+  echo "warning: Foo.lean:\$i:0: declaration uses 'sorry'"
+  i=\$((i + 1))
+done
+exit $exit_status
+STUBEOF
+  chmod +x "$path"
 }
 
 # =====================================================================
@@ -188,6 +293,120 @@ if [ "$COUNT_E" = "2" ]; then
   pass "Fixture E (aggregate N=3 annotations, M=2 real sorries): count == M == 2"
 else
   fail "Fixture E (aggregate N=3 annotations, M=2 real sorries): expected count 2, got '$COUNT_E'"
+fi
+
+# =====================================================================
+# Fixture F: --cross-check with `lake` absent from PATH. Expect the existing lake-absent
+# short-circuit to still win FIRST, regardless of guard presence -- proving the lake-absent check
+# is still evaluated before the guard branch in the new three-way routing.
+# =====================================================================
+
+NOLAKE_PATH="$(make_isolated_bin_without_lake "$WORKDIR/isobin_f")"
+GUARD_STUB_F="$WORKDIR/stub_guard_f.sh"
+make_stub_guard "$GUARD_STUB_F" 0 0
+
+OUT_F="$(PATH="$NOLAKE_PATH" LEAN_SORRY_CENSUS_GUARD_BIN="$GUARD_STUB_F" bash "$TOOL_SRC" "$WORKDIR/fixture_a.lean" --cross-check 2>&1)"
+if echo "$OUT_F" | grep -qF "cross_check: unavailable (lake not found in PATH)"; then
+  pass "Fixture F (lake absent): cross_check unavailable message present regardless of guard presence"
+else
+  fail "Fixture F (lake absent): expected 'cross_check: unavailable (lake not found in PATH)'; got:
+$OUT_F"
+fi
+
+# =====================================================================
+# Fixture G: --cross-check with `lake` present, guard ABSENT (LEAN_SORRY_CENSUS_GUARD_BIN points
+# at a nonexistent path). Expect output shape byte-identical to pre-integration (unguarded)
+# behavior: compiler_sorry_count / stripper_sorry_count / cross_check: MATCH lines present, no
+# guard marker anywhere in the capture.
+# =====================================================================
+
+PROJ_G="$WORKDIR/proj_g"
+make_synthetic_lean_project "$PROJ_G"
+STUBBIN_G="$WORKDIR/stubbin_g"
+make_stub_lake "$STUBBIN_G" 2 0
+
+OUT_G="$(cd "$PROJ_G" && PATH="$STUBBIN_G:$PATH" LEAN_SORRY_CENSUS_GUARD_BIN="$WORKDIR/does-not-exist-guard.sh" bash "$TOOL_SRC" "$WORKDIR/fixture_e.lean" --cross-check 2>&1)"
+
+if echo "$OUT_G" | grep -q '^compiler_sorry_count: 2$' \
+  && echo "$OUT_G" | grep -q '^stripper_sorry_count: 2$' \
+  && echo "$OUT_G" | grep -q '^cross_check: MATCH$'; then
+  pass "Fixture G (lake present, guard absent): unguarded-shape output present (compiler/stripper counts + cross_check: MATCH)"
+else
+  fail "Fixture G (lake present, guard absent): expected compiler_sorry_count: 2 / stripper_sorry_count: 2 / cross_check: MATCH; got:
+$OUT_G"
+fi
+
+if ! echo "$OUT_G" | grep -q "STUB_GUARD_MARKER"; then
+  pass "Fixture G: no guard marker present -- guard-absent fallback took the plain lake build path"
+else
+  fail "Fixture G: unexpected guard marker present despite guard being absent"
+fi
+
+# =====================================================================
+# Fixture H: --cross-check with `lake` present AND guard present (LEAN_SORRY_CENSUS_GUARD_BIN
+# points at a stub guard). Expect the guard marker line to appear in captured output (proving the
+# guarded path was actually taken) AND compiler_sorry_count to still parse correctly from the
+# combined capture.
+# =====================================================================
+
+PROJ_H="$WORKDIR/proj_h"
+make_synthetic_lean_project "$PROJ_H"
+GUARD_STUB_H="$WORKDIR/stub_guard_h.sh"
+make_stub_guard "$GUARD_STUB_H" 2 0
+STUBBIN_H="$WORKDIR/stubbin_h"
+# A stub `lake` is on PATH too (so the lake-absent check still passes), but it must NOT be the
+# one that supplies the build output when the guard is present -- the guard stub must be invoked
+# instead. Its own sorry-line count (1) deliberately differs from the guard stub's (2) so a test
+# that accidentally invoked the wrong stub would be caught by the compiler_sorry_count assertion
+# below.
+make_stub_lake "$STUBBIN_H" 1 0
+
+OUT_H="$(cd "$PROJ_H" && PATH="$STUBBIN_H:$PATH" LEAN_SORRY_CENSUS_GUARD_BIN="$GUARD_STUB_H" bash "$TOOL_SRC" "$WORKDIR/fixture_e.lean" --cross-check 2>&1)"
+
+if echo "$OUT_H" | grep -q "STUB_GUARD_MARKER"; then
+  pass "Fixture H (lake present, guard present): guard marker line present -- guarded path was taken"
+else
+  fail "Fixture H (lake present, guard present): expected guard marker line; got:
+$OUT_H"
+fi
+
+if echo "$OUT_H" | grep -q '^compiler_sorry_count: 2$' && echo "$OUT_H" | grep -q '^cross_check: MATCH$'; then
+  pass "Fixture H: compiler_sorry_count parsed correctly from the guarded combined capture (guard stub's count, not the unused lake stub's)"
+else
+  fail "Fixture H: expected compiler_sorry_count: 2 and cross_check: MATCH from the guarded capture; got:
+$OUT_H"
+fi
+
+if [ "$OUT_H" != "$OUT_G" ] && echo "$OUT_H" | grep -q "STUB_GUARD_MARKER" && ! echo "$OUT_G" | grep -q "STUB_GUARD_MARKER"; then
+  pass "Fixture H anti-vacuous: captured output differs from Fixture G's, marker line present in exactly one"
+else
+  fail "Fixture H anti-vacuous: captured output does not discriminate guard-present (H) from guard-absent (G) -- fixture cannot discriminate"
+fi
+
+# =====================================================================
+# Fixture I: --cross-check with the guard present but exiting non-zero (a guard-specific failure
+# or a passed-through lake failure). Expect the existing "exited non-zero" warning to still fire
+# on stderr and to report the guard's exit status.
+# =====================================================================
+
+PROJ_I="$WORKDIR/proj_i"
+make_synthetic_lean_project "$PROJ_I"
+GUARD_STUB_I="$WORKDIR/stub_guard_i.sh"
+make_stub_guard "$GUARD_STUB_I" 0 75
+STUBBIN_I="$WORKDIR/stubbin_i"
+make_stub_lake "$STUBBIN_I" 0 0
+
+ERR_I_FILE="$WORKDIR/fixture_i.err"
+OUT_I="$(cd "$PROJ_I" && PATH="$STUBBIN_I:$PATH" LEAN_SORRY_CENSUS_GUARD_BIN="$GUARD_STUB_I" bash "$TOOL_SRC" "$WORKDIR/fixture_a.lean" --cross-check 2>"$ERR_I_FILE")"
+ERR_I_TEXT="$(cat "$ERR_I_FILE")"
+
+if echo "$ERR_I_TEXT" | grep -q "exited non-zero (75)"; then
+  pass "Fixture I (guarded non-zero exit): warning fires on stderr and reports the guard's status (75)"
+else
+  fail "Fixture I (guarded non-zero exit): expected 'exited non-zero (75)' on stderr; got:
+$ERR_I_TEXT
+(stdout was:
+$OUT_I)"
 fi
 
 # =====================================================================

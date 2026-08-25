@@ -1,7 +1,7 @@
 # Implementation Plan: Task #98
 
 - **Task**: 98 - Route lean extension builds through the guard and rewrite the multi-instance operations anchor
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 97 (lake-build-guard.sh — complete, shipped)
 - **Research Inputs**: specs/098_route_lean_builds_through_guard/reports/01_route-census-through-guard.md
@@ -115,7 +115,7 @@ phases 3-4 touch only the anchor doc and the manifest. The two tracks share no f
 
 ---
 
-### Phase 1: Author guard-path fixtures and run the falsifiability gate [NOT STARTED]
+### Phase 1: Author guard-path fixtures and run the falsifiability gate [COMPLETED]
 
 **Goal**: Extend `test-lean-sorry-census.sh` with `--cross-check` fixtures covering guard-present,
 guard-absent, and lake-absent paths, and prove they discriminate by running them against the
@@ -123,37 +123,44 @@ still-unmodified census script.
 
 **Tasks**:
 
-- [ ] Read `test-lean-sorry-census.sh` in full and reuse its house style exactly: `pass()` /
+- [x] Read `test-lean-sorry-census.sh` in full and reuse its house style exactly: `pass()` /
       `fail()` / `info()` helpers, `PASSED` / `FAILED` integer counters, one `mktemp -d` workdir
       with a `trap ... EXIT` cleanup, synthetic heredoc fixtures only, `exit 0` all-pass /
       `exit 1` any-fail. Do not import the guard suite's `FAKE_LAKE_*` convention — that is a
-      different script's convention.
-- [ ] Add a helper that builds a synthetic Lean project in the workdir (a `lakefile.toml` plus one
+      different script's convention. *(completed)*
+- [x] Add a helper that builds a synthetic Lean project in the workdir (a `lakefile.toml` plus one
       `.lean` file with a known sorry count) so the guard's own project-root resolution succeeds
-      when it is exercised.
-- [ ] Add a helper that fabricates a stub `lake` on a synthetic `PATH`, echoing a controllable
+      when it is exercised. *(completed: make_synthetic_lean_project)*
+- [x] Add a helper that fabricates a stub `lake` on a synthetic `PATH`, echoing a controllable
       number of `declaration uses 'sorry'` lines and exiting with a controllable status.
-- [ ] Add a helper that fabricates a stub guard script honoring `build [flags] -- <lake args>`,
+      *(completed: make_stub_lake)*
+- [x] Add a helper that fabricates a stub guard script honoring `build [flags] -- <lake args>`,
       echoing a marker line to stdout so the test can prove the guarded path was actually taken,
-      and passing through a controllable exit status.
-- [ ] Fixture F — lake absent: `PATH` without `lake`; assert output contains
+      and passing through a controllable exit status. *(completed: make_stub_guard)*
+- [x] Fixture F — lake absent: `PATH` without `lake`; assert output contains
       `cross_check: unavailable (lake not found in PATH)` regardless of guard presence, proving
-      this branch is still checked first and still wins.
-- [ ] Fixture G — lake present, guard absent: point `LEAN_SORRY_CENSUS_GUARD_BIN` at a
+      this branch is still checked first and still wins. *(completed: uses
+      make_isolated_bin_without_lake, an isolated-PATH helper, since blanket removal of any PATH
+      directory containing an executable named lake also removed bash on this machine)*
+- [x] Fixture G — lake present, guard absent: point `LEAN_SORRY_CENSUS_GUARD_BIN` at a
       nonexistent path; assert `compiler_sorry_count` / `stripper_sorry_count` /
       `cross_check: MATCH` output shape is byte-identical to pre-integration behavior.
-- [ ] Fixture H — lake present, guard present: point `LEAN_SORRY_CENSUS_GUARD_BIN` at the stub
+      *(completed)*
+- [x] Fixture H — lake present, guard present: point `LEAN_SORRY_CENSUS_GUARD_BIN` at the stub
       guard; assert the guard marker line appears in captured output AND that `compiler_sorry_count`
-      is still parsed correctly from the combined capture.
-- [ ] Fixture I — guarded non-zero exit: stub guard exits non-zero; assert the existing
+      is still parsed correctly from the combined capture. *(completed)*
+- [x] Fixture I — guarded non-zero exit: stub guard exits non-zero; assert the existing
       `exited non-zero` warning still fires on stderr and reports the guard's status.
-- [ ] Anti-vacuous check: assert Fixture H's captured output DIFFERS from Fixture G's (the marker
+      *(completed)*
+- [x] Anti-vacuous check: assert Fixture H's captured output DIFFERS from Fixture G's (the marker
       line is present in exactly one), so a fixture both implementations would agree on cannot
-      masquerade as coverage.
-- [ ] Run the suite against the unmodified `lean-sorry-census.sh`. Expected split: F and G PASS
+      masquerade as coverage. *(completed)*
+- [x] Run the suite against the unmodified `lean-sorry-census.sh`. Expected split: F and G PASS
       (behavior-preserving branches), H and I FAIL (the guard path does not exist yet). Record the
       observed split in the phase's commit message. If H or I PASSES here, the fixture is vacuous
-      — fix the fixture before proceeding.
+      — fix the fixture before proceeding. *(completed: observed split matched exactly — F and G
+      PASS in full, H and I FAIL in full; Passed: 11, Failed: 4; see
+      progress/phase-1-progress.json's falsifiability_gate_result)*
 
 **Timing**: 45 minutes
 

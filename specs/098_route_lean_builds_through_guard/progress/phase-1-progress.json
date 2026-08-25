@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Author guard-path fixtures and run the falsifiability gate",
+  "started_at": "2026-08-25T16:45:52Z",
+  "last_updated": "2026-08-25T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add synthetic Lean project helper + stub lake + stub guard helpers", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 2, "description": "Fixture F: lake absent", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 3, "description": "Fixture G: lake present, guard absent", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 4, "description": "Fixture H: lake present, guard present + anti-vacuous check vs G", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 5, "description": "Fixture I: guarded non-zero exit", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh"]},
+    {"id": 6, "description": "Run suite against unmodified census script; record F/G PASS, H/I FAIL split", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "path_without_lake() removing whole PATH directories containing an executable named lake",
+      "result": "failed",
+      "reason": "On this machine /run/current-system/sw/bin resolves BOTH lake and bash to the same symlink farm; blanket directory removal also removed bash, breaking Fixture F with 'bash: command not found'. Replaced with make_isolated_bin_without_lake(), which symlinks only the needed tools (bash, python3, grep, find, ...) into a fresh dir, deliberately excluding lake."
+    }
+  ],
+  "handoff_count": 0,
+  "falsifiability_gate_result": {
+    "ran_against": "unmodified lean-sorry-census.sh (pre-Phase-2)",
+    "observed_split": "Fixtures F and G PASS (all sub-assertions); Fixtures H and I FAIL (all sub-assertions) -- exactly the expected split, proving the new fixtures discriminate guard-present from guard-absent/unmodified behavior.",
+    "totals": "Passed: 11, Failed: 4 (existing Fixtures A-E: 8/8 pass, unchanged)"
+  }
+}
