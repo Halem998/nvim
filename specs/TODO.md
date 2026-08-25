@@ -77,7 +77,7 @@ next_project_number: 101
 
 ### Uncategorized
 
-99 [PLANNING] — Make the .orchestrator-handoff.json artifacts[] element shape una
+99 [PLANNED] — Make the .orchestrator-handoff.json artifacts[] element shape una
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
@@ -116,10 +116,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 99. Pin handoff artifacts element shape
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md]
+- **Plan**: [099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md]
 
 **Description**: Make the .orchestrator-handoff.json artifacts[] element shape unambiguous in the agent contracts, and stop research dispatches from emitting bare strings where the consumers require objects.
 

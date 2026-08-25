@@ -1,18 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 3,
-  "summary": "Root-caused the artifacts[] shape ambiguity to .orchestrator-handoff.json, not .return-meta.json (already correctly pinned in all three checked research-agent contracts). lean-research-agent.md and lean-research-hard-agent.md carry no Defensive-case guidance for this file at all, unlike general-research-agent.md which has one but omits the artifacts shape. Recommends prose additions to handoff-schema.md/return-metadata-file.md plus new/extended Defensive-case sections in the three agent contracts, with consumer-side validation and scope-expansion follow-ups flagged for planning.",
+  "status": "planned",
+  "dispatch_seq": 6,
+  "summary": "Created a 7-phase implementation plan pinning the .orchestrator-handoff.json artifacts[] element shape as object-only. Phase 1 adds the explicit never-a-bare-string prose to handoff-schema.md's normative section plus a non-deciding note recording the observed research-agent-writer contradiction; Phase 2 disambiguates the parallel-but-not-identical .return-meta.json shape; Phases 3-5 propagate the rule by reference into the two lean research contracts, the three existing Defensive case paragraphs, and wrap-up.md; Phase 6 hardens validate-handoff.sh Check 2c to type-check artifacts[0] before indexing. Scope was expanded from 5 to 9 files with all four flagged follow-ups explicitly decided (three folded in, consumer-side helper deferred).",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
-      "summary": "Root-causes the artifacts[] shape ambiguity to .orchestrator-handoff.json and recommends one-normative-place fixes plus flagged follow-ups."
+      "type": "plan",
+      "path": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
+      "summary": "7-phase plan pinning the handoff artifacts[] element shape, with fold-in/defer decisions and the surfaced maintainer contradiction recorded."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 7,
   "blockers": [],
-  "next_action_hint": "plan",
+  "sorry_inventory": [],
   "continuation_path": null
 }

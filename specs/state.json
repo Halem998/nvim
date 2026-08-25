@@ -1974,7 +1974,7 @@
     {
       "project_number": 99,
       "project_name": "pin_handoff_artifacts_element_shape",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Make the .orchestrator-handoff.json artifacts[] element shape unambiguous in the agent contracts, and stop research dispatches from emitting bare strings where the consumers require objects.\n\nOBSERVED MECHANISM (verified live, do not re-derive). In a seven-task lean4 batch in a separate consumer repo, THREE of seven research dispatches running extensions/lean/agents/lean-research-agent.md wrote .orchestrator-handoff.json with artifacts as an array of BARE PATH STRINGS rather than objects. Recorded as ARTIFACTS_SHAPE_MISMATCH, evt_1787609609484_JsLV9N, evt_1787609609589_NoKGP8 and evt_1787609609694_0qUk6t. The remaining four wrote the object form. Same agent, same batch, same phase -- so this is contract ambiguity, not a per-task accident.\n\nTHE CONSUMER-SIDE SYMPTOM. Orchestrator artifact linking reads artifacts[0].path / .type / .summary. Against a bare string that indexing raises \"Cannot index string with string \\\"path\\\"\", so the read yields nothing and the artifact silently fails to link -- the report exists on disk and is committed, but never lands in state.json's artifacts[]. The orchestrator recovered by resolving BOTH shapes tolerantly at the call site, which is a workaround at the wrong layer: every future consumer of a handoff would have to repeat it.\n\nWHY THE EXISTING DEFECT CLASS DOES NOT ALREADY COVER THIS. ARTIFACTS_SHAPE_MISMATCH is already defined and already has consumer-side detection arms wired into both orchestrate engines (skill-orchestrate Stage 5's handoff-present probe and its Stage MT-4 recovered-path sibling). Those arms DETECT and record the mismatch; nothing prevents a writer from producing it. This task is the writer-side half, and it is currently unowned -- no active task names ARTIFACTS_SHAPE_MISMATCH or the artifacts element shape.\n\nDECIDE EXPLICITLY, THEN STATE IT ONCE. context/formats/return-metadata-file.md is normative for .return-meta.json and declares itself normative for the handoff's status field too, but the artifacts ELEMENT shape is not pinned with the same force, and docs/architecture/handoff-schema.md is the natural home for it. Settle: (1) is the element an object {path, type, summary} with path required, or is a bare string an accepted shorthand that consumers must normalize; (2) whichever is chosen, state it in ONE normative place and have the agent contracts reference it rather than each restating it. Do not answer (1) with \"accept both\" merely because the orchestrator currently tolerates both -- that tolerance was added under incident conditions and should be reconsidered on its merits, not ratified by default.\n\nEVIDENCE THE CONTRACT WORDING IS THE LEVER. When the dispatch prompt stated the object requirement explicitly, all seven plan dispatches and all seven implement dispatches in the same batch emitted the object form, with zero recurrences. Per-dispatch prompt text is the workaround this task exists to retire.\n\nSCOPE NOTE. The reproducing agent is the LEAN research agent, but the ambiguity is in the shared schema, so the fix belongs in the schema doc plus whichever agent contracts restate the shape. Check the core research agent and the hard variants for the same wording gap rather than patching only the file that happened to reproduce it. If a shared normative statement referenced by all writers is the better mechanism, prefer it over copying a paragraph into several files.\n\nACCEPTANCE: the handoff artifacts element shape is stated normatively in exactly one place; every research/plan/implement agent contract that mentions artifacts conforms to it or references it; a dispatch that emits the non-conforming shape is either impossible by contract or is caught with a clear message naming the offending element; and the orchestrator's dual-shape tolerance is either removed as no longer needed or deliberately retained with a recorded reason.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "file_scope": [
@@ -1991,10 +1991,16 @@
           "path": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
           "summary": "Root-causes the artifacts[] shape ambiguity to .orchestrator-handoff.json and recommends one-normative-place fixes plus flagged follow-ups.",
           "created": "2026-08-25T05:14:02Z"
+        },
+        {
+          "type": "plan",
+          "path": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
+          "summary": "7-phase plan pinning the handoff artifacts[] element shape, with fold-in/defer decisions and the surfaced maintainer contradiction recorded.",
+          "created": "2026-08-25T05:21:26Z"
         }
       ],
       "created": "2026-08-24T23:54:34Z",
-      "last_updated": "2026-08-25T05:14:47Z",
+      "last_updated": "2026-08-25T05:21:19Z",
       "session_id": "sess_1787634022_3ba5fb_99"
     },
     {

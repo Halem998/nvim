@@ -1,34 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
-      "summary": "Root-causes the artifacts[] shape ambiguity to .orchestrator-handoff.json (not .return-meta.json, which is already correctly pinned), identifies the missing Defensive-case guidance in lean-research-agent.md/lean-research-hard-agent.md, and recommends one-normative-place fixes plus flagged consumer-side and scope follow-ups."
+      "type": "plan",
+      "path": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
+      "summary": "7-phase plan pinning the .orchestrator-handoff.json artifacts[] element shape in one normative place, propagating it by reference into five agent contracts plus wrap-up.md, and hardening validate-handoff.sh Check 2c."
     }
   ],
-  "next_steps": "Run /plan 99 to create implementation plan",
+  "next_steps": "Run /implement 99 to execute the plan",
   "metadata": {
     "session_id": "sess_1787634022_3ba5fb_99",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 3,
+    "dependency_waves": [[1, 2], [3, 4, 5, 6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "In this agent system, .return-meta.json's artifacts[] shape is strictly pinned (object required, four-layer enforcement) but .orchestrator-handoff.json's artifacts[] shape is only shown by worked example (JSON schema, wrap-up.md, handoff-schema.md) with no explicit 'never a bare string' prose sentence, and no validator actually checks element-level type. When auditing a schema-adjacent pair of files for ambiguity, check whether a prohibition is stated as an explicit negative sentence versus merely implied by a required-fields list -- the latter is what actually drifts in practice even when a JSON Schema structurally forbids it, because no ad hoc jq validator re-derives full JSON-Schema semantics.",
+      "content": "When a schema-adjacent prohibition exists only as an implicit consequence of a required-fields list (or only inside a JSON Schema that no ad hoc validator actually evaluates), it drifts in practice. The durable fix pattern used in this agent system is four-layered and each layer is individually insufficient: (1) one explicit negative prose sentence in a single normative doc, (2) a validator that type-checks the element before indexing into it and names the index plus observed type in its failure message, (3) a consumer chokepoint that normalizes loudly and records a defect class rather than silently degrading, (4) agent contracts that reference the normative section rather than restating the field list. When only some layers exist, name the missing ones as explicit deferrals instead of assuming the structural rule is enforced.",
       "category": "PATTERN",
-      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrator-handoff", "artifacts-shape", "schema-ambiguity", "validate-handoff", "bare-string"]
-    },
-    {
-      "content": "Three agent contracts (general-research-agent.md, general-research-hard-agent.md, general-implementation-agent.md) already carry a 'Defensive case, if a handoff is written anyway' paragraph for the documented-never-but-sometimes-happens scenario of a base-mode/research agent being instructed to write .orchestrator-handoff.json. This is the correct established pattern to extend (not invent) when a new agent needs the same defensive guidance -- e.g. lean-research-agent.md and lean-research-hard-agent.md were found to have no such paragraph at all despite reproducing the exact scenario it exists to cover.",
-      "category": "PATTERN",
-      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md",
+      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
       "confidence": 0.8,
-      "suggested_keywords": ["defensive-case", "orchestrator-handoff", "dispatch_seq", "agent-contract-pattern"]
+      "suggested_keywords": ["schema-prohibition", "four-layer-enforcement", "validator-hardening", "reference-not-restate", "artifacts-shape"]
     }
   ]
 }
