@@ -1,29 +1,50 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
-      "summary": "7-phase plan pinning the .orchestrator-handoff.json artifacts[] element shape in one normative place, propagating it by reference into five agent contracts plus wrap-up.md, and hardening validate-handoff.sh Check 2c."
+      "type": "summary",
+      "path": "specs/099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md",
+      "summary": "Pinned .orchestrator-handoff.json's artifacts[] element shape in handoff-schema.md and propagated it by reference into every agent contract that can write the file, including the two lean research agents that previously had no mention of the file at all; hardened validate-handoff.sh to name the defect."
     }
   ],
-  "next_steps": "Run /implement 99 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1787634022_3ba5fb_99",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 3,
-    "dependency_waves": [[1, 2], [3, 4, 5, 6], [7]]
+  "completion_data": {
+    "completion_summary": "Pinned the .orchestrator-handoff.json artifacts[] element shape as a never-a-bare-string statement in handoff-schema.md's ### artifacts (required) section, propagated it by reference into lean-research-agent.md, lean-research-hard-agent.md, general-research-agent.md, general-research-hard-agent.md, general-implementation-agent.md, and wrap-up.md, and hardened validate-handoff.sh Check 2c to type-check .artifacts[0] and FAIL with the observed index and type instead of degrading silently."
   },
+  "modified_files": [
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
+    "specs/099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When a schema-adjacent prohibition exists only as an implicit consequence of a required-fields list (or only inside a JSON Schema that no ad hoc validator actually evaluates), it drifts in practice. The durable fix pattern used in this agent system is four-layered and each layer is individually insufficient: (1) one explicit negative prose sentence in a single normative doc, (2) a validator that type-checks the element before indexing into it and names the index plus observed type in its failure message, (3) a consumer chokepoint that normalizes loudly and records a defect class rather than silently degrading, (4) agent contracts that reference the normative section rather than restating the field list. When only some layers exist, name the missing ones as explicit deferrals instead of assuming the structural rule is enforced.",
+      "content": "When pinning a normative shape rule across many agent contracts, add exactly one prose statement in the single normative doc, then extend each existing 'Defensive case' / non-writer-by-design paragraph with one reference-only sentence pointing back at it -- never restate the field table inline. Confirm the sibling-file set with a fresh grep at implementation time (not the plan's hypothesis) and explicitly record any divergence (extra or missing files) rather than silently widening or narrowing scope.",
       "category": "PATTERN",
-      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/plans/01_pin-handoff-artifacts-shape.md",
+      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["schema-prohibition", "four-layer-enforcement", "validator-hardening", "reference-not-restate", "artifacts-shape"]
+      "suggested_keywords": ["handoff-schema", "defensive-case", "contract-propagation", "reference-only", "scope-hypothesis"]
+    },
+    {
+      "content": "In validate-*.sh element-shape checks, probe `jq -r '.array[idx] | type'` before indexing into named sub-fields. When the type is not 'object', log_fail naming both the index and the observed type and skip the per-field extraction -- this avoids the generic 'missing required field(s)' message masking the real shape defect and avoids raw jq errors on a bare-string element.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/099_pin_handoff_artifacts_element_shape/summaries/01_pin-handoff-artifacts-shape-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "validate-handoff", "type-check", "bare-string", "bash-validation"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1787634022_3ba5fb",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

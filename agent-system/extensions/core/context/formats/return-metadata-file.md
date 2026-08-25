@@ -138,6 +138,13 @@ sufficient:
 | Consumer chokepoint (`skill_read_metadata` in `scripts/skill-base.sh`) | Normalizes so the artifact link is not lost, but emits a loud stderr notice AND records an `ARTIFACTS_SHAPE_MISMATCH` system defect. |
 | Agent contracts | Strict. Every dispatchable agent that writes `.return-meta.json` carries a correct inline template; `lint-agent-contracts.sh` Check F fails the deploy if one does not. |
 
+**Parallel but not identical to `.orchestrator-handoff.json`'s `artifacts` shape.**
+`.orchestrator-handoff.json` has its own `artifacts` object shape, defined separately in
+`handoff-schema.md`'s `### artifacts (required)` section. Both forbid bare-string elements, but
+they differ in one field: `.return-meta.json` requires `summary`, while
+`.orchestrator-handoff.json` treats `summary` as optional. A worked example from one file is not
+directly transplantable to the other — check which file you are writing before copying a template.
+
 The canonical copyable template every agent uses, the classification rule for which agents must
 carry it, and the path-segment type-inference table are recorded in one place:
 `context/contracts/return-meta-artifacts-template.md` (source:

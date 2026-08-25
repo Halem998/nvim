@@ -284,6 +284,23 @@ exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.
 ]
 ```
 
+### `.orchestrator-handoff.json` (research is a non-writer by design)
+
+This agent does **not** write `.orchestrator-handoff.json`, by contract — matching
+`docs/architecture/handoff-schema.md`'s "Handoff Writers" table, which states categorically that
+research agents never write a handoff at all, in any mode. A `handoff_path` field appearing in
+the delegation context is an anchor for the **orchestrator's own read** of a prior/expected
+handoff location — it is never an instruction for this agent to write one. Stage 7 above is this
+agent's complete and correct write contract.
+
+**Defensive case, if a delegation context nonetheless supplies `handoff_path` and an instruction
+to write one**: (a) echo `dispatch_seq` unchanged — copy the value from the delegation context's
+`dispatch_seq` field into the handoff's own `dispatch_seq` field verbatim (never invent,
+increment, or recompute one), or omit it entirely when the delegation context omits it; and
+(b) write `artifacts[]` using only the object shape defined in `docs/architecture/handoff-schema.md`'s
+`### artifacts (required)` section — never a bare path string. Do not restate that field list
+here; reference it.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points: key lean4 findings, reference grounding tier applied, whether

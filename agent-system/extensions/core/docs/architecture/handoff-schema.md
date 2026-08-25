@@ -209,6 +209,15 @@ yet). Each entry requires `type` and `path`; `summary` (a one-line description) 
 read by both orchestrate engines as `artifacts[0].summary` — omitting it degrades the
 orchestrator's dispatch summary without failing validation.
 
+**A bare-string element is never an accepted shorthand, in any context.** `"artifacts":
+["path/to/file.md"]` is not a valid form of this field — every element MUST be a JSON object
+carrying `type` and `path` (with `summary` optional), never a plain path string. This sentence
+does not introduce a second source of truth: `orchestrator-handoff-schema.json` remains the sole
+machine-checkable authority for the shape (`items.type: "object"` already forbids a bare string
+structurally); this sentence closes the gap that the schema's structural rule was previously
+asserted only implicitly, by required-fields listing and worked example, with no prose stating
+the prohibition explicitly.
+
 ### `blockers` (required array; entries populated only when there is a blocker)
 Must be present as a JSON array — `[]` is normal and expected for `implemented` status. Non-empty
 only when `status = "partial"` or `status = "blocked"`. Each blocker entry uses the canonical
@@ -372,6 +381,24 @@ handoff at all, in any mode. This is a decided contract, not a default that happ
 | `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | **Flat** `continuation_path` | The only writer of `.orchestrator-handoff.json`; see `context/contracts/wrap-up.md`'s canonical schema |
 | cslib and lean hard-mode implementation agent counterparts | Active | **Flat** `continuation_path` | Mirror the core H9 wrap-up, with two known, named, unlanded gaps left as follow-ups (both extensions are out of this document's declared scope): `cslib-implementation-hard-agent.md` Stage 5 hardcodes `continuation_context: null` with no population instruction, and lacks the `artifacts`-shape spec; `lean-implementation-hard-agent.md` Stage 5 omits `artifacts` entirely and also carries a redundant `continuation_context: null` now that only the flat form is canonical. |
 | Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Never writes a handoff, by design | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); base-mode plan/implement rely exclusively on `.return-meta.json`. This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
+
+Every agent contract that could nonetheless end up writing this file carries its own "Defensive
+case" paragraph covering exactly that scenario; those paragraphs are the fallback guidance for
+this categorical decision, and they pin the `artifacts[]` element shape (see `### artifacts
+(required)` above) alongside their `dispatch_seq` echo instruction rather than restating it.
+
+**Open question, not decided here**: live delegation contexts have been observed supplying a
+`handoff_path` and an instruction to write to a base-mode research agent, contradicting the
+categorical "research agents never write a handoff" claim stated above. This document does not
+reconcile that contradiction — it only records it, with the Defensive case paragraphs serving as
+the interim safety net. Resolving it is a maintainer-level decision between two candidates: (a)
+stop instructing research agents to write the file, restoring the documented invariant as
+written, or (b) expand the documented writer set above to match observed practice.
+
+**No consumer-side dual-shape tolerance exists for this file today.** Both direct handoff-artifact
+reads (`skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`) are raw, unguarded
+`jq -r '.artifacts[0].path // ""'` — there is no tolerance to remove or retain, and a future
+reader should not search for one.
 
 **The nested-form writer has been deleted.** The Bash-redirect helper function that formerly
 lived in `agent-system/extensions/core/scripts/skill-base.sh` — previously defined with zero

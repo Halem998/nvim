@@ -1,7 +1,7 @@
 # Implementation Plan: pin_handoff_artifacts_element_shape
 
 - **Task**: 99 - Make the `.orchestrator-handoff.json` `artifacts[]` element shape unambiguous
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md`
@@ -132,31 +132,31 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Pin the shape in the one normative place [NOT STARTED]
+### Phase 1: Pin the shape in the one normative place [COMPLETED]
 
 **Goal**: `handoff-schema.md` states explicitly that a bare-string `artifacts[]` element is never
 valid, and visibly connects the categorical "research agents never write a handoff" claim to the
 defensive-case paragraphs that exist because it is not always honored.
 
 **Tasks**:
-- [ ] In `handoff-schema.md`'s `### artifacts (required)` section, after the existing "Each entry
+- [x] In `handoff-schema.md`'s `### artifacts (required)` section, after the existing "Each entry
       requires `type` and `path`" sentence, add an explicit negative statement: a bare-string
       element (`"artifacts": ["path/to/file.md"]`) is never an accepted shorthand, in any context;
-      every element MUST be an object carrying `type` and `path`, with `summary` optional.
-- [ ] In the same section, state that `orchestrator-handoff-schema.json` remains the sole
+      every element MUST be an object carrying `type` and `path`, with `summary` optional. *(completed)*
+- [x] In the same section, state that `orchestrator-handoff-schema.json` remains the sole
       machine-checkable authority and that this sentence closes the
-      implicit-by-required-fields gap rather than introducing a second source of truth.
-- [ ] In the "Handoff Writers — the settled decision, in one place" section, add one sentence
+      implicit-by-required-fields gap rather than introducing a second source of truth. *(completed)*
+- [x] In the "Handoff Writers — the settled decision, in one place" section, add one sentence
       cross-referencing the agent contracts' "Defensive case" paragraphs, so the categorical claim
-      and its fallback guidance are visibly linked rather than living in unrelated files.
-- [ ] In the same section, add a short **non-deciding** note recording (a) that live delegation
+      and its fallback guidance are visibly linked rather than living in unrelated files. *(completed)*
+- [x] In the same section, add a short **non-deciding** note recording (a) that live delegation
       contexts have been observed supplying `handoff_path` + `dispatch_seq` to base-mode research
       agents with an instruction to write, contradicting the categorical claim, and (b) that
       reconciling this is an open maintainer decision, with the defensive-case paragraphs serving
-      as the interim safety net. Do NOT change the Handoff Writers table's rows.
-- [ ] Add a one-line note recording that no consumer-side dual-shape tolerance exists for this
+      as the interim safety net. Do NOT change the Handoff Writers table's rows. *(completed)*
+- [x] Add a one-line note recording that no consumer-side dual-shape tolerance exists for this
       file today (the two orchestrate-engine reads are unguarded), so a future reader does not
-      search for tolerance that was never implemented.
+      search for tolerance that was never implemented. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -180,24 +180,24 @@ defensive-case paragraphs that exist because it is not always honored.
 
 ---
 
-### Phase 2: Disambiguate the two files' artifacts shapes [NOT STARTED]
+### Phase 2: Disambiguate the two files' artifacts shapes [COMPLETED]
 
 **Goal**: `return-metadata-file.md` warns readers that the two files' `artifacts` object shapes are
 parallel but not identical, pre-empting the cross-file pattern-matching mistake it already warns
 about for `phases_completed`/`phases_total`.
 
 **Tasks**:
-- [ ] In `return-metadata-file.md`, immediately after the `### artifacts (required)` section's
+- [x] In `return-metadata-file.md`, immediately after the `### artifacts (required)` section's
       four-layer enforcement table (and before the template-fragment pointer), add a short
       cross-reference paragraph in the style of the existing `### phases_completed / phases_total
-      nesting collision (cross-file)` callout.
-- [ ] The paragraph must state: `.orchestrator-handoff.json` has its own parallel `artifacts`
+      nesting collision (cross-file)` callout. *(completed)*
+- [x] The paragraph must state: `.orchestrator-handoff.json` has its own parallel `artifacts`
       object shape defined in `handoff-schema.md`'s `### artifacts (required)` section; both
       forbid bare strings; they differ in that `.return-meta.json` requires `summary` while
       `.orchestrator-handoff.json` treats it as optional — so a worked example from one file is
-      not directly transplantable to the other.
-- [ ] Do not modify the existing four-layer enforcement table, the bare-string prohibition
-      sentence, or the template-fragment pointer.
+      not directly transplantable to the other. *(completed)*
+- [x] Do not modify the existing four-layer enforcement table, the bare-string prohibition
+      sentence, or the template-fragment pointer. *(completed)*
 
 **Timing**: 20 minutes
 
@@ -217,33 +217,33 @@ about for `phases_completed`/`phases_total`.
 
 ---
 
-### Phase 3: Give the lean research agents a Defensive case section [NOT STARTED]
+### Phase 3: Give the lean research agents a Defensive case section [COMPLETED]
 
 **Goal**: `lean-research-agent.md` and `lean-research-hard-agent.md` — which currently have zero
 mention of `.orchestrator-handoff.json` — carry the same non-writer-by-design statement plus
 defensive-case guidance the general agents already have.
 
 **Tasks**:
-- [ ] In `lean-research-agent.md`, add a new `## .orchestrator-handoff.json (research is a
+- [x] In `lean-research-agent.md`, add a new `## .orchestrator-handoff.json (research is a
       non-writer by design)` section immediately after the `## Write Final Metadata` section,
       modeled on `general-implementation-agent.md`'s existing
-      `### .orchestrator-handoff.json (base-mode implement is a non-writer by design)` section.
-- [ ] The section states: this agent does not write `.orchestrator-handoff.json` by contract
+      `### .orchestrator-handoff.json (base-mode implement is a non-writer by design)` section. *(completed)*
+- [x] The section states: this agent does not write `.orchestrator-handoff.json` by contract
       (research agents never do, per `handoff-schema.md`'s "Handoff Writers"); a `handoff_path`
       field in the delegation context is an anchor for the orchestrator's own read, not an
-      instruction to write.
-- [ ] Add the **Defensive case** paragraph: if a delegation context nonetheless supplies
+      instruction to write. *(completed)*
+- [x] Add the **Defensive case** paragraph: if a delegation context nonetheless supplies
       `handoff_path` and an instruction to write one, then (a) echo `dispatch_seq` unchanged —
       copy the delegation context's value verbatim, never invent/increment/recompute, and omit it
       entirely when the delegation context omits it; and (b) write `artifacts[]` using only the
       object shape defined in `handoff-schema.md`'s `### artifacts (required)` section — never a
-      bare path string.
-- [ ] Reference `handoff-schema.md` for the field list; do NOT restate the field table inline.
-- [ ] In `lean-research-hard-agent.md`, add the identical section immediately after
+      bare path string. *(completed)*
+- [x] Reference `handoff-schema.md` for the field list; do NOT restate the field table inline. *(completed)*
+- [x] In `lean-research-hard-agent.md`, add the identical section immediately after
       `### Stage 7: Write Metadata File` and before `### Stage 8: Return Brief Text Summary`,
-      using `###` heading level to match that file's stage structure.
-- [ ] Leave both files' existing `.return-meta.json` `artifacts` shape guidance completely
-      untouched — it is already correct.
+      using `###` heading level to match that file's stage structure. *(completed)*
+- [x] Leave both files' existing `.return-meta.json` `artifacts` shape guidance completely
+      untouched — it is already correct. *(completed)*
 
 **Timing**: 40 minutes
 
@@ -274,24 +274,24 @@ rather than silently widening.
 
 ---
 
-### Phase 4: Pin the artifacts shape in the three existing Defensive case paragraphs [NOT STARTED]
+### Phase 4: Pin the artifacts shape in the three existing Defensive case paragraphs [COMPLETED]
 
 **Goal**: Every contract that already carries a "Defensive case" paragraph pins the artifacts
 element shape alongside its existing `dispatch_seq` guidance, so no sibling contract is left
 diverging from the one just fixed.
 
 **Tasks**:
-- [ ] In `general-research-agent.md`, extend the existing Stage 3.6 "Defensive case, if this
+- [x] In `general-research-agent.md`, extend the existing Stage 3.6 "Defensive case, if this
       scoping decision is ever reversed" paragraph with one added sentence: the handoff's
       `artifacts[]` entries MUST use the object shape defined in `handoff-schema.md`'s
-      `### artifacts (required)` section — never a bare path string.
-- [ ] In `general-research-hard-agent.md`, make the textually identical addition to its
-      corresponding Defensive case paragraph.
-- [ ] In `general-implementation-agent.md`, make the same addition to its "Defensive case, if a
+      `### artifacts (required)` section — never a bare path string. *(completed)*
+- [x] In `general-research-hard-agent.md`, make the textually identical addition to its
+      corresponding Defensive case paragraph. *(completed)*
+- [x] In `general-implementation-agent.md`, make the same addition to its "Defensive case, if a
       handoff is written anyway" paragraph, alongside the existing `phases_completed`/
-      `phases_total` top-level-nesting and `dispatch_seq` instructions.
-- [ ] Keep all three additions reference-only; do not restate the field list inline; do not alter
-      the existing `dispatch_seq` or nesting sentences.
+      `phases_total` top-level-nesting and `dispatch_seq` instructions. *(completed)*
+- [x] Keep all three additions reference-only; do not restate the field list inline; do not alter
+      the existing `dispatch_seq` or nesting sentences. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -320,19 +320,19 @@ editing whatever the grep happens to return.
 
 ---
 
-### Phase 5: Pin the shape in the active writer's own contract [NOT STARTED]
+### Phase 5: Pin the shape in the active writer's own contract [COMPLETED]
 
 **Goal**: `wrap-up.md`'s H9 `artifacts` field-semantics bullet — the prose contract governing the
 one *active* writer of `.orchestrator-handoff.json` — carries the explicit prohibition instead of
 implying it by worked example.
 
 **Tasks**:
-- [ ] In `wrap-up.md`, extend the `- \`artifacts\`: REQUIRED array ...` field-semantics bullet
+- [x] In `wrap-up.md`, extend the `- \`artifacts\`: REQUIRED array ...` field-semantics bullet
       with the explicit statement that each element MUST be an object with `type` and `path`
-      (`summary` optional) and that a bare path string is never an accepted shorthand.
-- [ ] Point at `handoff-schema.md`'s `### artifacts (required)` section as the normative home
-      rather than restating the field table.
-- [ ] Leave the existing worked-example JSON block unchanged — it is already correct.
+      (`summary` optional) and that a bare path string is never an accepted shorthand. *(completed)*
+- [x] Point at `handoff-schema.md`'s `### artifacts (required)` section as the normative home
+      rather than restating the field table. *(completed)*
+- [x] Leave the existing worked-example JSON block unchanged — it is already correct. *(completed)*
 
 **Timing**: 20 minutes
 
@@ -351,25 +351,25 @@ implying it by worked example.
 
 ---
 
-### Phase 6: Make the validator name the defect [NOT STARTED]
+### Phase 6: Make the validator name the defect [COMPLETED]
 
 **Goal**: `validate-handoff.sh` Check 2c type-checks `.artifacts[0]` before indexing into it, and
 FAILs with a message naming the index and the observed type — instead of jq-erroring or silently
 degrading to `__MISSING__` and reporting a generic missing-field failure.
 
 **Tasks**:
-- [ ] In `validate-handoff.sh` Check 2c, before the existing `entry0_type`/`entry0_path`/
-      `entry0_summary` extractions, add an element-type probe: `jq -r '.artifacts[0] | type'`.
-- [ ] If the observed type is not `object`, `log_fail` with a message naming the index (`0`) and
+- [x] In `validate-handoff.sh` Check 2c, before the existing `entry0_type`/`entry0_path`/
+      `entry0_summary` extractions, add an element-type probe: `jq -r '.artifacts[0] | type'`. *(completed)*
+- [x] If the observed type is not `object`, `log_fail` with a message naming the index (`0`) and
       the observed type, and explicitly stating that a bare-string element is never valid per
       `handoff-schema.md`'s `### artifacts (required)` section. Mirror the message style of
-      `validate-return-meta.sh`'s existing `bare_count` check.
-- [ ] Skip the per-field extractions when the element is not an object, so the generic
-      "missing required field(s)" failure does not mask the real shape defect.
-- [ ] Do NOT change the script's log-only / non-gating invocation posture in
-      `skill_corroborate_phase_counts()` — that is a separate decision, deliberately not taken.
-- [ ] Extend the script's usage/help text (the `Required fields:` block near the top) only if it
-      currently misstates the element shape; otherwise leave it alone.
+      `validate-return-meta.sh`'s existing `bare_count` check. *(completed)*
+- [x] Skip the per-field extractions when the element is not an object, so the generic
+      "missing required field(s)" failure does not mask the real shape defect. *(completed)*
+- [x] Do NOT change the script's log-only / non-gating invocation posture in
+      `skill_corroborate_phase_counts()` — that is a separate decision, deliberately not taken. *(completed)*
+- [x] Extend the script's usage/help text (the `Required fields:` block near the top) only if it
+      currently misstates the element shape; otherwise leave it alone. *(completed)*
 
 **Timing**: 40 minutes
 
@@ -399,36 +399,36 @@ site count in the summary.
 
 ---
 
-### Phase 7: Verify, record deferrals, and close [NOT STARTED]
+### Phase 7: Verify, record deferrals, and close [COMPLETED]
 
 **Goal**: The whole change set is verified as one unit against the repo's own gates, the two
 deliberately deferred items are recorded where a future reader will find them, and no source-store
 or task-reference rule was violated.
 
 **Tasks**:
-- [ ] Run `lint-agent-contracts.sh` (or the repo's current agent-contract lint) and confirm it
+- [x] Run `lint-agent-contracts.sh` (or the repo's current agent-contract lint) and confirm it
       passes — in particular that Check F's `.return-meta.json` template requirement is still
-      satisfied for every file touched by Phases 3 and 4.
-- [ ] Run the repo's task-reference lint (`check-task-references.sh` or equivalent) over the
-      changed files and confirm zero findings outside `specs/**`.
-- [ ] Confirm `git status --short` shows **no** modified path under `.claude/**`; every change is
-      under `agent-system/extensions/**` (plus this task's own `specs/**` artifacts).
-- [ ] Grep the full diff for any newly-added inline copy of the handoff artifacts field table —
-      there must be none; every contract site is reference-only.
-- [ ] Validate `orchestrator-handoff-schema.json` is unmodified (it was already correct; this plan
-      introduces no schema change).
-- [ ] Write the execution summary to `specs/099_pin_handoff_artifacts_element_shape/summaries/`
+      satisfied for every file touched by Phases 3 and 4. *(completed)*
+- [x] Run the repo's task-reference lint (`check-task-references.sh` or equivalent) over the
+      changed files and confirm zero findings outside `specs/**`. *(completed)*
+- [x] Confirm `git status --short` shows **no** modified path under `.claude/**`; every change is
+      under `agent-system/extensions/**` (plus this task's own `specs/**` artifacts). *(completed)*
+- [x] Grep the full diff for any newly-added inline copy of the handoff artifacts field table —
+      there must be none; every contract site is reference-only. *(completed)*
+- [x] Validate `orchestrator-handoff-schema.json` is unmodified (it was already correct; this plan
+      introduces no schema change). *(completed)*
+- [x] Write the execution summary to `specs/099_pin_handoff_artifacts_element_shape/summaries/`
       recording: the settled element shape, the four fold-in/defer decisions from this plan's
       Scope Decisions table with their reasons, the ACCEPTANCE-clause resolution (no dual-shape
       tolerance exists today; nothing removed, nothing retained, finding recorded), and the
-      surfaced maintainer contradiction with its two candidate resolutions.
-- [ ] Record the deferred consumer-side work as an explicit follow-up item in the summary
+      surfaced maintainer contradiction with its two candidate resolutions. *(completed)*
+- [x] Record the deferred consumer-side work as an explicit follow-up item in the summary
       (shared loud-normalize-and-record helper in `skill-base.sh` called by both
       `skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`, with
       `ARTIFACTS_SHAPE_MISMATCH` defect recording), naming it as the remaining gap against the
-      "caught with a clear message" acceptance criterion on the consumer side.
-- [ ] Record the maintainer-level contradiction as a follow-up needing a human decision, not an
-      implementation item.
+      "caught with a clear message" acceptance criterion on the consumer side. *(completed)*
+- [x] Record the maintainer-level contradiction as a follow-up needing a human decision, not an
+      implementation item. *(completed)*
 
 **Timing**: 40 minutes
 
@@ -452,18 +452,18 @@ or task-reference rule was violated.
 
 ## Testing & Validation
 
-- [ ] `validate-handoff.sh` FAILs a bare-string-element fixture with a message naming index `0`
-      and observed type `string`, with no raw jq error.
-- [ ] `validate-handoff.sh` still PASSes a correct object-element handoff, and its exit behavior
-      on this task's own real handoff is unchanged from before.
-- [ ] `bash -n agent-system/extensions/core/scripts/validate-handoff.sh` passes.
-- [ ] Agent-contract lint passes for all five contract files touched.
-- [ ] Every file that could write `.orchestrator-handoff.json` either states the object-only rule
+- [x] `validate-handoff.sh` FAILs a bare-string-element fixture with a message naming index `0`
+      and observed type `string`, with no raw jq error. *(completed)*
+- [x] `validate-handoff.sh` still PASSes a correct object-element handoff, and its exit behavior
+      on this task's own real handoff is unchanged from before. *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/validate-handoff.sh` passes. *(completed)*
+- [x] Agent-contract lint passes for all five contract files touched. *(completed)*
+- [x] Every file that could write `.orchestrator-handoff.json` either states the object-only rule
       or references `handoff-schema.md`'s `### artifacts (required)` section: verified by
-      `grep -L` across the lean and core research/implementation agent contracts.
-- [ ] No `.claude/**` file modified.
-- [ ] No task-number reference introduced outside `specs/**`.
-- [ ] `orchestrator-handoff-schema.json` byte-identical to its pre-change state.
+      `grep -L` across the lean and core research/implementation agent contracts. *(completed)*
+- [x] No `.claude/**` file modified. *(completed)*
+- [x] No task-number reference introduced outside `specs/**`. *(completed)*
+- [x] `orchestrator-handoff-schema.json` byte-identical to its pre-change state. *(completed)*
 
 ## Artifacts & Outputs
 

@@ -151,16 +151,21 @@ else
   esac
 
   if [[ "$artifacts_count" -gt 0 ]]; then
-    entry0_type=$(jq -r ".artifacts[0].type // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-    entry0_path=$(jq -r ".artifacts[0].path // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-    entry0_summary=$(jq -r ".artifacts[0].summary // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-    if [[ "$entry0_type" == "__MISSING__" ]] || [[ "$entry0_path" == "__MISSING__" ]]; then
-      log_fail "artifacts[0] missing required field(s): type and/or path"
+    entry0_kind=$(jq -r ".artifacts[0] | type" "$HANDOFF_FILE" 2>/dev/null)
+    if [[ "$entry0_kind" != "object" ]]; then
+      log_fail "artifacts[0] is a $entry0_kind, not an object -- a bare-string (or other non-object) artifacts element is never valid, per handoff-schema.md's ### artifacts (required) section; repair to {\"type\": ..., \"path\": ..., \"summary\": ...}"
     else
-      log_pass "artifacts[0] has required fields (type, path)"
-    fi
-    if [[ "$entry0_summary" == "__MISSING__" ]]; then
-      log_warn "artifacts[0].summary absent (optional per schema, but read by both orchestrate engines)"
+      entry0_type=$(jq -r ".artifacts[0].type // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      entry0_path=$(jq -r ".artifacts[0].path // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      entry0_summary=$(jq -r ".artifacts[0].summary // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      if [[ "$entry0_type" == "__MISSING__" ]] || [[ "$entry0_path" == "__MISSING__" ]]; then
+        log_fail "artifacts[0] missing required field(s): type and/or path"
+      else
+        log_pass "artifacts[0] has required fields (type, path)"
+      fi
+      if [[ "$entry0_summary" == "__MISSING__" ]]; then
+        log_warn "artifacts[0].summary absent (optional per schema, but read by both orchestrate engines)"
+      fi
     fi
   fi
 fi

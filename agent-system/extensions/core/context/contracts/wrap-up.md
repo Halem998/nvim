@@ -69,7 +69,10 @@ Required fields:
   non-empty required when `status` is `implemented`). This is what `skill_link_artifacts`
   consumes to link the produced file(s) into `state.json` — an absent or empty `artifacts` on an
   `implemented` handoff silently prevents the summary artifact from being linked. Name the
-  implementation summary file with `type: "summary"`.
+  implementation summary file with `type: "summary"`. Every element MUST be an object carrying
+  `type` and `path` (`summary` optional) — a bare path string (`"artifacts": ["path/to/file.md"]`)
+  is never an accepted shorthand, in any context. See `docs/architecture/handoff-schema.md`'s
+  `### artifacts (required)` section for the normative shape; do not restate the field list here.
 - `phase`: Optional, informational. Not required.
 - `dispatch_seq`: Optional (but REQUIRED-TO-ECHO whenever present in your delegation context).
   Copy the delegation context's `dispatch_seq` value into this field UNCHANGED — never invent,

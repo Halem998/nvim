@@ -211,7 +211,9 @@ from the delegation context's `dispatch_seq` field into the handoff's own `dispa
 verbatim (never invent, increment, or recompute one), or omit it entirely when the delegation
 context omits it. This is the orchestrator-minted per-dispatch identity Stage 5 of both
 orchestrate engines compares against the value it minted for this cycle — see
-`context/patterns/dispatch-report-not-termination.md`.
+`context/patterns/dispatch-report-not-termination.md`. The handoff's `artifacts[]` entries MUST
+use the object shape defined in `handoff-schema.md`'s `### artifacts (required)` section — never
+a bare path string.
 
 ### Stage 4: Synthesize Findings
 

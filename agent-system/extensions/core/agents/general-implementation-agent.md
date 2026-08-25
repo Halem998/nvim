@@ -697,7 +697,9 @@ delegation context carries a `dispatch_seq` field, copy its value into the hando
 `dispatch_seq` field verbatim (never invent, increment, or recompute one); if absent from the
 delegation context, omit it from the handoff too. This is the orchestrator-minted per-dispatch
 identity Stage 5 of both orchestrate engines compares against the value it minted for this
-cycle — see `context/patterns/dispatch-report-not-termination.md`.
+cycle — see `context/patterns/dispatch-report-not-termination.md`. The handoff's `artifacts[]`
+entries MUST use the object shape defined in `handoff-schema.md`'s `### artifacts (required)`
+section — never a bare path string.
 
 ### Stage 8: Return Brief Text Summary
 
