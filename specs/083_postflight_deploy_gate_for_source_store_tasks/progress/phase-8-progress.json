@@ -1,0 +1,28 @@
+{
+  "phase": 8,
+  "phase_name": "Deploy, verify, and self-demonstrate the gate",
+  "started_at": "2026-08-24T22:10:00Z",
+  "last_updated": "2026-08-25T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm all 12 file_scope entries committed", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fresh pre-deploy verify-deploy.sh --findings baseline (51 findings, rc=1)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run deploy-headless.sh by hand (exit 3, expected)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Post-deploy findings diff vs pre-baseline", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Byte-diff source-store vs deployed copies of all 10 modified scripts/docs", "status": "done", "files_touched": []},
+    {"id": 6, "description": "check-deploy-freshness.sh no longer reports core stale", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Full run-all.sh from deployed tree, no worse than baseline", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Two acceptance demonstrations executed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "self_demonstration": {
+    "own_completion_subject_to_gate": true,
+    "outcome_1_fresh_deploy_permits_transition": "CONFIRMED: bash .claude/scripts/update-task-status.sh --dry-run postflight 83 implement <session> printed '[deploy-check] Task 83: touched extension(s) verified fresh -- proceeding.' and previewed the completed transition, exit 0.",
+    "outcome_2_stale_scratch_extension_refuses": "CONFIRMED: same deployed script against a scratch fixture with a deliberately stale scratch extension printed the refusal message and exited 6, with state.json status and the plan file both unchanged (before == after)."
+  },
+  "observations": [
+    "The post-deploy verify-deploy.sh --findings diff shows this task's OWN core-extension findings (5 script-drift entries) fully resolved, 0 new core findings. However, because deploy-headless.sh resyncs the WHOLE tree (all loaded extensions, not just core), this run also picked up a concurrent sibling session's in-flight literature-extension work (a new script literature-fidelity-audit.sh, a grown literature-index.md, and a task-77 state.json field 'blockers' not yet in the gate10 schema). These three new findings are unrelated to any file in this task's 12-entry file_scope and are not caused by this task's own edits -- they are a structural side effect of running a whole-tree deploy while a sibling session is mid-edit in a different extension, a known category of hazard batch-orchestration-guardrails.md already documents for concurrent deploys. Recorded here per the observation duty; not fixed by this task (out of scope)."
+  ]
+}
