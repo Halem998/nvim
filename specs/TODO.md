@@ -1,5 +1,5 @@
 ---
-next_project_number: 101
+next_project_number: 102
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,101 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
@@ -57,6 +57,10 @@ next_project_number: 101
 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 
+### Wezterm Notifications
+
+101 [NOT STARTED] — Fix TTS announcements that only ever say 'Tab 1' -- across the ag
+
 ### Essential Refactor
 
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -80,6 +84,16 @@ next_project_number: 101
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 101. Fix tts only announces tab 1
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: wezterm-notifications
+- **Dependencies**: None
+
+**Description**: Fix TTS announcements that only ever say 'Tab 1' -- across the agent systems loaded in various repos, <leader>al in nvim never announces 'Tab n' for any other n, nor lifecycle events such as 'Tab n researched' or 'Tab n planned', nor 'Tab n needs input' when a question is pending. Review what is not working and why, then make the appropriate fixes Observed counterexample during task creation: an AskUserQuestion prompt in this session DID announce 'Tab 5', so the needs-input path is not uniformly broken -- narrow the investigation to which hook paths, repos, or tab-number resolution steps fail rather than assuming a total outage. Confirmed: tab 5 is the tab this session actually occupies, so tab-number resolution itself was correct in that instance.
+
+---
 
 ### 100. Close aggregator file scope blind spot
 - **Status**: [NOT STARTED]

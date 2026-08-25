@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 101,
+  "next_project_number": 102,
   "active_projects": [
+    {
+      "project_number": 101,
+      "project_name": "fix_tts_only_announces_tab_1",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix TTS announcements that only ever say 'Tab 1' -- across the agent systems loaded in various repos, <leader>al in nvim never announces 'Tab n' for any other n, nor lifecycle events such as 'Tab n researched' or 'Tab n planned', nor 'Tab n needs input' when a question is pending. Review what is not working and why, then make the appropriate fixes Observed counterexample during task creation: an AskUserQuestion prompt in this session DID announce 'Tab 5', so the needs-input path is not uniformly broken -- narrow the investigation to which hook paths, repos, or tab-number resolution steps fail rather than assuming a total outage. Confirmed: tab 5 is the tab this session actually occupies, so tab-number resolution itself was correct in that instance.",
+      "topic": "wezterm-notifications",
+      "created": "2026-08-25T19:32:47Z",
+      "last_updated": "2026-08-25T19:33:21Z"
+    },
     {
       "project_number": 94,
       "project_name": "wire_lit_flag_through_team_skills",
