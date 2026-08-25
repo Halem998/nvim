@@ -1,0 +1,30 @@
+{
+  "phase": 6,
+  "phase_name": "Test suite",
+  "started_at": "2026-08-25T16:34:00Z",
+  "last_updated": "2026-08-25T16:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author tests/test-lake-build-guard.sh with 13 acceptance-mapped cases plus non-vacuousness section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "Case 5/6 as originally drafted using genuine background-held flock contention to force the waiter branch", "result": "superseded", "reason": "discovered during Phase 6 authoring that the sharing decision was scoped only to the waiter branch in cmd_build, which does not match Case 5's literal sequential (non-concurrent) test scenario in the plan; generalized decide_sharing() to run on lock acquisition regardless of contention (see deviations below), which let Case 5/6 be expressed as plain sequential invocations."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.waiter-path",
+      "description": "Phase 3's prose scopes the sharing decision to the waiter branch only (\"On acquiring the lock as a waiter, read the record and apply the sharing decision\").",
+      "type": "altered",
+      "reason": "Case 5 (staleness) and Case 6 (abandoned lock) in Phase 6 are written as sequential, non-concurrent scenarios (\"after A completes ... then run B\"), which never enters the waiter branch under a waiter-only sharing check -- B would simply become a fresh, uncontended holder and always run a real build regardless of fingerprint/record state, making Cases 5 and 6 vacuous under the literal Phase 3 design. cmd_build was generalized so decide_sharing() is checked on lock acquisition unconditionally (both the immediate-acquire/uncontended path and the waiter/contended path), which is a strict superset of the original behavior: a freshly-started in_flight record (no prior complete build) still always falls through to a real build on the immediate-acquire path, so convoy-avoidance semantics for genuinely concurrent sessions (Case 4) are unchanged. This also makes sharing generally useful as a short-lived result cache for fully sequential repeat invocations, which is a net improvement over the narrower original scope.",
+      "annotation": "*(deviation: altered -- sharing decision now checked on lock acquisition unconditionally, not only the waiter branch; see phase-6-progress.json)*"
+    },
+    {
+      "task_id": "3.fingerprint-mtime-resolution",
+      "description": "compute_fingerprint()'s stat mode originally used stat -c '%n %s %Y' (whole-second mtime resolution).",
+      "type": "altered",
+      "reason": "A same-size content edit landing within the same wall-clock second as the prior build produced an identical (path, size, mtime-in-seconds) tuple, causing decide_sharing() to spuriously treat a genuinely-changed tree as unchanged -- discovered while authoring Case 5's fixture (same-size edit, no artificial sleep). Switched to stat -c '%n %s %y' (nanosecond-resolution mtime) to close this gap for any filesystem that records sub-second mtimes (ext4/xfs/btrfs/tmpfs all do). The documented residual stat-mode edge narrows accordingly: now a restore/edit reproducing an identical size AND identical nanosecond-resolution mtime, rather than identical size and whole-second mtime.",
+      "annotation": "*(deviation: altered -- fingerprint stat mode now reads nanosecond-resolution mtime; see phase-6-progress.json)*"
+    }
+  ]
+}

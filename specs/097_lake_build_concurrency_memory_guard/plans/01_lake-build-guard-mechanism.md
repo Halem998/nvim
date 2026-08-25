@@ -439,60 +439,60 @@ byte value.
 
 ---
 
-### Phase 6: Test suite [NOT STARTED]
+### Phase 6: Test suite [COMPLETED]
 
 **Goal**: Author `tests/test-lake-build-guard.sh` following the core shell-script-testing
 convention, covering every acceptance criterion with a toolchain-free synthetic fixture.
 
 **Tasks**:
-- [ ] Author the suite with `set -uo pipefail` (deliberately not `-e`, so the suite reports a
+- [x] Author the suite with `set -uo pipefail` (deliberately not `-e`, so the suite reports a *(completed)*
       complete summary rather than aborting at the first failure), `PASSED`/`FAILED` integer
       counters, `pass()`/`fail()`/`info()` helpers, `SCRIPT_DIR` resolved via
       `$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)`, a `mktemp -d` workdir with a `trap ... EXIT`
       cleanup, and loud-skip discipline (a missing script under test is a loud exit 1, never a
       silent skip). Exit 0 iff `FAILED == 0`.
-- [ ] Build the fixture inline via heredocs (no committed fixture tree — `provides` has no slot
+- [x] Build the fixture inline via heredocs (no committed fixture tree — `provides` has no slot *(completed)*
       for fixture data): a `mktemp -d` package root with `lakefile.toml`, `lean-toolchain`, a
       `.lake/` dir, and a couple of `.lean` sources; plus a fixture `bin/` prepended to `PATH`
       holding a **fake `lake`** that appends one line per invocation to a counter file, prints a
       known marker to stdout and another to stderr, optionally sleeps, and exits a configurable
       code.
-- [ ] Case 1 — **silent and transparent when clean**: `build` in a clean fixture yields stdout and
+- [x] Case 1 — **silent and transparent when clean**: `build` in a clean fixture yields stdout and *(completed)*
       stderr byte-identical to invoking the fake `lake` directly, and exit 0. Zero guard-emitted
       bytes.
-- [ ] Case 2 — **exit-code passthrough**: fake `lake` exits 7 -> guard exits 7.
-- [ ] Case 3 — **command substitution**: `out=$(guard build 2>&1)` equals `$(fake_lake 2>&1)`, and
+- [x] Case 2 — **exit-code passthrough**: fake `lake` exits 7 -> guard exits 7. *(completed)*
+- [x] Case 3 — **command substitution**: `out=$(guard build 2>&1)` equals `$(fake_lake 2>&1)`, and *(completed)*
       `$?` matches. This is the call-site shape used by `lean-sorry-census.sh --cross-check` and
       `skill-lake-repair`.
-- [ ] Case 4 — **no duplicate build**: start guard A in the background with a sleeping fake lake,
+- [x] Case 4 — **no duplicate build**: start guard A in the background with a sleeping fake lake, *(completed)*
       start guard B; assert the invocation counter reads exactly 1 and B's output/exit match A's.
-- [ ] Case 5 — **staleness: result predates the waiter's edits**: after A completes, make a real
+- [x] Case 5 — **staleness: result predates the waiter's edits**: after A completes, make a real *(completed)*
       **content** change to a fixture `.lean` file (never a `touch` — Lake's own staleness is
       content-hash-based, so a `touch` dirties nothing and would make this case vacuous), then run
       B; assert the counter increments (B built rather than shared).
-- [ ] Case 6 — **abandoned lock**: hand-write an `in_flight` record naming a dead PID; assert the
+- [x] Case 6 — **abandoned lock**: hand-write an `in_flight` record naming a dead PID; assert the *(completed)*
       guard does not share it and runs its own build.
-- [ ] Case 7 — **lock derivation**: place the fixture package inside a parent directory that has
+- [x] Case 7 — **lock derivation**: place the fixture package inside a parent directory that has *(completed)*
       its own lakefile and inside a git repo whose root differs from both; assert the lock resolves
       under the **nearest** package's `.lake/`, not the parent's and not the git root's.
-- [ ] Case 8 — **no self-match**: invoke `status` from a wrapper process whose argv contains the
+- [x] Case 8 — **no self-match**: invoke `status` from a wrapper process whose argv contains the *(completed)*
       literal string `lake build`; assert exit 0 and no output.
-- [ ] Case 9 — **LSP contamination**: start a long-lived process whose `comm` is `lean` (copy a
+- [x] Case 9 — **LSP contamination**: start a long-lived process whose `comm` is `lean` (copy a *(completed)*
       sleeper binary/script to `bin/lean` in the fixture) with `--worker`-shaped argv; assert
       `status` still reports no in-flight build.
-- [ ] Case 10 — **cgroup degradation**: run `build --memory-bound` with `systemd-run` absent from
+- [x] Case 10 — **cgroup degradation**: run `build --memory-bound` with `systemd-run` absent from *(completed)*
       `PATH`; assert a non-empty stderr notice AND a successful unbounded build with intact output.
-- [ ] Case 11 — **PSI degradation**: `LAKE_BUILD_GUARD_PSI_PATH` pointed at a nonexistent file;
+- [x] Case 11 — **PSI degradation**: `LAKE_BUILD_GUARD_PSI_PATH` pointed at a nonexistent file; *(completed)*
       assert no crash and the build proceeds.
-- [ ] Case 12 — **no hardcoded project path**: grep the script source for absolute home/project
+- [x] Case 12 — **no hardcoded project path**: grep the script source for absolute home/project *(completed)*
       paths and for absolute memory byte constants; assert none.
-- [ ] Case 13 — **falsified lever stays dropped**: assert `LEAN_NUM_THREADS` appears in the script
+- [x] Case 13 — **falsified lever stays dropped**: assert `LEAN_NUM_THREADS` appears in the script *(completed)*
       only inside comment lines documenting it as a falsified non-lever, and is never assigned or
       exported. This is a regression guard against re-introducing folklore.
-- [ ] Add the mutation / non-vacuousness section required by `shell-script-testing.md`: for each
+- [x] Add the mutation / non-vacuousness section required by `shell-script-testing.md`: for each *(completed)*
       case, state briefly how it fails against a deliberately broken variant (e.g. removing the
       `flock -n` short-circuit must break case 4; removing `--quiet` must break case 1).
-- [ ] Make the file executable (`chmod +x`) — `run-all.sh` reports a non-executable suite as a
+- [x] Make the file executable (`chmod +x`) — `run-all.sh` reports a non-executable suite as a *(completed)*
       loud `[SKIP]`, and auto-discovers `test-*.sh` with no further registration needed.
 
 **Timing**: 1.5 hours

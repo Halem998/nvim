@@ -70,10 +70,10 @@
 #
 # STALENESS POLICY (result sharing -- see compute_fingerprint()/decide_sharing() below for the
 # implementation; this is the authoritative statement of the policy itself):
-#   A waiting session that acquires the lock after a build completed may REPLAY that build's
-#   result (stdout, stderr, exit status) instead of running its own, but only when ALL of the
-#   following hold -- failing ANY one falls through to running a real build, which is always
-#   safe:
+#   A session that acquires the build lock -- whether immediately (no contention) or after
+#   waiting on a concurrent holder -- may REPLAY a prior build's result (stdout, stderr, exit
+#   status) instead of running its own, but only when ALL of the following hold -- failing ANY
+#   one falls through to running a real build, which is always safe:
 #     1. state == complete.  An `in_flight` record with no matching `complete` state means its
 #        holder died before finishing -- an ABANDONED LOCK. `flock` releases automatically on
 #        process exit, so the lock itself becomes acquirable with no PID bookkeeping required;
@@ -88,9 +88,14 @@
 #   mtime, so default `stat` mode never misses a real change except the narrow edge noted below);
 #   it MAY spuriously report "changed" after a bare `touch` (which Lake's own staleness tracking
 #   ignores, since Lake hashes content, not mtime) -- that costs only a fallback to a real
-#   `lake build`, which Lake then no-ops on its own. The residual edge in default `stat` mode is
-#   a restore that reproduces an identical size AND mtime; a caller that cannot accept that edge
-#   should set LAKE_BUILD_GUARD_FINGERPRINT=hash to hash file contents instead of stat metadata.
+#   `lake build`, which Lake then no-ops on its own. `stat` mode reads mtime at nanosecond
+#   resolution (`stat -c '%y'`, not the whole-second `%Y`) specifically so a same-second edit
+#   (a realistic case for a fast agent edit-then-build loop, not merely a rare "restore") is
+#   still distinguished, as long as the filesystem records sub-second mtimes (ext4/xfs/btrfs/
+#   tmpfs all do; a filesystem that truncates to whole seconds narrows this back to the coarser
+#   edge). The residual edge in default `stat` mode is a restore (or edit) that reproduces an
+#   identical size AND identical nanosecond-resolution mtime; a caller that cannot accept that
+#   edge should set LAKE_BUILD_GUARD_FINGERPRINT=hash to hash file contents instead of metadata.
 #
 # TEST SEAMS (overridable via environment, `:-`-defaulted, following claude-refresh.sh's
 # `_pid_is_alive` precedent -- production behavior is unchanged unless a variable is exported):
@@ -243,7 +248,7 @@ compute_fingerprint() {
       if [ "$mode" = "hash" ]; then
         sha256sum "$f" 2>/dev/null
       else
-        stat -c '%n %s %Y' "$f" 2>/dev/null
+        stat -c '%n %s %y' "$f" 2>/dev/null
       fi
     done | sha256sum | awk '{print $1}'
   )
@@ -594,28 +599,32 @@ cmd_build() {
     exit "$rc"
   fi
 
+  # Compute our own fingerprint BEFORE attempting/waiting on the lock, so it reflects the tree
+  # state at the moment we asked to build -- not whatever it drifts to while we wait, and not
+  # whatever a competing holder's own build changes underneath us.
+  local current_fp
+  current_fp="$(compute_fingerprint "$ROOT")"
+
   local lock_fd
   exec {lock_fd}<>"$LOCK_PATH"
 
-  if flock -n "$lock_fd"; then
-    set +e
-    run_as_holder "${args[@]}"
-    local rc=$?
-    set -e
-    exit "$rc"
+  if ! flock -n "$lock_fd"; then
+    # Someone else holds the lock right now: the waiter path.
+    if ! flock -w "$timeout" "$lock_fd"; then
+      echo "lake-build-guard: timed out after ${timeout}s waiting for the build lock" >&2
+      exit 75
+    fi
   fi
 
-  # Waiter path: compute our own fingerprint BEFORE blocking, so it reflects the tree state at
-  # the moment we asked to build (not whatever it drifts to while we wait).
-  local waiter_fp
-  waiter_fp="$(compute_fingerprint "$ROOT")"
-
-  if ! flock -w "$timeout" "$lock_fd"; then
-    echo "lake-build-guard: timed out after ${timeout}s waiting for the build lock" >&2
-    exit 75
-  fi
-
-  if [ "${NO_SHARE:-false}" != "true" ] && decide_sharing "$waiter_fp"; then
+  # We now hold the lock, whether acquired immediately (no contention) or after waiting on a
+  # concurrent holder. The sharing decision is checked on BOTH paths, not only the waiter path:
+  # a fresh, matching, complete result should be replayed even for a fully sequential caller
+  # that never actually contended the lock (e.g. two agents invoking `build` 30 seconds apart
+  # with no tree changes between them) -- this is a strict superset of waiter-only sharing and
+  # changes nothing about convoy-avoidance semantics for genuinely concurrent sessions, since a
+  # freshly-started record with no prior complete build still correctly falls through to a real
+  # build on the immediate-acquire path (decide_sharing requires state=complete).
+  if [ "${NO_SHARE:-false}" != "true" ] && decide_sharing "$current_fp"; then
     replay_shared_result
     local shared_rc
     shared_rc="$(get_record_field exit_status "$RESULT_PATH" 2>/dev/null || true)"
