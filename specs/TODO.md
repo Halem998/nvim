@@ -1,17 +1,17 @@
 ---
-next_project_number: 100
+next_project_number: 101
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-24. Generated from state.json dependency graph.*
+*Updated 2026-08-25. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,28,29,31,39,42,43,45,46,48,51,53,62,68,72,73,74,77,81,83,85,86,87,90,91,94,97,99,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,44,50,64,66,75,76,78,88,89,93,96,98 | 29,42,48,62,74,77,83,87,97 | agent-system, extensions, literature, ... |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -84,8 +84,42 @@ next_project_number: 100
 ### Uncategorized
 
 99 [NOT STARTED] — Make the .orchestrator-handoff.json artifacts[] element shape una
+100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 100. Close aggregator file scope blind spot
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Close the file_scope blind spot for AGGREGATOR/REGISTRATION files: a task that adds a new module must edit its parent aggregator, which by construction lies outside the new module's own declared path, so the admission gates never see that edit coming.
+
+MIRROR OF THE COARSE-DECLARATION WORK, NOT A DUPLICATE OF IT. The completed task surface_coarse_file_scope_declarations_at_creation addresses declarations that are too BROAD -- a bare directory root swallowing every task in the repo. This is the opposite failure: a declaration that is too NARROW, omitting a file the work provably cannot avoid touching. Both degrade the same admission machinery from opposite directions, and neither fix implies the other. Read that task's resolution before designing this one so the two creation-time checks compose instead of contradicting.
+
+OBSERVED MECHANISM (verified live, do not re-derive). In a seven-task lean4 batch in a separate consumer repo, TWO tasks each edited a module aggregator that appeared nowhere in their declared file_scope:
+  - one declared [WeakCanonical/Transfer.lean, BXCanonical/DiscreteCarrierProbe.lean] and additionally edited Metalogic/BXCanonical.lean
+  - one declared [Semantics/ShiftSet.lean] and additionally edited Semantics.lean
+In both cases the edit was minimal and structurally REQUIRED -- a single `import` line plus a docstring index entry -- without which the newly created module is unreachable from the build. Neither agent did anything wrong: both honestly listed the aggregator in .return-meta.json's modified_files after the fact. The gap is entirely in the PRE-DISPATCH declaration that the admission gate actually consults.
+
+THE CONCRETE HAZARD (why this is not merely cosmetic). orchestrate-batch-admit.sh compares DECLARED file_scope across non-terminal tasks to decide co-dispatch safety. An undeclared aggregator edit is invisible to that comparison. In the observed batch the two tasks happened to touch DIFFERENT aggregators, so nothing collided and the run was clean -- this was luck, not a guarantee. Two tasks that each add a module beneath the SAME parent (entirely ordinary: two new modules under Semantics/) would both be admitted to the same wave, both edit that one aggregator concurrently, and the gate designed to prevent exactly that would stay silent. The failure would surface as a lost import line or a clobbered docstring index, i.e. a task whose module silently stops being built.
+
+NOTE THE ASYMMETRY THAT MAKES THIS DETECTABLE TODAY. modified_files (post-hoc, agent-authored, accurate here) already names the aggregator, while file_scope (pre-dispatch, human/creation-authored) does not. The system therefore already holds both halves of the evidence and never compares them.
+
+CANDIDATE DIRECTIONS (evaluate, do not blindly adopt):
+  (a) DETECTION FIRST, cheapest and lowest-risk: at postflight, compare each task's reported modified_files against its declared file_scope and emit an advisory naming any excursion. This is exactly the manual check that caught the observed case. It prevents nothing, but it converts a silent gap into a logged one and would immediately quantify how common aggregator excursions are before anyone designs a preventive rule.
+  (b) CREATION TIME: when a declared path names a not-yet-existing module, infer and auto-add its parent aggregator to file_scope. Requires a language-aware notion of "parent aggregator" (Lean's Foo.lean beside Foo/), so scope it per extension rather than pretending it is universal.
+  (c) ADMISSION TIME: expand declared scopes to include parent aggregators before running the overlap predicate. Strictly more conservative, and risks re-introducing the over-blocking that the evidence-gated collision narrowing deliberately removed -- weigh against that work rather than reverting it by accident.
+Direction (a) is a sound first deliverable on its own and does not commit the design to (b) or (c).
+
+DO NOT "FIX" THIS BY WIDENING DECLARATIONS BY HABIT. Declaring the enclosing directory to be safe would reintroduce precisely the coarse-declaration defect the mirror task exists to prevent. The aggregator is a single named FILE; name it, do not reach for its directory.
+
+ACCEPTANCE: an aggregator edit made outside a task's declared file_scope is no longer silent -- at minimum it is reported against that task; and two tasks adding modules beneath a shared parent aggregator are either serialized or surfaced, demonstrated with a concrete two-task case rather than argued in the abstract.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 99. Pin handoff artifacts element shape
 - **Status**: [NOT STARTED]
