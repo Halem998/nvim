@@ -11,7 +11,7 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,66,68,72,73,74,81,87,94,98,100 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,98,100 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
@@ -38,7 +38,6 @@ next_project_number: 101
 22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
-66 [PLANNED] — Mandate detached (run_in_background) invocation for Lean full bui
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -1718,12 +1717,13 @@ SELF-MODIFYING TASK. skills/skill-orchestrate/SKILL.md, skills/skill-orchestrate
 
 ### 66. Mandate run_in_background for Lean builds and add long-builds anchor
 - **Effort**: 3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 97
 - **Research**: [066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md]
 - **Plan**: [066_mandate_background_lake_builds/plans/01_background-lake-builds.md]
+- **Summary**: [066_mandate_background_lake_builds/summaries/01_background-lake-builds-summary.md]
 
 **Description**: Mandate detached (run_in_background) invocation for Lean full builds across the lean extension's agent and skill contracts, and add a canonical anchor file documenting the foreground-cap livelock and the passive progress checks that do not disturb a running build.
 

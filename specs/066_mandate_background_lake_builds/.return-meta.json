@@ -1,7 +1,48 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 66,
-  "session_id": "sess_1787672746_2d5892",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/066_mandate_background_lake_builds/summaries/01_background-lake-builds-summary.md",
+      "summary": "6-phase contract-text pass mandating detached + guarded lake build invocation across 8 lean-extension contract files plus a new long-builds.md anchor; all phases COMPLETED."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created the long-builds.md canonical anchor and mandated detached (Bash run_in_background) + guarded (lake-build-guard.sh --timeout 1800) lake build invocation across all eight identified contract files in the lean extension: both implementation-agent twins (with a new MUST NOT prohibition), rules/lean4.md, skill-lake-repair (Option (c) synchronous guard carve-out), and the four light-touch research-agent/implementation-skill twins."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md",
+    "agent-system/extensions/lean/rules/lean4.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When mandating a paired obligation (detach + guard) across a family of twin contract files, a strict 'anchor owns all explanatory prose, call sites get pointers only' discipline has a legitimate carve-out: a MUST NOT prohibition item can restate the causal mechanism in one compressed clause (e.g. 'a killed build caches no .olean, so retries restart at the same module') because a bare pointer is a weaker deterrent at the point of enforcement than a self-contained one-sentence reason. This is different in kind from restating the anchor's full explanatory register (illustrative measurements, the four-check enumeration, etc.), which must never be duplicated. When auditing for anchor-uniqueness, distinguish 'terse causal clause inside an enforcement item' from 'restated explanatory paragraph' rather than flagging both identically.",
+      "category": "PATTERN",
+      "source_artifact": "specs/066_mandate_background_lake_builds/summaries/01_background-lake-builds-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["contract-pass", "anchor-pattern", "must-not-item", "twin-file-discipline", "enforcement-lever"]
+    },
+    {
+      "content": "A grep-driven residual-occurrence audit over a whole extension directory (e.g. 'grep -rn lake build agent-system/extensions/lean/') will surface many hits outside a task's declared, closed file_scope. The correct handling is not to treat every hit as a missed site: check the hit's file against the plan's declared file_scope and Non-Goals first. Files the research phase never enumerated as contract/instruction sites (READMEs, command docs, standards files not cited in the plan) are legitimately out of scope even though they mention the same string, and should be enumerated with a one-line reason in the phase's audit and the summary's Impacts/Follow-ups sections rather than edited speculatively.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/066_mandate_background_lake_builds/summaries/01_background-lake-builds-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-audit", "grep-residual-check", "file-scope", "acceptance-audit", "out-of-scope-enumeration"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787672746_2d5892",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

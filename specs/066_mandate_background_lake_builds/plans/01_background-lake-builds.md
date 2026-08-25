@@ -1,7 +1,7 @@
 # Implementation Plan: Task #66
 
 - **Task**: 66 - Mandate run_in_background for Lean builds and add long-builds anchor
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: core build-guard task (DELIVERED: `agent-system/extensions/core/scripts/lake-build-guard.sh` is committed)
 - **Research Inputs**: specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md
