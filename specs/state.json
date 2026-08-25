@@ -97,12 +97,12 @@
     {
       "project_number": 62,
       "project_name": "restrict_typst_latex_task_types_to_formatting_only",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Restrict typst and latex task types to formatting-only concerns. Identify what in the agent extension system needs revision so that the 'typst' and 'latex' task types are assigned ONLY when a task is concerned purely with formatting/typesetting issues, not with the intellectual content of what is being formatted. Investigation should cover: keyword_overrides and aliases in the typst/latex extension manifests, the hardcoded keyword table in /task step 4d ('latex', 'tex', 'document', 'typeset' -> latex; 'typst' -> typst), the interaction with the meta-keyword precedence rule in step 4a, alias remapping in step 4e, and any routing or documentation that assumes content-bearing work routes to these types. Produce the concrete revisions needed (manifest edits, keyword table changes, precedence adjustments, docs) so content-focused tasks route to a substantive task type instead.",
       "topic": "extensions",
       "created": "2026-08-17T16:24:45Z",
-      "last_updated": "2026-08-25T00:44:09Z",
+      "last_updated": "2026-08-25T00:57:21Z",
       "dependencies": [],
       "session_id": "sess_1787617685_88b825_62",
       "artifacts": [
@@ -115,6 +115,11 @@
           "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/plans/01_restrict-latex-typst-formatting-only.md",
           "type": "plan",
           "summary": "6-phase, 3-wave plan (3.5h) narrowing latex/typst routing to formatting-only across 13 source-store files."
+        },
+        {
+          "path": "specs/062_restrict_typst_latex_task_types_to_formatting_only/summaries/01_restrict-latex-typst-formatting-only-summary.md",
+          "type": "summary",
+          "summary": "6-phase implementation restricting latex/typst task types to formatting-only concerns across /task step 4 routing, /fix-it QUESTION keyword table, additive manifest keyword_overrides, extension scope reframing, extension-development.md documentation gap, and typst content-standards scope notes."
         }
       ],
       "memory_candidates": [
@@ -156,7 +161,8 @@
             "task-type-detection"
           ]
         }
-      ]
+      ],
+      "completion_summary": "Narrowed /task step 4d, /fix-it Step 8.5, and added additive keyword_overrides to the latex and typst manifests so content vocabulary (theorem/proof/lemma/etc.) routes to lean4/formal/general instead of latex/typst, while precise formatting phrases still resolve to latex/typst. Reframed both extensions' self-description as formatting-only, closed the keyword_overrides documentation gap, and added scope-boundary notes to the typst content-standards library. All 13 planned source-store files touched; no .claude/** path modified."
     },
     {
       "project_number": 53,
@@ -1308,7 +1314,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1339,7 +1345,7 @@
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T00:48:21Z",
+      "last_updated": "2026-08-25T00:49:03Z",
       "session_id": "sess_1787617685_88b825_77",
       "memory_candidates": [
         {
@@ -1509,7 +1515,7 @@
     {
       "project_number": 83,
       "project_name": "postflight_deploy_gate_for_source_store_tasks",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "critical",
@@ -1521,10 +1527,16 @@
         "agent-system/extensions/core/scripts/command-gate-out.sh",
         "agent-system/extensions/core/scripts/skill-base.sh",
         "agent-system/extensions/core/scripts/check-deploy-freshness.sh",
-        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh",
+        "agent-system/extensions/core/commands/implement.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-25T00:47:55Z",
+      "last_updated": "2026-08-25T00:49:11Z",
       "session_id": "sess_1787617685_88b825_83",
       "artifacts": [
         {
