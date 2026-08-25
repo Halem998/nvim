@@ -1,0 +1,13 @@
+{
+  "phase": 5,
+  "phase_name": "Verify both marker consumers still behave correctly",
+  "started_at": "2026-08-25T04:26:21Z",
+  "last_updated": "2026-08-25T04:26:21Z",
+  "objectives": [
+    {"id": 1, "description": "Verified lit-stage4a-flow.md grep, adhoc-navigation-directive.md contract, byte-for-byte prefix stability, no consumer edits, no .claude/** writes, no task-number refs, full test suite green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

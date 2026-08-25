@@ -1,7 +1,7 @@
 # Implementation Plan: Task #78
 
 - **Task**: 78 - briefing_coverage_resolution_failure_signal
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (predecessor schema-unification task already [COMPLETED])
 - **Research Inputs**: specs/078_briefing_coverage_resolution_failure_signal/reports/01_coverage-resolution-failure-signal.md
@@ -347,7 +347,7 @@ absolute-count rule (`1 < 3`), add a fixture sized so the *new* disjunct is the 
 
 ---
 
-### Phase 5: Verify both marker consumers still behave correctly [NOT STARTED]
+### Phase 5: Verify both marker consumers still behave correctly [COMPLETED]
 
 **Goal**: AC3 confirmed empirically, not by inspection — `lit-stage4a-flow.md`'s grep and
 `adhoc-navigation-directive.md`'s two-checkpoint re-prompt still work with zero edits to either
@@ -355,22 +355,22 @@ file.
 
 **Tasks**:
 
-- [ ] Capture a real global-mode marker line from the edited script for both a `sparse=true` and a
+- [x] Capture a real global-mode marker line from the edited script for both a `sparse=true` and a *(completed)*
       `sparse=false` input.
-- [ ] Run `lit-stage4a-flow.md:203`'s literal grep — `grep -q 'lit-coverage mode=global
+- [x] Run `lit-stage4a-flow.md:203`'s literal grep — `grep -q 'lit-coverage mode=global *(completed)*
       .*sparse=true'` — against both captured lines. Assert it matches the sparse one and does not
       match the non-sparse one.
-- [ ] Confirm the pre-change global-mode marker's `mode=`, `seg_count=`, `sparse=`, `threshold=`
+- [x] Confirm the pre-change global-mode marker's `mode=`, `seg_count=`, `sparse=`, `threshold=` *(completed)*
       fields are byte-for-byte unchanged for identical input, by diffing markers from `git stash`
       / `git show HEAD:` of the original script against the edited one on the same fixture.
-- [ ] Re-read `adhoc-navigation-directive.md:45-46` and confirm it states no independent grep of
+- [x] Re-read `adhoc-navigation-directive.md:45-46` and confirm it states no independent grep of *(completed)*
       its own (it cites `lit-stage4a-flow.md` as source of truth); record that its contract is
       satisfied transitively by the grep check above.
-- [ ] Confirm neither consumer file was modified: `git status --short` shows no changes under
+- [x] Confirm neither consumer file was modified: `git status --short` shows no changes under *(completed)*
       `agent-system/extensions/core/context/patterns/` or
       `agent-system/extensions/literature/context/project/literature/patterns/`.
-- [ ] Re-run the full `test-lit-pipeline.sh --runtime` suite (Sections A-G) for a final green gate.
-- [ ] Confirm no writes landed under `.claude/**` and no task-number references were introduced
+- [x] Re-run the full `test-lit-pipeline.sh --runtime` suite (Sections A-G) for a final green gate. *(completed)*
+- [x] Confirm no writes landed under `.claude/**` and no task-number references were introduced *(completed)*
       outside `specs/**`.
 
 **Timing**: 0.5 hours
@@ -396,20 +396,20 @@ file.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `literature-briefing.sh` and `test-lit-pipeline.sh`.
-- [ ] `jq .` parses `index-entries.json`.
-- [ ] AC1: a partial-failure run reports the failure in the coverage marker
+- [x] `bash -n` passes on `literature-briefing.sh` and `test-lit-pipeline.sh`.
+- [x] `jq .` parses `index-entries.json`.
+- [x] AC1: a partial-failure run reports the failure in the coverage marker
       (`requested=`/`resolved=`/`skipped=`/`skip_rate=`), not only on stderr.
-- [ ] AC2: skipped `doc_id`s appear in the briefing body under `## Unresolved Documents`.
-- [ ] AC3: `lit-stage4a-flow.md`'s literal grep and `adhoc-navigation-directive.md`'s contract
+- [x] AC2: skipped `doc_id`s appear in the briefing body under `## Unresolved Documents`.
+- [x] AC3: `lit-stage4a-flow.md`'s literal grep and `adhoc-navigation-directive.md`'s contract
       still work, with both files unmodified.
-- [ ] AC4: threshold policy documented in `sparse-coverage.md`, including the "folded into
+- [x] AC4: threshold policy documented in `sparse-coverage.md`, including the "folded into
       `sparse`, not a separate signal" decision and its rationale.
-- [ ] AC5: Section G asserts a deliberately-unresolvable `doc_id` drives the marker to report the
+- [x] AC5: Section G asserts a deliberately-unresolvable `doc_id` drives the marker to report the
       failure rather than `sparse=false`, and fails when the Phase 1 counter is reverted.
-- [ ] Negative control: a genuinely empty/absent sub-index still exits silently.
-- [ ] Global mode's existing marker fields are byte-for-byte unchanged.
-- [ ] No writes under `.claude/**`; no task-number references outside `specs/**`.
+- [x] Negative control: a genuinely empty/absent sub-index still exits silently.
+- [x] Global mode's existing marker fields are byte-for-byte unchanged.
+- [x] No writes under `.claude/**`; no task-number references outside `specs/**`.
 
 ## Artifacts & Outputs
 
