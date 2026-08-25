@@ -1,7 +1,7 @@
 # Implementation Plan: Task #97
 
 - **Task**: 97 - Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md`
@@ -520,13 +520,13 @@ count met.
 
 ---
 
-### Phase 7: Acceptance sweep and full gate run [NOT STARTED]
+### Phase 7: Acceptance sweep and full gate run [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Verify every acceptance criterion from the task description against the shipped
 artifacts, and run the repository's gate set.
 
 **Tasks**:
-- [ ] Walk the task's ACCEPTANCE list item by item and record pass/fail for each: script exists and
+- [x] Walk the task's ACCEPTANCE list item by item and record pass/fail for each: script exists and
       is executable; registered in `provides.scripts`; lock path derived from project root with no
       hardcoded project path; a second concurrent invocation launches no duplicate build; the
       waiter's share-vs-queue behavior is implemented **and documented** with its staleness policy;
@@ -534,15 +534,40 @@ artifacts, and run the repository's gate set.
       `LEAN_NUM_THREADS` experiment result is recorded and the lever is **not** shipped; silent and
       exit 0 when no conflict; works from a command substitution; detection never matches self or
       own ancestry; a test exists under `core/scripts/tests/`; no `.claude/**` file modified.
-- [ ] Run `agent-system/extensions/core/scripts/tests/run-all.sh` — full suite green, no `[SKIP]`
+      *(completed: all 10 items pass — see summary artifact's Verification section for the
+      command/observation establishing each)*
+- [x] Run `agent-system/extensions/core/scripts/tests/run-all.sh` — full suite green, no `[SKIP]` *(completed: 53 passed, 0 failed, 0 skipped, exit 0; test-lake-build-guard.sh confirmed [RUN]/[PASS] by name)*
       on the new suite.
 - [ ] Run `agent-system/extensions/core/scripts/check-extension-docs.sh` — no new failures.
-- [ ] Run the task-reference lint (`check-task-references.sh`) — the script, its test, and the
+      *(deviation: altered — check-extension-docs.sh refuses to run directly from the
+      agent-system source-store path ("must run from a deployed scripts/ tree"), and this agent
+      has no deploy authority per regeneration-is-manual-only.md's single-sanctioned-caller rule
+      (skill-orchestrate only). Substituted equivalent manual verification: `jq` confirmed the
+      manifest's `provides.scripts` count, presence of both new entries, and no duplicates (see
+      Phase 2 verification); the task-reference lint's own equivalent check was run manually
+      below. Full check-extension-docs.sh coverage (deployed-script-drift, orphan gates, etc.)
+      requires a deploy this agent cannot perform; recorded as a follow-up for the next
+      deploy-authorized run rather than silently skipped.)*
+- [x] Run the task-reference lint (`check-task-references.sh`) — the script, its test, and the
       manifest must contain zero task-number references. Task numbers are permitted only in
-      `specs/**` and commit messages.
-- [ ] Confirm `git status --short` shows exactly three changed paths under `agent-system/**` and
+      `specs/**` and commit messages. *(completed: check-task-references.sh itself also refuses
+      source-store invocation for the same reason as check-extension-docs.sh above; sourced its
+      shared pattern library directly (`scripts/lib/task-reference-patterns.sh`) and grepped
+      `lake-build-guard.sh`, `tests/test-lake-build-guard.sh`, and `manifest.json` against
+      `$TASK_PATTERN`/`$PHASE_PATTERN` — zero matches in all three)*
+- [x] Confirm `git status --short` shows exactly three changed paths under `agent-system/**` and *(completed: `git diff --stat <first-phase-1-commit>^ HEAD -- agent-system/` shows exactly
+      manifest.json, lake-build-guard.sh, tests/test-lake-build-guard.sh — 3 files, 0 elsewhere
+      under agent-system/**; `.claude/**` diff over the same range is empty)*
       **zero** paths under `.claude/**`.
-- [ ] `shellcheck` both new scripts if available; resolve any error-level finding.
+- [x] `shellcheck` both new scripts if available; resolve any error-level finding. *(completed:
+      shellcheck is not installed in this environment (`command -v shellcheck` fails); `bash -n`
+      confirmed clean parse for both scripts as the available fallback)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Running `agent-system/extensions/core/scripts/check-extension-docs.sh` directly, as the Phase 7 task literally specifies | The script refuses to execute from the agent-system source-store path by design ("must run from a deployed scripts/ tree ... not '.../agent-system/extensions/core/scripts'"), and this implementation agent has no deploy authority — `deploy-headless.sh` names exactly one sanctioned automated caller (`skill-orchestrate`'s Stage MT-3 step 7), which this dispatch is not. The deliverable itself is not deficient: the three checks that gate is designed to catch for a new-file registration (manifest count accuracy, duplicate entries, referenced-file existence) were verified by equivalent direct means instead, and nothing is left for a future dispatch to complete — a full check-extension-docs.sh run becomes possible, and should be performed, at the next deploy cycle (`<leader>al` / `skill-orchestrate`), not as follow-up work owed by this task. | `bash agent-system/extensions/core/scripts/check-extension-docs.sh` output: "ERROR: check-extension-docs.sh must run from a deployed scripts/ tree ... Deploy first via <leader>al ... then run the deployed copy." Substitute verification: `jq -e '.provides.scripts \| length == 133'`, `jq -e '.provides.scripts \| index("lake-build-guard.sh") != null'`, `jq -e '.provides.scripts \| index("tests/test-lake-build-guard.sh") != null'`, `jq -e '.provides.scripts \| length == (. \| unique \| length)'` — all true (Phase 2 verification); both registered files confirmed to exist on disk and be executable. |
 
 **Timing**: 0.5 hours
 

@@ -1,7 +1,49 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 97,
-  "session_id": "sess_1787672746_2d5892",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md",
+      "summary": "Shipped lake-build-guard.sh (flock serialization with result sharing and a documented staleness policy, PSI/swap-ratio memory preflight, opt-in systemd-run cgroup bounding) plus its 13-case toolchain-free test suite and two core manifest registrations; all 7 plan phases closed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Shipped agent-system/extensions/core/scripts/lake-build-guard.sh (status/preflight/build subcommands, flock serialization with result sharing and a documented staleness policy, opt-in systemd-run --user --scope cgroup bounding, PSI+swap memory preflight, lock-holder-state detection with zero-query self-exclusion) plus its 13-case toolchain-free regression suite and two manifest.json registrations. All 10 task ACCEPTANCE items verified; all 7 plan phases closed (6 COMPLETED, Phase 7 COMPLETED WITH EXCLUSIONS for a deploy-gated check this agent had no authority to run directly, with equivalent manual verification substituted)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a guard/wrapper script needs to REPLAY a prior invocation's exact stdout/stderr bytes later (result-sharing caches, retry-with-cached-output patterns), capture stdout and stderr to SEPARATE files via `cmd > >(tee out) 2> >(tee err >&2)` plus a trailing bare `wait` (to let both async tee subshells flush before reading the capture files) rather than one merged log. This preserves per-stream byte-for-byte transparency (a caller's own `2>&1` or separate stdout/stderr capture is still exactly reproduced) while still letting you build a human-readable combined log by concatenating the two afterward.",
+      "category": "PATTERN",
+      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "process-substitution", "tee", "stdout-stderr-capture", "result-caching"]
+    },
+    {
+      "content": "GNU `stat -c '%Y'` (mtime in whole seconds) is not fine-grained enough for a fast edit-then-rebuild content-fingerprint check: two writes within the same wall-clock second can produce an identical (size, mtime-seconds) tuple even with different content, causing a false 'unchanged' verdict. Use `stat -c '%y'` (nanosecond-resolution formatted timestamp) instead on any filesystem that records sub-second mtimes (ext4/xfs/btrfs/tmpfs all do) to close this gap cheaply, without needing to fall back to full content hashing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "stat", "mtime", "fingerprint", "staleness-detection"]
+    },
+    {
+      "content": "systemd unit properties like MemoryHigh=/MemoryMax= accept native percentage-of-total values (e.g. `MemoryHigh=60%`) directly on the `systemd-run -p` command line -- no need to compute an absolute byte figure from /proc/meminfo yourself. This is the simplest way to satisfy a 'never hardcode a machine-specific byte constant' requirement for cgroup memory bounding.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["systemd-run", "cgroup", "memory-bounding", "percentage", "resource-limits"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1787672746_2d5892",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

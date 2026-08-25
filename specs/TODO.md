@@ -11,8 +11,8 @@ next_project_number: 101
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,97,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,66,75,76,88,98 | 29,42,74,87,97 | agent-system, extensions, essential-refactor |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,66,68,72,73,74,81,87,94,98,100 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
 | 5 | 90 | 89 | essential-refactor |
@@ -38,12 +38,11 @@ next_project_number: 101
 22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
+66 [NOT STARTED] — Mandate detached (run_in_background) invocation for Lean full bui
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-97 [PLANNED] — Ship a shared, portable build-concurrency and memory guard for Le
-  └─ 66 [NOT STARTED] — Mandate detached (run_in_background) invocation for Lean full bui
-  └─ 98 [NOT STARTED] — Integrate the shared Lean build guard into the lean extension: ro
+98 [NOT STARTED] — Integrate the shared Lean build guard into the lean extension: ro
 
 ### Literature
 
@@ -193,12 +192,13 @@ ACCEPTANCE: `lean-sorry-census.sh --cross-check` routes its build through the gu
 
 ### 97. Add shared Lean build concurrency and memory guard script (flock serialization, result sharing, cgroup bounding)
 - **Effort**: 4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [097_lake_build_concurrency_memory_guard/reports/01_lake-build-guard-research.md]
 - **Plan**: [097_lake_build_concurrency_memory_guard/plans/01_lake-build-guard-mechanism.md]
+- **Summary**: [097_lake_build_concurrency_memory_guard/summaries/01_lake-build-guard-summary.md]
 
 **Description**: Ship a shared, portable build-concurrency and memory guard for Lean projects as a core script, so that many concurrent agent sessions working in the same Lean repository serialize their `lake build` invocations, share a single build's result instead of duplicating it, and cannot exhaust machine memory. This task delivers the MECHANISM only; wiring it into the lean extension's contracts and scripts is handled by the dependent task and by the revised background-builds task.
 
