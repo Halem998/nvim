@@ -1,0 +1,46 @@
+{
+  "$schema": "known-consumer-repos-v1",
+  "_comment": "This file is source-repo metadata for the tier-3 fleet freshness report (scripts/check-consumer-freshness.sh). It also deploys into every consumer's .claude/context/reference/ directory because manifest.json's provides.context declares 'reference' as a whole directory -- that deployed copy is informational only and is never authoritative for any consumer's own behavior. Edit this file only in the source store (agent-system/extensions/core/context/reference/); a deployed copy is regenerated, not hand-maintained. See context/patterns/regeneration-is-manual-only.md's 'Detecting When You're Stale' section (Tier 3) for the full design.",
+  "source_repo": "/home/benjamin/.config/nvim",
+  "discover_roots": [
+    "/home/benjamin",
+    "/home/benjamin/.dotfiles",
+    "/home/benjamin/Projects",
+    "/home/benjamin/Projects/Logos",
+    "/home/benjamin/Philosophy/Papers"
+  ],
+  "consumers": [
+    {
+      "path": "/home/benjamin/.dotfiles",
+      "note": "dotfiles repo (memory, core, python extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/BimodalLogic",
+      "note": "BimodalLogic project (memory, typst, literature extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/ModelChecker",
+      "note": "ModelChecker project (core, filetypes, formal extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/PersonalWebsite",
+      "note": "PersonalWebsite project (web, python, core extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/cslib",
+      "note": "cslib project (memory, lean, core extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/Logos/Theory",
+      "note": "Logos Theory project (filetypes, memory, lean extensions)"
+    },
+    {
+      "path": "/home/benjamin/Projects/Logos/Hardware",
+      "note": "Logos Hardware project (nix, formal, python extensions)"
+    },
+    {
+      "path": "/home/benjamin/Philosophy/Papers/PossibleWorlds",
+      "note": "PossibleWorlds paper (present, latex, literature extensions)"
+    }
+  ]
+}

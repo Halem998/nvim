@@ -93,6 +93,7 @@
     "scripts": [
       "assess-repo-health.sh",
       "census-count.sh",
+      "check-consumer-freshness.sh",
       "check-deploy-freshness.sh",
       "check-extension-docs.sh",
       "check-runtime-file-tracking.sh",

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #93
 
 - **Task**: 93 - close_cross_repo_deploy_skew
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (`deploy-freshness-lib.sh` and `source_git_head` stamping already exist and are reused unmodified)
 - **Research Inputs**: `specs/093_close_cross_repo_deploy_skew/reports/01_cross-repo-deploy-skew-visibility.md`
@@ -139,25 +139,25 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Consumer registry file and schema [NOT STARTED]
+### Phase 1: Consumer registry file and schema [COMPLETED]
 
 **Goal**: A git-tracked registry naming this source store's known consumer repos, with a stable
 schema the reporting script can read.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/reference/known-consumer-repos.json` with:
+- [x] Create `agent-system/extensions/core/context/reference/known-consumer-repos.json` with: *(completed)*
       `$schema` (`known-consumer-repos-v1`), `source_repo` (absolute path of this repo),
       `discover_roots` (array of root directories for `--discover`), and `consumers` (array of
       `{path, note}` objects).
-- [ ] Seed `consumers` with the eight consumers named in the research report, each with a short
+- [x] Seed `consumers` with the eight consumers named in the research report, each with a short *(completed)*
       `note`. Confirm each path exists and its `.claude-extensions.json` records a `source_dir`
       under this repo's `agent-system/extensions/` before listing it.
-- [ ] Seed `discover_roots` with `~`, `~/.dotfiles`, `~/Projects`, `~/Projects/Logos`,
+- [x] Seed `discover_roots` with `~`, `~/.dotfiles`, `~/Projects`, `~/Projects/Logos`, *(completed)*
       `~/Philosophy/Papers` (written as absolute paths, no `~` expansion dependency).
-- [ ] Add a top-of-file `_comment` field stating: this file is source-repo metadata that also
+- [x] Add a top-of-file `_comment` field stating: this file is source-repo metadata that also *(completed)*
       deploys (because `provides.context` declares `reference` directory-wide); its deployed
       copies are informational and never authoritative for any consumer's own behavior.
-- [ ] Validate with `jq empty`.
+- [x] Validate with `jq empty`. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -181,37 +181,37 @@ appeared or disappeared since the research pass rather than transcribing the lis
 
 ---
 
-### Phase 2: `check-consumer-freshness.sh` core report + manifest registration [NOT STARTED]
+### Phase 2: `check-consumer-freshness.sh` core report + manifest registration [COMPLETED]
 
 **Goal**: One command that reports every registered consumer's per-extension deployed revision and
 flags those behind source. This is acceptance criterion (a).
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/check-consumer-freshness.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/check-consumer-freshness.sh` with a header *(completed)*
       documenting: purpose, its relation to tiers 1/2, its exit-code contract, and that it never
       writes to any consumer repo.
-- [ ] Resolve the shared library as a sibling of this script's OWN location (`$SCRIPT_DIR/lib/
+- [x] Resolve the shared library as a sibling of this script's OWN location (`$SCRIPT_DIR/lib/ *(completed)*
       deploy-freshness-lib.sh`), copying `check-deploy-freshness.sh`'s existing sibling-lookup
       comment and rationale — never anchor off the repo being checked.
-- [ ] Resolve the registry at `$SCRIPT_DIR/../context/reference/known-consumer-repos.json` (this
+- [x] Resolve the registry at `$SCRIPT_DIR/../context/reference/known-consumer-repos.json` (this *(completed)*
       one relative path is correct in both the source store and the deployed tree).
-- [ ] For each `consumers[]` entry: emit `MISSING` if the path is absent; `NOEXTSTATE` if it has
+- [x] For each `consumers[]` entry: emit `MISSING` if the path is absent; `NOEXTSTATE` if it has *(completed)*
       no `.claude-extensions.json`; otherwise enumerate that repo's own recorded extensions
       (`jq -r '.extensions // {} | keys[]?'`) and call `deploy_freshness_status <path> <ext>` per
       extension. The registry stores only a path — never a duplicated per-extension list.
-- [ ] Add a commits-behind column: locate the recorded head's position in the path-scoped history
+- [x] Add a commits-behind column: locate the recorded head's position in the path-scoped history *(completed)*
       via `git -C <toplevel> rev-list --count <recorded>..<recomputed> -- <source_dir>`; print `?`
       when the recorded head is not reachable (rebase/GC) rather than asserting a number.
-- [ ] Print a fixed-width table (repo, extension, status, behind) plus a one-line summary. Report
+- [x] Print a fixed-width table (repo, extension, status, behind) plus a one-line summary. Report *(completed)*
       **every** registered entry including `CANNOTVERIFY`/`MISSING`/`NOEXTSTATE` — unlike tier 1's
       deliberate silence, an opt-in audit's value is completeness. Add a header comment saying so.
-- [ ] Mark the `source_repo` row distinctly (fresh by construction) rather than omitting it.
-- [ ] Support `--stale-only` (print only non-FRESH rows) for the deploy hook's use in Phase 4.
-- [ ] Exit codes: `0` = no registered consumer is stale; `1` = at least one stale; `2` = registry
+- [x] Mark the `source_repo` row distinctly (fresh by construction) rather than omitting it. *(completed)*
+- [x] Support `--stale-only` (print only non-FRESH rows) for the deploy hook's use in Phase 4. *(completed)*
+- [x] Exit codes: `0` = no registered consumer is stale; `1` = at least one stale; `2` = registry *(completed)*
       missing/unparseable or usage error. Document that callers who must not be affected are
       expected to invoke it guarded (`|| true`).
-- [ ] `chmod +x` the script.
-- [ ] Register `check-consumer-freshness.sh` in `manifest.json`'s `provides.scripts` (required —
+- [x] `chmod +x` the script. *(completed)*
+- [x] Register `check-consumer-freshness.sh` in `manifest.json`'s `provides.scripts` (required — *(completed)*
       `check-extension-docs.sh` rule Q fails otherwise).
 
 **Timing**: 1.5 hours
