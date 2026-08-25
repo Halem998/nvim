@@ -8,6 +8,10 @@ Stage 0 and the head of Stage 1 are closed, Stage 2.1 is closed, and 28 is out o
 *Refreshed 2026-08-25 (fourth pass): the recommended batch **78, 93 is complete in full** — Stage
 2.2 is closed and Stage 1.6 is closed, leaving 85 and 86 as the only open items in Stage 1. The
 batch ran in **3 cycles of a 10-cycle budget**, zero defers, zero failures.*
+*Refreshed 2026-08-25 (fifth pass): **85 is done** (solo run, 1 cycle of a 5-cycle budget). Stage 1
+now has **86 as its only open item**. The suite is deterministic again — 10/10 byte-identical
+`run-all.sh` runs at 52 passed / 0 failed / 0 skipped — so gate-8 results are trustworthy for the
+first time since 2026-08-11, and this file's own gate figures can once more be believed.*
 
 **Goal**: finish the agent-system refactor — token efficiency, performance, and uniformity in
 implementation and documentation — and close the cross-repo drift that is currently making
@@ -105,14 +109,14 @@ Without this stage the rest regresses, exactly as it did since 2026-08-11.
 postflight deploy gate is live and has already been exercised in anger (see the 2026-08-25 note
 below, where it correctly refused a completion and the sanctioned redeploy trigger handled it).
 
-**Open in this stage**: 85, 86. (**93 is done**, 2026-08-25 — see 1.6.)
+**Open in this stage**: 86. (**85 is done**, 2026-08-25 — see 1.4; **93 is done** — see 1.6.)
 
 | # | Step | Task | State |
 |---|------|------|-------|
 | 1.1 | `deploy-headless.sh:233` — change the `echo` to a real call. Delivered as more than one line: `verify-deploy.sh` gained `--skip-slow` (skips only gate 8, the ~118s suite) and the deploy now exits **3** for "deploy landed, verification failed", distinct from `1`/`2`. Acceptance was executed, not asserted — an injected `line_count` mismatch produced exit 3 naming the failing gate with no human invocation. | **82** | ☑ done |
 | 1.2 | Postflight deploy gate: a meta task touching the source store cannot reach `[COMPLETED]` until a deploy has run. **Requires** a recorded carve-out in `regeneration-is-manual-only.md` — that doc sanctions exactly one automated deploy caller and states it is not precedent. | **83** | ☑ done |
 | 1.3 | Fix the duplication gate's scope: `test-common-lib.sh` greps `--include="*.sh"` while **46 of 48** duplicates are `.md`, and its `EXTENSIONS_ROOT` is environment-dependent. Closes `err_1787022038113_c3VPTR` (severity high). | **84** | ☑ done |
-| 1.4 | De-flake the shell test suite. Two runs today failed in **different** suites. Until deterministic, no gate result is trustworthy — including this review's own 19/23. | **85** | ☐ solo run |
+| 1.4 | De-flake the shell test suite. Two runs today failed in **different** suites. Until deterministic, no gate result is trustworthy — including this review's own 19/23. **Root cause was not the hypothesised lock contention** — research overturned that, finding no defect in `task-lock.sh` or `run-all.sh`; the flake was two stale test fixtures reaching into the live `specs/` tree. Fixed by isolating them into scratch fixture repos. Acceptance measured, not asserted: **10/10 byte-identical runs** (52 passed / 0 failed / 0 skipped), HEAD stable throughout, staleness confounder separated by a source-vs-deployed diff **before** measuring. | **85** | ☑ done (`ce00e7174`) |
 | 1.5 | Expand CI from 1 of 9 checks to the full suite, and fix the doc-lint failures so it goes green. | **86** | ☐ solo run |
 | 1.6 | Close cross-repo skew: make it **visible**, not automatic. Regeneration is pull-only by design — do **not** push into consuming repos. Delivered as a git-tracked registry of **8** consumer repos (the delegation named 3), a `check-consumer-freshness.sh` fleet report with `--discover`, a post-deploy stale-consumer report wired into `deploy-headless.sh`'s trailing block without touching its 0/1/2/3 exit contract, and a non-blocking tier-1 escalation at 5 consecutive ignored runs. Verified live against all 8 consumers and two real deploys, not fixtures alone. | **93** | ☑ done (`50313f14b`) |
 
@@ -122,10 +126,19 @@ below, where it correctly refused a completion and the sanctioned redeploy trigg
 > the consequence: because 1.1 landed, **every deploy from now on exits 3** until those two are
 > fixed. That is the mechanism working as designed, but it means deploys are red starting now, and
 > 85 + 86 are what turn them green again.
+>
+> **Re-measured 2026-08-25, after 85 landed: 1 of 24 failing.** Gate 8 now passes; **doc-lint is
+> the only red gate left**. So 86 is not merely the next step in this stage — it is the single
+> remaining thing standing between the repo and a green `verify-deploy`, and therefore between
+> every future deploy and an exit code of 0 instead of 3.
 
-> **1.4 caveat**: some gate-8 failures are *not* flake — they are the stale deploy. Re-measure
-> after Stage 0 so real staleness is not excused as flake, and flake is not misattributed to
-> staleness. That exact mistake was already made once, in the 2026-08-10 capstone.
+> **1.4 caveat — discharged 2026-08-25.** The re-measure was done as instructed: every source-store
+> file the fix touched, plus `run-all.sh` itself, was byte-compared against its deployed `.claude/`
+> counterpart **before** the measurement block, all identical. So the 10/10 result is a statement
+> about flake with staleness excluded, not the two confounded. The separately-flagged `literature`
+> extension staleness was traced to a gitignored Python venv and an intentionally-undeployed
+> `deprecated/` folder — neither referenced by any literature suite, so it does not contaminate the
+> figure. The 2026-08-10 misattribution was not repeated.
 
 ---
 
