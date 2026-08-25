@@ -1,7 +1,7 @@
 # Implementation Plan: Unify the literature global-index schema and end stub-entry invisibility
 
 - **Task**: 77 - Unify the literature global-index schema and end stub-entry invisibility
-- **Status**: [PARTIAL]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: 32 (redeploy — already satisfied)
 - **Research Inputs**: specs/077_unify_literature_global_index_schema/reports/01_unify-literature-global-index-schema.md
@@ -584,95 +584,73 @@ the defect must be reproduced, not inferred from the jq expression.
 
 ---
 
-### Phase 8: Reconcile the enumerated corpus residue (separate repo — `~/Projects/Literature/`) [BLOCKED]
+### Phase 8: Reconcile the enumerated corpus residue (separate repo — `~/Projects/Literature/`) [COMPLETED]
 
 **Goal**: Bring the data into agreement with the invariant, so Phase 10 can escalate `--validate`
 to a hard failure.
 
 **MANUAL / SCRIPTED DATA STEP — NOT A SOURCE-STORE EDIT.** Every change in this phase lands in
 `~/Projects/Literature/`, which is a **separate git repository**. Nothing in this phase modifies a
-file under this repository. Commit the corpus changes in that repo, on its own, with a message
-describing the reconciliation; do not stage them here.
+file under this repository. Corpus changes are committed in that repo, on its own
+(`~/Projects/Literature` commit `55dc921c`), separate from this repository's commit history.
 
-**BLOCKED**: See `#### Block Reason` below. Marked BLOCKED rather than performed, per this task's
-explicit dispatch instruction to do so when the phase is judged unsafe to perform autonomously.
+**UNBLOCKED**: the previous BLOCKED status (see the earlier `#### Block Reason` history in this
+file's git log) was lifted by explicit user authorization: the clean-tree precondition was
+re-verified (`git -C ~/Projects/Literature status --short` empty, HEAD `ee05d80a` before this
+phase's commit — task 080's leftover changes had been committed out of band by that point), the
+duplicate-directory "content judgment" concern was dissolved by verifying the two pairs'
+chunk files are byte-identical (`cmp`: 176/176 and 20/20 files identical) with the loser in each
+pair identifiable by provenance (a stub-writer `metadata.json` whose `source_path` points at the
+other directory's PDF), and `gabbay_2000` was already adjudicated (`provenance_fidelity:
+not_yet_converted`, recorded here as the sole known exception). All numbers below were
+re-measured directly against the live corpus before acting, not worked from the plan's original
+15/2/1 figures (see Scope Hypothesis).
 
 **Tasks**:
-- [ ] Confirm the corpus tree is clean and record its `HEAD` before starting (out-of-band repairs
-      arrive from other repos). *(deviation: blocked — see Block Reason. The precondition itself
-      fails: `git -C ~/Projects/Literature status --short` shows 14 uncommitted lines, pre-existing
-      leftover from a separate completed task, not from this task's work — see
-      `02_baseline-measurements.md`.)*
-- [ ] For each of the 15 FTS-only directories with no parent entry, add a parent entry **under the
-      bare directory id** — generalizing corpus commit `e6ce8bd9`. Prefer a small script over 15
-      hand edits, but review the generated diff entry by entry before committing. *(deviation:
-      skipped — see Block Reason)*
-- [ ] Adjudicate the 2 duplicate chunk directories (`proofs_and_types` vs `girard_1989`;
+- [x] Confirm the corpus tree is clean and record its `HEAD` before starting (out-of-band repairs
+      arrive from other repos). *(completed: `git -C ~/Projects/Literature status --short` was
+      empty; HEAD `ee05d80a` recorded as baseline before this phase's commit)*
+- [x] For each FTS-only directory with no parent entry, add a parent entry **under the bare
+      directory id** — generalizing corpus commit `e6ce8bd9`. *(completed: 17 parent entries
+      added via a reviewed Python script, each diff entry reviewed against its source children/
+      PDF filenames before commit — burgess_1982, burgess_1982b, burgess_1984, derijke_1995,
+      doets_1987, doets_1989, girard_1989, obendrauf_2024, reynolds_1992, reynolds_1994,
+      thomason_1984, van_doorn_2015, venema_1991, venema_1997, venema_2001, verbrugge_2004,
+      xu_1988. Re-measurement found 17 unpaired FTS-only ids needing this treatment, not the
+      plan's original 15 — see Scope Hypothesis)*
+- [x] Adjudicate the 2 duplicate chunk directories (`proofs_and_types` vs `girard_1989`;
       `van_doorn_2015_propositional_calculus_coq` vs `van_doorn_2015`): pick the survivor per pair,
-      remove the loser's `chunks.json` (and its chunk files, or move them to a dot-prefixed
-      quarantine directory, which `literature-build-index.sh` prunes by design), and record the
-      choice and its reason. *(deviation: skipped — see Block Reason)*
-- [ ] Adjudicate `gabbay_2000` (index entry, conversion rejected, no chunks): either re-convert and
+      and move the loser's chunk files to a dot-prefixed quarantine directory (which
+      `literature-build-index.sh` prunes by design), and record the choice and its reason.
+      *(completed: quarantined to `sources/.proofs_and_types/` and
+      `sources/.van_doorn_2015_propositional_calculus_coq/` via `git mv` — reversible, no
+      deletion. Survivors `girard_1989`/`van_doorn_2015` identified by provenance: the
+      quarantined directories' `metadata.json` carries a stub title/empty authors/null year and a
+      `source_path` pointing at the survivor directory's PDF. The two stub index.json entries
+      that pointed at the quarantined doc_ids were removed in the same commit, superseded by the
+      new curated parent entries)*
+- [x] Adjudicate `gabbay_2000` (index entry, conversion rejected, no chunks): either re-convert and
       re-ingest, or stamp `provenance_fidelity: not_yet_converted` and record it as a known
-      FTS-absent entry in the `--validate` known-exceptions note. *(deviation: skipped — see Block
-      Reason)*
-- [ ] Take **no action** on the 14 paired index-only entries. Record that explicitly in the commit
+      FTS-absent entry in the `--validate` known-exceptions note. *(completed: already adjudicated
+      prior to this phase — `provenance_fidelity: not_yet_converted` was already stamped; recorded
+      as the sole known exception in Phase 10's `--validate` escalation)*
+- [x] Take **no action** on paired index-only entries whose curated `.id` differs from a
+      bare-directory-id FTS key that already has FTS chunks. Record that explicitly in the commit
       message: leaving a curated `.id` that differs from its FTS `doc_id` is supported by the path
-      bridge, and renaming it is the specific operation known to break `--toc`. *(deviation:
-      skipped — no commit was made in the corpus repo; this task's substance — recording the NO
-      ACTION rationale — is already captured in Decision C of this plan and in the baseline report)*
-- [ ] Rebuild the global FTS database (`literature-build-index.sh --global`) after the directory
-      adjudications. *(deviation: skipped — see Block Reason)*
+      bridge, and renaming/reparenting it is the specific operation known to break `--toc`.
+      *(completed: 15 dir keys — blackburn_2002, courcoubetis_1992, gerth_1995,
+      kupferman_vardi_2001, piterman_2007, schewe_2009, schwoon_esparza_2005, tarjan_1972,
+      thomas_1997_languages, thomas_2003_reactive, vardi_1996, venema_1993, venema_1993_since,
+      yan_2008, zielonka_1998 — paired with 16 curated index-only ids (thomas_2003 has 2 chapter
+      entries under one dir key) got NO ACTION; the rationale is recorded verbatim in the
+      `~/Projects/Literature` commit message. Re-measurement found 15 paired dir keys, not the
+      plan's original 14 — see Scope Hypothesis)*
+- [x] Rebuild the global FTS database (`literature-build-index.sh --global`) after the directory
+      adjudications. *(completed: 202 distinct doc_ids, down from 204 — the two quarantined
+      duplicates pruned by design. 30 pre-existing chunk-count-mismatch warnings printed for other,
+      unrelated documents; none of them are among the 17 newly-parented or 2 quarantined ids)*
 
-#### Block Reason
-
-This phase performs destructive/judgment-heavy operations on `~/Projects/Literature/` — the
-user's real personal Zotero-connected literature corpus, not a throwaway fixture — under a
-dispatch that explicitly authorizes marking the phase BLOCKED when judged unsafe to perform
-autonomously rather than skipping it silently. Three independent factors, together, crossed that
-line:
-
-1. **The phase's own hard precondition already fails.** Task 1 above requires confirming the
-   corpus tree is clean before starting. It is not: `git -C ~/Projects/Literature status --short`
-   shows 14 uncommitted lines (13 deleted `.backups/**/chunks.json.bak` files plus one untracked
-   `.literature.db.pre-task80-backup-*` snapshot) left uncommitted by a separate, already-
-   `[COMPLETED]` task (`080_exclude_backups_from_literature_index_rebuild`) whose implementation
-   applied its fix to the working tree but never committed it in that repo. Proceeding on top of
-   this pre-existing dirty state risks conflating two unrelated changesets in the same working
-   tree and the same eventual commit, and risks this phase's own explicit deliverable ("record its
-   HEAD before starting") describing a false baseline.
-2. **The duplicate-directory adjudication requires content judgment on data outside this repo's
-   safety net.** Choosing a survivor between `proofs_and_types`/`girard_1989` and
-   `van_doorn_2015_propositional_calculus_coq`/`van_doorn_2015`, and removing (or quarantining)
-   the loser's chunk files, is a real content decision about which of two independent conversions
-   of the same source work is more faithful — not a mechanical, verifiable-by-execution operation
-   like every other phase in this plan. A wrong call would silently degrade citation-grade
-   provenance data the user relies on, and the failure would not surface as a loud error the way
-   this plan's other phases are specifically designed to (every other id-touching phase carries an
-   executed `--toc`/project-search assertion that fails loudly on regression; a wrong adjudication
-   here would not).
-3. **The additive half (15 new parent entries) is genuinely low-risk but not separable from the
-   phase as dispatched.** The 15-parent-entry addition alone mirrors an already-validated pattern
-   (corpus commit `e6ce8bd9`) and would be safe to perform mechanically. But this task's dispatch
-   instructions frame Phase 8 as a single phase-level BLOCKED-or-complete decision, and partially
-   completing it while leaving the duplicate-directory and `gabbay_2000` adjudications undone would
-   leave the corpus in a half-migrated state without a coherent single commit describing it — worse
-   than leaving it untouched with a clear, actionable block reason recorded here.
-
-**What remains true and unaffected**: nothing in this phase touches a file under this repository
-(`/home/benjamin/.config/nvim`) — confirmed: `git -C /home/benjamin/.config/nvim status --short`
-shows no corpus files. Phases 1-7 and 9-10 (see their own status) do not depend on Phase 8 having
-run, with the single exception of Phase 10's `--validate` hard-failure escalation, which requires
-the corpus to conform first — see Phase 10's own status/notes for how that dependency was handled.
-
-**Recommended follow-up** (for the user or a future dispatch with explicit human review): (a)
-commit or discard task 080's leftover corpus changes first, on their own; (b) run the 15-parent-
-entry addition (low risk, mechanically verifiable against the `e6ce8bd9` precedent this plan
-already cites); (c) review the two duplicate-directory pairs by hand before removing either
-side's files; (d) decide `gabbay_2000` by re-attempting conversion or explicitly stamping
-`not_yet_converted`.
-
-**Timing**: 2 hours
+**Timing**: 2 hours (actual: ~2 hours)
 
 **Depends on**: 3, 7
 
@@ -680,27 +658,44 @@ side's files; (d) decide `gabbay_2000` by re-attempting conversion or explicitly
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: This phase asserts a 15 / 2 / 1 residue. Phase 1's measured numbers override
-these. If Phase 1 found a different residue, reconcile what Phase 1 enumerated — do not work this
-plan's list from memory.
+**Scope Hypothesis**: This phase asserted a 15 / 2 / 1 residue at plan-authoring time. Re-measured
+directly against the live corpus before acting (per this phase's own instruction to prefer live
+numbers over the plan's memory): 399 index entries / 189 parent-level entries / 0 null-id; 204
+distinct FTS doc_ids; strict `.id`-only overlap 172; 32 FTS-only (15 paired with an existing
+curated index-only id needing no action, 17 unpaired needing a new parent entry); 17 index-only
+(16 paired + `gabbay_2000`). The `.id`-only figures (32/17) differ from the plan's original
+15/2/1 because the plan's figures described the bridged/deduplicated view; the corpus-side
+actions taken (17 new parents, 2 quarantines, 15 no-actions, 1 recorded exception) reconcile the
+live-measured residue, not the plan-authoring-time estimate.
 
 **Files to modify**:
-- `~/Projects/Literature/index.json` - add 15 parent entries; adjudicate `gabbay_2000` (separate repo)
-- `~/Projects/Literature/sources/proofs_and_types/`, `~/Projects/Literature/sources/van_doorn_2015_propositional_calculus_coq/` - duplicate adjudication (separate repo)
+- `~/Projects/Literature/index.json` - added 17 parent entries; removed 2 superseded stub
+  entries; `gabbay_2000` left as the recorded exception (separate repo)
+- `~/Projects/Literature/sources/proofs_and_types/` → `sources/.proofs_and_types/`,
+  `~/Projects/Literature/sources/van_doorn_2015_propositional_calculus_coq/` →
+  `sources/.van_doorn_2015_propositional_calculus_coq/` - quarantined via `git mv` (separate repo)
 - `~/Projects/Literature/.literature.db` - rebuilt artifact (separate repo)
 
 **Verification** (BY EXECUTION):
-- `literature-search.sh --toc <id>` for each of the 15 newly-parented ids returns chunks (not
-  `[]`), and for each of the 5 Phase 1 probe documents returns output consistent with the baseline
-  except where this phase intentionally changed it.
-- `literature-briefing-invoke.sh` against a sub-index naming all 15 resolves all 15 with zero skip
-  warnings.
-- `literature-search.sh --project <name> "<query>"` returns at least one of the newly-parented
-  documents.
-- The Phase 7 `--validate` divergence buckets are now empty except for the explicitly recorded
-  `gabbay_2000`-class exception.
-- `git -C ~/Projects/Literature status --short` shows only the intended files;
-  `git -C /home/benjamin/.config/nvim status --short` shows no corpus files at all.
+- [x] `literature-search.sh --toc <id>` for each of the 17 newly-parented ids returns chunks (not
+      `[]]`): burgess_1982→2, burgess_1982b→2, burgess_1984→8, derijke_1995→3, doets_1987→3,
+      doets_1989→3, girard_1989→176, obendrauf_2024→4, reynolds_1992→7, reynolds_1994→3,
+      thomason_1984→6, van_doorn_2015→20, venema_1991→9, venema_1997→3, venema_2001→4,
+      verbrugge_2004→4, xu_1988→5. The 5 Phase 1 baseline probe documents (blackburn_2002_book,
+      blackburn_2002, burgess_1982, gabbay_2000, alpern_schneider_1985_defining-liveness) return
+      output byte-identical to their Phase 1 baseline JSON files.
+- [x] `literature-briefing-invoke.sh` (deployed, after redeploy — see Phase 10 note on deploy
+      staleness) against a per-repo sub-index naming all 17 newly-parented ids resolves all 17
+      with real title/authors/year and zero skip warnings.
+- [x] `literature-search.sh --project BimodalLogic "tense logic since until"` returns
+      `burgess_1982` (a newly-parented document) among its results.
+- [x] The namespace-divergence check (index.json vs. `chunks_data.doc_id`, bridged via the
+      `sources/` path-derived key) now reports FTS-only=0, id-inconsistent=0, index-only=1
+      (`gabbay_2000` only) — the Phase 7 divergence buckets are empty except the recorded
+      `gabbay_2000` exception.
+- [x] `git -C ~/Projects/Literature status --short` was clean after the commit (`55dc921c`);
+      `git -C /home/benjamin/.config/nvim status --short` shows no corpus files (only this
+      repository's own source-store/plan/state changes).
 
 ---
 
@@ -753,23 +748,21 @@ section cleaner, use one and say so.
 
 ---
 
-### Phase 10: Escalate `--validate` to hard failure and document the invariant [PARTIAL]
+### Phase 10: Escalate `--validate` to hard failure and document the invariant [COMPLETED]
 
 **Goal**: Turn the divergence check into a gate now that the corpus conforms, and write the
 invariant down where the next person will find it before they rename an id.
 
 **Tasks**:
-- [ ] Flip the Phase 7 divergence check from WARN to a hard failure, carrying forward only the
+- [x] Flip the Phase 7 divergence check from WARN to a hard failure, carrying forward only the
       explicitly enumerated known exceptions from Phase 8 (the `gabbay_2000` class), each with a
-      recorded reason. *(deviation: deferred to a future dispatch — Phase 8 is [BLOCKED], so the
-      corpus does not yet conform (gabbay_2000 still has 0 FTS chunks and is not yet stamped as a
-      recorded known exception; confirmed by running the Phase 7 divergence check against the live
-      corpus in WARN mode: index-only bucket = 1 (gabbay_2000), matching the un-reconciled
-      baseline). Escalating to hard failure now would make `/literature --validate` fail against
-      the live corpus immediately, which the plan's own Rollback/Contingency section identifies as
-      the wrong response to an unfinished Phase 8, not a softening decision. This has real residual
-      work for a future dispatch once Phase 8 unblocks, so it is recorded as deferred, not as a
-      closed exclusion.)*
+      recorded reason. *(completed: Phase 8 landed and the corpus now conforms. Validate Step 2b
+      in SKILL.md now classifies `divergence_index_only` into known-exception vs. unexpected
+      buckets, tracks a `divergence_check_failed` gate (also failing if the check itself had to be
+      skipped for missing tools), and Step 4's report renders `### Validation FAILED` when any
+      unexpected divergence entry, schema-shape defect, or stale/unindexed entry survives; verified
+      by re-running the escalated logic against the live corpus (FTS-only=0, id-inconsistent=0,
+      index-only-unexpected=0, index-only-known=1 `gabbay_2000` → `divergence_check_failed=no`))*
 - [x] Add an FTS-namespace subsection to
       `agent-system/extensions/literature/context/project/literature/domain/literature-index.md`
       recording: the `chunks_data.doc_id` namespace; the invariant that an entry's FTS key is the
@@ -785,9 +778,15 @@ invariant down where the next person will find it before they rename an id.
       covering every script named in the research report's reader survey)*
 - [x] Note that the source-store changes reach `.claude/` only on the next deploy; all verification
       in this plan invoked source-store scripts by absolute path, so no phase depended on a deploy.
-      *(completed)*
+      *(completed: additionally, this phase's own verification ran `deploy-headless.sh` and
+      re-verified against the deployed `.claude/scripts/` and `.claude/skills/` copies — both now
+      byte-identical to the source store, including `literature-doc-key.sh`, which this deploy also
+      newly registered in `agent-system/extensions/literature/manifest.json`'s `scripts` list
+      (Phase 4/6 had created the file but never added it to the deploy manifest, so the deployed
+      `--validate` divergence check was silently no-opping — `[ -x "$DOC_KEY_SCRIPT" ]` failed —
+      until this fix; see Follow-ups)*
 
-**Timing**: 1.5 hours
+**Timing**: 1.5 hours (actual: ~1.5 hours)
 
 **Depends on**: 9
 
@@ -795,22 +794,33 @@ invariant down where the next person will find it before they rename an id.
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: This phase asserts the corpus fully conforms after Phase 8 apart from the
-enumerated exceptions. Confirm by running `--validate` in the escalated mode against the live
-corpus and observing a clean exit **before** declaring the phase done; a non-empty divergence
-bucket means Phase 8 is unfinished, not that the check should be softened.
+**Scope Hypothesis**: This phase asserted the corpus fully conforms after Phase 8 apart from the
+enumerated exceptions. Confirmed by running the escalated `--validate` divergence logic against
+the live corpus (both source-store and, after redeploy, the deployed copy) and observing a clean
+exit (`divergence_check_failed=no`) before declaring the phase done.
 
 **Files to modify**:
 - `agent-system/extensions/literature/skills/skill-literature/SKILL.md` - WARN -> FAIL escalation
+  *(completed)*
 - `agent-system/extensions/literature/context/project/literature/domain/literature-index.md` - FTS
-  namespace invariant, never-rename rule, reader-survey record
+  namespace invariant, never-rename rule, reader-survey record *(completed in a prior dispatch;
+  no further change needed here)*
 - `agent-system/extensions/literature/scripts/literature-fidelity-audit.sh` - header note
+  *(completed in a prior dispatch)*
+- `agent-system/extensions/literature/manifest.json` - registered `literature-doc-key.sh` in the
+  `scripts` list *(completed; see Follow-ups — this was a latent deploy-registration gap from an
+  earlier phase, fixed here because it silently defeated this phase's own escalation in the
+  deployed tree)*
 
 **Verification** (BY EXECUTION):
-- `/literature --validate` (source-store flow) exits clean against the live corpus.
-- It exits non-zero against the Phase 9 Case 2 fixture.
-- The domain doc contains no task-number references (deliverable rule), and states the
-  never-rename invariant explicitly.
+- [x] The escalated `--validate` divergence logic (source-store, and after redeploy the deployed
+      copy) exits clean (`divergence_check_failed=no`) against the live corpus.
+- [x] `test-lit-pipeline.sh --runtime` (23/23, both source-store and deployed) confirms Case 2
+      (`--validate` divergence fixture) still reports `case2_orphan` in the unfiltered
+      `divergence_index_only` bucket — the escalation's known-exception classification is
+      additive and does not mask a genuine fixture-level divergence.
+- [x] The domain doc contains no task-number references (deliverable rule; confirmed by grep), and
+      states the never-rename invariant explicitly.
 
 ---
 
@@ -828,18 +838,21 @@ bucket means Phase 8 is unfinished, not that the check should be softened.
       (the task's stated concrete verification). *(verified in Phase 3/5/6)*
 - [x] `literature-search.sh --project <name> "<query>"` returns a document whose curated `.id`
       differs from its FTS `doc_id`. *(verified in Phase 2/9)*
-- [ ] Every Phase 1 probe-set `--toc` command returns output consistent with the baseline, except
-      where Phase 8 intentionally changed it. *(deviation: Phase 8's data-side change did not
-      happen — Phase 8 is [BLOCKED] — so this item is vacuously satisfied for what actually ran
-      (Phase 2 confirmed byte-identical `--toc` output for all 5 probes) but the "except where
-      Phase 8 intentionally changed it" half never occurred)*
-- [ ] `/literature --validate` exits clean against the live corpus and non-zero against the
-      mismatched fixture. *(deviation: partially verified — WARN mode exits clean against the live
-      corpus (confirmed) and the extracted logic correctly classifies the Phase 9 Case 2 fixture
-      into the divergence bucket (confirmed), but the escalation to a hard, non-zero exit was
-      deferred in Phase 10 pending Phase 8; see Phase 10's Block/deviation notes)*
-- [x] No file under a deployed `.claude/` tree was edited by any phase. *(confirmed: all edits
-      target `agent-system/extensions/literature/**`; `.claude/` is gitignored and untouched)*
+- [x] Every Phase 1 probe-set `--toc` command returns output consistent with the baseline, except
+      where Phase 8 intentionally changed it. *(completed: Phase 8 landed with no changes to the
+      5 baseline probe documents themselves — all 5 remain byte-identical to their Phase 1
+      baseline JSON, re-verified after Phase 8's corpus commit and FTS rebuild; Phase 8's actual
+      changes are additive (17 new parent ids) and quarantine-scoped (2 duplicate ids removed from
+      FTS), neither of which touches the 5 probe ids)*
+- [x] `/literature --validate` exits clean against the live corpus and non-zero against the
+      mismatched fixture. *(completed: the escalated hard-failure logic (source-store and,
+      after redeploy, the deployed copy) evaluates `divergence_check_failed=no` against the live
+      corpus, and `divergence_check_failed=yes` when re-run against the Phase 9 Case 2 fixture —
+      both confirmed by direct execution of the extracted Validate Step 1/2/2b logic)*
+- [x] No file under a deployed `.claude/` tree was edited by any phase. *(confirmed: all
+      hand-authored edits target `agent-system/extensions/literature/**` and
+      `agent-system/extensions/literature/manifest.json`; the deployed `.claude/` tree was only
+      ever written by `deploy-headless.sh` itself, never hand-edited)*
 
 ## Artifacts & Outputs
 
@@ -849,10 +862,12 @@ bucket means Phase 8 is unfinished, not that the check should be softened.
 - Modified: `literature-search.sh`, `literature-briefing.sh`, `literature-ingest.sh`,
   `literature-fidelity-audit.sh`, `test-lit-pipeline.sh`,
   `skills/skill-literature/SKILL.md`,
-  `context/project/literature/domain/literature-index.md` — all under
+  `context/project/literature/domain/literature-index.md`,
+  `manifest.json` (registered `literature-doc-key.sh` for deploy) — all under
   `agent-system/extensions/literature/`
-- Separate repo (`~/Projects/Literature/`): 15 added parent entries, 2 duplicate-directory
-  adjudications, 1 `gabbay_2000` adjudication, rebuilt `.literature.db`
+- Separate repo (`~/Projects/Literature/`): 17 added parent entries, 2 duplicate-directory
+  quarantines (2 superseded stub index entries removed), 1 `gabbay_2000` recorded exception,
+  rebuilt `.literature.db` — commit `55dc921c`
 
 ## Rollback/Contingency
 

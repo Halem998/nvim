@@ -2,29 +2,24 @@
   "phase": 10,
   "phase_name": "Escalate --validate to hard failure and document the invariant",
   "started_at": "2026-08-25T03:06:00Z",
-  "last_updated": "2026-08-25T03:20:00Z",
-  "status": "partial",
+  "last_updated": "2026-08-25T05:10:00Z",
+  "status": "done",
   "objectives": [
-    {"id": 1, "description": "Flip Phase 7 divergence check WARN -> FAIL", "status": "blocked", "note": "Deferred: Phase 8 not reconciled, corpus does not yet conform (gabbay_2000 still 0 FTS chunks)"},
+    {"id": 1, "description": "Flip Phase 7 divergence check WARN -> FAIL", "status": "done", "note": "Phase 8 landed; corpus now conforms. Validate Step 2b now classifies divergence_index_only into known-exception (gabbay_2000) vs. unexpected buckets, tracks divergence_check_failed (also failing if the check itself was skipped), and Step 4 renders Validation FAILED on any unexpected divergence, schema-shape defect, stale, or unindexed entry.", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
     {"id": 2, "description": "Add FTS-namespace subsection to domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]},
     {"id": 3, "description": "Update literature-fidelity-audit.sh header note", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
     {"id": 4, "description": "Complete reader-survey record in domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]},
-    {"id": 5, "description": "Note source-store-vs-deploy in domain doc", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]}
+    {"id": 5, "description": "Note source-store-vs-deploy in domain doc; also register literature-doc-key.sh in the deploy manifest and redeploy", "status": "done", "note": "Discovered literature-doc-key.sh was never added to agent-system/extensions/literature/manifest.json's scripts list (a latent gap from an earlier phase), which silently no-op'd the deployed --validate divergence check ([ -x \"$DOC_KEY_SCRIPT\" ] failed). Fixed here since it would have defeated this phase's own escalation in the deployed tree; redeployed and re-verified deployed copy matches source store.", "files_touched": ["agent-system/extensions/literature/manifest.json"]}
   ],
-  "current_objective": 1,
+  "current_objective": 5,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": [
-    {
-      "task_id": "10.1",
-      "description": "Flip the Phase 7 divergence check from WARN to a hard failure",
-      "type": "deferred",
-      "reason": "Phase 8 is [BLOCKED] and the corpus does not conform: running the Phase 7 divergence check (WARN mode) against the live corpus confirms index-only bucket = 1 (gabbay_2000, dir key: gabbay_2000), fts-only = 0, id-inconsistent = 0. Escalating to a hard failure now would make /literature --validate fail against the live corpus immediately, which the plan's own Rollback/Contingency section treats as evidence Phase 8 is unfinished, never as license to soften the check. This task has genuine residual work for a future dispatch once Phase 8 unblocks (someone must both reconcile gabbay_2000 -- or record it as a permanent known exception -- and then flip WARN to FAIL), so it does not meet the [COMPLETED WITH EXCLUSIONS] admission test's fifth condition (no residual work); recorded as deferred/[PARTIAL] instead.",
-      "annotation": "*(deviation: deferred to a future dispatch — Phase 8 is [BLOCKED] ...)*"
-    }
-  ],
+  "deviations": [],
   "verification_evidence": {
-    "documentation_tasks_all_by_execution": "Confirmed no task-number references in the modified domain doc and fidelity-audit.sh header (bash .claude/scripts/check-task-references.sh: 0 unexempted occurrences for both).",
-    "live_corpus_warn_mode_check": "Extracted and ran the current Validate Step 1/2/2b logic against the live corpus in WARN mode: exit 0, index_only=1 (gabbay_2000), fts_only=0, id_inconsistent=0 -- matches the un-reconciled baseline exactly, confirming escalation would currently fail against the live corpus."
+    "documentation_tasks_all_by_execution": "Confirmed no task-number references in the modified domain doc and fidelity-audit.sh header.",
+    "live_corpus_escalated_check": "Extracted and ran the escalated Validate Step 1/2/2b logic (source-store, and after redeploy the deployed .claude/ copy) against the live, reconciled corpus: divergence_check_failed=no (FTS-only=0, id-inconsistent=0, index-only-unexpected=0, index-only-known=1 gabbay_2000).",
+    "case2_fixture_check": "Built the Phase 9 Case 2 fixture (case2_orphan, zero FTS coverage) standalone and re-ran the escalated logic against it directly: divergence_check_failed=yes, divergence_index_only_unexpected=1 (case2_orphan) -- confirms the hard-failure gate actually fires, not just that the raw bucket is populated.",
+    "regression_suite": "test-lit-pipeline.sh --runtime: 23/23 passed, both source-store and deployed copy -- the escalation's known-exception classification is additive and does not mask Case 2's genuine divergence fixture.",
+    "deploy_registration_fix": "agent-system/extensions/literature/manifest.json now lists literature-doc-key.sh; deploy-headless.sh re-run confirmed .claude/scripts/literature-doc-key.sh is now present and byte-identical to the source store (previously entirely absent from the deployed tree)."
   }
 }

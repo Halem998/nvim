@@ -1314,7 +1314,7 @@
     {
       "project_number": 77,
       "project_name": "unify_literature_global_index_schema",
-      "status": "blocked",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "literature",
       "title": "Unify the literature global-index schema and end stub-entry invisibility",
@@ -1350,8 +1350,8 @@
         }
       ],
       "created": "2026-08-20T18:39:09Z",
-      "last_updated": "2026-08-25T01:34:04Z",
-      "session_id": "sess_1787617685_88b825_77",
+      "last_updated": "2026-08-25T02:07:11Z",
+      "session_id": "sess_1787622743_99a1da",
       "memory_candidates": [
         {
           "content": "When two id namespaces in a system have drifted (a curated human-facing id vs a machine-authoritative id fixed at write time), renaming to unify them is the trap: it repairs the reader that keyed on the curated id and silently breaks every reader keyed on the machine id. The durable fix is to find an existing third field that already bridges the two -- here, index entries' `path` field, whose `sources/<dir>/` component IS the FTS doc_id -- and derive the machine key from it, leaving both id spaces untouched. Measured effect: coverage of the machine namespace rose from 172/204 (via curated id) to 202/204 (via path derivation) with zero data migration. Look for the bridge before proposing a migration; the codebase often already contains it (literature-search.sh derived exactly this key at four sites already).",

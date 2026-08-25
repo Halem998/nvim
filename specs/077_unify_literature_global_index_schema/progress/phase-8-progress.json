@@ -2,30 +2,28 @@
   "phase": 8,
   "phase_name": "Reconcile the enumerated corpus residue (separate repo)",
   "started_at": "2026-08-25T02:26:00Z",
-  "last_updated": "2026-08-25T02:30:00Z",
-  "status": "blocked",
+  "last_updated": "2026-08-25T05:10:00Z",
+  "status": "done",
   "objectives": [
-    {"id": 1, "description": "Confirm corpus tree clean, record HEAD", "status": "blocked", "note": "Precondition fails: tree is dirty from a separate completed task's uncommitted leftover"},
-    {"id": 2, "description": "Add 15 parent entries under bare directory id", "status": "blocked"},
-    {"id": 3, "description": "Adjudicate 2 duplicate chunk directories", "status": "blocked"},
-    {"id": 4, "description": "Adjudicate gabbay_2000", "status": "blocked"},
-    {"id": 5, "description": "Record NO ACTION on 14 paired entries", "status": "blocked"},
-    {"id": 6, "description": "Rebuild global FTS database", "status": "blocked"}
+    {"id": 1, "description": "Confirm corpus tree clean, record HEAD", "status": "done", "note": "Re-verified clean (git -C ~/Projects/Literature status --short empty), HEAD ee05d80a recorded as baseline -- task 080's leftover changes had been committed out of band by the dispatching session before this resume.", "files_touched": []},
+    {"id": 2, "description": "Add 17 parent entries under bare directory id (re-measured; plan's original figure was 15)", "status": "done", "note": "burgess_1982, burgess_1982b, burgess_1984, derijke_1995, doets_1987, doets_1989, girard_1989, obendrauf_2024, reynolds_1992, reynolds_1994, thomason_1984, van_doorn_2015, venema_1991, venema_1997, venema_2001, verbrugge_2004, xu_1988. Reviewed diff entry-by-entry before commit.", "files_touched": []},
+    {"id": 3, "description": "Adjudicate 2 duplicate chunk directories", "status": "done", "note": "Verified byte-identical via cmp (176/176, 20/20). Loser identified by provenance (stub metadata.json, source_path pointing at survivor's PDF). Quarantined via git mv to dot-prefixed names (reversible); superseded stub index entries removed.", "files_touched": []},
+    {"id": 4, "description": "Adjudicate gabbay_2000", "status": "done", "note": "Already adjudicated prior to this phase (provenance_fidelity: not_yet_converted); recorded as sole known exception in Phase 10's escalation.", "files_touched": []},
+    {"id": 5, "description": "Record NO ACTION on paired entries (re-measured; plan's original figure was 14, actual is 15)", "status": "done", "note": "blackburn_2002, courcoubetis_1992, gerth_1995, kupferman_vardi_2001, piterman_2007, schewe_2009, schwoon_esparza_2005, tarjan_1972, thomas_1997_languages, thomas_2003_reactive, vardi_1996, venema_1993, venema_1993_since, yan_2008, zielonka_1998 -- rationale recorded verbatim in the corpus commit message.", "files_touched": []},
+    {"id": 6, "description": "Rebuild global FTS database", "status": "done", "note": "literature-build-index.sh --global: 202 distinct doc_ids (down from 204, the 2 quarantined duplicates pruned). 30 pre-existing chunk-count-mismatch warnings for unrelated documents, none among the 17 newly-parented or 2 quarantined ids.", "files_touched": []}
   ],
-  "current_objective": 1,
+  "current_objective": 6,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": [
-    {
-      "task_id": "8.1-8.6",
-      "description": "Entire Phase 8 corpus reconciliation",
-      "type": "skipped",
-      "reason": "Judged unsafe to perform autonomously: (1) the phase's own clean-tree precondition already fails due to a separate completed task's uncommitted leftover in ~/Projects/Literature; (2) the duplicate-directory adjudication requires real content judgment on the user's personal citation-grade corpus with no loud-failure safety net, unlike every other phase in this plan; (3) the dispatch frames Phase 8 as a single phase-level block-or-complete decision, so partial completion (e.g. only the low-risk 15-parent-entry addition) would leave the corpus in an incoherent half-migrated state. Marked [BLOCKED] per the dispatch's explicit instruction to do so rather than skip silently. Full detailed reasoning recorded in the plan's Phase 8 '#### Block Reason' subsection.",
-      "annotation": "*(deviation: blocked — see plan Phase 8 Block Reason)*"
-    }
-  ],
+  "deviations": [],
   "verification_evidence": {
-    "precondition_check": "git -C ~/Projects/Literature status --short shows 14 uncommitted lines (13 deleted .backups/**/chunks.json.bak, 1 untracked .literature.db.pre-task80-backup-* snapshot), confirmed pre-existing leftover from the separate completed task 080_exclude_backups_from_literature_index_rebuild, not from this task's own work.",
-    "no_this_repo_impact": "git -C /home/benjamin/.config/nvim status --short shows no corpus files -- confirmed nothing in this phase's (attempted) scope touched this repository."
+    "precondition_check": "git -C ~/Projects/Literature status --short was empty; HEAD ee05d80a recorded before this phase's commit.",
+    "duplicate_pair_verification": "cmp -s over every chunk_*.md pair: proofs_and_types vs girard_1989 = 176/176 identical; van_doorn_2015_propositional_calculus_coq vs van_doorn_2015 = 20/20 identical.",
+    "toc_verification": "literature-search.sh --toc <id> for all 17 newly-parented ids returned non-empty chunk arrays matching known child/FTS counts (burgess_1982=2, burgess_1982b=2, burgess_1984=8, derijke_1995=3, doets_1987=3, doets_1989=3, girard_1989=176, obendrauf_2024=4, reynolds_1992=7, reynolds_1994=3, thomason_1984=6, van_doorn_2015=20, venema_1991=9, venema_1997=3, venema_2001=4, verbrugge_2004=4, xu_1988=5). The 5 Phase 1 baseline probes remained byte-identical.",
+    "briefing_verification": "literature-briefing-invoke.sh (deployed) against a 17-doc per-repo sub-index resolved all 17 with real title/authors/year and zero skip warnings.",
+    "project_search_verification": "literature-search.sh --project BimodalLogic 'tense logic since until' returned burgess_1982 (a newly-parented document) among its results.",
+    "divergence_after": "Re-ran the Phase 7 divergence check against the reconciled corpus: FTS-only=0, id-inconsistent=0, index-only=1 (gabbay_2000 only).",
+    "no_this_repo_impact": "git -C /home/benjamin/.config/nvim status --short shows no corpus files -- only this repository's own source-store/plan/state changes.",
+    "corpus_commit": "~/Projects/Literature commit 55dc921c"
   }
 }

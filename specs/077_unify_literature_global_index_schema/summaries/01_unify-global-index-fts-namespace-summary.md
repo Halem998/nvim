@@ -1,24 +1,28 @@
 # Implementation Summary: Unify the literature global-index schema and end stub-entry invisibility
 
 - **Task**: 77 - Unify the literature global-index schema and end stub-entry invisibility
-- **Status**: [PARTIAL]
+- **Status**: [COMPLETED]
 - **Started**: 2026-08-25T00:49:00Z
-- **Completed**: 2026-08-25T03:20:00Z (8 of 10 phases fully complete; 2 phases hold real, well-scoped residual work)
-- **Effort**: ~2.5 hours
+- **Completed**: 2026-08-25T05:20:00Z (all 10 phases complete)
+- **Effort**: ~5 hours
 - **Dependencies**: 32 (redeploy — already satisfied)
 - **Artifacts**: plans/01_unify-global-index-fts-namespace.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
-Implemented the code-side half of a 10-phase plan bridging two independent id namespaces in the
-literature extension: `index.json`'s curated `.id` and `.literature.db`'s `chunks_data.doc_id`.
-The central decision — bridge by deriving the FTS key from an entry's `sources/<dir>/` path
-component, never by renaming a live id — was followed exactly, with `--toc` byte-identical
-before/after every id-touching phase. Phases 1-7 and 9 are `[COMPLETED]`; Phase 8 (a destructive
-data-reconciliation step in the user's real, separate `~/Projects/Literature/` corpus) is
-`[BLOCKED]` and Phase 10's `--validate` hard-failure escalation is `[PARTIAL]`, both deliberately
-deferred rather than performed autonomously — see Plan Deviations below.
+Implemented a 10-phase plan bridging two independent id namespaces in the literature extension:
+`index.json`'s curated `.id` and `.literature.db`'s `chunks_data.doc_id`. The central decision —
+bridge by deriving the FTS key from an entry's `sources/<dir>/` path component, never by renaming
+a live id — was followed exactly, with `--toc` byte-identical before/after every id-touching
+phase. Phases 1-7 and 9 landed in an earlier dispatch; this dispatch completed the two phases
+that dispatch had left BLOCKED/PARTIAL: Phase 8 reconciled the enumerated residue directly in the
+user's real, separate `~/Projects/Literature/` corpus (17 new parent entries, 2 duplicate
+directories quarantined, `gabbay_2000` recorded as the sole known exception), and Phase 10
+escalated `/literature --validate`'s namespace-divergence check from WARN to a hard failure. Both
+were unblocked by explicit user authorization re-verifying the three original block factors
+(clean-tree precondition, duplicate-directory content judgment, `gabbay_2000` adjudication) were
+resolved or dissolved against the live corpus before acting.
 
 ## What Changed
 
@@ -51,6 +55,22 @@ deferred rather than performed autonomously — see Plan Deviations below.
   to reflect that new ingests now land inside `sources/`.
 - `specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md` — Phase 1
   execution baseline (corpus counts, 5-document probe set, divergence enumeration).
+- `agent-system/extensions/literature/skills/skill-literature/SKILL.md` (Phase 10) — Validate Step
+  2b/4 now classify `divergence_index_only` into known-exception vs. unexpected buckets, track a
+  `divergence_check_failed` gate (also failing if the check itself must be skipped), and render
+  `### Validation FAILED` when any unexpected divergence, schema-shape defect, stale entry, or
+  unindexed file survives.
+- `agent-system/extensions/literature/manifest.json` (Phase 10) — registered
+  `literature-doc-key.sh` in the `scripts` deploy list; it existed since Phase 4/6 but was never
+  wired into the deploy manifest, which silently no-op'd the deployed `--validate`
+  namespace-divergence check.
+- `~/Projects/Literature/index.json` (Phase 8, separate repo) — 17 new parent entries added under
+  their bare directory id; 2 stub entries removed (superseded by the new curated entries for the
+  duplicate pairs' survivors). Commit `55dc921c`.
+- `~/Projects/Literature/sources/.proofs_and_types/`,
+  `~/Projects/Literature/sources/.van_doorn_2015_propositional_calculus_coq/` (Phase 8, separate
+  repo) — the two duplicate ingest directories, quarantined via `git mv` to a dot-prefixed name
+  (reversible, `literature-build-index.sh` prunes dot-prefixed directories by design).
 
 ## Decisions
 
@@ -66,24 +86,38 @@ deferred rather than performed autonomously — see Plan Deviations below.
   supported paired entries (curated `.id` differs from FTS `doc_id`, resolved via the path
   bridge) as broken, contradicting Decision C's own statement that this pairing is supported.
   Verified against the live corpus: bucket 3 = 0, matching the plan's stated expectation exactly.
+- **Phase 8's 17/15/1 split superseded the plan's original 15/2/1 estimate.** Re-measured the
+  live corpus before acting, per Phase 8's own Scope Hypothesis instruction to work from current
+  numbers rather than the plan's memory: strict `.id`-only comparison found 32 FTS-only ids (15
+  already paired with a curated index-only id via the path bridge, needing no action per Decision
+  C — renaming/reparenting a live FTS id is the specific operation known to break `--toc` — and
+  17 genuinely unpaired, needing a new parent entry) and 17 index-only ids (16 paired + the
+  recorded `gabbay_2000` exception). This is not a deviation from the plan — Phase 8's own text
+  explicitly authorizes this override.
+- **The two duplicate-pair survivors (`girard_1989`, `van_doorn_2015`) are among the 17
+  newly-parented ids, not a separate action.** Both had zero index.json coverage before this
+  phase (only their duplicate counterpart had a stub entry, pointing at the survivor's PDF via
+  `source_path`); the new parent entries were authored from the actual converted text (chapter
+  content, PDF filenames) and the FTS chunk/token counts, sequenced after the stub entries'
+  removal so nothing was left pointing at a quarantined path.
+- **Quarantine, not deletion, for the duplicate directories.** Per explicit user instruction:
+  moved to a dot-prefixed name via `git mv` (which `literature-build-index.sh` already prunes by
+  design) rather than removing files, keeping the change fully reversible via `git mv` back.
 
 ## Plan Deviations
 
-- **Phase 8** (`[BLOCKED]`): reconciling the enumerated corpus residue in
-  `~/Projects/Literature/` — adding 15 parent entries, adjudicating 2 duplicate chunk
-  directories, resolving `gabbay_2000` — was judged unsafe to perform autonomously. The phase's
-  own clean-tree precondition already fails (13 uncommitted lines left by a separate, unrelated,
-  already-`[COMPLETED]` task), and the duplicate-directory adjudication requires real content
-  judgment on the user's personal, citation-grade corpus with no loud-failure safety net (unlike
-  every other phase in this plan). Full reasoning recorded in the plan's Phase 8 `#### Block
-  Reason` subsection.
-- **Phase 10** (`[PARTIAL]`): the `--validate` WARN-to-FAIL escalation was deferred — escalating
-  now would make `/literature --validate` fail against the live corpus immediately, since Phase 8
-  did not run (`gabbay_2000` still has 0 FTS chunks). The plan's own Rollback/Contingency section
-  treats a non-empty divergence bucket as evidence Phase 8 is unfinished, never as license to
-  soften the check. The remaining Phase 10 documentation tasks (FTS-namespace invariant,
-  reader-survey record, fidelity-audit header note, source-store-vs-deploy note) are complete.
-- **Phase 9 fixture design** (within `[COMPLETED]`): Case 1's fixture parent was made deliberately
+- **Phase 8's 17/15/1 split vs. the plan's original 15/2/1 figures**: not a deviation — see the
+  Decisions entry above; the plan's own Scope Hypothesis for Phase 8 instructs exactly this
+  override when live measurement disagrees with the plan's memory.
+- **Phase 10 additionally fixed a deploy-manifest registration gap** for
+  `literature-doc-key.sh` (present in the source store since Phase 4/6, but never added to
+  `agent-system/extensions/literature/manifest.json`'s `scripts` list). This is not itemized as a
+  Phase 10 task in the plan, but was necessary: the deployed `--validate` divergence check
+  silently no-op'd without it (`[ -x "$DOC_KEY_SCRIPT" ]` failed against the deployed tree), which
+  would have defeated this phase's own escalation for every user actually running the deployed
+  `/literature` command.
+- **Phase 9 fixture design** (within `[COMPLETED]` from the prior dispatch): Case 1's fixture
+  parent was made deliberately
   id-less (`.doc_id` only) rather than carrying both `.id`/`.doc_id`, and Case 3 required an
   added decoy document — both changes made the test cases genuinely revert-sensitive to their
   respective fixes rather than merely illustrative (the plan's own red-then-green requirement
@@ -92,13 +126,23 @@ deferred rather than performed autonomously — see Plan Deviations below.
 ## Verification
 
 - Build: N/A (bash/jq extension, no build step)
-- Tests: Passed — `test-lit-pipeline.sh --runtime`: 23/23 passed, run from the source-store
-  location. All 4 new Section F cases independently demonstrated red-then-green against a
-  reverted fix (literature-briefing.sh, literature-search.sh, and SKILL.md each reverted and
-  restored in turn; `git status --short` confirmed byte-identical restoration each time).
+- Tests: Passed — `test-lit-pipeline.sh --runtime`: 23/23 passed, run from both the source-store
+  location and (after redeploy) the deployed `.claude/scripts/` location. All 4 Section F cases
+  independently demonstrated red-then-green against a reverted fix.
 - Files verified: Yes — every phase's file list confirmed present and correctly shaped by
   execution (fixture ingests, `--toc`, `--project`, `--validate` extraction runs; see each
   phase's progress file for the specific commands and outputs).
+- Phase 8 (corpus, by execution): `literature-search.sh --toc <id>` for all 17 newly-parented ids
+  returned real, non-empty chunk arrays; `literature-briefing-invoke.sh` (deployed) resolved all
+  17 in a per-repo sub-index with zero skip warnings; `literature-search.sh --project
+  BimodalLogic` returned a newly-parented document; the 5 Phase 1 baseline `--toc` probes stayed
+  byte-identical; the reconciled corpus's divergence buckets are FTS-only=0, id-inconsistent=0,
+  index-only=1 (`gabbay_2000`, the recorded exception).
+- Phase 10 (escalation, by execution): the escalated Validate Step 1/2/2b logic evaluates
+  `divergence_check_failed=no` against the live, reconciled corpus (source-store and, after
+  redeploy, the deployed copy) and `divergence_check_failed=yes` when re-run standalone against
+  the Phase 9 Case 2 fixture (`case2_orphan`, zero FTS coverage) — the hard-failure gate was
+  confirmed to actually fire, not just that the raw divergence bucket is populated.
 
 ## Impacts
 
@@ -109,22 +153,27 @@ deferred rather than performed autonomously — see Plan Deviations below.
   now returns documents whose curated `.id` differs from their FTS `doc_id` — closing a breakage
   that previously excluded 32 FTS-only documents from every project-tag-filtered query.
 - `/literature --validate` correctly classifies a schema-shape defect instead of misreporting it
-  as a missing file, and surfaces (in WARN mode) exactly one remaining live-corpus divergence
-  (`gabbay_2000`) pending Phase 8.
-- The corpus data itself (`~/Projects/Literature/`) is untouched by this task; the `--validate`
-  hard-failure gate remains at WARN pending a human-reviewed Phase 8.
+  as a missing file, and now **fails the command** on any namespace-divergence entry outside the
+  recorded `gabbay_2000` exception — the defect class (silent drift between `index.json` and
+  `chunks_data.doc_id`) cannot recur unnoticed.
+- The live `~/Projects/Literature/` corpus now conforms to the invariant: 17 previously-orphaned
+  FTS-only documents (including the two duplicate-pair survivors, `girard_1989` and
+  `van_doorn_2015`) are resolvable in a briefing with real metadata; 2 duplicate ingest
+  directories are quarantined (reversible) rather than silently duplicating search results and
+  citation-grade provenance data.
+- The deployed `.claude/` tree previously silently no-op'd the `--validate` divergence check
+  entirely (missing `literature-doc-key.sh` in the deploy manifest); this is now fixed, so the
+  escalation in Phase 10 actually takes effect for real `/literature --validate` invocations, not
+  only for the source-store scripts this task's own verification called directly.
 
 ## Follow-ups
 
-- Complete Phase 8 with human review: commit or discard the separate task's leftover corpus
-  changes first, then add the 15 parent entries (low risk, mirrors validated corpus commit
-  `e6ce8bd9`), review the two duplicate-directory pairs by hand, and decide `gabbay_2000`.
-- Complete Phase 10's escalation once Phase 8 lands: flip the Phase 7 divergence check from WARN
-  to a hard failure, carrying forward only the explicitly enumerated known exceptions.
 - The companion coverage-marker regression (a deliberately-unresolvable `doc_id` driving the
   lit-coverage marker to report failure rather than `sparse=false`) is a distinct, separately
   tracked defect, noted but out of scope here — see Section F's header comment in
   `test-lit-pipeline.sh`.
+- None outstanding for Phase 8/10 — the corpus conforms and the escalation is live in both the
+  source store and the deployed tree.
 
 ## Observations (outside this task's scope, reported per observation duty)
 
@@ -132,9 +181,9 @@ deferred rather than performed autonomously — see Plan Deviations below.
   uncommitted lines of leftover work from a different, already-`[COMPLETED]` task
   (`080_exclude_backups_from_literature_index_rebuild`): 13 deleted `.backups/**/chunks.json.bak`
   files and one untracked `.literature.db.pre-task80-backup-*` snapshot, applied to the working
-  tree but never committed in that repo. Not caused by this task; recorded in the Phase 1 baseline
-  report and factored into the Phase 8 block decision. Recommended follow-up: commit or discard
-  that leftover before attempting Phase 8.
+  tree but never committed in that repo. Not caused by this task. **Resolved before this
+  dispatch**: the dispatching session confirmed those changes had been committed out of band
+  (corpus HEAD `ee05d80a`, tree clean) before this dispatch began Phase 8.
 - During this task's own work, unrelated uncommitted changes appeared in this repository's
   working tree (`.claude-extensions.json`, two files under
   `agent-system/extensions/core/context/patterns/`, a deletion under

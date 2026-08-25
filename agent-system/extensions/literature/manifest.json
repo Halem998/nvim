@@ -42,6 +42,7 @@
       "literature-ingest-online.sh",
       "literature-search.sh",
       "literature-fidelity-audit.sh",
+      "literature-doc-key.sh",
       "literature-build-index.sh",
       "literature-convert.sh",
       "literature_combining_overlay.py",
