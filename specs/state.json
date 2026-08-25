@@ -5,12 +5,49 @@
     {
       "project_number": 101,
       "project_name": "fix_tts_only_announces_tab_1",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "Fix TTS announcements that only ever say 'Tab 1' -- across the agent systems loaded in various repos, <leader>al in nvim never announces 'Tab n' for any other n, nor lifecycle events such as 'Tab n researched' or 'Tab n planned', nor 'Tab n needs input' when a question is pending. Review what is not working and why, then make the appropriate fixes Observed counterexample during task creation: an AskUserQuestion prompt in this session DID announce 'Tab 5', so the needs-input path is not uniformly broken -- narrow the investigation to which hook paths, repos, or tab-number resolution steps fail rather than assuming a total outage. Confirmed: tab 5 is the tab this session actually occupies, so tab-number resolution itself was correct in that instance.",
       "topic": "wezterm-notifications",
       "created": "2026-08-25T19:32:47Z",
-      "last_updated": "2026-08-25T19:33:21Z"
+      "last_updated": "2026-08-25T19:43:52Z",
+      "session_id": "sess_1787686451_fda471",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "In this agent system, WezTerm tab-number resolution for TTS notifications (get_tab_prefix() in agent-system/extensions/core/hooks/tts-notify.sh) sorts tab_id values gathered via `wezterm cli list --format=json` across ALL windows, not scoped to the current window, before computing the current tab's 1-based position. In a single-window setup this coincidentally matches the visible tab number; in a genuine multi-window setup it would not. Worth checking before trusting tab numbers reported cross-window.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md",
+          "confidence": 0.6,
+          "suggested_keywords": [
+            "wezterm",
+            "tab-number",
+            "tts-notify",
+            "get_tab_prefix",
+            "multi-window"
+          ]
+        },
+        {
+          "content": "When a shared @-imported context pattern file (like skill-postflight-flow.md) declares a Preconditions variable name and then a later code block in the same file references a differently-spelled variable, bash silently substitutes empty string for the unset variable rather than erroring -- this class of defect (undefined-variable name drift between a documented precondition and its own code block) is invisible to static review and was not caught for 6+ weeks across a full unification refactor (task 983) in this repo. Consider a lint that flags any bash-block variable reference with no matching assignment in its own file's Preconditions/scope section.",
+          "category": "PATTERN",
+          "source_artifact": "specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "undefined-variable",
+            "skill-postflight-flow",
+            "STATE_STATUS",
+            "shared-pattern-drift",
+            "bash-set-u"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md",
+          "type": "report",
+          "summary": "Confirms an undefined-variable bug ($STATE_STATUS vs $status) silently no-ops every lifecycle TTS/tab-color notification across 12 skill files; interactive needs-input announcements and /orchestrate are unaffected; includes live empirical reproduction and a fix and verification plan."
+        }
+      ]
     },
     {
       "project_number": 94,
