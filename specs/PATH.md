@@ -12,6 +12,12 @@ batch ran in **3 cycles of a 10-cycle budget**, zero defers, zero failures.*
 now has **86 as its only open item**. The suite is deterministic again — 10/10 byte-identical
 `run-all.sh` runs at 52 passed / 0 failed / 0 skipped — so gate-8 results are trustworthy for the
 first time since 2026-08-11, and this file's own gate figures can once more be believed.*
+*Refreshed 2026-08-25 (sixth pass): **86, 96 and 99 are done**, closing Stage 1 and Stage 2
+entirely. The build-guard chain **97 → 98** and **66** also completed as one batch (9 cycles, zero
+defers, zero failures, zero system-defect detections). **Stage 3 is now the critical path and 87
+is its head.** Two corrections to this file's own claims, both measured not assumed: `verify-deploy.sh`
+defines **14** numbered gates (not 13, and not 24); and it currently reports **2 failing gates, not
+zero** — both introduced by the 97/98/66 batch itself. See "Gate reality" below.*
 
 **Goal**: finish the agent-system refactor — token efficiency, performance, and uniformity in
 implementation and documentation — and close the cross-repo drift that is currently making
@@ -31,6 +37,36 @@ a doc-lint, a line-count fixer. What is missing is **consequence**: adoption sta
 of call sites, the staleness detector always exits 0, and `deploy-headless.sh:233` *prints*
 `"Verify with: …"` instead of calling it. Every duplication metric grew between 2026-08-11 and
 2026-08-24 while the system correctly reported the problem to nobody.
+
+---
+
+## Gate reality (measured 2026-08-25, sixth pass)
+
+Run directly, not inferred: `verify-deploy.sh --skip-slow` **exits 1** with **2 of 14 gates
+failing**. Both failures were introduced by the 97/98/66 batch and neither is flake.
+
+| Gate | Finding | Cause | Fix |
+|---|---|---|---|
+| **3** doc-lint | `Rule R: index-entries.json entry 'project/lean4/operations/multi-instance-optimization.md' line_count mismatch: declared 121, actual 198` | **98** rewrote that anchor (121 → 198 lines) without updating its declaration. `index-entries.json` was outside 98's `file_scope`, and its plan verified only that `manifest.json` needed no edits — nobody checked the line-count declaration. | One number: `agent-system/extensions/lean/index-entries.json:351`, `121` → `198`. |
+| **5** manifest parity | `Missing scripts: scripts/lake-build-guard.sh` and `scripts/tests/test-lake-build-guard.sh` | **97** registered both in the core manifest, correctly. They are simply **not deployed** — declared-but-absent from `.claude/`. | A deploy. Nothing to author. |
+
+**Denominator corrections, both verified by counting `say "N. …"` lines directly.** This file
+previously carried "24 checks" (inherited, never verified) and then "13 numbered gates" (a
+correction that undercounted). The real figure is **14**. Treat 14 as the denominator.
+
+**The prior claim that 86 alone would make deploys exit 0 is now falsified.** 86 is done and
+doc-lint is still red — but for a *new* reason authored after 86 landed, not because 86 failed. The
+standing rule holds: a green gate is a measurement, not a status inherited from a completed task.
+
+**Latent third, not yet failing.** `long-builds.md` (153 lines, created by **66**) is **not
+registered in `index-entries.json` at all**. It does not fail today only because it is undeployed;
+Rule S fires the moment it lands. 66's own plan recorded this as an out-of-scope follow-up rather
+than absorbing it — the honest call, but it means **the unregistered-context-file class is now four
+files, not three** (see the 2026-08-25 observation below). Deploying without registering it first
+converts a latent item into a third red gate.
+
+**Operational consequence**: fix the one line, register `long-builds.md`, *then* deploy. Deploying
+first clears gate 5 and lights up Rule S for `long-builds.md` in the same motion.
 
 ---
 
@@ -109,7 +145,14 @@ Without this stage the rest regresses, exactly as it did since 2026-08-11.
 postflight deploy gate is live and has already been exercised in anger (see the 2026-08-25 note
 below, where it correctly refused a completion and the sanctioned redeploy trigger handled it).
 
-**Open in this stage**: 86. (**85 is done**, 2026-08-25 — see 1.4; **93 is done** — see 1.6.)
+**This stage is now closed.** 86 completed 2026-08-25, joining 82, 83, 84, 85 and 93. Nothing in
+Stage 1 remains open.
+
+> **Closed ≠ green.** 86 expanded CI to the full suite and fixed the doc-lint failures *that
+> existed when it ran*. `verify-deploy` is red again as of the sixth pass, from two findings
+> authored **after** 86 landed — see "Gate reality" above. That is the mechanism working, not 86
+> regressing: the gate now catches things the day they are introduced, which is the whole point of
+> the stage.
 
 | # | Step | Task | State |
 |---|------|------|-------|
@@ -117,7 +160,7 @@ below, where it correctly refused a completion and the sanctioned redeploy trigg
 | 1.2 | Postflight deploy gate: a meta task touching the source store cannot reach `[COMPLETED]` until a deploy has run. **Requires** a recorded carve-out in `regeneration-is-manual-only.md` — that doc sanctions exactly one automated deploy caller and states it is not precedent. | **83** | ☑ done |
 | 1.3 | Fix the duplication gate's scope: `test-common-lib.sh` greps `--include="*.sh"` while **46 of 48** duplicates are `.md`, and its `EXTENSIONS_ROOT` is environment-dependent. Closes `err_1787022038113_c3VPTR` (severity high). | **84** | ☑ done |
 | 1.4 | De-flake the shell test suite. Two runs today failed in **different** suites. Until deterministic, no gate result is trustworthy — including this review's own 19/23. **Root cause was not the hypothesised lock contention** — research overturned that, finding no defect in `task-lock.sh` or `run-all.sh`; the flake was two stale test fixtures reaching into the live `specs/` tree. Fixed by isolating them into scratch fixture repos. Acceptance measured, not asserted: **10/10 byte-identical runs** (52 passed / 0 failed / 0 skipped), HEAD stable throughout, staleness confounder separated by a source-vs-deployed diff **before** measuring. | **85** | ☑ done (`ce00e7174`) |
-| 1.5 | Expand CI from 1 of 9 checks to the full suite, and fix the doc-lint failures so it goes green. | **86** | ☐ solo run |
+| 1.5 | Expand CI from 1 of 9 checks to the full suite, and fix the doc-lint failures so it goes green. | **86** | ☑ done |
 | 1.6 | Close cross-repo skew: make it **visible**, not automatic. Regeneration is pull-only by design — do **not** push into consuming repos. Delivered as a git-tracked registry of **8** consumer repos (the delegation named 3), a `check-consumer-freshness.sh` fleet report with `--discover`, a post-deploy stale-consumer report wired into `deploy-headless.sh`'s trailing block without touching its 0/1/2/3 exit contract, and a non-blocking tier-1 escalation at 5 consecutive ignored runs. Verified live against all 8 consumers and two real deploys, not fixtures alone. | **93** | ☑ done (`50313f14b`) |
 
 > **1.5 now has a measured baseline, courtesy of 1.1.** A full `verify-deploy.sh` run at 82's
@@ -136,6 +179,13 @@ below, where it correctly refused a completion and the sanctioned redeploy trigg
 > its own `say "N. …"` lines. The "24" used in the paragraph above is inherited from an earlier
 > revision of this file and was never verified here; it presumably counts sub-checks rather than
 > gates. Treat 13 as the gate denominator until someone reconciles where 24 came from.
+>
+> **Both figures above are superseded — struck 2026-08-25, sixth pass.** The gate count is **14**,
+> not 13 and not 24, counted the same way and re-counted. And "1 failing" was true only until 86
+> landed and the 97/98/66 batch was authored on top of it; the current reading is **2 failing**,
+> with different causes than the one named here. **See "Gate reality" near the top of this file for
+> the live figures** — the paragraph above is retained only to show what the numbers were and why
+> they moved.
 
 > **1.4 caveat — discharged 2026-08-25.** The re-measure was done as instructed: every source-store
 > file the fix touched, plus `run-all.sh` itself, was byte-compared against its deployed `.claude/`
@@ -158,8 +208,12 @@ Your literature workflow is live and currently degraded in a way that produces *
 | 2.3 | Index rebuild traverses with an unguarded recursive `find` — `.backups/` exists on disk today. | **80** ☑ done (`7f04ede80`) |
 | 2.4 | Quality gate rejects formal notation: the binder exemption matches only single-character bound variables, so `λxy.Ryx` and `^x.Fx` score as corruption. Must **not** blind the gate to genuine `<sup>`-span collapse. | **92** ☑ done (`b629bc3a9`) |
 
-**Open in this stage**: **96** only. 78 is done, so 96's remaining blocker is gone — and per the
-collision note below, 78-then-96 was always the required order, which is now satisfied.
+**This stage is now closed.** **96 completed 2026-08-25**, joining 77, 78, 80 and 92. The
+78-then-96 ordering the collision note below required was satisfied by sequencing, as designed.
+
+| # | Step | Task |
+|---|------|------|
+| 2.5 | Surface the sub-index vs global-index coverage delta under `--lit` — meaningful only once 78's marker reported resolution failures at all. | **96** ☑ done |
 
 > **Why 2.1 mattered concretely** (historical, 2026-08-24): a `--lit` round in Theory silently
 > missed 7 of 25 ingested sources, **including both of your own manuscripts**, despite the work
@@ -200,6 +254,9 @@ collision note below, 78-then-96 was always the required order, which is now sat
 
 ## Stage 3 — Token efficiency
 
+**This is now the critical path.** Stages 0, 1 and 2 are closed; **87 is the head of everything
+that remains**, and it is unblocked as of 86's completion.
+
 The measured payoff. `/orchestrate` currently costs **~83.5k tokens before any work begins**.
 
 | # | Step | Task | Saving |
@@ -214,6 +271,11 @@ The measured payoff. `/orchestrate` currently costs **~83.5k tokens before any w
 > runs total only 8,168 B. Weak lever, and a distraction from 3.2.
 
 > **Sequencing**: **62** is a hard dependency of 3.3 in `state.json` — both edit `commands/task.md`. **62 is now done**, so **44 is unblocked** and already sits at `[PLANNED]`.
+>
+> **Superseded 2026-08-25 (sixth pass): 44 is blocked again, deliberately.** Its `dependencies[]`
+> is now `[62, 88]` — the PATH-ordered chain re-inserted 88 ahead of it, so 44 sits behind
+> 87 → 88 rather than being independently runnable. Its `[PLANNED]` status is real and its plan is
+> still good; it simply is not eligible until 88 lands. Do not dispatch it expecting it to run.
 
 > **Fence-interior heading trap**: naive `^## ` splitting matches headings inside fenced blocks and
 > silently truncates. Task 44's plan documents this and mandates bottom-up extraction. Reuse it.
@@ -245,12 +307,18 @@ Each item prevents one class from regrowing. Build the lint **before** migrating
 
 ## Batch serialization edges (added 2026-08-25)
 
-`dependencies[]` now encodes a single PATH-ordered chain across the nine remaining tasks, so the
-whole set can be handed to one `/orchestrate` invocation and will serialize itself:
+`dependencies[]` now encodes a single PATH-ordered chain across the remaining Stage 3/4/5 tasks, so
+the whole set can be handed to one `/orchestrate` invocation and will serialize itself.
+
+**Updated 2026-08-25 (sixth pass): 86 is done and off the head. The chain is now eight tasks:**
 
 ```
-86 -> 87 -> 88 -> 44 -> 89 -> 90 -> 48 -> 50 -> 91
+87 -> 88 -> 44 -> 89 -> 90 -> 48 -> 50 -> 91
 ```
+
+Verified against `state.json` this pass: 87←[86 ☑], 88←[87], 44←[62 ☑, 88], 89←[44, 87],
+90←[84 ☑, 89], 48←[90], 50←[48], 91←[50]. **87 is the only member currently eligible**; the other
+seven are correctly blocked behind it.
 
 This is a **total order** (max parallelism 1), which is deliberate and costs almost nothing here:
 eight of the nine touch a path in `orchestrator-critical-paths.json`, and the self-modification
@@ -305,13 +373,22 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
    self-modifying candidates that cycle); the rest defer, in sequence, one per cycle. Re-verified
    2026-08-24 against `orchestrate-batch-admit.sh:581` — the verdict is explicitly *"an ORDERING
    CONSTRAINT, not an exclusion"*; deferred candidates resolve in later cycles of the **same**
-   invocation. Currently self-modifying among **open** tasks (83 and 93 have since completed and are
-   dropped from this list): **85** (`task-lock.sh`), **86** (`verify-deploy.sh`), **87**
-   (`context/patterns/`, via `system-defect-discrimination.md`), **90** (`skill-base.sh`), **91**
-   (`update-task-status.sh`), **100** (`orchestrate-batch-admit.sh`), **48** (its
-   `agent-system/extensions/` catch-all scope covers every critical path). Batching
-   four of them still costs four cycles to accomplish one cycle of work — so pair **at most one**
-   with non-self-modifying siblings.
+   invocation. Batching four of them still costs four cycles to accomplish one cycle of work — so
+   pair **at most one** with non-self-modifying siblings.
+
+   **Re-measured 2026-08-25 (sixth pass) by running the admission script against every unblocked
+   task individually**, rather than carrying the previous list forward. 85, 86 and 93 have
+   completed and are dropped. The list is **much longer than previously recorded** — the earlier
+   list named 7 and was drawn only from tasks then on the critical path:
+
+   | Self-modifying (designated-candidate slot) | Free to batch |
+   |---|---|
+   | **13**, **14**, **42**, **53**, **68**, **73**, **81**, **87**, **100** | **20**, **27**, **72**, **74**, **94** |
+
+   Plus **48** and **50**, whose bare `agent-system/extensions/` scope covers every critical path —
+   still solo-only for the separate reason in rule 2. The practical consequence is unchanged but
+   sharper: **most of the remaining backlog is self-modifying**, so a batch is one of the nine plus
+   as many of the five free tasks as scope allows.
 
    > **`--dry-run` misreports this, and the misreport is the more alarming of the two.**
    > `orchestrate-dry-run-report.sh:361` **hardcodes its own reason string** — "deferred out of
@@ -330,6 +407,13 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
    `agent-system/extensions/` scope overlaps essentially every other task in the backlog. Treat
    **48 and 50 as solo-only**.
 
+   **Refreshed 2026-08-25 (sixth pass).** Retired by completion: **20 + 85** (85 done — 20 is now
+   free to batch), **44 + {96, 99}** (both done). **48/50 remain solo-only**, unchanged.
+   Newly measured and live: **72 + 94** collide at
+   `core/skills/skill-team-research/SKILL.md` with no `dependencies[]` edge, so 94 (higher) defers.
+   Run **72 before 94**, or add the edge. This was found only by running the admission script over
+   the candidate set — it is not visible from either task's title.
+
 > **A masking case worth knowing.** The scan emits the *first* overlapping task it finds, not an
 > exhaustive list — so a `cross_batch` **idle** overlap (which admits) can hide an `in_batch`
 > overlap (which would defer). The original example (84 masking 20/85) is retired — 84 is done —
@@ -339,64 +423,68 @@ Verified against `orchestrate-batch-admit.sh` on 2026-08-24, not assumed:
 > their own in-batch relationships go unmentioned. Keep 20 and 85 in separate batches by hand, or
 > add a `dependencies[]` edge, until this is filed and fixed.
 
-## Next batch (recommended 2026-08-25, fourth pass, verified by execution)
+## Next batch (recommended 2026-08-25, sixth pass, verified by execution)
 
-The previous recommendation — `/orchestrate 78, 93` — is **complete in full**. Both landed in one
-wave across 3 cycles, with zero defers, zero failures, and no system-defect detections. 78 closed
-Stage 2.2 and freed 96; 93 closed Stage 1.6 and the cross-repo loop Stage 0 opened by hand.
+The previous recommendation — `/orchestrate 85, 96, 99` — is **complete in full**, and **86** and
+the **97 → 98** / **66** build-guard set landed alongside it. Stages 0, 1 and 2 are all closed.
+Stage 3 is the critical path and **87 is its head**.
 
 ```
-/orchestrate 85, 96, 99
+/orchestrate 87, 74, 20, 72, 27
 ```
 
-Verified today by running `orchestrate-batch-admit.sh` directly — **all three admit, one wave, zero
+Verified today by running `orchestrate-batch-admit.sh` directly — **all five admit, one wave, zero
 defers** — and, because the scan reports only the *first* overlap it finds, re-run **pairwise**
-(85+96, 85+99, 96+99) to rule out an `in_batch` collision masked by the `cross_batch` advisory both
-96 and 99 carry. All three pairs are clean. Dependencies confirmed satisfied: 85←32 ☑, 96←77 ☑, 99
-has none.
+across all ten pairs to rule out an `in_batch` collision masked by a `cross_batch` advisory. **All
+ten pairs are clean.** Dependencies confirmed satisfied: 87←86 ☑; 74, 20, 72, 27 have none.
 
 | Task | Why it is in this batch | Notes |
 |------|-------------------------|-------|
-| **85** | Stage 1.4, the head of the remaining critical path. De-flake the suite **before** 86, not after: a green CI built on a flaky suite certifies nothing, and 82's exit-3 wiring means gate 8's flake now fails every deploy. | **The one self-modifying task** (`task-lock.sh`) — takes the designated-candidate slot uncontested |
-| **96** | Stage 2, unblocked by 78 *today*. Surfaces the sub-index vs global-index coverage delta — meaningful only now that 78's marker reports resolution failures at all. | Scope is literature-side, disjoint from 85 |
-| **99** | Handoff `artifacts[]` shape. Directly relevant: 93's own research handoff this run wrote `report_path` instead of an `artifacts[]` entry, and postflight had to fall back to `.return-meta.json` to link the artifact. Live evidence for the defect. | Non-self-modifying |
+| **87** | Stage 3.1, **head of the entire remaining chain**. The mode-gating convention plus its lint; unblocks 88 (~26k tok/invocation) and 89 (~24.8k) — the largest measured payoff in this file. Nothing else in Stages 3-5 can start until it lands. | **The one self-modifying task** (`context/patterns/`) — takes the designated-candidate slot uncontested |
+| **74** | Shared LaTeX build-conflict guard. The direct sibling of the just-completed **97**, and 97's own research noted no `latex-build-guard.sh` exists yet, so 97 set a family precedent this task is the second member of. Unblocks **75** and **76**. | Non-self-modifying; latex-side scope |
+| **20** | Metrics sync measures a stale git index, inflating `build_errors` with phantom paths. **Freed this pass**: its long-standing `scripts/tests/` collision was with 85, which is now done. | Non-self-modifying |
+| **72** | Teammate return-meta write conflict in team mode. **Must precede 94** — see the newly-measured 72 + 94 collision in rule 2 above. | Non-self-modifying |
+| **27** | Remove the dead `.opencode` command router and its self-referential test scripts. Pure deletion; no collisions with anything in the batch. | Non-self-modifying |
 
-**This corrects the previous refresh's "85 — solo run" advice.** Batching rule 1 permits **at most
-one** self-modifying task per batch paired with non-self-modifying siblings; 85 is the only one
-here, so it is admitted as designated candidate and **nothing defers**. Solo would have been three
-invocations for the same work.
+**Why five and not three.** Batching rule 1 permits at most one self-modifying task alongside
+non-self-modifying siblings. 87 is the only one here, so it is admitted as designated candidate and
+**nothing defers**. The other four are genuinely independent lanes — this is the widest clean batch
+the current backlog allows.
 
-**Two advisories, both benign and both the known coarse-scope class**: 96 and 99 each report an
-idle `cross_batch` overlap against out-of-batch **#44** at `core/context/` (44 is `[PLANNED]`, not
-in flight). Neither blocks.
+**Do not add 94** — it collides with 72 at `skill-team-research/SKILL.md` and, being the higher
+number, is the one that defers. Run it in the *next* batch, after 72 lands.
+**Do not add 44** — its `dependencies[]` is now `[62, 88]`, so it is blocked behind 88 regardless of
+its `[PLANNED]` status. It is not eligible.
+**Do not add 88, 89, 90, 48, 50 or 91** — all blocked behind 87 in the PATH chain.
+**Do not add a second self-modifying task** (13, 14, 42, 53, 68, 73, 81, 100) — each would contend
+with 87 for the designated slot and cost a cycle to buy nothing.
 
-**Do not add 44** — its coarse `core/context/` scope collides with *both* 96 and 99, and since 44
-is the **lower** number the two higher-numbered siblings are the ones that would defer. Run 44
-solo; it is already `[PLANNED]`, so it is a cheap single invocation.
-**Do not add 86** — self-modifying (`verify-deploy.sh`), so it would contend with 85 for the
-designated slot, and 85-before-86 is a real ordering requirement, not a preference.
-**Do not add 20** — it declares `core/scripts/tests/` with no `dependencies[]` edge to 85, which
-declares the same path; see the masking note above.
+**Before or after this batch, two one-line repairs** (see "Gate reality" at the top — both are
+regressions from the 97/98/66 run, and together they are what stand between the repo and a green
+`verify-deploy`):
 
-**Then, solo, in this order** — each names an orchestrator-critical path, so each takes the
+1. `agent-system/extensions/lean/index-entries.json:351` — `line_count` `121` → `198`.
+2. Register `long-builds.md` (153 lines) in that same file, **then** deploy. Deploying first
+   clears gate 5 and immediately lights up Rule S for the unregistered anchor.
+
+Neither is a task and neither needs one; both are smaller than the overhead of filing them.
+
+**Then, solo, in PATH order** — each names an orchestrator-critical path, so each takes the
 designated-candidate slot and batching them together only buys cycles:
 
-1. **86** — expand CI and fix doc-lint. With 85 this is what makes deploys exit 0 again. **Its
-   target set has grown twice**: the unregistered-context-file class (now three files) and the
-   `blockers` schema mismatch, both recorded below.
-2. **87** — the mode-gating convention **plus its lint**; unblocks 88 (~26k tok/invocation) and 89
-   (~24.8k), the largest measured payoff in the file.
-3. **91**, then **90**, then **48** → **50**.
+1. **88** — mode-gate `skill-orchestrate`'s `## Multi-Task Mode` (103,462 B, 55% of the file).
+   The single largest token win in the backlog.
+2. **44**, then **89**, then **90** → **48** → **50** → **91**.
 
-**Non-self-modifying and safe to slot in** whenever a batch has room: **44** (solo or away from
-96/99), **20** (away from 85), **94**, **97** → **98**.
+**Non-self-modifying and safe to slot in** whenever a later batch has room: **94** (after 72),
+**45**, **46**, **51**. The self-modifying singles — **13**, **14**, **42**, **53**, **68**,
+**73**, **81**, **100** — are each a solo or designated-slot run; **53** is worth pulling forward
+(see the observation below, where this run reproduced its defect nine times).
 
-**Nothing is left in Stage 0.** The `<leader>al` reload is done and verified in both consuming
-repos; all three deployed trees are byte-identical on every shared script. Note that **93 now
-makes this measurable on demand** rather than by hand: `check-consumer-freshness.sh` reports all 8
-consumers' revisions, and it currently flags BimodalLogic, ModelChecker, Theory and PossibleWorlds
-as behind — the fleet has drifted again since the 2026-08-24 reload, which is exactly the
-condition 93 was built to surface.
+**Stage 0 remains closed**, but its "current skew: none" line is still only as good as its
+measurement date. `check-consumer-freshness.sh` last flagged BimodalLogic, ModelChecker, Theory and
+PossibleWorlds as behind. **Re-run it before trusting any Stage 0 claim** — and note that the two
+undeployed guard scripts in "Gate reality" mean this repo is itself now ahead of its own `.claude/`.
 
 ### Two stranded tasks, noticed 2026-08-25
 
@@ -482,14 +570,60 @@ work.
    true only as of its own measurement date — the whole point of 93 is that this is now a
    one-command question instead of a manual audit. **Re-run it before trusting any Stage 0 claim.**
 
+### Four observations from the 97 + 98 + 66 batch run (2026-08-25, none filed)
+
+1. **A completed task can author a gate failure that its own acceptance sweep cannot see.** 98's
+   Phase 5 walked all 12 ACCEPTANCE conditions, confirmed its diff was a subset of `file_scope`,
+   and passed — while leaving `verify-deploy` gate 3 red, because the file it broke
+   (`lean/index-entries.json`) was **outside** that `file_scope` by construction. `file_scope`
+   bounds what a task may edit; it does not bound what a task may *break*. A content edit that
+   changes a file's line count has an obligation in a second file that no scope declaration
+   expresses. **The general shape**: rewriting any registered context file silently incurs a
+   `line_count` debt. Worth a lint — declared vs. actual across every `index-entries.json` — which
+   would have caught this at authoring time rather than at the next deploy. **Not filed.**
+
+2. **The unregistered-context-file class reached four, and this run added the fourth.** 66's
+   `long-builds.md` joins `corpus-directory-conventions.md`,
+   `shared-module-extraction-for-gate-checks.md` and `return-meta-artifacts-template.md`. The
+   pattern is now unmistakable and self-reproducing: **one new file per contributing task**, each
+   invisible until a deploy makes it fail Rule S. 66's plan recorded it as a follow-up rather than
+   absorbing it — correct scope discipline, and exactly why the class keeps growing. This will not
+   stop until registration is enforced at authoring time.
+
+3. **"Expected handoff absence" fired nine times in one batch, every time correctly.** Every
+   research and plan dispatch in this run wrote no `.orchestrator-handoff.json` — as the schema
+   requires, since only the hard-mode implement agent writes one — and each time the orchestrator
+   fell through to `.return-meta.json` recovery and reported `recovered=true`. The recovery path is
+   sound and the batch had **zero system-defect detections**. But the first research agent flagged
+   its own non-write as a "deliberate deviation" needing orchestrator adjustment, which it was not.
+   **This is precisely what 53 (`suppress_expected_handoff_absence_defect`) exists to fix**, now
+   with nine reproduced instances in one invocation rather than an argued case. **Worth pulling 53
+   forward** — it is self-modifying, so it needs a designated slot, but it is cheap and the
+   evidence is no longer hypothetical.
+
+4. **A task with `path: null` and no directory on disk dispatches fine — after someone creates the
+   directory.** 66 had `"path": null` in `state.json` and no `specs/066_*` directory; the
+   orchestrator's MT path has no `mkdir -p` equivalent to the single-task engine's
+   `orchestrate-loop-guard-init.sh`, so the directory had to be created by hand before dispatch.
+   Single-task and multi-task `/orchestrate` differ here, and only the single-task engine is
+   self-healing. **Not filed.**
+
 ### Filed since the last refresh, not yet placed in a stage
 
-**96** (surface the sub-index vs global-index coverage delta under `--lit`; **now unblocked, 77 is
-done** — belongs in Stage 2 behind **78**, not merely behind 77, because their scopes collide), **99** (handoff `artifacts[]` shape), **100** (aggregator
-`file_scope` blind spot — the too-narrow-scope mirror of the completed coarse-declaration work;
-self-modifying), **94** (`--lit` through the three team skills), and **97 → 98** (shared Lean
-build concurrency/memory guard, then its lean-extension wiring). None are on the critical path;
-place them on the next full refresh.
+**Retired this pass** — **96** is now Stage 2.5 ☑, **99** ☑, and **97 → 98** ☑ (with **66**, which
+was never listed here at all despite running in the same batch — worth noting that this section is
+maintained by hand and drifts).
+
+**Still unplaced**: **100** (aggregator `file_scope` blind spot — the too-narrow-scope mirror of
+the completed coarse-declaration work; self-modifying) and **94** (`--lit` through the three team
+skills; **must run after 72**, see rule 2). Neither is on the critical path.
+
+**Never placed, and now the bulk of the backlog**: **13**, **14**, **20**, **27**, **29** → **30**,
+**42** → **64**, **43**, **45**, **46**, **51**, **53**, **68**, **72**, **73**, **74** → **75**/**76**,
+**81**. Seventeen tasks, none in any stage, most filed as defect observations from prior runs. The
+staged Stages 3-5 chain is eight tasks; **the unstaged remainder is now more than twice that.**
+A full re-survey is overdue — this file's stage structure describes a shrinking minority of open
+work.
 
 ### Still unfiled, carried forward
 
@@ -503,6 +637,18 @@ place them on the next full refresh.
   permanently in `git status` and still slows every full gate run.
 - All three observations from the 78 + 93 batch run above: the critical-paths coverage gap, the
   `report_path`-instead-of-`artifacts[]` instance, and the re-drifted consumer fleet.
+- All four observations from the 97 + 98 + 66 batch run above: the out-of-`file_scope` gate
+  breakage, the fourth unregistered context file, the nine expected-handoff-absence firings
+  (**53 already exists for this one** — it needs scheduling, not filing), and the MT-mode missing
+  task directory.
+- **The two "Gate reality" repairs at the top of this file.** Both are one-line, neither is a task,
+  and both block a green `verify-deploy`.
+- **The `mcp__lean-lsp__lean_build` gap**, recorded by 66 in `long-builds.md` as a known caveat: a
+  second build path that `run_in_background` cannot wrap, so the background-build mandate has a
+  hole in it by construction. Documented, not fixed.
+- **Files outside 66's `file_scope` that still carry pre-mandate `lake build` guidance** —
+  `README.md`, `lean-implementation-flow.md`, `commands/lake.md`. 66 enumerated exactly nine files
+  and held to them; the mandate is therefore correct but not yet universal in the lean extension.
 
 ---
 
@@ -526,18 +672,24 @@ place them on the next full refresh.
 
 ## Progress
 
-*Updated 2026-08-25 (fourth pass).*
+*Updated 2026-08-25 (sixth pass).*
 
 | Stage | Tasks | Done |
 |-------|-------|------|
 | 0 — one version | 32 + manual reload | **32 ☑ · reload ☑** — stage closed |
-| 1 — consequence | 82, 83, 84, 85, 86, 93 | **82 ☑ 83 ☑ 84 ☑ 93 ☑** · 85, 86 ☐ |
-| 2 — literature | 77, 78, 80, 92 (+96) | **77 ☑ 78 ☑ 80 ☑ 92 ☑** · 96 ☐ |
-| 3 — token | 87, 88, 44, 89 (+62) | **62 ☑** · 44 planned · 87, 88, 89 ☐ |
+| 1 — consequence | 82, 83, 84, 85, 86, 93 | **all six ☑** — **stage closed** |
+| 2 — literature | 77, 78, 80, 92, 96 | **all five ☑** — **stage closed** |
+| 3 — token | 87, 88, 44, 89 (+62) | **62 ☑** · 44 planned but blocked behind 88 · **87, 88, 89 ☐** |
 | 4 — adoption | 90, 48, 50 | ☐ |
 | 5 — in flight | 28, 9, 79, 91 | **9 ☑ 28 ☑ 79 ☑** · 91 ☐ |
+| *unstaged* | 17 tasks (13, 14, 20, 27, 29→30, 42→64, 43, 45, 46, 51, 53, 68, 72, 73, 74→75/76, 81, 94, 100) | ☐ — **larger than the staged remainder**; re-survey overdue |
 | 6 — Literature repo | *external* | partial — backlog, `.bak` prune, null-id repair and the FTS/index reconciliation (`55dc921c`) done; `metadata.json` and `.backups/` open |
 
-**Critical path now**: Stage 1's remaining **two** — 85 → 86 — are what stop deploys exiting 3.
-93 is done and off the path. 86 is solo-only; **85 is batchable after all** as the single
-self-modifying member of a batch, and is in today's recommended trio.
+**Critical path now**: **Stage 3**, headed by **87**. Stages 0, 1 and 2 are all closed, so nothing
+upstream gates it — 87 → 88 is the largest measured token win in the file (~26k/invocation from 88
+alone), and seven of the eight chained tasks are blocked behind 87 today.
+
+**What stops deploys exiting non-zero is no longer a task at all.** The two red gates are a
+one-line `line_count` correction and an undeployed pair of scripts — see "Gate reality" at the top.
+Both are repairs, not work items, and both are regressions from the batch that just ran rather than
+anything the stages were tracking.
