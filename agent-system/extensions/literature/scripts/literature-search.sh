@@ -54,6 +54,21 @@ QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudic
 
 # --- Build allowed doc_id set from index.json for a project ---
 # Returns newline-separated doc_ids, or empty string if no index or no matches
+#
+# INVARIANT: the allow-list must live in the chunks_data.doc_id namespace, never the
+# curated .id namespace alone. index.json's curated `.id` and .literature.db's
+# chunks_data.doc_id are two independent id namespaces that have drifted apart (see
+# literature-doc-key.sh's header for the full invariant and the corpus history that
+# proved renaming to unify them breaks --toc). This function therefore emits the UNION
+# of the path-derived key (the sources/<dir>/ directory-name component of .path, which
+# IS the FTS doc_id) and the entry's own .id for every matching entry -- union, not
+# replacement, because the result feeds a `WHERE d.doc_id IN (...)` filter downstream:
+# an extra key with no FTS rows is inert, while dropping a key can silently hide a
+# document that only resolves under one of the two names. Iterates .entries[]? (children
+# included), which is what pulls in the directories whose only index coverage is at
+# child level. Mirrors literature-doc-key.sh's own --list-keys derivation; not routed
+# through that script's CLI here to avoid a second jq/process spawn per query, but the
+# derivation logic is identical -- see that file if the two ever need to be reconciled.
 get_project_doc_ids() {
   local project="$1"
   local index_file="$LITERATURE_DIR/index.json"
@@ -70,8 +85,14 @@ get_project_doc_ids() {
       (.project_tags | length == 0) or
       (.project_tags | map(ascii_downcase) | index($proj | ascii_downcase)) != null
     ) |
-    .id // empty
-  ' "$index_file" 2>/dev/null
+    (
+      (if (.path? // "" | tostring | startswith("sources/"))
+        then (.path | ltrimstr("sources/") | split("/")[0])
+        else empty
+       end),
+      (.id // empty)
+    )
+  ' "$index_file" 2>/dev/null | sort -u
 }
 
 # --- Error output ---

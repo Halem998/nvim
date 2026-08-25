@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Path-derived FTS key bridge in literature-search.sh",
+  "started_at": "2026-08-25T00:56:00Z",
+  "last_updated": "2026-08-25T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create literature-doc-key.sh sourced anchor + --list-keys CLI", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-doc-key.sh"]},
+    {"id": 2, "description": "Rewire get_project_doc_ids() to union path-derived key and .id", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 3, "description": "Add invariant header comment", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "toc_byte_identical": "All 5 Phase 1 probe --toc outputs (blackburn_2002, blackburn_2002_book, burgess_1982, gabbay_2000, alpern_schneider_1985_defining-liveness) byte-identical to baseline after the fix.",
+    "project_filtered_search": "get_project_doc_ids BimodalLogic now includes blackburn_2002 (bare FTS id) alongside blackburn_2002_book (curated id) among 346 keys (was 172-id-only before). --project BimodalLogic \"bisimulation\" at limit=200 now returns blackburn_2002 (excluded from default limit=20 purely by BM25 ranking against a very common term, not by the id-namespace filter -- the filter itself no longer excludes it). --project BimodalLogic \"guarded fragment\" (a less common term specific to blackburn_2002 content) returns blackburn_2002 directly at the default limit=20.",
+    "briefing_one_hop": "literature-briefing-invoke.sh --global \"guarded fragment\" executed end to end, returned 8 real chunks (gabbay_kurucz_wolter_zakharyaschev_2003...), zero errors, zero skip warnings -- confirms the internal literature-search.sh --project call path is intact.",
+    "list_keys_coverage": "literature-doc-key.sh --list-keys against the live index.json intersected with SELECT DISTINCT doc_id FROM chunks_data = 204/204, matching the Scope Hypothesis number exactly."
+  }
+}

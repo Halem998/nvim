@@ -282,27 +282,27 @@ the delta in the baseline report.
 
 ---
 
-### Phase 2: Path-derived FTS key bridge in `literature-search.sh` [NOT STARTED]
+### Phase 2: Path-derived FTS key bridge in `literature-search.sh` [COMPLETED]
 
 **Goal**: Close breakage (3) — project-filtered search silently excluding every document whose
 curated `.id` differs from its FTS `doc_id` — by deriving the allow-list key from `.path` rather
 than from `.id` alone.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/literature-doc-key.sh`: the single sourced
+- [x] Create `agent-system/extensions/literature/scripts/literature-doc-key.sh`: the single sourced
       anchor for the index-entry -> FTS-key derivation. Expose (a) a sourceable function taking an
       index path and emitting the derived key set, and (b) a `--list-keys <index.json>` CLI mode so
       non-bash consumers (SKILL.md, tests) can call it. Derivation: if `.path` starts with
       `sources/`, the key is the first path component after that prefix; otherwise fall back to
       `.id`. Document in the file header that this mirrors the four existing inline
-      `prefix = "sources/"` sites in `literature-search.sh`, which are deliberately left in place.
-- [ ] Rewire `get_project_doc_ids()` to emit the **union** of the path-derived key and `.id` for
+      `prefix = "sources/"` sites in `literature-search.sh`, which are deliberately left in place. *(completed)*
+- [x] Rewire `get_project_doc_ids()` to emit the **union** of the path-derived key and `.id` for
       each matching entry. Union, not replacement: the result feeds a `WHERE d.doc_id IN (...)`
       filter, so an extra key with no FTS rows is inert, while dropping a key can silently hide a
       document. Iterate `.entries[]?` (children included) — that is what pulls in the directories
-      whose only index coverage is at child level.
-- [ ] Add a header comment recording the invariant: **the allow-list must live in the
-      `chunks_data.doc_id` namespace, never the curated `.id` namespace.**
+      whose only index coverage is at child level. *(completed)*
+- [x] Add a header comment recording the invariant: **the allow-list must live in the
+      `chunks_data.doc_id` namespace, never the curated `.id` namespace.** *(completed)*
 
 **Timing**: 1.5 hours
 
