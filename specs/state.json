@@ -1367,6 +1367,18 @@
             "bridge-not-migrate"
           ]
         }
+      ],
+      "blockers": [
+        {
+          "phase": 8,
+          "type": "unsafe_for_autonomous_execution",
+          "description": "Corpus data reconciliation in ~/Projects/Literature/ (separate real personal repo): its own clean-tree precondition already fails (13 uncommitted lines left over from a separate, unrelated, already-completed task, never committed there), and the required duplicate-chunk-directory adjudication (proofs_and_types vs girard_1989; van_doorn_2015_propositional_calculus_coq vs van_doorn_2015) requires real content judgment on citation-grade personal corpus data with no loud-failure safety net. Recommended follow-up: a human reviews and commits (or discards) the leftover task's changes first, then a future dispatch (or the user directly) performs the 15-parent-entry addition (low risk, mirrors validated corpus commit e6ce8bd9), reviews the duplicate pairs by hand, and decides gabbay_2000."
+        },
+        {
+          "phase": 10,
+          "type": "dependency_unmet",
+          "description": "The --validate WARN-to-FAIL escalation depends on Phase 8's corpus reconciliation, which did not run. Escalating now would fail --validate against the live corpus immediately (index-only bucket = 1, gabbay_2000, confirmed by execution). Deferred until Phase 8 completes."
+        }
       ]
     },
     {
