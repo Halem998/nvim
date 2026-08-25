@@ -220,7 +220,8 @@ The subagent will:
 - Implement ONLY the specified phase (per-phase focus)
 - Use lean_goal before and after each tactic application
 - Use lean_multi_attempt before applying edits
-- Run final verification (sorry check, axiom check, lake build)
+- Run final verification (sorry check, axiom check, lake build — detached, via the build guard,
+  see `context/project/lean4/operations/long-builds.md`)
 - Write the orchestrator handoff (with sorry_inventory) to the ABSOLUTE path given as
   `handoff_path` in the delegation context — never a bare `.orchestrator-handoff.json` filename
 - Create implementation summary
@@ -441,7 +442,8 @@ Keep status as "implementing" for resume.
 After the agent returns, this skill MUST NOT:
 
 1. **Edit source files** - All Lean proof work is done by agent
-2. **Run lake build** - Build verification is done by agent
+2. **Run lake build** - Build verification is done by agent (the agent's build is detached and
+   guarded — see `context/project/lean4/operations/long-builds.md`)
 3. **Use MCP tools** - lean-lsp tools are for agent use only
 4. **Grep for sorries** - Debt analysis is agent work
 5. **Write summary/reports** - Artifact creation is agent work

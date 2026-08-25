@@ -105,7 +105,8 @@ The subagent will:
 - Load implementation context files (MCP tools guide, tactic patterns)
 - Parse plan and find resume point
 - Execute phases sequentially using lean-lsp MCP tools
-- Verify proofs with `lean_goal` and `lake build`
+- Verify proofs with `lean_goal` and `lake build` (detached, via the build guard — see
+  `context/project/lean4/operations/long-builds.md`)
 - Create implementation summary
 - Write metadata to `specs/{N}_{SLUG}/.return-meta.json`
 - Return a brief text summary (NOT JSON)
@@ -150,7 +151,9 @@ else
 fi
 ```
 
-**Note**: The agent performs all verification (sorry check, axiom check, lake build) and records results in metadata. This skill reads those results - it does NOT re-verify.
+**Note**: The agent performs all verification (sorry check, axiom check, lake build — detached and
+guarded, see `context/project/lean4/operations/long-builds.md`) and records results in metadata.
+This skill reads those results - it does NOT re-verify.
 
 ---
 
@@ -299,7 +302,8 @@ Keep status as "implementing" for resume.
 After the agent returns, this skill MUST NOT:
 
 1. **Edit source files** - All Lean proof work is done by agent
-2. **Run lake build** - Build verification is done by agent
+2. **Run lake build** - Build verification is done by agent (the agent's build is detached and
+   guarded — see `context/project/lean4/operations/long-builds.md`)
 3. **Use MCP tools** - lean-lsp tools are for agent use only
 4. **Grep for sorries** - Debt analysis is agent work
 5. **Write summary/reports** - Artifact creation is agent work

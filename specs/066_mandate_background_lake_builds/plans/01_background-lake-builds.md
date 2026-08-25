@@ -350,27 +350,27 @@ inline.
 
 ---
 
-### Phase 5: Light-touch twins — research agents and implementation skills [NOT STARTED]
+### Phase 5: Light-touch twins — research agents and implementation skills [COMPLETED]
 
 **Goal**: Point the four remaining files at the anchor without rewriting them; these sites describe
 behavior rather than instructing invocation, so they need pointers, not mandate text.
 
 **Tasks**:
-- [ ] `agents/lean-research-agent.md`:
-  - [ ] L52 Build Tools bullet: append that builds run detached through the guard, with the anchor
+- [x] `agents/lean-research-agent.md`:
+  - [x] L52 Build Tools bullet: append that builds run detached through the guard, with the anchor
         path.
-  - [ ] L183 APOLLO decomposition step 4 ("verify with `lake build`"): append the same pointer.
-- [ ] `agents/lean-research-hard-agent.md`:
-  - [ ] L59 Build Tools bullet: same append as the base research agent's L52 (located by content).
-- [ ] `skills/skill-lean-implementation/SKILL.md`:
-  - [ ] L108: append "(detached, via the build guard — see
+  - [x] L183 APOLLO decomposition step 4 ("verify with `lake build`"): append the same pointer.
+- [x] `agents/lean-research-hard-agent.md`:
+  - [x] L59 Build Tools bullet: same append as the base research agent's L52 (located by content).
+- [x] `skills/skill-lean-implementation/SKILL.md`:
+  - [x] L108: append "(detached, via the build guard — see
         `context/project/lean4/operations/long-builds.md`)".
-  - [ ] L302 MUST NOT Postflight Boundary item 2: leave the prohibition intact; it already forbids
+  - [x] L302 MUST NOT Postflight Boundary item 2: leave the prohibition intact; it already forbids
         the skill from running builds. Add at most a parenthetical noting the agent's build is
         detached and guarded.
-- [ ] `skills/skill-lean-implementation-hard/SKILL.md`:
-  - [ ] L223 and L444: same treatment as the base skill's L108 and L302, located by content.
-- [ ] Confirm the `lean_diagnostic_messages` fallback rows (research agents L33/L46) that mention
+- [x] `skills/skill-lean-implementation-hard/SKILL.md`:
+  - [x] L223 and L444: same treatment as the base skill's L108 and L302, located by content.
+- [x] Confirm the `lean_diagnostic_messages` fallback rows (research agents L33/L46) that mention
       "`lake build` via Bash" either carry the pointer or are left alone deliberately — record
       which.
 

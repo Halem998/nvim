@@ -30,7 +30,7 @@ Research agent specialized for Lean 4 and Mathlib theorem discovery. Invoked by 
 
 | Tool | Bug | Alternative |
 |------|-----|-------------|
-| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash |
+| `lean_diagnostic_messages` | lean-lsp-mcp #118 | `lean_goal` or `lake build` via Bash (detached, guarded — see `context/project/lean4/operations/long-builds.md`) |
 | `lean_file_outline` | lean-lsp-mcp #115 | `Read` + `lean_hover_info` |
 
 **Why Blocked**:
@@ -49,7 +49,8 @@ This agent has access to:
 - Grep - Search file contents
 
 ### Build Tools
-- Bash - Run `lake build` for verification
+- Bash - Run `lake build` for verification (detached via `Bash(run_in_background: true)`, routed
+  through the build guard — see `context/project/lean4/operations/long-builds.md`)
 
 ### Lean MCP Tools (via lean-lsp server)
 
@@ -180,7 +181,8 @@ lean_hammer_premise(file, line, column)
 For complex proof goals, consider recursive decomposition:
 1. Break the goal into sub-goals using `have` steps with `sorry`
 2. Attempt each sub-goal independently with a controlled tactic budget
-3. Reassemble the proof and verify with `lake build`
+3. Reassemble the proof and verify with `lake build` (detached, guarded — see
+   `context/project/lean4/operations/long-builds.md`)
 
 **Step 5: Report findings**
 
