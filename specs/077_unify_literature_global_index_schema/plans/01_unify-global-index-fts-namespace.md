@@ -533,28 +533,28 @@ the output shape before writing the integration; if the shape differs, adapt rat
 
 ---
 
-### Phase 7: `/literature --validate` schema-conformance and namespace-divergence check [NOT STARTED]
+### Phase 7: `/literature --validate` schema-conformance and namespace-divergence check [COMPLETED]
 
 **Goal**: Fix the `.path`-driven loop that misreports a schema defect as a missing file, and add
 the id-vs-`chunks_data.doc_id` set comparison (acceptance criteria 5 and 7) — in WARN mode.
 
 **Tasks**:
-- [ ] In `skills/skill-literature/SKILL.md` Validate Step 1, stop driving the loop off
+- [x] In `skills/skill-literature/SKILL.md` Validate Step 1, stop driving the loop off
       `jq -r '.entries[] | .path'`. Iterate `.entries[]` as whole records (e.g. compact JSON per
-      line) so an entry lacking `.path` is seen as an entry, not as the literal string `null`.
-- [ ] Add a schema-shape bucket, reported separately from stale entries: entries missing `.id`,
+      line) so an entry lacking `.path` is seen as an entry, not as the literal string `null`. *(completed)*
+- [x] Add a schema-shape bucket, reported separately from stale entries: entries missing `.id`,
       missing `.path`, or carrying a `.path` that is not `sources/`-prefixed. The existing
-      `null (missing)` misreport must be gone.
-- [ ] Add the namespace-divergence check: read `SELECT DISTINCT doc_id FROM chunks_data` from
+      `null (missing)` misreport must be gone. *(completed: verified by execution -- see phase notes)*
+- [x] Add the namespace-divergence check: read `SELECT DISTINCT doc_id FROM chunks_data` from
       `$LITERATURE_DIR/.literature.db` via `sqlite3` (following `literature-search.sh`'s existing
       pattern), derive the index-side key set via `literature-doc-key.sh --list-keys`, and report
       three buckets — FTS doc_ids with no index coverage; index dir keys with no FTS chunks;
-      parent entries whose `.id` is neither its own path-derived key nor present in FTS.
-- [ ] Ship the divergence check as **WARN**, printing the Phase 1 baseline counts as a documented
+      parent entries whose `.id` is neither its own path-derived key nor present in FTS. *(completed: bucket 3 gated on the dir-key ALSO failing to resolve in FTS, so the 17 supported paired entries Decision C names are correctly excluded -- see phase notes for the fixture proof)*
+- [x] Ship the divergence check as **WARN**, printing the Phase 1 baseline counts as a documented
       known-exceptions figure and naming the phase that escalates it. Do not fail the command yet —
-      the corpus residue is not reconciled until Phase 8.
-- [ ] Keep the existing stale-entry, token-drift, required-field, and authors-shape checks working
-      unchanged under the new loop.
+      the corpus residue is not reconciled until Phase 8. *(completed: exit 0 confirmed by execution in all fixture and live-corpus runs)*
+- [x] Keep the existing stale-entry, token-drift, required-field, and authors-shape checks working
+      unchanged under the new loop. *(completed: verified by execution against the live corpus -- schema_warnings populated as before, e.g. missing doc_type/source_format on legacy entries)*
 
 **Timing**: 2 hours
 

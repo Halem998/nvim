@@ -358,7 +358,15 @@ if [ ! -f "$index_file" ]; then
   exit 0
 fi
 
-entries=$(jq -r '.entries[] | .path' "$index_file" 2>/dev/null)
+# Iterate entries as WHOLE RECORDS (one compact-JSON object per line), never as bare
+# `.path` strings. Driving the loop off `.entries[] | .path` collapses a `.path`-less
+# entry (a schema-shape defect, e.g. a stub written by an older literature-ingest.sh)
+# into the literal string "null" -- which then resolves to a nonexistent file
+# "$lit_dir/null" and gets misreported as a missing FILE ("null (missing)") rather than
+# surfaced as the schema defect it actually is. Reading each entry as a full record
+# lets Step 2 below classify a path-less/id-less entry correctly before ever touching
+# the filesystem.
+entries=$(jq -c '.entries[]' "$index_file" 2>/dev/null)
 ```
 
 ### Validate Step 2: Check Each Entry
@@ -381,8 +389,37 @@ stale_entries=()
 drift_entries=()
 schema_warnings=()
 authors_shape_warnings=()
+schema_shape_defects=()
 
-while IFS= read -r entry_path; do
+while IFS= read -r entry_json; do
+  [ -z "$entry_json" ] && continue
+
+  entry_id=$(echo "$entry_json" | jq -r '.id // .doc_id // empty')
+  entry_path=$(echo "$entry_json" | jq -r '.path // empty')
+
+  # --- Schema-shape bucket, reported separately from stale entries ---
+  # An entry missing .id (and .doc_id), missing .path, or carrying a .path that is not
+  # sources/-prefixed is a SCHEMA-SHAPE defect (the entry itself is malformed), not a
+  # missing-file defect (the entry is well-formed but its target vanished). Classifying
+  # it here, before any filesystem check runs, is what ends the old "null (missing)"
+  # misreport: a .path-less entry never reaches the file-existence check below at all.
+  shape_defects=()
+  [ -z "$entry_id" ] && shape_defects+=("missing .id/.doc_id")
+  if [ -z "$entry_path" ]; then
+    shape_defects+=("missing .path")
+  elif [[ "$entry_path" != sources/* ]]; then
+    shape_defects+=("path not sources/-prefixed: $entry_path")
+  fi
+  if [ "${#shape_defects[@]}" -gt 0 ]; then
+    label="${entry_id:-<no id>}"
+    joined=$(IFS=", "; echo "${shape_defects[*]}")
+    schema_shape_defects+=("$label ($joined)")
+    # A path-less entry has no filesystem target to check and no .path to key the
+    # existing per-path checks below on -- skip straight to the next entry rather than
+    # falling through into checks that assume entry_path is usable.
+    [ -z "$entry_path" ] && continue
+  fi
+
   full_path="$lit_dir/$entry_path"
 
   # Directory-path entries (trailing slash, or resolves to a directory on disk) are a
@@ -401,7 +438,7 @@ while IFS= read -r entry_path; do
     # Recount tokens (file-path entries only)
     char_count=$(wc -c < "$full_path" 2>/dev/null || echo 0)
     current_tokens=$(( char_count / 4 + 20 ))
-    stored_tokens=$(jq --arg p "$entry_path" '.entries[] | select(.path == $p) | .token_count' "$index_file" 2>/dev/null || echo 0)
+    stored_tokens=$(echo "$entry_json" | jq -r '.token_count // 0')
 
     if [ -n "$stored_tokens" ] && [ "$stored_tokens" -gt 0 ]; then
       # Calculate drift percentage
@@ -414,18 +451,17 @@ while IFS= read -r entry_path; do
     fi
   fi
 
-  # Check for required schema fields (new in schema v2). Reads index.json via jq, not the
-  # filesystem, so this runs for every entry that resolves on disk -- directory-path entries
-  # included.
-  missing_fields=$(jq -r --arg p "$entry_path" '
-    .entries[] | select(.path == $p) |
+  # Check for required schema fields (new in schema v2). Reads the already-parsed
+  # entry record directly (no re-query by path needed), so this runs for every entry
+  # that resolves on disk -- directory-path entries included.
+  missing_fields=$(echo "$entry_json" | jq -r '
     [
       (if .doc_type == null or .doc_type == "" then "doc_type" else empty end),
       (if .source_format == null or .source_format == "" then "source_format" else empty end),
       (if .authors == null then "authors" else empty end),
       (if .title == null or .title == "" then "title" else empty end)
     ] | join(", ")
-  ' "$index_file" 2>/dev/null || echo "")
+  ' 2>/dev/null || echo "")
   if [ -n "$missing_fields" ]; then
     schema_warnings+=("$entry_path (missing fields: $missing_fields)")
   fi
@@ -440,8 +476,8 @@ while IFS= read -r entry_path; do
   # like "Patrick Blackburn, Maarten de Rijke, Yde Venema" or two-author strings like
   # "Patrick Blackburn, Maarten de Rijke". Mirror this same heuristic in
   # literature-normalize-authors.sh so validate and normalize stay consistent. Also reads
-  # index.json via jq, so this covers directory-path entries too.
-  authors_shape=$(jq -r --arg p "$entry_path" '
+  # the already-parsed entry record directly, so this covers directory-path entries too.
+  authors_shape=$(echo "$entry_json" | jq -r '
     def is_comma_joined:
       ( [scan(", ")] | length ) as $n
       | if $n >= 2 then true
@@ -449,17 +485,88 @@ while IFS= read -r entry_path; do
           ( (split(", ")[1]) | ([scan("[A-Z][a-zA-Z]+")] | length) ) >= 2
         else false
         end;
-    .entries[] | select(.path == $p) |
     [
       (if .authors != null and (.authors | type) != "array" then "authors:not-array" else empty end),
       (if (.authors | type) == "array" and (.authors | any(type != "string")) then "authors:non-string-element" else empty end),
       (if (.authors | type) == "array" and (.authors | any(type == "string" and is_comma_joined)) then "authors:possibly-comma-joined" else empty end)
     ] | join(", ")
-  ' "$index_file" 2>/dev/null || echo "")
+  ' 2>/dev/null || echo "")
   if [ -n "$authors_shape" ]; then
     authors_shape_warnings+=("$entry_path ($authors_shape)")
   fi
 done <<< "$entries"
+```
+
+### Validate Step 2b: Namespace Divergence Check (WARN mode)
+
+Compares index.json's identity space against `.literature.db`'s `chunks_data.doc_id` space,
+using the same path-derived bridge `literature-search.sh`'s `get_project_doc_ids()` and
+`literature-doc-key.sh` already use (never `.id` alone — see that script's header for the full
+invariant). Ships as **WARN only**: it reports divergence, it never fails the command. The
+corpus residue is reconciled separately; until that reconciliation lands, a non-empty divergence
+bucket is expected, and the known-exceptions figure recorded in
+`specs/077_unify_literature_global_index_schema/reports/02_baseline-measurements.md` <!-- task-ref-ok: durable pointer to the baseline artifact, not a task-number citation -->
+is printed alongside the live counts so a reader can see whether divergence grew beyond that
+baseline.
+
+```bash
+# Validate mode can be invoked without passing through Convert mode's setup, so
+# resolve SCRIPT_DIR defensively here rather than assuming it is already set.
+SCRIPT_DIR="${SCRIPT_DIR:-$(dirname "$0")/../../scripts}"
+DOC_KEY_SCRIPT="$SCRIPT_DIR/literature-doc-key.sh"
+DIVERGENCE_KNOWN_EXCEPTIONS_NOTE="baseline: 15 FTS-only directories with no parent entry, 1 index-only entry with no FTS chunks (gabbay_2000, conversion rejected)"
+
+divergence_fts_only=()
+divergence_index_only=()
+divergence_id_inconsistent=()
+
+if [ -x "$DOC_KEY_SCRIPT" ] && [ -f "$lit_dir/.literature.db" ] && command -v sqlite3 >/dev/null 2>&1; then
+  fts_ids=$(sqlite3 "$lit_dir/.literature.db" "SELECT DISTINCT doc_id FROM chunks_data;" 2>/dev/null | sort -u)
+  index_keys=$("$DOC_KEY_SCRIPT" --list-keys "$index_file" 2>/dev/null | sort -u)
+
+  # FTS doc_ids with no index coverage at all (neither .id nor path-derived key reaches them)
+  while IFS= read -r fid; do
+    [ -z "$fid" ] && continue
+    if ! grep -qxF "$fid" <<< "$index_keys"; then
+      divergence_fts_only+=("$fid")
+    fi
+  done <<< "$fts_ids"
+
+  # Index dir keys (parent entries' path-derived key) with no FTS chunks under that key
+  while IFS= read -r entry_json; do
+    [ -z "$entry_json" ] && continue
+    is_parent=$(echo "$entry_json" | jq -r 'if (.parent_doc == null or .parent_doc == "") then "yes" else "no" end')
+    [ "$is_parent" != "yes" ] && continue
+    p_id=$(echo "$entry_json" | jq -r '.id // .doc_id // empty')
+    p_path=$(echo "$entry_json" | jq -r '.path // empty')
+    [ -z "$p_id" ] && continue
+    dir_key="$p_id"
+    if [[ "$p_path" == sources/* ]]; then
+      dir_key="${p_path#sources/}"
+      dir_key="${dir_key%%/*}"
+    fi
+    dir_key_in_fts="no"
+    grep -qxF "$dir_key" <<< "$fts_ids" && dir_key_in_fts="yes"
+    if [ "$dir_key_in_fts" = "no" ]; then
+      divergence_index_only+=("$p_id (dir key: $dir_key)")
+    fi
+    # Parent entries whose .id is neither its own path-derived key nor present in FTS
+    # under EITHER lookup strategy -- i.e. completely unreachable, not merely a
+    # curated-id-differs-from-FTS-id pairing. The `.id != dir_key` paired case (the 17
+    # supported entries Decision C names) is deliberately NOT reported here: when
+    # `dir_key` itself resolves in FTS, the path bridge already covers that entry, and
+    # Decision C is explicit that a differing curated `.id` is a supported
+    # configuration in that case, not a defect. Gating on `dir_key_in_fts == no` (in
+    # addition to `.id` also not resolving) is what keeps this bucket at the expected
+    # near-zero count on a corpus where the bridge is doing its job, rather than
+    # re-flagging every one of those 17 supported pairings as broken.
+    if [ "$p_id" != "$dir_key" ] && [ "$dir_key_in_fts" = "no" ] && ! grep -qxF "$p_id" <<< "$fts_ids"; then
+      divergence_id_inconsistent+=("$p_id (path-derived key: $dir_key)")
+    fi
+  done <<< "$entries"
+else
+  echo "Warning: namespace-divergence check skipped (literature-doc-key.sh, .literature.db, or sqlite3 unavailable)" >&2
+fi
 ```
 
 ### Validate Step 3: Find Unindexed Markdown Files
@@ -483,6 +590,13 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 **Index**: specs/literature/index.json
 **Total Entries**: {N}
 
+### Schema-Shape Defects ({count}) — malformed entries (missing .id/.doc_id, missing .path, or
+### .path not sources/-prefixed) — reported separately from missing FILES below
+{for each schema_shape_defect entry:}
+- {label} ({defects})
+  These entries are malformed records, not files that vanished; the fix is to repair or remove
+  the entry, not to search the filesystem for a target.
+
 ### Stale Entries ({count}) — path in index but file missing
 {for each stale entry:}
 - {entry_path}
@@ -502,16 +616,37 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
   Run: bash .claude/scripts/literature-normalize-authors.sh {index_file} --apply to normalize,
   or run with no flag (dry-run is the default) first to preview the change.
 
+### Namespace Divergence (WARN — index.json vs. .literature.db chunks_data.doc_id)
+{DIVERGENCE_KNOWN_EXCEPTIONS_NOTE}
+
+#### FTS-only doc_ids with no index coverage ({count})
+{for each divergence_fts_only entry:}
+- {doc_id}
+
+#### Index dir keys with no FTS chunks ({count})
+{for each divergence_index_only entry:}
+- {id} (dir key: {dir_key})
+
+#### Parent entries whose .id is neither its own path-derived key nor present in FTS ({count})
+{for each divergence_id_inconsistent entry:}
+- {id} (path-derived key: {dir_key})
+
+This section never fails the command (WARN mode only) — the bridge (path-derived key resolution)
+already covers most of this divergence at read time; a non-empty bucket here names the residue
+still needing a corpus-side fix, not necessarily a broken reader.
+
 ### Unindexed Files ({count}) — markdown files not in index.json
 {for each unindexed file:}
 - {file_path}
   Run: /literature --index {file_path}
 
-{if all clean:}
+{if all clean (including zero schema-shape defects and zero namespace divergence beyond the
+known-exceptions baseline):}
 ### Validation Passed
 
-All {N} index entries are valid. No stale paths, no drift, no schema warnings, no authors-shape
-warnings, no unindexed files.
+All {N} index entries are valid. No schema-shape defects, no stale paths, no drift, no schema
+warnings, no authors-shape warnings, no namespace divergence beyond the known-exceptions
+baseline, no unindexed files.
 ```
 
 ---

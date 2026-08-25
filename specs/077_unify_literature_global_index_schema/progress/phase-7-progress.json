@@ -1,0 +1,35 @@
+{
+  "phase": 7,
+  "phase_name": "/literature --validate schema-conformance and namespace-divergence check",
+  "started_at": "2026-08-25T01:46:00Z",
+  "last_updated": "2026-08-25T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Stop driving the loop off .path strings; iterate whole records", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 2, "description": "Add schema-shape bucket", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 3, "description": "Add namespace-divergence check (3 buckets)", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 4, "description": "Ship divergence check as WARN, not FAIL", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Keep existing stale/drift/schema/authors checks working", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "divergence bucket 3 (id-inconsistent) defined as .id != dir_key AND .id not in FTS (literal plan wording)", "result": "failed", "reason": "Verified by execution against the live corpus that this literal reading flags all 17 of Decision C's explicitly-supported paired entries (curated .id differs from FTS doc_id, resolved via the path bridge) as broken, contradicting Decision C's own statement that this pairing is a supported configuration, not a defect. Redefined to additionally require the dir_key itself to also fail FTS resolution, which correctly excludes the 17 supported pairings while still catching a genuinely unreachable entry (fixture-proven)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Live-corpus divergence bucket 1 (FTS-only, no index coverage) expected to read 15 per the plan's Scope Hypothesis phrasing",
+      "type": "altered",
+      "reason": "Verified by execution: the live corpus reads 0 for this bucket, not 15. Investigated why -- Phase 2's own design (quoted in this phase's own task list: 'Iterate .entries[]? (children included) -- that is what pulls in the directories whose only index coverage is at child level') means literature-doc-key.sh's --list-keys unions the path-derived key across ALL entries, not just parents. The 15 directories Decision C names ('FTS-only directories with no PARENT entry') already have CHILD-level entries whose .path points into them (confirmed for burgess_1982: child entries burgess_1982_sec01/sec02 carry path sources/burgess_1982/...), so they are already functionally reachable via the bridge search/briefing actually use. Decision C's '15' figure is a Phase-8-scoped browsability/completeness concern (add a parent record so the directory has a proper top-level entry), not a reachability defect this divergence check should flag. The other two buckets match the plan's stated expectation exactly: index-only=1 (gabbay_2000), id-inconsistent=0.",
+      "annotation": "*(deviation: altered — bucket 1 correctly reads 0 on the live corpus per Phase 2's child-inclusive design, not the plan's 15; see phase notes)*"
+    }
+  ],
+  "verification_evidence": {
+    "old_behavior_reproduced": "Extracted the pre-edit (git HEAD) Validate Step 1/2 bash blocks and ran them against a fixture index with one entry entirely missing .path: reproduced the literal 'null (missing)' stale-entry misreport, confirming the defect before editing.",
+    "new_behavior_fixture": "Extracted the post-edit Validate Step 1/2/2b bash blocks and ran them against the same fixture: the path-less entry is now classified as 'no_path_stub_2026 (missing .path)' in schema_shape_defects; stale_entries is empty; the string 'null (missing)' never appears anywhere in the output.",
+    "divergence_fixture_mismatched_pair_not_flagged": "Fixture with a supported paired entry (id=mismatched_curated_id, path=sources/mismatched_bare/, FTS has doc_id=mismatched_bare): correctly absent from divergence_id_inconsistent (the bridge covers it, matching Decision C).",
+    "divergence_fixture_genuinely_broken_flagged": "Fixture with id=totally_broken_curated_id, path=sources/totally_broken_bare/, and NEITHER id nor dir key present in FTS: correctly appears in both divergence_index_only and divergence_id_inconsistent.",
+    "divergence_fixture_fts_only_and_index_only": "totally_orphan_fts (FTS doc_id with zero index coverage of any kind) correctly appears in divergence_fts_only; orphan_index_only (parent with a sources/ path and zero FTS chunks) correctly appears in divergence_index_only.",
+    "live_corpus_run": "Against the live corpus: schema_shape_defects=0, stale_entries=0, divergence_fts_only=0 (see deviation above), divergence_index_only=1 (gabbay_2000), divergence_id_inconsistent=0. schema_warnings populated as before (legacy entries missing doc_type/source_format), confirming the pre-existing check is unchanged. Exit code 0 in all runs (WARN mode, never fails)."
+  }
+}
