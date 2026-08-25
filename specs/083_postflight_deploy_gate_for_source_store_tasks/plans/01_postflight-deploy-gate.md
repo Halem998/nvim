@@ -1,7 +1,7 @@
 # Implementation Plan: Postflight Deploy Gate for Source-Store Tasks
 
 - **Task**: 83 - Make 'completed' mean 'in effect' for tasks that edit the source store — a postflight deploy gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: 82 (complete — `deploy-headless.sh` runs `verify-deploy.sh --skip-slow` inline and exits 3 for "deploy landed, verification failed")
 - **Research Inputs**: specs/083_postflight_deploy_gate_for_source_store_tasks/reports/01_postflight_deploy_gate.md
@@ -189,21 +189,21 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Scope correction and behavioral baselines [NOT STARTED]
+### Phase 1: Scope correction and behavioral baselines [COMPLETED]
 
 **Goal**: Write the corrected `file_scope` into `specs/state.json` and capture the pre-change
 behavioral baselines that every later phase's "no regression" verification compares against.
 
 **Tasks**:
-- [ ] Write the ten-entry corrected `file_scope` (see "Corrected File Scope" above) into task 83's
+- [x] Write the ten-entry corrected `file_scope` (see "Corrected File Scope" above) into task 83's *(completed)*
       `specs/state.json` entry via `state-write.sh`, never by hand-editing the file.
-- [ ] Capture `bash .claude/scripts/check-deploy-freshness.sh /home/benjamin/.config/nvim` stdout,
+- [x] Capture `bash .claude/scripts/check-deploy-freshness.sh /home/benjamin/.config/nvim` stdout, *(completed)*
       stderr, and exit code to a scratch baseline file. This is the byte-comparison target for
       Phase 2.
-- [ ] Capture `bash .claude/scripts/verify-deploy.sh --findings --quiet` output, filtered to
+- [x] Capture `bash .claude/scripts/verify-deploy.sh --findings --quiet` output, filtered to *(completed: 24 pre-existing findings, rc=1)*
       `grep '^FINDING ' | sort -u`, plus its exit code, to a scratch baseline file. This records
       the pre-existing failure set that Phases 5, 6, and 8 must tolerate.
-- [ ] Confirm by execution that exit codes 0-5 are already allocated in
+- [x] Confirm by execution that exit codes 0-5 are already allocated in *(completed: 0-5 all in use, 6 free)*
       `scripts/update-task-status.sh` and that 6 is free.
 
 **Timing**: 0.5 hours
@@ -229,26 +229,26 @@ change in this plan before proceeding.
 
 ---
 
-### Phase 2: Extract the freshness comparison into a shared library [NOT STARTED]
+### Phase 2: Extract the freshness comparison into a shared library [COMPLETED]
 
 **Goal**: Create `scripts/lib/deploy-freshness-lib.sh` holding the per-extension path-scoped
 git-log comparison exactly once, and re-point `check-deploy-freshness.sh` at it with its
 always-exit-0 advisory contract preserved byte-for-byte in observable behavior.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh`, modelled *(completed)*
       structurally on `scripts/lib/file-scope-overlap.sh` (header stating it is the single home of
       the algorithm; safe to source; sets no shell options the caller inherits; exports nothing a
       caller must guess at).
-- [ ] Export one function that, given a repo root, emits one machine-readable line per extension
+- [x] Export one function that, given a repo root, emits one machine-readable line per extension *(completed: deploy_freshness_stale_names)*
       whose recorded `source_git_head` differs from the recomputed path-scoped revision, and emits
       nothing for every "cannot verify" case (missing/unparseable `.claude-extensions.json`,
       missing `source_dir` or `source_git_head`, `source_dir` absent, not a git repo, `git`/`jq`
       unavailable, empty recomputed revision).
-- [ ] Export a second function that distinguishes "verified fresh" from "cannot verify" so the
+- [x] Export a second function that distinguishes "verified fresh" from "cannot verify" so the *(completed: deploy_freshness_status)*
       blocking caller in Phase 3 can take an INCONCLUSIVE branch. `check-deploy-freshness.sh`
       collapses these two into one silence deliberately; the blocking caller must not.
-- [ ] Re-point `check-deploy-freshness.sh` at the library using the same deploy-tree-first /
+- [x] Re-point `check-deploy-freshness.sh` at the library using the same deploy-tree-first / *(deviation: altered — used SCRIPT_DIR-relative sibling lookup instead of PROJECT_ROOT-anchored candidates, since this script has no PROJECT_ROOT concept and its own $1 argument names the CONSUMER repo being checked, not its own location; see phase-2-progress.json)*
       source-store-fallback candidate-resolution pattern `update-task-status.sh` already uses for
       `phase-heading-patterns.sh`. Preserve its exact WARN line text, its stderr routing, its
       `exit 0`, and its silence in every cannot-verify case.

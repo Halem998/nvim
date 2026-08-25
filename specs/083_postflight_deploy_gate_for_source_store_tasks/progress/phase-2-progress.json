@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Extract the freshness comparison into a shared library",
+  "started_at": "2026-08-24T18:05:00Z",
+  "last_updated": "2026-08-24T18:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create deploy-freshness-lib.sh with two exported functions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh"]},
+    {"id": 2, "description": "Re-point check-deploy-freshness.sh at the library, byte-identical output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-deploy-freshness.sh"]},
+    {"id": 3, "description": "Extend test-deploy-freshness.sh for the library's two functions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Re-point check-deploy-freshness.sh at the library using the same deploy-tree-first / source-store-fallback candidate-resolution pattern update-task-status.sh already uses for phase-heading-patterns.sh",
+      "type": "altered",
+      "reason": "check-deploy-freshness.sh has no PROJECT_ROOT concept (no deploy-root-guard.sh, deliberately standalone/preflight-cheap) and its $1 REPO_ROOT argument names the CONSUMER repo being checked, not this script's own location -- a PROJECT_ROOT-anchored candidate list would be wrong here. Used SCRIPT_DIR-relative sibling lookup (lib/deploy-freshness-lib.sh next to the script) instead, which resolves correctly in both the deployed tree and the source store with no root computation needed, and updated test-deploy-freshness.sh's fixture to copy the library alongside the checker so the sibling relationship holds inside the fixture too.",
+      "annotation": "*(deviation: altered — SCRIPT_DIR-relative sibling lookup instead of PROJECT_ROOT-anchored candidates; see phase-2-progress.json)*"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Scope correction and behavioral baselines",
+  "started_at": "2026-08-24T17:50:00Z",
+  "last_updated": "2026-08-24T18:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write ten-entry corrected file_scope into state.json", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 2, "description": "Capture check-deploy-freshness.sh baseline", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Capture verify-deploy.sh --findings baseline", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm exit code 6 is free", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

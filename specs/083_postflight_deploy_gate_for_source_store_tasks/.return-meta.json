@@ -1,67 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
-      "summary": "8-phase implementation plan (~10.5h) for the postflight deploy gate: shared freshness library, check-only exit-6 backstop in update-task-status.sh, regression suite, two serialized baseline-relative deploy triggers, the mandatory carve-out, and a deploy/self-demonstration phase."
-    }
-  ],
-  "next_steps": "Run /implement 83 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1787617685_88b825_83",
-    "agent_type": "planner-agent",
+    "session_id": "sess_1787617685_88b825",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "task_number": 83,
-    "phase_count": 8,
-    "estimated_hours": 10.5,
-    "dependency_waves": [
-      [
-        1
-      ],
-      [
-        2
-      ],
-      [
-        3
-      ],
-      [
-        4,
-        5,
-        6
-      ],
-      [
-        7
-      ],
-      [
-        8
-      ]
-    ]
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a new refusal branch to a shared bash chokepoint script, verify the exit-code allocation by execution rather than by taking the highest documented code and adding one. scripts/update-task-status.sh documents codes 0-4 prominently in its header usage block but also uses exit 5 twice, deep in the file, for missing-shared-library environment errors -- a research pass that read only the header recommended 5 for a new gate and would have collided. Run `grep -nE 'exit [0-9]' <script>` over the whole file and enumerate distinct codes before allocating.",
-      "category": "PATTERN",
-      "source_artifact": "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "exit-code",
-        "allocation",
-        "bash",
-        "update-task-status",
-        "chokepoint"
-      ]
-    }
-  ],
-  "modified_files": [
-    "specs/083_postflight_deploy_gate_for_source_store_tasks/plans/01_postflight-deploy-gate.md",
-    "specs/083_postflight_deploy_gate_for_source_store_tasks/.orchestrator-handoff.json",
-    "specs/083_postflight_deploy_gate_for_source_store_tasks/.return-meta.json"
-  ],
-  "errors": []
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
