@@ -38,11 +38,11 @@ next_project_number: 101
 22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
 46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
-66 [RESEARCHING] — Mandate detached (run_in_background) invocation for Lean full bui
+66 [RESEARCHED] — Mandate detached (run_in_background) invocation for Lean full bui
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-98 [RESEARCHED] — Integrate the shared Lean build guard into the lean extension: ro
+98 [PLANNING] — Integrate the shared Lean build guard into the lean extension: ro
 
 ### Literature
 
@@ -147,7 +147,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 98. Route lean extension builds through the guard and rewrite the multi-instance operations anchor
 - **Effort**: 3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 97
@@ -1717,10 +1717,11 @@ SELF-MODIFYING TASK. skills/skill-orchestrate/SKILL.md, skills/skill-orchestrate
 
 ### 66. Mandate run_in_background for Lean builds and add long-builds anchor
 - **Effort**: 3 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 97
+- **Research**: [066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md]
 
 **Description**: Mandate detached (run_in_background) invocation for Lean full builds across the lean extension's agent and skill contracts, and add a canonical anchor file documenting the foreground-cap livelock and the passive progress checks that do not disturb a running build.
 

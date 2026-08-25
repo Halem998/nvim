@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "task_number": 66,
+  "session_id": "sess_1787672746_2d5892_66",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "started": "2026-08-25T16:36:19Z",
+  "completed": "2026-08-25T16:52:00Z",
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md",
+      "summary": "Verified all 8 file_scope contract sites at current line numbers (no drift); documented lake-build-guard.sh mechanics (project-granular locking, 600s default lock-wait timeout, dead-end record on LEAN_NUM_THREADS/-j); recommended anchor content/length, guard --timeout value, scoped-build mandate extension, skill-lake-repair carve-out (guard-routed but still synchronous), twin-file MUST NOT addition, and flagged the out-of-scope lean_build MCP tool gap."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "lake-build-guard.sh (agent-system/extensions/core/scripts/) locks at whole-project granularity, not per-module: `lake-build-guard.sh build -- ModuleName` still acquires the project-root flock. A contract mandating the guard for scoped phase-end builds therefore serializes normally-independent scoped builds across concurrent sessions on the same package -- a real tradeoff, not a transparent win. Its default `--timeout` (lock-wait, not build duration) is 600s, i.e. the same as the old foreground Bash cap being replaced -- a caller expecting builds that can legitimately exceed 10 minutes should pass an explicit larger --timeout or a second waiting session can itself time out (exit 75).",
+      "category": "PATTERN",
+      "source_artifact": "specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lake-build-guard", "flock", "project-granular", "timeout", "lean", "concurrency"]
+    },
+    {
+      "content": "Bash tool command-substitution call sites ($(cmd 2>&1)) are structurally incompatible with run_in_background (which returns no stdout to a shell variable) but ARE compatible with routing through a synchronous flock-based guard wrapper, since the guard still returns stdout/exit status through $(...) unchanged. When a contract mandates both detachment and guard-routing together, a command-substitution call site can adopt the guard unchanged while being explicitly carved out of the detachment half of the mandate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["run_in_background", "command-substitution", "bash", "guard", "detachment"]
+    }
+  ],
+  "next_steps": "Run /plan 66 to create implementation plan"
+}

@@ -1013,7 +1013,7 @@
     {
       "project_number": 66,
       "project_name": "mandate_background_lake_builds",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Mandate run_in_background for Lean builds and add long-builds anchor",
@@ -1035,9 +1035,15 @@
       "effort": "3 hours",
       "priority": "high",
       "session_id": "sess_1787672746_2d5892_66",
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/066_mandate_background_lake_builds/reports/01_mandate-background-lake-builds.md",
+          "type": "report",
+          "summary": "Verifies all 8 contract sites, recommends explicit larger guard --timeout, extends the mandate to scoped builds, resolves the skill-lake-repair command-substitution exception, and flags an uncovered MCP build path."
+        }
+      ],
       "created": "2026-08-17T00:00:00Z",
-      "last_updated": "2026-08-25T16:34:23Z"
+      "last_updated": "2026-08-25T16:40:18Z"
     },
     {
       "project_number": 67,
@@ -2007,7 +2013,7 @@
     {
       "project_number": 98,
       "project_name": "route_lean_builds_through_guard",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Route lean extension builds through the guard and rewrite the multi-instance operations anchor",
@@ -2032,7 +2038,7 @@
         }
       ],
       "created": "2026-08-24T23:21:51Z",
-      "last_updated": "2026-08-25T16:39:02Z"
+      "last_updated": "2026-08-25T16:39:30Z"
     },
     {
       "project_number": 99,
