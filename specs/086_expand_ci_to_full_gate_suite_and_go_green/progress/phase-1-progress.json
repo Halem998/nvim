@@ -1,0 +1,53 @@
+{
+  "phase": 1,
+  "phase_name": "Re-derive the live gate baseline",
+  "started_at": "2026-08-25T05:00:00Z",
+  "last_updated": "2026-08-25T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run check-extension-docs.sh, capture Rule R/S list and total", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run generate-context-line-counts.sh --check, capture mismatch tallies", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run verify-deploy.sh --findings --quiet --skip-slow, capture FINDING baseline", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run check-runtime-file-tracking.sh, record exit code", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record all four captures in progress file, note divergence", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "captures": {
+    "check_extension_docs": {
+      "command": "bash .claude/scripts/check-extension-docs.sh",
+      "total_issues": 19,
+      "rule_r_count": 16,
+      "rule_r_core": 14,
+      "rule_r_typst": 2,
+      "rule_s_count": 3,
+      "rule_s_files": [
+        "context/contracts/return-meta-artifacts-template.md",
+        "context/project/literature/domain/corpus-directory-conventions.md",
+        "context/project/literature/patterns/shared-module-extraction-for-gate-checks.md"
+      ],
+      "matches_plan": true
+    },
+    "generate_context_line_counts_check": {
+      "command": "bash .claude/scripts/generate-context-line-counts.sh --check",
+      "total_entries": 492,
+      "exact_match": 476,
+      "numeric_mismatch": 16,
+      "null_line_count": 0,
+      "missing_source_file": 0,
+      "matches_plan": true
+    },
+    "verify_deploy_findings": {
+      "command": "bash .claude/scripts/verify-deploy.sh --findings --quiet --skip-slow",
+      "result": "FAIL -- 1 of 23 check(s) failed (doc-lint gate3, 19 FINDING lines all under gate3)",
+      "findings_file": "specs/086_expand_ci_to_full_gate_suite_and_go_green/progress/phase1-findings-baseline.txt",
+      "matches_plan": true
+    },
+    "check_runtime_file_tracking": {
+      "command": "bash .claude/scripts/check-runtime-file-tracking.sh",
+      "exit_code": 0,
+      "matches_plan": true
+    }
+  },
+  "divergence_from_plan": "None. All four live captures match the plan's asserted 19-issue set (16 Rule R: 14 core + 2 typst, 3 Rule S) and confirm check-runtime-file-tracking.sh exits 0."
+}

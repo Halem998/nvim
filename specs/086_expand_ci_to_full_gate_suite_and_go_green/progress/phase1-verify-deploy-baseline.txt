@@ -1,0 +1,22 @@
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+[verify-deploy] FAIL -- 1 of 23 check(s) failed
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'architecture/context-layers.md' line_count mismatch: declared 219, actual 221
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'contracts/wrap-up.md' line_count mismatch: declared 209, actual 212
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'formats/return-metadata-file.md' line_count mismatch: declared 615, actual 622
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'guides/extension-development.md' line_count mismatch: declared 271, actual 308
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'guides/loader-reference.md' line_count mismatch: declared 182, actual 191
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-footprint-overlap.md' line_count mismatch: declared 194, actual 202
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/file-metadata-exchange.md' line_count mismatch: declared 305, actual 314
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/lit-stage4a-flow.md' line_count mismatch: declared 233, actual 274
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/postflight-control.md' line_count mismatch: declared 275, actual 318
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/skill-postflight-flow.md' line_count mismatch: declared 126, actual 177
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'reference/orchestrator-critical-paths.json' line_count mismatch: declared 70, actual 74
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'schemas/state-schema.json' line_count mismatch: declared 262, actual 267
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'standards/postflight-tool-restrictions.md' line_count mismatch: declared 216, actual 219
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'standards/shell-script-testing.md' line_count mismatch: declared 101, actual 127
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/contracts/return-meta-artifacts-template.md has no entry in .claude/context/index.json
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/project/literature/domain/corpus-directory-conventions.md has no entry in .claude/context/index.json
+FINDING gate3 [project-wide] FAIL: Rule S: deployed context/project/literature/patterns/shared-module-extraction-for-gate-checks.md has no entry in .claude/context/index.json
+FINDING gate3 [typst] FAIL: Rule R: index-entries.json entry 'project/typst/standards/textbook-standards.md' line_count mismatch: declared 221, actual 226
+FINDING gate3 [typst] FAIL: Rule R: index-entries.json entry 'project/typst/standards/type-theory-foundations.md' line_count mismatch: declared 198, actual 203

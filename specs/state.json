@@ -1770,7 +1770,7 @@
     {
       "project_number": 86,
       "project_name": "expand_ci_to_full_gate_suite_and_go_green",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "essential-refactor",
       "priority": "high",
@@ -1784,7 +1784,21 @@
         "agent-system/extensions/literature/index-entries.json",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
-      "created": "2026-08-24T18:42:08Z"
+      "created": "2026-08-24T18:42:08Z",
+      "last_updated": "2026-08-25T12:21:36Z",
+      "session_id": "sess_1787659350_14cea9",
+      "artifacts": [
+        {
+          "path": "specs/086_expand_ci_to_full_gate_suite_and_go_green/reports/01_expand-ci-full-gate-suite.md",
+          "type": "report",
+          "summary": "Live gate state re-derived: 19 issues (16 line_count mismatches, 3 index-entry gaps)."
+        },
+        {
+          "path": "specs/086_expand_ci_to_full_gate_suite_and_go_green/plans/01_expand-ci-full-gate-suite.md",
+          "type": "plan",
+          "summary": "7-phase plan to make CI deploy .claude/ then run the full verify-deploy.sh gate suite, fix the 19 live gate failures, and prove the reintroduced-mismatch acceptance test."
+        }
+      ]
     },
     {
       "project_number": 87,

@@ -66,7 +66,7 @@ next_project_number: 101
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
+86 [IMPLEMENTING] — .github/workflows/check-extension-docs.yml is the repository's ON
   └─ 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
       └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
@@ -583,10 +583,12 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 ---
 
 ### 86. Expand ci to full gate suite and go green
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 82
+- **Research**: [086_expand_ci_to_full_gate_suite_and_go_green/reports/01_expand-ci-full-gate-suite.md]
+- **Plan**: [086_expand_ci_to_full_gate_suite_and_go_green/plans/01_expand-ci-full-gate-suite.md]
 
 **Description**: .github/workflows/check-extension-docs.yml is the repository's ONLY CI workflow. It runs exactly one of the nine check/lint scripts, and it exits 1 today. The single automated enforcement point in the repo is red and has been ignored -- which makes it functionally advisory, the same shape as the non-blocking hooks.
 
