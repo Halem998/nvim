@@ -43,7 +43,7 @@ next_project_number: 101
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
-96 [NOT STARTED] — Surface the sub-index vs global-index coverage delta when --lit i
+96 [RESEARCHED] — Surface the sub-index vs global-index coverage delta when --lit i
 
 ### Orchestration Concurrency
 
@@ -63,7 +63,7 @@ next_project_number: 101
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-85 [NOT STARTED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
+85 [RESEARCHED] — THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed 
 86 [NOT STARTED] — .github/workflows/check-extension-docs.yml is the repository's ON
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
@@ -77,7 +77,7 @@ next_project_number: 101
 
 ### Uncategorized
 
-99 [NOT STARTED] — Make the .orchestrator-handoff.json artifacts[] element shape una
+99 [RESEARCHED] — Make the .orchestrator-handoff.json artifacts[] element shape una
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
@@ -116,9 +116,10 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 99. Pin handoff artifacts element shape
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [099_pin_handoff_artifacts_element_shape/reports/01_pin-handoff-artifacts-shape.md]
 
 **Description**: Make the .orchestrator-handoff.json artifacts[] element shape unambiguous in the agent contracts, and stop research dispatches from emitting bare strings where the consumers require objects.
 
@@ -237,10 +238,11 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 ---
 
 ### 96. Surface literature coverage delta under lit
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 77
+- **Research**: [096_surface_literature_coverage_delta_under_lit/reports/01_lit-coverage-delta-guard.md]
 
 **Description**: Surface the sub-index vs global-index coverage delta when --lit is active, so decision-relevant sources sitting in the global corpus are not silently invisible to research. REPORTED EVIDENCE: in the Logos/Theory repo, specs/literature-index.json holds 37 entries against 399 in ~/Projects/Literature/index.json. Sources that turned out to be decision-relevant were present in the global repo, already chunked and readable, and were never surfaced to the research agents: the canonical branching-time cluster (thomason-1970-indeterminist-time, 78 chunks; reynolds-2003-ockhamist, 30; rumberg-zanardo-2019-transition-structures, 42) and the hyperproperty-monitoring cluster (finkbeiner_etal_2017_monitoring_hyperproperties; finkbeiner_etal_2018_rvhyper; bonakdarpour_sheinvald_2023_finite_word_hyperlanguages, 53; sousa_dillig_2016_cartesian_hoare_logic_k_safety, 69; agrawal_bonakdarpour_2016_runtime_verification_k_safety_hyperltl).
 
@@ -596,10 +598,11 @@ ACCEPTANCE: CI runs the full suite on every push and is green; a deliberately re
 ---
 
 ### 85. Deflake shell test suite under concurrency
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: essential-refactor
 - **Dependencies**: Task 32
+- **Research**: [085_deflake_shell_test_suite_under_concurrency/reports/01_deflake-shell-test-suite.md]
 
 **Description**: THE SHELL TEST SUITE IS NON-DETERMINISTIC, and until it is fixed no acceptance gate in this repo is trustworthy in either direction -- including the 19/23 verify-deploy figure the 2026-08-24 survey reports. Split out of a former six-item bundle where its value was diluted by hygiene items.
 
