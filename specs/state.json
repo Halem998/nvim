@@ -5,13 +5,13 @@
     {
       "project_number": 101,
       "project_name": "fix_tts_only_announces_tab_1",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Fix TTS announcements that only ever say 'Tab 1' -- across the agent systems loaded in various repos, <leader>al in nvim never announces 'Tab n' for any other n, nor lifecycle events such as 'Tab n researched' or 'Tab n planned', nor 'Tab n needs input' when a question is pending. Review what is not working and why, then make the appropriate fixes Observed counterexample during task creation: an AskUserQuestion prompt in this session DID announce 'Tab 5', so the needs-input path is not uniformly broken -- narrow the investigation to which hook paths, repos, or tab-number resolution steps fail rather than assuming a total outage. Confirmed: tab 5 is the tab this session actually occupies, so tab-number resolution itself was correct in that instance.",
       "topic": "wezterm-notifications",
       "created": "2026-08-25T19:32:47Z",
-      "last_updated": "2026-08-25T19:43:52Z",
-      "session_id": "sess_1787686451_fda471",
+      "last_updated": "2026-08-25T20:02:31Z",
+      "session_id": "sess_1787687634_f64332",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -39,6 +39,20 @@
             "shared-pattern-drift",
             "bash-set-u"
           ]
+        },
+        {
+          "content": "When a shared contract file (a lazily-imported pattern block) documents a Preconditions section naming the variables an importing file must have in scope, the contract's OWN code blocks are a drift surface that no test covers: a code block can reference a variable name absent from its own Preconditions list and nothing detects it. In this codebase that exact drift ($STATE_STATUS in a Stage 8a code block vs. the documented $status precondition) survived six-plus weeks and a full unification refactor that consolidated 11 inline copies into one shared block -- the refactor faithfully propagated the bug rather than exposing it. Two structural lessons: (1) a unification refactor validates consistency, never correctness, so it is not a review opportunity for the text it consolidates; (2) any downstream consumer with a 'no-op silently on empty/missing input' contract converts an upstream undefined-variable bug into permanent invisible failure. When planning a fix for this class, pair the rename with an observability change that makes the no-op branch loud, because the rename alone leaves the next drift equally invisible.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/101_fix_tts_only_announces_tab_1/plans/01_fix-lifecycle-tts-notify-variable.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "shared-contract-drift",
+            "preconditions-section",
+            "silent-no-op",
+            "unification-refactor",
+            "undefined-variable",
+            "observability-guard"
+          ]
         }
       ],
       "artifacts": [
@@ -46,6 +60,11 @@
           "path": "specs/101_fix_tts_only_announces_tab_1/reports/01_tts-tab-announcements-not-firing.md",
           "type": "report",
           "summary": "Confirms an undefined-variable bug ($STATE_STATUS vs $status) silently no-ops every lifecycle TTS/tab-color notification across 12 skill files; interactive needs-input announcements and /orchestrate are unaffected; includes live empirical reproduction and a fix and verification plan."
+        },
+        {
+          "path": "specs/101_fix_tts_only_announces_tab_1/plans/01_fix-lifecycle-tts-notify-variable.md",
+          "type": "plan",
+          "summary": "7-phase plan renaming the Stage 8a lifecycle-notify argument from the undefined $STATE_STATUS to $status across 12 source-store files, adding a loud-failure guard and narrow regression lint, then deploying and verifying end-to-end."
         }
       ]
     },

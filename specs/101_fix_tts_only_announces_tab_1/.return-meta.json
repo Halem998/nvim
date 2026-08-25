@@ -1,0 +1,44 @@
+{
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "session_id": "sess_1787687634_f64332",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "summary": "Created a 7-phase plan to fix the lifecycle TTS defect in which every skill's Stage 8a passes an undefined $STATE_STATUS, causing lifecycle-notify.sh to hit its empty-status no-op guard and silently drop every 'Tab n researched/planned/implemented' announcement. The chosen fix direction renames the argument to the already-documented contract variable $status at the shared origin (skill-postflight-flow.md) and at all 11 inlined call sites across the core, web, cslib, and epidemiology extensions, paired with a loud-failure guard in skill_lifecycle_notify and a logged no-op branch in lifecycle-notify.sh so this silent-failure class can never again go unobserved. A narrow regression lint is in scope; the general undefined-variable linter is deferred as a follow-up. All edits target agent-system/extensions/**, followed by deploy-headless.sh and a required end-to-end verification against specs/tmp/claude-tts-notify.log rather than a grep-only check.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/101_fix_tts_only_announces_tab_1/plans/01_fix-lifecycle-tts-notify-variable.md",
+      "summary": "7-phase plan renaming the Stage 8a lifecycle-notify argument from the undefined $STATE_STATUS to $status across 12 source-store files, adding a loud-failure guard and narrow regression lint, then deploying and verifying end-to-end."
+    }
+  ],
+  "plan_metadata": {
+    "phases": 7,
+    "total_effort_hours": 4,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_tts-tab-announcements-not-firing.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-08-25"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
+  "phase_count": 7,
+  "estimated_hours": 4,
+  "dependency_waves": [[1], [2, 3, 4, 5], [6], [7]],
+  "next_steps": "Run /implement 101 to execute the plan",
+  "memory_candidates": [
+    {
+      "content": "When a shared contract file (a lazily-imported pattern block) documents a Preconditions section naming the variables an importing file must have in scope, the contract's OWN code blocks are a drift surface that no test covers: a code block can reference a variable name absent from its own Preconditions list and nothing detects it. In this codebase that exact drift ($STATE_STATUS in a Stage 8a code block vs. the documented $status precondition) survived six-plus weeks and a full unification refactor that consolidated 11 inline copies into one shared block -- the refactor faithfully propagated the bug rather than exposing it. Two structural lessons: (1) a unification refactor validates consistency, never correctness, so it is not a review opportunity for the text it consolidates; (2) any downstream consumer with a 'no-op silently on empty/missing input' contract converts an upstream undefined-variable bug into permanent invisible failure. When planning a fix for this class, pair the rename with an observability change that makes the no-op branch loud, because the rename alone leaves the next drift equally invisible.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/101_fix_tts_only_announces_tab_1/plans/01_fix-lifecycle-tts-notify-variable.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shared-contract-drift", "preconditions-section", "silent-no-op", "unification-refactor", "undefined-variable", "observability-guard"]
+    }
+  ]
+}
