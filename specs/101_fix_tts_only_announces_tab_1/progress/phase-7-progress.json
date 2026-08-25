@@ -1,0 +1,30 @@
+{
+  "phase": 7,
+  "phase_name": "Deploy and verify end-to-end",
+  "started_at": "2026-08-25T21:47:00Z",
+  "last_updated": "2026-08-25T22:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record pre-deploy baseline via verify-deploy.sh --findings", "status": "done", "files_touched": [], "note": "Baseline showed 25 checks, 3 FAIL categories, all attributable to either (a) this task's own not-yet-deployed source edits (content-hash drift / missing scripts for Phases 1-6's files), or (b) the 2 pre-existing Decision-5 findings (lean4 line_count mismatch, missing lake-build-guard.sh), PLUS one genuinely NEW finding this task introduced: a nvim guide index-entries.json line_count mismatch caused by Phase 5's edit growing tts-stt-integration.md from 372 to 382 lines without updating its declared line_count. Fixed immediately (see deviation)."},
+    {"id": 2, "description": "Capture pre-deploy claude-tts-notify.log line count", "status": "done", "files_touched": [], "note": "1458 lines before deploy"},
+    {"id": 3, "description": "Run deploy-headless.sh", "status": "done", "files_touched": [], "note": "Deploy landed; fast-gate verification inside deploy-headless.sh showed only the pre-existing lean4 doc-lint finding remaining"},
+    {"id": 4, "description": "Verify deploy landed: diff source vs deployed twins", "status": "done", "files_touched": [], "note": "skill-base.sh, lifecycle-notify.sh, skill-postflight-flow.md, skill-implementer/SKILL.md, skill-team-implement/SKILL.md, and the nvim guide all byte-identical to their deployed twins. web/cslib/epidemiology extensions are not currently loaded so have no deployed twin to diff -- their source-store edits remain correct and in scope per Phase 3's own scope note regardless of load state."},
+    {"id": 5, "description": "Confirm no STATE_STATUS in deployed skills/patterns beyond legitimate prose", "status": "done", "files_touched": []},
+    {"id": 6, "description": "End-to-end subshell check with corrected $status call site", "status": "done", "files_touched": [], "note": "New log line: 'Lifecycle notification sent: Tab 5 researched (status=researched)'"},
+    {"id": 7, "description": "Full-path check through a real skill postflight execution chain", "status": "done", "files_touched": [], "note": "Ran the real deployed skill_postflight_update + skill_lifecycle_notify functions (sourced from the deployed skill-base.sh) against an isolated fixture task directory (mktemp -d, real deployed update-task-status.sh/state-write.sh/etc. copied in, specs/tmp symlinked to the real repo's specs/tmp so the log evidence lands in the real evidentiary file) -- never touched this task's own real state.json. Produced: 'Lifecycle notification sent: Tab 5 implemented (status=implemented)'. This exercises the actual Stage 7 -> Stage 8a call chain a real skill's postflight uses, not only a hand-constructed subshell."},
+    {"id": 8, "description": "Confirm loud guard live in deployed tree", "status": "done", "files_touched": [], "note": "bash .claude/scripts/lifecycle-notify.sh \"\" appended 'Lifecycle notification skipped: empty status received, no notification sent' and exited 0"},
+    {"id": 9, "description": "Re-run verify-deploy.sh --findings post-deploy and compare to baseline", "status": "done", "files_touched": [], "note": "Post-deploy: 1 of 26 checks failed, exactly the pre-existing lean4 line_count finding. All staleness-related findings resolved; the lake-build-guard.sh missing-script finding also resolved as a byproduct of the full resync. Zero new findings."},
+    {"id": 10, "description": "Run check-task-references.sh repo-wide", "status": "done", "files_touched": [], "note": "PASS: 0 unexempted occurrences across 4 trees"}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Pre-deploy baseline must show only the 2 Decision-5 pre-existing findings",
+      "type": "altered",
+      "reason": "The pre-deploy baseline additionally surfaced a genuinely new finding: agent-system/extensions/nvim/index-entries.json declared tts-stt-integration.md's line_count as 372, but Phase 5's edit grew the file to 382 lines without updating that declaration. This was a real omission in Phase 5, not a pre-existing/unrelated finding, and was fixed immediately in this phase by updating the index-entries.json line_count field to 382 before proceeding to deploy.",
+      "annotation": "*(deviation: altered -- fixed a Phase-5-introduced index-entries.json line_count staleness during Phase 7's baseline capture, before deploying)*"
+    }
+  ]
+}

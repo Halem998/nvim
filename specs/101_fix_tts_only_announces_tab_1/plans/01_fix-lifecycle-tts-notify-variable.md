@@ -539,45 +539,61 @@ respectively) and may be dispatched together.
 
 ---
 
-### Phase 7: Deploy and verify end-to-end [NOT STARTED]
+### Phase 7: Deploy and verify end-to-end [COMPLETED]
 
 - **Goal:** Get the fix into the running `.claude/` tree and prove, empirically, that a real
   lifecycle transition now produces a TTS announcement. This phase, not any grep, is what closes
   the task.
 
 - **Tasks:**
-  - [ ] **Record the pre-existing baseline before deploying.** Run
+  - [x] **Record the pre-existing baseline before deploying.** Run
     `bash .claude/scripts/verify-deploy.sh --findings` and capture its output. Per Decision 5, the
     expected baseline is 2 findings: a `lean4` doc line-count mismatch
     (`project/lean4/operations/multi-instance-optimization.md`) and a missing deployed
     `scripts/lake-build-guard.sh`. Note that this script may exceed a 120-second foreground window
-    and should be backgrounded if so.
-  - [ ] Capture the current tail of `specs/tmp/claude-tts-notify.log` so new entries are
-    distinguishable from historical ones.
-  - [ ] Run `bash .claude/scripts/deploy-headless.sh`.
-  - [ ] Verify the deploy actually landed: `diff` each implicated source file against its `.claude/`
+    and should be backgrounded if so. *(completed: baseline additionally surfaced a genuinely NEW
+    finding -- Phase 5's edit to tts-stt-integration.md grew it from 372 to 382 lines without
+    updating its index-entries.json line_count declaration. Fixed immediately before deploying;
+    see Phase 7 progress-file deviation)*
+  - [x] Capture the current tail of `specs/tmp/claude-tts-notify.log` so new entries are
+    distinguishable from historical ones. *(completed: 1458 lines pre-deploy)*
+  - [x] Run `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+  - [x] Verify the deploy actually landed: `diff` each implicated source file against its `.claude/`
     twin — `scripts/skill-base.sh`, `scripts/lifecycle-notify.sh`,
     `context/patterns/skill-postflight-flow.md`, and a representative edited `SKILL.md` from each
-    of Phases 2 and 3. All must be byte-identical.
-  - [ ] Confirm `grep -rn "STATE_STATUS" .claude/skills .claude/context/patterns` returns nothing
+    of Phases 2 and 3. All must be byte-identical. *(completed: all byte-identical. web/cslib/
+    epidemiology extensions are not currently loaded, so Phase 3's edits have no deployed twin to
+    diff -- their source-store edits remain correct and in scope regardless of load state, per
+    Phase 3's own scope note)*
+  - [x] Confirm `grep -rn "STATE_STATUS" .claude/skills .claude/context/patterns` returns nothing
     but confirmed-legitimate prose, proving the deployed tree carries the fix and not a stale copy.
-  - [ ] **End-to-end check (required; a grep is not sufficient).** Reproduce the researcher's
+    *(completed: only the confirmed-legitimate skill-team-implement/SKILL.md prose line remains)*
+  - [x] **End-to-end check (required; a grep is not sufficient).** Reproduce the researcher's
     verified method against the *corrected* text: in a fresh subshell, source the deployed
     `.claude/scripts/skill-base.sh`, set `status` to a real lifecycle value (e.g. `researched`),
     execute the corrected literal call site `skill_lifecycle_notify "$status"`, and confirm a new
     `Lifecycle notification sent: Tab N researched (status=researched)` line appears in
-    `specs/tmp/claude-tts-notify.log`.
-  - [ ] **Full-path check.** Drive a genuine lifecycle transition through a real skill postflight
+    `specs/tmp/claude-tts-notify.log`. *(completed: new line confirmed --
+    "Lifecycle notification sent: Tab 5 researched (status=researched)")*
+  - [x] **Full-path check.** Drive a genuine lifecycle transition through a real skill postflight
     (the simplest available is this task's own subsequent lifecycle transition) and confirm a
     corresponding new log line appears — proving the fix works through the actual skill execution
-    path, not only through a hand-constructed subshell.
-  - [ ] Confirm the loud guard is live in the deployed tree: `bash .claude/scripts/lifecycle-notify.sh ""`
-    now appends an empty-status line to the log rather than exiting silently.
-  - [ ] Re-run `bash .claude/scripts/verify-deploy.sh --findings` and confirm the findings set is
+    path, not only through a hand-constructed subshell. *(completed: ran the real deployed
+    skill_postflight_update + skill_lifecycle_notify function chain against an isolated fixture
+    task directory with specs/tmp symlinked to the real log; produced "Lifecycle notification
+    sent: Tab 5 implemented (status=implemented)")*
+  - [x] Confirm the loud guard is live in the deployed tree: `bash .claude/scripts/lifecycle-notify.sh ""`
+    now appends an empty-status line to the log rather than exiting silently. *(completed: confirmed,
+    exit 0)*
+  - [x] Re-run `bash .claude/scripts/verify-deploy.sh --findings` and confirm the findings set is
     unchanged from the pre-deploy baseline apart from resolution of the `core` staleness warning.
     Any *new* finding is a regression from this work and must be fixed before the phase closes.
-  - [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number references
-    were introduced into any file outside `specs/**`.
+    *(completed: post-deploy shows exactly 1 finding -- the pre-existing lean4 line_count
+    mismatch. The lake-build-guard.sh missing-script finding also resolved, as a byproduct of the
+    full resync. Zero new findings)*
+  - [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number references
+    were introduced into any file outside `specs/**`. *(completed: PASS, 0 occurrences across 4
+    trees)*
 
 - **Timing:** 0.75 hours
 
@@ -600,22 +616,25 @@ respectively) and may be dispatched together.
 
 ## Testing & Validation
 
-- [ ] `grep -rn "STATE_STATUS" agent-system/extensions/` returns only the confirmed-legitimate uses
+- [x] `grep -rn "STATE_STATUS" agent-system/extensions/` returns only the confirmed-legitimate uses
       enumerated in Phase 1 (`update-task-status.sh` and prose describing its internal mapping).
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` passes.
-- [ ] The new narrow lint passes on the real tree and fails on a synthetic reintroduction of
+- [x] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` passes.
+      *(22 passed, 0 failed, post-deploy)*
+- [x] The new narrow lint passes on the real tree and fails on a synthetic reintroduction of
       `skill_lifecycle_notify "$STATE_STATUS"`.
-- [ ] `bash .claude/scripts/verify-deploy.sh --findings` reports no findings beyond the two
-      pre-existing, unrelated ones recorded as the Phase 7 baseline.
-- [ ] Every implicated source-store file is byte-identical to its deployed `.claude/` twin.
-- [ ] A new `Lifecycle notification sent: Tab N <status>` line appears in
+- [x] `bash .claude/scripts/verify-deploy.sh --findings` reports no findings beyond the two
+      pre-existing, unrelated ones recorded as the Phase 7 baseline. *(post-deploy: 1 finding, the
+      pre-existing lean4 line_count mismatch; the lake-build-guard.sh finding also resolved as a
+      byproduct of the resync)*
+- [x] Every implicated source-store file is byte-identical to its deployed `.claude/` twin.
+- [x] A new `Lifecycle notification sent: Tab N <status>` line appears in
       `specs/tmp/claude-tts-notify.log` from a hand-constructed corrected call site.
-- [ ] A new `Lifecycle notification sent: Tab N <status>` line appears from a genuine skill
+- [x] A new `Lifecycle notification sent: Tab N <status>` line appears from a genuine skill
       postflight execution path.
-- [ ] `bash .claude/scripts/lifecycle-notify.sh ""` logs its no-op instead of exiting silently, and
+- [x] `bash .claude/scripts/lifecycle-notify.sh ""` logs its no-op instead of exiting silently, and
       still exits 0.
-- [ ] `bash .claude/scripts/check-task-references.sh` passes.
-- [ ] No file under `.claude/**` was hand-edited; the only `.claude/**` writes came from
+- [x] `bash .claude/scripts/check-task-references.sh` passes.
+- [x] No file under `.claude/**` was hand-edited; the only `.claude/**` writes came from
       `deploy-headless.sh`.
 
 ## Artifacts & Outputs
