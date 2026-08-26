@@ -1,5 +1,5 @@
 ---
-next_project_number: 113
+next_project_number: 114
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 113
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111 | -- | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113 | -- | agent-system, extensions, literature, ... |
 | 2 | 30,64,75,76,88,104,105,109,112 | 29,42,74,87,102,108 | agent-system, extensions, literature, ... |
 | 3 | 44,107 | 88,104 | literature, essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
@@ -57,6 +57,7 @@ next_project_number: 113
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
 110 [NOT STARTED] — Stop Tier 3 online discovery from being a single point of failure
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
+113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Orchestration Concurrency
 
@@ -91,6 +92,54 @@ next_project_number: 113
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 113. Fix briefing sigpipe head crash
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified at task-creation time: the Logos/Theory deploy copy of literature-briefing.sh is byte-identical to the source store, so there is no drift to reconcile.
+
+ORIGIN: observed directly during a `/research 384 --lit` run in the Logos/Theory repo on 2026-08-26, on a 52-entry sub-index against the 11,545-entry global index. Repo-mode briefing did not return a sparse or empty result -- it CRASHED, and the wrapper reported `[lit] briefing generation failed (exit 141)`. Exit 141 is 128+13, i.e. SIGPIPE.
+
+THIS IS A DISTINCT DEFECT FROM TASKS 108 AND 112. Do not fold it into either.
+  - Task 108 is the coverage-delta performance stall in literature-lit-flag-resolve.sh (also hit in the same session: the resolver exceeded a 120s timeout). Different script, different failure.
+  - Task 112 is `--global` mode returning ZERO segments because the FTS5 query ANDs all terms of a full task description. That is a recall bug in global mode that exits 0. This task is a hard crash in REPO mode (`--query`), and it fires before any search happens.
+A repo whose sub-index is healthy and whose corpus is fully present still gets no briefing at all. In the observed session the sub-index had 52 resolvable entries and the material was reachable by hand -- `literature-search.sh` returned good results for the same topic throughout.
+
+ROOT CAUSE, CONFIRMED BY `bash -x` TRACE. literature-briefing.sh:63 sets `set -euo pipefail`. The script then extracts index fields with the pattern `jq ... | head -1`. For SCALAR extractions this is safe: jq emits one line, head consumes it, jq exits 0. There are two sites where the jq program selects a WHOLE ENTRY OBJECT and jq is NOT given `-c`, so it pretty-prints a multi-line object:
+
+    literature-briefing.sh:227-230   parent_entry=$(jq -r --arg id "$doc_id" '
+                                       .entries[]
+                                       | select((.id // .doc_id) == $id and (.parent_doc == null or .parent_doc == ""))
+                                     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+
+    literature-briefing.sh:234-236   parent_entry=$(jq -r --arg id "$doc_id" '
+                                       .entries[] | select((.id // .doc_id) == $id)
+                                     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+
+`head -1` takes the opening `{` and exits. jq keeps writing the remaining lines, receives SIGPIPE, and dies 141. `pipefail` promotes the pipeline's status to 141 and `set -e` kills the script. The `2>/dev/null` hides jq's own diagnostic, so the only visible symptom is the wrapper's `exit 141` line.
+
+WHY IT IS INTERMITTENT-LOOKING (do not be misled into calling it unreproducible). Whether jq finishes writing before head exits is a race mediated by the 64KB pipe buffer. Small entries fit the buffer and jq completes before the reader goes away, so many documents process fine; the crash lands on the first entry whose pretty-printed JSON loses that race. In the observed trace, 47 documents processed successfully and the script died on `horty_2001_agency-and-deontic-logic`. Reproduce with: `bash .claude/scripts/literature-briefing.sh --query "game theory self-play"` from a repo with a populated sub-index, or `bash -x` the same to see the exact dying site.
+
+FIX DIRECTION (validate, then choose; the second is preferred).
+  1. MINIMAL: add `-c` to both jq calls so the object is emitted on one line. This removes the race but leaves the fragile `jq | head -1` idiom in place.
+  2. PREFERRED: remove the pipe entirely by bounding the result inside jq -- `jq -c 'first(.entries[] | select(...))'` or `limit(1; ...)`. This eliminates `head` from the two sites, so no SIGPIPE is possible regardless of entry size, and it is also faster (jq stops scanning at the first match rather than streaming every match into a pipe that discards them). Note the current code scans ALL entries and throws away everything after the first -- `first`/`limit` fixes a real inefficiency alongside the crash.
+  3. AUDIT THE REMAINING `| head -1` SITES rather than assuming they are safe. Confirmed-scalar and therefore currently safe: :166, :251, :255, :259, :275, :281, :289, :310. Each should still be checked for the same shape, and any future whole-object extraction must not reintroduce the idiom. Consider whether a small helper (`jq_first`) is warranted so the correct pattern is the easy one.
+
+DO NOT "FIX" THIS BY REMOVING pipefail OR set -e. Both are load-bearing for the script's other failure handling. The bug is the idiom, not the strictness.
+
+PRESERVE EXACTLY:
+  - The `(.id // .doc_id)` tolerance at both sites -- it is load-bearing for stub-shaped entries keyed only by .doc_id (see get_doc_fidelity's header contract).
+  - The two-step lookup: strict parent_doc-filtered query first, then the unfiltered fallback for older entries lacking the field. Collapsing these two into one query changes which entry wins for documents that have both a parent and child entries.
+  - The `<!-- lit-coverage ... -->` marker semantics, which lit-stage4a-flow.md greps to drive sparse re-prompting.
+
+VERIFICATION BAR. (1) `literature-briefing.sh --query "<description>"` completes with exit 0 and emits a non-empty briefing against a populated sub-index -- run it against the Logos/Theory sub-index (52 entries), which is the observed failing case. (2) The emitted briefing is IDENTICAL in content to what the pre-fix script produced for the documents it managed to process before dying -- a fix that changes which entry is selected is a failed implementation. (3) Run against a sub-index containing horty_2001_agency-and-deontic-logic specifically, the document that triggered the observed crash. (4) Confirm no `jq ... | head -1` site remains where the jq program can emit a multi-line value.
+
+FILE-OVERLAP NOTE: task 112 also edits literature-briefing.sh (global-mode query construction, :73 and :390-419). This task touches only the repo-mode parent-entry extraction at :227-236 and the `| head -1` audit, so the two are territorially separable, but they should not run concurrently against the same file. Sequence this one FIRST: it is smaller, it is a hard crash rather than a recall problem, and 112's verification bar requires actually running the briefing script -- which this task is what makes possible in repo mode.
+
+---
 
 ### 112. Fix literature-briefing.sh --global FTS5 over-constraint returning zero segments
 - **Effort**: 6-10 hours
