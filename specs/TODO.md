@@ -1,5 +1,5 @@
 ---
-next_project_number: 114
+next_project_number: 116
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 114
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,75,76,88,104,105,109,112 | 29,42,74,87,102,108 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113,114 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,75,76,88,104,105,109,112,115 | 29,42,74,87,102,108,114 | agent-system, extensions, literature, ... |
 | 3 | 44,107 | 88,104 | literature, essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
 | 5 | 90 | 89 | essential-refactor |
@@ -32,6 +32,8 @@ next_project_number: 114
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
+  └─ 115 [NOT STARTED] — Mirror model-flag consumption into skill-orchestrate-hard, and re
 
 ### Extensions
 
@@ -92,6 +94,90 @@ next_project_number: 114
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 115. Mirror model-flag consumption into skill-orchestrate-hard and reconcile the composability docs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 114
+
+**Description**: Mirror model-flag consumption into skill-orchestrate-hard, and reconcile the documentation that currently claims /orchestrate --hard composes with model flags when it does not. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+DEPENDS ON the base model-flag threading task (wire model-flag support into /orchestrate and the base engine). The dependency is on its recorded DESIGN DECISION, not on file overlap -- the two file scopes are disjoint. Do not start this until (a) uniform-vs-lifecycle-only, (b) multi-task threading, and (c) hard-mode-MT coverage have been settled and written down there. Applying a different convention here than the base engine uses would be a failed implementation.
+
+PART 1 -- HARD ENGINE. skills/skill-orchestrate-hard/SKILL.md: `grep -c model_flag` returns ZERO over 110,490 bytes. It has 7 `subagent_type` dispatch sites, all in its SINGLE-TASK path:
+    :585, :620, :679   $RESEARCH_AGENT dispatches
+    :709               $PLANNER_AGENT
+    :886               $IMPLEMENT_AGENT
+    :1091, :1468       $RESEARCH_AGENT (escalation / late-stage)
+Add the model_flag context-parse key to its single-task Stage 1 and pass `model` at these sites, following exactly the convention the base task recorded.
+
+ITS MULTI-TASK HALF NEEDS NO EDITS, subject to the base task's confirmation of decision (c). skill-orchestrate-hard/SKILL.md:1580 states its multi-task stages are "Same as base skill-orchestrate multi-task stages (MT-1 through MT-5)", and :1687 restates that those stages live solely in the base-skill file. So base-engine edits cover hard mode's multi-task path for free. VERIFY this delegation still holds before relying on it -- if the base task found otherwise, rescope accordingly rather than leaving hard multi-task silently unwired.
+
+PART 2 -- DOCUMENTATION RECONCILIATION. merge-sources/claudemd.md contains a live contradiction:
+  - :172 (Model Enforcement) correctly says the model flags "work on `/research`, `/plan`, and `/implement`" -- accurately omitting /orchestrate.
+  - The Hard Mode `### Composability` bullet says "`--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also composable with `--fable`, e.g. `--hard --fable`)", which reads as though `/orchestrate --hard --fable` works today. It does not.
+Once the base task and Part 1 land, BOTH statements become reachable-but-stale in the other direction: :172's command list must grow to include /orchestrate, and the Composability bullet becomes true rather than aspirational. Update both so the documented surface matches the implemented one, and make sure the Options table in commands/orchestrate.md (edited by the base task) agrees with whatever exemption policy decision (a) settled -- if the override is lifecycle-only, the exemption must be stated in all three places, not just one.
+
+EDIT THE MERGE SOURCE, NOT THE GENERATED FILE. .claude/CLAUDE.md is generated from merge-sources/claudemd.md; its header says so explicitly. An edit to the generated file is wiped on the next deploy.
+
+DO NOT:
+  - Re-litigate the design decisions. They belong to the base task. If one of them looks wrong once seen in the hard engine, say so and stop rather than diverging.
+  - Edit commands/orchestrate.md or skills/skill-orchestrate/SKILL.md here. Those are the base task's territory.
+
+VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode single-task research/plan/implement agents on Fable. (2) `/orchestrate N,M --hard --fable` threads through the base MT stages -- confirming the delegation claim empirically, not just by reading :1580. (3) Omitting all model flags leaves hard-mode dispatch byte-identical to today. (4) The regenerated .claude/CLAUDE.md contains no statement about model-flag command coverage that is false.
+
+---
+
+### 114. Wire model-flag threading through /orchestrate and the base orchestrate engine
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Wire model-flag support into /orchestrate: thread model_flag from the command through the base skill-orchestrate engine so a model override actually reaches dispatched agents. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Do not hand-author anything under .claude/**.
+
+MOTIVATING CASE vs ACTUAL SCOPE. The user reported "--fable does not work with /orchestrate". --fable is NOT broken in isolation: ALL FOUR model flags (--haiku, --sonnet, --opus, --fable) are equally unwired on /orchestrate, through one single gap. The work is therefore "wire model-flag support into /orchestrate", with --fable as the motivating case. This widening was surfaced to the user and confirmed at task-creation time; it is not a silent scope expansion.
+
+ORIGIN: observed live on 2026-08-26. `/orchestrate 394,384 --lit --fable` was invoked. Every sub-dispatch silently ran on its agent's frontmatter default model. No warning, no error -- the flag was accepted and ignored.
+
+VERIFIED DEFECT (checked directly against the source store at agent-system/, not a deploy artifact):
+  1. PARSING IS ALREADY CORRECT AND MUST NOT BE TOUCHED. scripts/parse-command-args.sh already handles all four model flags (see its lines 82 and 109-118) and exports MODEL_FLAG at line 179. The flag arrives intact. The gap is entirely downstream.
+  2. commands/orchestrate.md has NO model consumer. Its `## Options` table (around line 33) lists --lit, --dry-run, --allow-self-modifying, --allow-scope-collision, --continue-budget -- no model flag. Neither of its two Skill-delegation arg strings includes a model key:
+       :430  multi-task skill-orchestrate invocation (Step 4) -- threads lit_flag, allow_self_modifying, allow_scope_collision, continue_budget
+       :626  single-task STAGE 2 invocation -- threads lit_flag, continue_budget
+  3. skills/skill-orchestrate/SKILL.md: `grep -c model_flag` returns ZERO over 188,284 bytes. Neither single-task Stage 1's context parse nor Stage MT-1's context parse reads a model flag, and none of its 16 `subagent_type` dispatch sites passes a `model` parameter.
+  4. scripts/command-route-agent.sh and scripts/lib/manifest-routing-lib.sh: `grep -n "MODEL_FLAG\|model_flag"` returns ZERO in both. Routing resolves agent NAMES by task type and effort flag only; model selection is not part of that ladder and should not be added to it. Do not attempt to fix this in the routing library.
+
+REFERENCE PATTERN -- MIRROR THIS, DO NOT INVENT A NEW ONE. /research already implements the complete pattern end to end, in commands/research.md:
+    :450-456   maps each flag to model_flag (--haiku/--sonnet/--opus/--fable), with an explicit null default documented as "use agent's frontmatter default"
+    :540       threads model_flag={model_flag} into the team Skill arg string
+    :544       threads model_flag={model_flag} into the single-agent Skill arg string
+    :547-552   instructs that when model_flag is set, the `model` parameter is passed to the Agent tool to override the agent's default; when null, the parameter is omitted entirely
+The consuming half is in skills/skill-researcher/SKILL.md:187 (context-parse key) and :195 (the pass-as-model-parameter instruction). /plan and /implement follow the same shape. The Agent tool natively accepts a `model` parameter. Adopt this shape verbatim so /orchestrate is consistent with the other three lifecycle commands.
+
+SCOPE OF THIS TASK: commands/orchestrate.md and skills/skill-orchestrate/SKILL.md only. The hard engine and the documentation reconciliation are a separate follow-on task, which depends on the design decision recorded here.
+
+WORK ITEMS:
+  a. commands/orchestrate.md -- add the four-flag mapping and the null default (mirroring research.md:450-456); add the model flags to the `## Options` table; add model_flag={model_flag} to BOTH delegation arg strings at :430 and :626.
+  b. skills/skill-orchestrate/SKILL.md -- add the model_flag key to single-task Stage 1's context parse AND Stage MT-1's context parse; pass `model` at the dispatch sites per the decision below.
+
+DESIGN DECISIONS THIS TASK MUST SETTLE AND RECORD (do not leave implicit; the follow-on task consumes them):
+  (a) UNIFORM vs LIFECYCLE-ONLY. Does the model override apply to every dispatch an orchestration makes, or only to the lifecycle dispatches (research/plan/implement), leaving the auxiliary ones at their frontmatter defaults? The auxiliary sites in skill-orchestrate/SKILL.md are: the blocker-escalation fork (:1075), the reviser dispatches (:1089, :1136), and the drift-inspection fork (:1114). Argument for lifecycle-only: the auxiliary dispatches are diagnostic/meta work whose model choice is a deliberate frontmatter decision (reviser-agent is Opus by policy), and a user passing --haiku to speed up implementation probably does not intend to downgrade the reviser. Argument for uniform: predictability -- a flag that means "run this orchestration on model X" is easier to reason about than one with unstated exemptions. Decide, state the rationale, and make the behavior explicit in orchestrate.md's Options table either way.
+  (b) MULTI-TASK THREADING. How model_flag reaches Stage MT-4's three per-task dispatch loops: research (:2096), planner (:2103), implement (:2115). Each builds an explicit context object; model is a separate Agent-tool parameter, not a context field, so confirm whether it threads alongside subagent_type per-task or is resolved once at MT-1.
+  (c) HARD-MODE MT COVERAGE. Confirm (and record) that hard mode's multi-task half is covered for free by base delegation -- skill-orchestrate-hard/SKILL.md:1580 and :1687 both state that its multi-task stages are the base skill-orchestrate MT-1 through MT-5. If this holds, the follow-on task only needs to edit hard mode's 7 SINGLE-TASK dispatch sites. If inspection shows it does NOT hold, say so explicitly so the follow-on task is rescoped rather than silently under-delivering.
+
+DO NOT:
+  - Modify parse-command-args.sh. It is already correct.
+  - Add model selection to command-route-agent.sh or manifest-routing-lib.sh. That ladder resolves agent NAMES only; model is an orthogonal dimension passed at dispatch time.
+  - Introduce sticky model state in state.json. Model flags are per-invocation only, exactly like --hard and --lit.
+  - Edit skill-orchestrate-hard/SKILL.md or the claudemd merge source here -- those belong to the follow-on task.
+
+VERIFICATION BAR. (1) `/orchestrate N --fable` on a single task visibly dispatches its research/plan/implement agents on Fable rather than their frontmatter defaults. (2) The same holds for the other three flags. (3) `/orchestrate N,M --fable` (multi-task) threads the override through MT-4's per-task loops. (4) Omitting all model flags produces byte-identical dispatch behavior to today -- no `model` parameter emitted, frontmatter defaults intact. This no-flag regression check is the most important one: it is what proves the change is additive.
+
+RELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same defect CLASS (a flag parsed, accepted, and then silently dropped downstream) in the team-skills subsystem. Disjoint file scope; the two do not block each other. Worth reading its description for the shape of the fix, not for shared code.
+
+---
 
 ### 113. Fix briefing sigpipe head crash
 - **Status**: [NOT STARTED]
