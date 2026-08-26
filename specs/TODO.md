@@ -12,8 +12,8 @@ next_project_number: 108
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,75,76,88,104,105,107 | 29,42,74,87,102 | agent-system, extensions, literature, ... |
-| 3 | 44 | 88 | essential-refactor |
+| 2 | 30,64,75,76,88,104,105 | 29,42,74,87,102 | agent-system, extensions, literature, ... |
+| 3 | 44,107 | 88,104 | literature, essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
 | 5 | 90 | 89 | essential-refactor |
 | 6 | 48 | 90 | essential-refactor |
@@ -48,8 +48,8 @@ next_project_number: 108
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 102 [NOT STARTED] — Characterize when the PyMuPDF column-clustering fallback tier act
   └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
+    └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
-  └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
 103 [NOT STARTED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
 106 [NOT STARTED] — Route skill-literature's convert path through literature-convert.
 
@@ -92,7 +92,7 @@ next_project_number: 108
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 102
+- **Dependencies**: Task 102, Task 104
 
 **Description**: Add an OCR-misrecognition detector to the literature quality gate. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
