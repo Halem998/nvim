@@ -1,5 +1,5 @@
 ---
-next_project_number: 106
+next_project_number: 108
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 106
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,75,76,88,104,105 | 29,42,74,87,102 | agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,75,76,88,104,105,107 | 29,42,74,87,102 | agent-system, extensions, literature, ... |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
 | 5 | 90 | 89 | essential-refactor |
@@ -49,7 +49,9 @@ next_project_number: 106
 102 [NOT STARTED] — Characterize when the PyMuPDF column-clustering fallback tier act
   └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
+  └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
 103 [NOT STARTED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
+106 [NOT STARTED] — Route skill-literature's convert path through literature-convert.
 
 ### Orchestration Concurrency
 
@@ -84,6 +86,69 @@ next_project_number: 106
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 107. Add ocr misrecognition detector to quality gate
+- **Effort**: 12-20 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 102
+
+**Description**: Add an OCR-misrecognition detector to the literature quality gate. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+THE GAP -- A CORRUPTION CLASS NO EXISTING CHECK COVERS. literature_quality_gate.py's checks are tuned for ENCODING defects: glyph-index-as-codepoint corruption (control_char_count, printable_ratio), ligature residue, dehyphenation residue, column interleaving, sentence-boundary glue. OCR MISRECOGNITION is a different class: the OCR engine emits well-formed, printable, plausibly-tokenized text that is simply WRONG. Nothing in the module detects it.
+
+MEASURED, NOT HYPOTHESIZED. All six string-only checks were run directly against the goldblatt_1989 extraction -- a 2001 Acrobat 3.0 Capture scan whose math pages yield "{9=, 4s:", "0%", "$m", whose headings corrupt ("3.7. Complete varieties" -> "3.7. Complete v&et&s"), and whose title page renders New Zealand as "New 2Miand":
+
+    printable_ratio              0.9994898  (70 non-printable of ~140k chars)
+    control_char_count           0
+    sentence_boundary_glue_count 3
+    ligature_residue_count       0
+    dehyphenation_residue_count  4
+    column_interleaving_flagged  False (0.2604)
+
+Every check passes. The document is corrupt by direct inspection. This is a false negative, and it is the inverse of the glue-check task's concern (false positives on legitimate binder notation) -- do not conflate the two.
+
+A SIGNAL THAT DEMONSTRABLY WORKS, AND ITS LIMIT. PDF Creator/Producer metadata identified all 7 scan-pipeline PDFs among the corpus's 72 (`pdfinfo | grep -iE 'capture|scan|abbyy|finereader|imag'`): blackburn_2002 (Acrobat 7.0 Image Conversion), burgess_1982 / _i / _ii / 1982b and doets_1989 and gabbay_1993 (ABBYY FineReader). Cheap, one pass, no false negatives among those inspected. BUT THIS IS PROVENANCE, NOT QUALITY -- it identifies documents at RISK of misrecognition; it does not measure whether a given extraction is actually garbled. A good design likely needs both: provenance to select what to scrutinize, and a content signal to judge it.
+
+CANDIDATE CONTENT SIGNALS TO EVALUATE (none validated -- validating them is this task's work): out-of-vocabulary rate against a wordlist; ratio of alphabetic tokens that are non-words; density of mixed alnum/symbol tokens inside otherwise-prose lines; character-n-gram implausibility; agreement between two independent extractions of the same page. Note the corpus contains dense mathematics, where symbol-heavy runs are LEGITIMATE -- a naive symbol-density threshold will fire on correct math and is likely the first thing to get wrong.
+
+HARD CONSTRAINT INHERITED FROM THE CONVERTER-TIER TASK: that task establishes that "scanned/OCR'd" is very likely the WRONG class boundary for TIER SELECTION, because savage_1972 and joyce_1999 are both scans that respond to the fallback tier in opposite directions. That finding constrains what this detector may be USED for. Detecting probable misrecognition in order to warn, withhold certification, or route to re-OCR is in scope. Using it to auto-select a converter tier is NOT -- that is the falsified premise, and this task must not re-import it.
+
+CONSUMERS: the fidelity-audit task's defect (c) needs exactly this class of signal to stop verified_conversion being reachable from a self-comparison; if this task lands first it should expose the detector as an importable function rather than an inline check, so the audit consumes it instead of writing a second one. The OCR-tier task's "OCR VINTAGE, NOT JUST OCR ABSENCE" framing is the same thread from the remedy side -- a detector here is the natural trigger for --force-ocr there, so coordinate the threshold with it rather than picking one independently.
+
+A NEGATIVE RESULT IS A COMPLETE OUTCOME. If no content signal separates OCR garbling from legitimate dense mathematics at an acceptable false-positive rate, say so with the measurements, and fall back to provenance-only flagging (mark scan-derived documents as requiring manual spot-check before certification). That is a real deliverable, not a failure.
+
+---
+
+### 106. Route skill literature convert through gated pipeline
+- **Effort**: 6-10 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Route skill-literature's convert path through literature-convert.sh so that /literature ingests are quality-gated. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+THE DEFECT -- TWO CONVERSION PATHS, ONLY ONE GATED. literature-convert.sh runs literature_quality_gate.py on every document it converts. But skill-literature's own Mode: Convert (handle_convert, "Convert Step 3b: Extract Full Text and Determine Chunking") does NOT call it -- it shells out directly:
+
+    full_text=$(pdftotext -layout "$src" - 2>/dev/null)
+
+and proceeds straight to chunking, metadata prompts, index.json write, literature-chunk.sh, and literature-build-index.sh. No gate check runs at any point. Every ingest through `/literature <path>` therefore bypasses the entire quality-gate layer, no matter how good that layer becomes.
+
+CONFIRMED BY A LIVE INGEST, not by reading alone. goldblatt_1989 was ingested through this exact path on 2026-08-26 (74 chunks, indexed, in both the global index and BimodalLogic's sub-index). It is a badly OCR-garbled 2001 Acrobat Capture scan. No gate ran. Nothing warned.
+
+WHY THIS IS THE STRUCTURAL ONE. The sibling tasks in this cluster all improve the gate or the audit. This task is what makes those improvements reachable from the path operators actually use interactively. A better gate that handle_convert never calls protects nothing.
+
+ALSO NOTE THE TIER GAP: handle_convert uses bare `pdftotext -layout`, which is literature-convert.sh's THIRD and last-resort tier. So /literature-path ingests do not merely skip the gate -- they skip the pymupdf4llm primary tier and the PyMuPDF column-clustering fallback entirely, always landing on the weakest engine. Both defects have the same fix.
+
+SCOPE DECISION THIS TASK MUST MAKE. Choose between (i) replacing the inline pdftotext call with a delegation to literature-convert.sh, inheriting the full ladder and gate; and (ii) keeping the inline path but invoking literature_quality_gate.py on its output and surfacing rejections. (i) is the better shape and removes a duplicated conversion implementation; (ii) is cheaper if delegation turns out to conflict with handle_convert's interactive chunk-boundary and metadata prompts, which literature-convert.sh knows nothing about. Weigh the interaction model before committing -- the interactive prompts are handle_convert's reason for existing.
+
+DO NOT let a gate rejection become a silent skip. Whatever shape is chosen, a rejected document must surface an actionable message to the operator (the existing gate's rejection prose is the model), never be written to the index as though it converted cleanly. The corpus already contains a document that was.
+
+ACCEPTANCE: an ingest of a known-bad document through `/literature <path>` produces a visible gate rejection or an explicit recorded caveat; the pymupdf4llm tier is reached on a document where it is the right engine; no second conversion implementation remains in the skill.
+
+---
 
 ### 105. Add an OCR tier for image-only and poor-vintage-OCR PDFs
 - **Status**: [NOT STARTED]
@@ -171,6 +236,24 @@ WHY (a) AND (b) ARE ONE TASK AND MUST NOT BE SPLIT (explicitly confirmed by the 
 CONSUMERS THAT MOVE WITH THE ENUM: the report's "Flagging Behavior" section establishes that literature-search.sh and literature-briefing.sh both read provenance_fidelity, and that both must FAIL OPEN (absent value treated as unverified/loud, never silently authoritative). If this task adds or changes an enum value, both consumers need updating in the same change. Note prior art for exactly this shape: a sixth enum value (`unadjudicated`) was previously added to fix a fail-open branch, and both consumers were widened alongside it.
 
 RELATED: the same report independently recommends OCR-based extraction (pytesseract/ocrmypdf) as the follow-up for its zero-word-baseline directories, which is the same thread as the OCR-tier task -- coordinate if the chosen (b) treatment touches that ground.
+
+=== AMENDED 2026-08-26 (BimodalLogic ingest of goldblatt_1989) ===
+
+DEFECT (c) -- WHEN THE BASELINE *IS* AVAILABLE, IT IS SELF-REFERENTIAL. Defect (b) above establishes that the word-ratio baseline is UNAVAILABLE for 279 of 291 sources/ dirs. This amendment adds the complementary defect: for the 12 dirs where it IS computable, the ratio does not measure what its name implies. `md_words / pdf_words` compares the stored .md against `pdftotext -layout`'s own output of the same PDF -- and when the .md was itself produced by pdftotext (which is exactly what skill-literature's handle_convert does; see the ungated-convert-path task), both sides of the ratio are the SAME EXTRACTION. The ratio is then ~1.0 by construction and carries no information about fidelity to the printed page.
+
+WHAT THE RATIO ACTUALLY MEASURES: truncation of a conversion. What it CANNOT measure: garbling of an OCR text layer. Those are different failure modes and the enum currently conflates them under verified_conversion.
+
+MEASURED ANCHOR CASE. goldblatt_1989 (Goldblatt, "Varieties of Complex Algebras", APAL 44, 1989) was ingested into the corpus on 2026-08-26. Its PDF is a 2001 Acrobat 3.0 Capture scan. Direct inspection of the extraction: math pages yield "{9=, 4s:", "0%", "$m"; headings corrupt ("3.7. Complete varieties" -> "3.7. Complete v&et&s"); the title page renders New Zealand as "New 2Miand"; 295 of 2960 lines carry runs of 3+ consecutive symbols. literature-fidelity-audit.sh --dry-run rates it `verified_conversion` at word_ratio 1.0162. The stamp was deliberately NOT written (--write was not run) and the sub-index entry carries an OPEN hazard instead.
+
+REALIZED DAMAGE ALREADY IN THE CORPUS -- SIX STANDING FALSE STAMPS. A Creator/Producer survey of the 72 corpus PDFs found 7 from scan pipelines (Acrobat Capture / ABBYY FineReader / Acrobat Image Conversion). Six carry verified_conversion at word_ratio ~1.0: burgess_1982 (1.0), burgess_1982_i (1.0982), burgess_1982_ii (1.0705), burgess_1982b (1.0), doets_1989 (1.0), gabbay_1993 (1.0025). burgess_1982 is the source paper of the BX axiom system the BimodalLogic repo formalizes. blackburn_2002 is also a scan (Acrobat 7.0 Image Conversion) and is currently unstamped.
+
+DECISION RECORDED (user, 2026-08-26): do NOT hand-strip those six stamps as a separate data edit. De-certification is an ACCEPTANCE CRITERION OF THIS TASK -- the fixed audit must re-adjudicate them to something other than verified_conversion on its own, which is also the only outcome that proves the fix works. If the fixed audit still rates any of the six verified_conversion, the fix is incomplete.
+
+PRECEDENT THIS RE-REALIZES. The rabinovich_2014 sub-index hazard record already documents this exact failure mode once: "the mis-detection was compounded by index.json falsely certifying the corrupt extract verified_conversion", and it states the stamp must be restored only on a manual spot-check, "never on the automated word-ratio alone". That lesson is written down in prose and nothing enforces it. Whatever treatment (b) receives, (c) requires that verified_conversion stop being reachable from a self-comparison.
+
+WHY (c) BELONGS HERE AND NOT IN A NEW TASK: it is the same function (classify_dir), the same enum, and the same commit's worth of design as (a) and (b) -- the identical no-split reasoning this description already applies to those two.
+
+COORDINATE, DO NOT DUPLICATE: the converter-tier task warns that "scanned/OCR'd is very likely the WRONG class boundary" -- that warning is about TIER SELECTION and does not apply to certification. Using scan-derived-ness to WITHHOLD a verified stamp is not the same claim as using it to CHOOSE a converter, and this task must not be read as reopening that. Detecting the class is separately owned by the OCR-misrecognition-detection task; if that lands first, consume its detector rather than writing a second one.
 
 ---
 
