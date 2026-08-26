@@ -1,18 +1,18 @@
 ---
-next_project_number: 102
+next_project_number: 106
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-25. Generated from state.json dependency graph.*
+*Updated 2026-08-26. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,75,76,88 | 29,42,74,87 | agent-system, extensions, essential-refactor |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103 | -- | agent-system, extensions, literature, ... |
+| 2 | 30,64,75,76,88,104,105 | 29,42,74,87,102 | agent-system, extensions, literature, ... |
 | 3 | 44 | 88 | essential-refactor |
 | 4 | 89 | 44 | essential-refactor |
 | 5 | 90 | 89 | essential-refactor |
@@ -46,6 +46,10 @@ next_project_number: 102
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
 94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
+102 [NOT STARTED] — Characterize when the PyMuPDF column-clustering fallback tier act
+  └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
+  └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
+103 [NOT STARTED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
 
 ### Orchestration Concurrency
 
@@ -80,6 +84,125 @@ next_project_number: 102
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
+
+### 105. Add an OCR tier for image-only and poor-vintage-OCR PDFs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 102
+
+**Description**: Add an OCR tier to the literature converter, or make the pre-OCR prerequisite an explicit checked failure, so image-only scanned PDFs stop hard-failing the quality gate with a misleading rejection. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+THE GAP. literature-convert.sh has NO OCR tier at all. Its documented engine ladder (literature-convert.sh:15-45) is exactly three tiers: PRIMARY pymupdf4llm via a pinned auto-provisioned uv venv, a mandatory PyMuPDF column-clustering fallback (pymupdf-fallback-toc / pymupdf-fallback-heuristic), and pdftotext. None of them can recover text from a PDF with no text layer. Image-only scanned PDFs (zero text layer) therefore hard-fail the gate and must be pre-OCR'd externally with ocrmypdf before ingest. Today this surfaces to the operator as a confusing quality-gate rejection rather than as a clear, actionable "this PDF has no text layer; run ocrmypdf first".
+
+TWO INDEPENDENT LINES OF EVIDENCE THAT THIS IS THE RIGHT INVESTMENT:
+  1. The archived provenance-fidelity audit report independently reached the same conclusion from a different direction. specs/vault/01-vault/archive/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md documents 4 corpus directories (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) whose PDFs extract to ZERO words via `pdftotext -layout`, making them un-ratio-checkable, and its Risks section recommends "a recommended follow-up of OCR-based extraction (`pytesseract`/`ocrmypdf`) or manual page-count spot-check before promoting to `verified_conversion`". These are the same documents that would benefit from an OCR tier here.
+  2. Re-OCR is demonstrated to repair real extraction defects, not merely to enable extraction where none was possible. On joyce_1999_foundations-causal-decision-theory, `ocrmypdf --force-ocr --output-type pdf -l eng` applied to source pages 119 and 217 fixed both of that document's genuine sentence-boundary-glue defects and recovered glyphs the original 2019 archive.org OCR had dropped entirely (a closing curly quote, and the accent in "Reyni"). The dropped quote glyph was itself the cause of one zero-space transition.
+
+KEY FRAMING TO CARRY FORWARD -- OCR VINTAGE, NOT JUST OCR ABSENCE. The joyce_1999 evidence shows the problem is not only "PDF has no text layer" but also "PDF has an OLD, POOR-QUALITY text layer". Those are different conditions needing different responses: absence needs OCR to enable extraction at all; poor vintage needs --force-ocr to REPLACE an existing but degraded layer. A design that only detects zero-text-layer PDFs will miss the second, larger class. Weigh whether the tier should offer both, and how an operator (or the pipeline) decides that an existing text layer is bad enough to warrant replacement -- note that --force-ocr on a good text layer is destructive and must not become a default.
+
+SCOPE DECISION THIS TASK MUST MAKE. Choose between (i) a genuine OCR tier integrated into the converter ladder, and (ii) explicit detection plus a clear actionable error at ingest time that names the ocrmypdf command to run. Option (ii) is substantially cheaper and may be sufficient; option (i) is warranted only if the corpus impact justifies carrying an ocrmypdf dependency and its runtime cost. Consider provisioning implications either way -- the primary tier already uses a pinned auto-provisioned uv venv (see literature-pyenv-provision.sh), which is the natural precedent for how an OCR dependency would be managed.
+
+DEPENDS ON the converter-tier characterization task both for file-overlap serialization on literature-convert.sh and because that task establishes whether OCR vintage or document structure is the operative class variable -- which determines what this tier should key on. Also coordinate with the glue-check task: route (a) of that task (improve the input via re-OCR) is satisfied by the capability built here, so if that task selects (a) this becomes its enabler.
+
+---
+
+### 104. Resolve glue-check false-positive class on math-heavy OCR'd scans
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 102
+
+**Description**: Resolve the sentence_boundary_glue_count() false-positive class on math-heavy OCR'd scans, where the documented fallback-tier remedy provably fails. EVALUATE THREE ROUTES AND JUSTIFY THE SELECTION -- DO NOT PRESUPPOSE ANY OF THEM. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+THE SYMPTOM. sentence_boundary_glue_count() counts [a-z]\.[A-Z] transitions and the gate rejects at >=3. joyce_1999_foundations-causal-decision-theory (296pp scan, 654,128 chars of extracted markdown) yields exactly 4 hits and is rejected outright, so it cannot be ingested at all. Only TWO of the four are real defects -- genuine single missing spaces after a sentence period:
+  - "...rather than strict laws of rationality.A rational agent's preference ranking..."
+  - "...called Reyni-Popper measures.A Reyni-Popper measure for P rela- tive to..."
+The other two are NOT defects; they are inline math notation:
+  - "^s.P(S\A)u(0[A S])"   (Stalnaker's Equation)
+  - "f.I+i p*( YHr"
+Two real defects in 654K characters is excellent conversion quality. The document is rejected only because non-defect notation pushes a 2-real-defect document over a 3-hit cutoff. That is a MEASUREMENT-ACCURACY problem, not a request to tolerate corruption.
+
+CRITICAL CONSTRAINT -- THE FILE'S OWN DOCSTRING PRE-EMPTIVELY PROHIBITS THE OBVIOUS FIX. literature_quality_gate.py:236-241 states verbatim: "The correct operator remedy for a document like this is reconversion with `LITERATURE_CONVERTER=fallback` (the path already proven for bacon_dorr_2024_classicism) -- never widening this exemption further, tuning the threshold-3 cutoff, or a manual override." Simply widening the exemption is a direction the file's maintainers have explicitly ruled out. This task MUST NOT be executed as "widen the exemption to cover inline math".
+
+WHY A DEFENSIBLE DEFECT NEVERTHELESS REMAINS (the task's evidence base):
+  - The prohibition is scoped to "a document like this" -- the MIXED class (hott_book_2013, ahrens_north), whose residual hits are DOMINATED BY GENUINE corruption and which therefore SHOULD stay rejected. Widening for their sake would wrongly rescue genuinely-corrupt documents. joyce_1999 is a materially different class: majority-notation hits over a 2-real-defect document.
+  - The docstring ALREADY concedes and tolerates a comparable unexempted-non-defect class: arXiv subject-class codes ("math.CT", "math.AT") are described at line ~236 as "a known, deliberately unexempted secondary class, not corruption". joyce's "^s.P(S\A)" is arguably the same kind of thing.
+  - THE DOCSTRING'S PRESCRIBED REMEDY IS EXHAUSTED FOR THIS DOCUMENT AND DOES NOT WORK. Reconversion via LITERATURE_CONVERTER=pymupdf (== "fallback"; literature-convert.sh:341 maps `pymupdf|fallback) ENGINE_MODE="fallback_only"`, so this is exactly the documented path) yields 5 hits -- WORSE than the primary tier's 4. The guidance assumes fallback always rescues; there now exists a real counterexample.
+
+THE THREE ROUTES TO WEIGH (all three must be considered and the selection justified):
+  (a) IMPROVE THE INPUT INSTEAD OF THE GATE -- re-OCR the source so the genuine defects disappear and the document falls below threshold honestly. This is the route most consistent with the file's stated philosophy of never weakening the gate. DEMONSTRATED TO WORK AT PAGE LEVEL, not merely hypothesized: re-OCR of the two source pages carrying joyce_1999's genuine defects (pages 119 and 217) via `ocrmypdf --force-ocr --output-type pdf -l eng` FIXED BOTH genuine defects, and the re-OCR'd extract of those two pages contains ZERO [a-z]\.[A-Z] hits.
+        p119 before: "...strict laws of rationality.A rational agent's preference ranking..."
+        p119 after:  "...strict laws of rationality." A rational agent's preference ranking..."
+                     (re-OCR additionally recovered a closing curly quote the original 2019 archive.org OCR had dropped entirely -- the missing quote glyph is what produced the zero-space transition)
+        p217 before: "...called Reyni-Popper measures.A Reyni-Popper measure for P rela- tive..."
+        p217 after:  "...is a Reyni-Popper measure relative to ... {C ... Q: P(C) > 0}..."
+                     (accented "Reyni" also correctly recovered)
+      IMPLICATION FOR CLASS BOUNDARY: the genuine defects were an artifact of the ORIGINAL 2019 archive.org OCR TEXT LAYER -- not of the PDF and not of the converter. This is further evidence that "scanned/OCR'd" is the wrong class boundary and that OCR VINTAGE/QUALITY is the real variable. Route (a) leans on the OCR-tier task; that is a plan-time coupling, not a hard prerequisite -- this task may select (a) and hand off.
+  (b) A NARROWLY-SCOPED MATH-NOTATION EXEMPTION -- permitted ONLY on proof that hott_book_2013 stays at EXACTLY 11 and ahrens_north at EXACTLY 21, and that the negative guard test "sentence-boundary-glue-genuine-fusion-still-counted" still passes. These tripwires are already pinned in scripts/tests/test-quality-gate-notation.sh:104-111, described at line 79 as "over-exemption tripwires [that] must never fall". EXACTLY UNCHANGED, NOT MERELY "NOT REDUCED": the docstring records a prior widening attempt (a blanket global markdown-underscore strip used as a preprocessing pass) that INCREASED one MIXED document from 11 to 26 hits via substitution self-interference -- deleting matched spans glued previously non-adjacent characters into brand-new spurious matches. The current implementation deliberately matches noise-tolerant runs WITHIN the exemption regex itself and has NO separate global-strip pass; preserve that property by extending the existing _PREFIX_BINDER_RE/_PREFIX_HAT_RE family rather than adding any preprocessing pass. Also preserve the existing true-positive fixture (Dorr-Bacon-style genuine <sup>-span fusion corruption). The file has an inline gate_check() self-test harness (reachable via literature-convert.sh --self-test, exercised by tests/test-literature-convert.sh:296) -- EXTEND it, never bypass it.
+  (c) A DISTINCT CALIBRATION CLASS for scanned/OCR'd documents rather than changing the shared threshold-3 cutoff. Note the threshold was calibrated at 0-1 occurrences across a random sample of 60 BORN-DIGITAL corpus markdown files; scanned/OCR'd mathematical texts are a document class it was never calibrated against. Route (c) depends on the class boundary established by the converter-tier characterization task -- see the OCR-vintage framing above, which may be the better class variable than scanned-ness.
+
+MANDATORY RECONCILIATION. Whichever route wins MUST reconcile itself with the prohibition at literature_quality_gate.py:236-241, and MUST amend that guidance IN THE SAME COMMIT if the prohibition is being narrowed. Do not leave the codebase asserting a prohibition the implementation has quietly departed from. Coordinate with the converter-tier task, which amends the REMEDY claim at lines 238-239 inside that same docstring paragraph: that task narrows only the remedy claim, this task is the only one permitted to narrow the prohibition itself.
+
+---
+
+### 103. Fix fidelity audit chunk-only blindness and the absent-baseline majority
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix literature-fidelity-audit.sh so it can verify pipeline-ingested documents at all, and resolve the absent-baseline problem that blocks the overwhelming majority of the corpus. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+DEFECT (a) -- THE AUDIT CAN NEVER VERIFY ANY PIPELINE-INGESTED DOCUMENT. At literature-fidelity-audit.sh:342-346 the `mds` list comprehension excludes filenames matching ^chunk_\d+\.md$. But the ingest pipeline (literature-ingest.sh -> literature-chunk.sh) emits ONLY chunk_NNNN.md files. So has_md is always False for pipeline-ingested documents, and classify_dir() falls through to "not_yet_converted" (when a source PDF is present) or "unverified_no_baseline" (when it is not). Neither is verified_conversion, so such documents stay permanently quarantined out of default literature-search.sh results.
+
+MEASURED CORPUS IMPACT (~/Projects/Literature/index.json, 287 parent entries): provenance_fidelity unset 137, verified_conversion 70, no_source_pdf 66, unverified_conversion 8, unverified_no_baseline 3, unadjudicated 2, not_yet_converted 1. Default (non---include-unverified) search returns ZERO results for queries that plainly should match -- e.g. "deliberative stit" fails to surface horty_belnap_1995_deliberative-stit. Every working query currently requires the --include-unverified flag.
+
+THE EXCLUSION IS DELIBERATE BUT NARROWER THAN THE CODE IMPLEMENTS -- THIS IS THE KEY TO THE FIX. literature-fidelity-audit.sh:33 warns that chunk_*.md presence/absence is "deliberately NOT used as signals (both are false discriminators in this corpus -- see report)" and says "do not add them back without re-reading the report's Detector Design section". That report has been located and read: specs/vault/01-vault/archive/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md, section "Detector Design" (line 76). It rejects chunk filenames for a NARROWER reason than the code implements, verbatim: "Reject as a primary signal: `chunk_*.md` filename presence/absence (see above -- false discriminator, would misclassify ~30 genuinely converted docs)."
+
+So the report rejected chunk-ness as a CLASSIFICATION DISCRIMINATOR -- it never contemplated excluding chunk files from has_md entirely. The code conflates two different things: "do not let chunk-ness decide the verdict" (correct, per report) and "do not count chunk files as markdown at all" (never intended, and now fatal since chunks are the pipeline's only output shape). THE FIX IS THEREFORE A RECONCILIATION, NOT A CONTRADICTION OF THE REPORT: count chunk_NNNN.md toward has_md and toward the md_words sum, while keeping chunk-ness out of the verdict logic. Update the docstring at line 33 to record this distinction explicitly so the next reader does not re-introduce the conflation.
+
+DEFECT (b) -- THE BASELINE IS UNAVAILABLE FOR NEARLY THE WHOLE CORPUS. Only 12 of 291 sources/ directories contain a source.pdf or source.djvu, so the whole-document word-ratio baseline (md_words / pdf_words via `pdftotext -layout`) simply cannot be computed for the rest, regardless of the chunk_*.md issue. Fixing has_md alone will therefore still not produce verified_conversion for most of the corpus -- the search quarantine that motivates this task would remain largely in place. This task must decide and implement a treatment: a distinct fidelity value, a different baseline, or another mechanism.
+
+CONSTRAINT ON (b) -- DO NOT "FIX" THIS BY IMPORTING PDFs. Naively copying source PDFs into sources/ dirs makes classification WORSE (unverified_no_baseline -> not_yet_converted) and contradicts the corpus's prevailing 12/291 layout. This was tested and reverted. The answer is a classification/baseline change, not corpus surgery.
+
+WHY (a) AND (b) ARE ONE TASK AND MUST NOT BE SPLIT (explicitly confirmed by the user): they are the same function (classify_dir), the same enum, and the same commit's worth of design. A mechanical has_md fix shipped alone would yield verified_conversion for almost nothing and would not actually clear the search quarantine that is the entire point of the work.
+
+CONSUMERS THAT MOVE WITH THE ENUM: the report's "Flagging Behavior" section establishes that literature-search.sh and literature-briefing.sh both read provenance_fidelity, and that both must FAIL OPEN (absent value treated as unverified/loud, never silently authoritative). If this task adds or changes an enum value, both consumers need updating in the same change. Note prior art for exactly this shape: a sixth enum value (`unadjudicated`) was previously added to fix a fail-open branch, and both consumers were widened alongside it.
+
+RELATED: the same report independently recommends OCR-based extraction (pytesseract/ocrmypdf) as the follow-up for its zero-word-baseline directories, which is the same thread as the OCR-tier task -- coordinate if the chosen (b) treatment touches that ground.
+
+---
+
+### 102. Characterize converter-tier behavior and correct the falsified universal-remedy claim
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Characterize when the PyMuPDF column-clustering fallback tier actually helps versus hurts, and correct the now-falsified claim that it is the universal remedy for gate rejections. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+FALSIFIED CLAIM (single, precise edit target). literature_quality_gate.py:238-239 states the correct operator remedy for a gate-rejected document "is reconversion with `LITERATURE_CONVERTER=fallback` (the path already proven for bacon_dorr_2024_classicism)". A grep across the extension confirms this is the ONLY prose location asserting fallback-as-remedy; every other LITERATURE_CONVERTER=pymupdf occurrence is a test invocation in tests/test-literature-convert.sh. The claim is now falsified by direct measurement and must be amended.
+
+TWO ANCHOR CASES WITH OPPOSITE OUTCOMES (both measured through the CURRENT gate; no gate change is needed to reproduce either):
+  - savage_1972_foundations-of-statistics: primary tier (pymupdf4llm) 73 sentence-boundary-glue hits, fallback tier 3. Fallback is a dramatic improvement. ALL 73 hits fell in the last 20% of the document; the first 80% was completely clean. Cause: pymupdf4llm misdetects dense bibliographies and back-matter as markdown TABLES and strips inter-word spaces inside the cells, producing runs like "vidence,"pp.112-143inEssayein<br>'HonorofErnestNagel,eds.SidneyMorgenbesser,".
+  - joyce_1999_foundations-causal-decision-theory: primary tier 4 hits, fallback tier 5. Fallback is WORSE. The documented remedy is exhausted for this document and does not work.
+
+CENTRAL FINDING TO ESTABLISH -- "scanned/OCR'd" is very likely the WRONG class boundary. Both anchor documents are scanned books, yet they respond to the fallback tier in opposite directions, so scanned-ness cannot be the discriminating variable. Two candidate framings the task must weigh:
+  (1) DENSE BACK-MATTER / BIBLIOGRAPHY DENSITY. savage_1972's failure is specifically pymupdf4llm's table misdetection over bibliography regions, and is positionally concentrated (last 20%). This is a document-STRUCTURE variable, not a scan variable.
+  (2) OCR VINTAGE / QUALITY. joyce_1999's two genuine glue defects were traced to the ORIGINAL 2019 archive.org OCR text layer, not to the PDF geometry and not to the converter. Re-OCR of the two affected source pages (119, 217) with `ocrmypdf --force-ocr --output-type pdf -l eng` fixed BOTH genuine defects and yielded ZERO [a-z]\.[A-Z] hits on those pages; it additionally recovered a closing curly quote and an accented "Réyni" that the 2019 OCR had dropped entirely (the dropped quote glyph is precisely what produced the zero-space transition). This strongly suggests the real variable is the age/quality of the embedded text layer, which no converter tier can repair.
+These two framings are not mutually exclusive and may describe two distinct failure classes needing two distinct responses.
+
+SCOPE DISCIPLINE -- DO NOT AUTO-SELECT A TIER IN THIS TASK. An earlier framing of this work proposed auto-selecting the fallback tier for the "scanned/OCR'd document class". That premise is falsified by joyce_1999 and a naive auto-select would REGRESS documents like it (4 hits -> 5). Establishing the correct class boundary is this task's FINDING, not its premise. Any auto-selection mechanism is downstream of, and gated on, that finding; propose it only if the characterization actually supports a reliable discriminator, and prefer documenting a recommended operator setting over silent automatic behavior if it does not.
+
+DELIVERABLES:
+  1. An empirical characterization of when each tier wins, grounded in the two anchor cases plus any additional corpus documents needed to test the two candidate framings.
+  2. Amend literature_quality_gate.py:238-239 so it no longer asserts fallback is the universal remedy. State the known counterexample explicitly. NOTE: this line sits inside the same docstring paragraph as the prohibition at lines 236-241 that the glue-check task must reconcile with -- coordinate the wording so the two tasks do not contradict each other. This task narrows only the REMEDY claim; it does NOT narrow the prohibition on widening the exemption.
+  3. Document the recommended converter setting per document class in the extension README/context docs.
+
+WHY THIS IS FOUNDATIONAL: the glue-check task's routes (a) re-OCR and (c) distinct calibration class both turn on the class boundary established here, and the OCR-tier task inherits the OCR-vintage finding. Neither can be decided well before this lands.
+
+---
 
 ### 100. Close aggregator file scope blind spot
 - **Status**: [NOT STARTED]
