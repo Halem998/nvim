@@ -11,18 +11,19 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,87,94,100,102,103,106,108,110,111,113,114,118,124 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,104,105,109,112,119,125 | 29,74,102,108,118,124 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,87,94,100,102,103,106,108,110,111,113,114,118 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,104,105,109,112,119 | 29,74,102,108,118 | core-agent-system, extensions, literature |
 | 3 | 107,120,122 | 31,104,119 | core-agent-system, literature |
 | 4 | 72,73,121,123,126 | 120,122 | core-agent-system |
-| 5 | 127 | 121,124 | core-agent-system |
-| 6 | 88 | 87,127 | core-agent-system |
-| 7 | 44 | 88 | core-agent-system |
-| 8 | 89 | 44 | core-agent-system |
-| 9 | 90 | 89 | core-agent-system |
-| 10 | 48 | 90 | core-agent-system |
-| 11 | 50 | 48 | core-agent-system |
-| 12 | 91 | 50 | core-agent-system |
+| 5 | 124 | 126 | core-agent-system |
+| 6 | 125,127 | 121,124 | core-agent-system |
+| 7 | 88 | 87,127 | core-agent-system |
+| 8 | 44 | 88 | core-agent-system |
+| 9 | 89 | 44 | core-agent-system |
+| 10 | 90 | 89 | core-agent-system |
+| 11 | 48 | 90 | core-agent-system |
+| 12 | 50 | 48 | core-agent-system |
+| 13 | 91 | 50 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -55,7 +56,7 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-118 [PLANNED] — Build hard_contracts manifest key and contract-text injection at 
+118 [IMPLEMENTING] — Build hard_contracts manifest key and contract-text injection at 
   └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
     └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
     └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
@@ -63,9 +64,9 @@ next_project_number: 128
       └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
       └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
       └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
-  └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-  └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+        └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
+          └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+          └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 
 ### Extensions
 
@@ -159,7 +160,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 117, Task 68, Task 81
+- **Dependencies**: Task 68, Task 81, Task 117, Task 126
 - **Research**: [124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md]
 
 **Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
@@ -271,7 +272,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 118. Build hard contracts injection
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117
