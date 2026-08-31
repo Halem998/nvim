@@ -1,11 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/118_build_hard_contracts_injection/summaries/01_hard-contracts-injection-summary.md",
+      "summary": "All 6 phases complete (Phase 6 closed COMPLETED WITH EXCLUSIONS for two redeploy-gated audit tasks explicitly reserved for the orchestrator); routing_lookup_flat(), Stage 3.5 hard-mode contract injection threaded through all 10 dispatch sites, verify-deploy.sh gate16 migration warning, and routing-guide documentation all verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built hard_contracts manifest key and Stage 3.5 contract-text injection: routing_lookup_flat() resolver, hard_mode-gated Stage 3.5 subsection threaded through all 10 dispatch sites, a non-blocking verify-deploy.sh gate16 migration warning, and documentation in the routing guides. All 6 plan phases complete; two Phase 6 audit tasks requiring a source-store redeploy were explicitly excluded per the orchestrator's own redeploy-checkpoint ownership."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a manifest routing block with a different depth than the existing {op: {task_type: value}} shape (e.g. a one-level {task_type: [...]} block), write a full sibling ladder function (same 4-step non-core/core x exact/compound precedence, own doc comment) rather than reusing the existing two-level resolver with a fabricated key. This keeps the shape mismatch visible and prevents a future 'simplification' from silently corrupting resolution.",
+      "category": "PATTERN",
+      "source_artifact": "specs/118_build_hard_contracts_injection/summaries/01_hard-contracts-injection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest-routing", "routing_lookup_flat", "sibling-function", "one-level-block", "precedence-ladder"]
+    },
+    {
+      "content": "When a plan's audit/verification phase requires redeploying a source-store-backed deploy tree (e.g. .claude/ from agent-system/extensions/**) but the dispatching orchestrator has explicitly reserved the redeploy checkpoint for itself, close that phase [COMPLETED WITH EXCLUSIONS] with a Reasoned Exclusions record rather than forcing the redeploy or leaving the phase PARTIAL. Substitute isolated-fixture verification (a scratch manifest/directory reproducing the exact scenario) for the blocked end-to-end check, and document the substitution's evidence inline.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/118_build_hard_contracts_injection/summaries/01_hard-contracts-injection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrator-dispatch", "redeploy-checkpoint", "completed-with-exclusions", "reasoned-exclusions", "isolated-fixture-verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788211958_b7b5e8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

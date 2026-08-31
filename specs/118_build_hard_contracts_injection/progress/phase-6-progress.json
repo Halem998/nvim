@@ -1,0 +1,36 @@
+{
+  "phase": 6,
+  "phase_name": "Cross-file audit and verification bar",
+  "started_at": "2026-08-31T01:50:00Z",
+  "last_updated": "2026-08-31T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "(a) Trace EFFORT_FLAG default/hard derivation path", "status": "done", "files_touched": []},
+    {"id": 2, "description": "(b) Confirm per-phase Stage 3.5 contract lists render exactly as documented", "status": "done", "files_touched": []},
+    {"id": 3, "description": "(c) Confirm hard_mode=false path unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "(d) Re-run lint-routing-wiring.sh and test-routing-resolution.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "(e) Re-run deploy verifier for exactly 3 gate16 findings, exit 0 against deployed tree", "status": "blocked", "note": "Requires redeploy, explicitly prohibited for this dispatch; closed via Reasoned Exclusions"},
+    {"id": 6, "description": "Confirm the 7 -hard skill/agent files untouched", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Grep diff for task-number references outside specs/**", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run task-reference lint and agent-contract/contract-compliance lints", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Deploy source store and re-verify against deployed tree", "status": "blocked", "note": "Explicitly prohibited for this dispatch; orchestrator owns the redeploy checkpoint; closed via Reasoned Exclusions"}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.e",
+      "description": "Re-run the deploy verifier against the deployed tree: exactly 3 gate16 findings, exit code 0",
+      "type": "skipped",
+      "reason": "Orchestrator dispatch explicitly prohibited running deploy-headless.sh for this task; verified gate16 logic correctness instead via isolated fixture (exactly 3 warnings, FAILURES=0) and a live run against the current partial deploy (1 warning for core, gate16 contributed 0 to FAILURES).",
+      "annotation": "*(deviation: skipped — requires a redeploy of the source store to `.claude/`, which the orchestrator dispatch explicitly prohibited for this task; see Reasoned Exclusions below)*"
+    },
+    {
+      "task_id": "6.final",
+      "description": "Deploy the source store to .claude/ and re-run the verifier against the deployed tree",
+      "type": "skipped",
+      "reason": "Explicitly prohibited by the orchestrator dispatch; the orchestrator owns the redeploy checkpoint immediately following this dispatch.",
+      "annotation": "*(deviation: skipped — explicitly prohibited for this dispatch; the orchestrator owns the redeploy checkpoint. See Reasoned Exclusions below)*"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Build hard_contracts manifest key and contract-text injection
 
 - **Task**: 118 - Build hard_contracts manifest key and contract-text injection at dispatch-prep time
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: Task 117 (Stage 3.5 Dispatch Prep) — landed, confirmed by research
 - **Research Inputs**: specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md
@@ -409,29 +409,42 @@ Phase 4 points at a live explanation rather than a dead reference.
 
 ---
 
-### Phase 6: Cross-file audit and verification bar [NOT STARTED]
+### Phase 6: Cross-file audit and verification bar [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Confirm the whole change satisfies the research report's five-point verification bar and
 introduced no regressions on the default (non-`--hard`) path.
 
 **Tasks**:
-- [ ] (a) Trace `EFFORT_FLAG` from `parse-command-args.sh` -> `commands/orchestrate.md` -> Stage 1
-      / Stage MT-1 and confirm `hard_mode` is `"false"` unless `--hard` was passed.
-- [ ] (b) For each of `research`, `plan`, `implement`, confirm the Stage 3.5 prose yields a
+- [x] (a) Trace `EFFORT_FLAG` from `parse-command-args.sh` -> `commands/orchestrate.md` -> Stage 1
+      / Stage MT-1 and confirm `hard_mode` is `"false"` unless `--hard` was passed. *(completed:
+      EFFORT_FLAG defaults `""` at parse-command-args.sh:81, set to `"hard"` only at line 106 on
+      `--hard`; threaded through commands/orchestrate.md to both single- and multi-task dispatch
+      contexts as `effort_flag`; Stage 1/MT-1 derive `hard_mode` strictly from
+      `effort_flag == "hard"`)*
+- [x] (b) For each of `research`, `plan`, `implement`, confirm the Stage 3.5 prose yields a
       `<hard-mode-contracts>` block naming exactly that phase's list in the documented order when
-      `hard_mode` is true.
-- [ ] (c) Confirm the `hard_mode=false` path is unchanged: empty-skip, no empty
-      `<hard-mode-contracts>` tag pair, and the other three outputs' order untouched.
-- [ ] (d) Re-run `lint-routing-wiring.sh` and `test-routing-resolution.sh` unmodified; both pass.
-- [ ] (e) Re-run the deploy verifier: exactly 3 `gate16` findings, exit code 0.
-- [ ] Confirm `skill-orchestrate-hard/SKILL.md` and the six other `-hard` skill/agent files are
-      untouched by this task's diff.
-- [ ] Grep the full diff for task-number references in files outside `specs/**` and remove any
-      found (durable anchors only).
-- [ ] Run the repo's task-reference lint and any agent-contract lint that covers the touched
-      files.
+      `hard_mode` is true. *(completed: executed the Stage 3.5 bash snippet standalone for all
+      three phases; each produced the exact documented ordered list)*
+- [x] (c) Confirm the `hard_mode=false` path is unchanged: empty-skip, no empty
+      `<hard-mode-contracts>` tag pair, and the other three outputs' order untouched. *(completed:
+      confirmed empty `hard_contracts_block` and unaffected append order via standalone execution)*
+- [x] (d) Re-run `lint-routing-wiring.sh` and `test-routing-resolution.sh` unmodified; both pass.
+      *(completed: both exit 0, 323/19 checks passed respectively)*
+- [ ] (e) Re-run the deploy verifier: exactly 3 `gate16` findings, exit code 0. *(deviation:
+      skipped — requires a redeploy of the source store to `.claude/`, which the orchestrator
+      dispatch explicitly prohibited for this task; see Reasoned Exclusions below)*
+- [x] Confirm `skill-orchestrate-hard/SKILL.md` and the six other `-hard` skill/agent files are
+      untouched by this task's diff. *(completed: `git diff --stat` against all seven files
+      across Phases 1-5's commits is empty)*
+- [x] Grep the full diff for task-number references in files outside `specs/**` and remove any
+      found (durable anchors only). *(completed: 0 matches)*
+- [x] Run the repo's task-reference lint and any agent-contract lint that covers the touched
+      files. *(completed: check-task-references.sh, lint-agent-contracts.sh, and
+      lint-contract-compliance.sh all pass with 0 failures)*
 - [ ] Deploy the source store to `.claude/` and re-run the verifier against the deployed tree, so
-      the gate is exercised where it actually runs.
+      the gate is exercised where it actually runs. *(deviation: skipped — explicitly prohibited
+      for this dispatch; the orchestrator owns the redeploy checkpoint. See Reasoned Exclusions
+      below)*
 
 **Timing**: 1 hour
 
@@ -446,8 +459,18 @@ introduced no regressions on the default (non-`--hard`) path.
 
 **Verification**:
 - All five points of the research report's verification bar pass and are recorded in the
-  implementation summary with the actual command output.
+  implementation summary with the actual command output. *(4 of 5 pass with recorded evidence;
+  point (e) is excluded — see Reasoned Exclusions below)*
 - `git diff --stat` lists exactly the five files named across Phases 1-5 and nothing else.
+  *(confirmed: manifest-routing-lib.sh, verify-deploy.sh, skill-orchestrate/SKILL.md,
+  manifest-routing-schema.md, hard-mode-routing.md — nothing else)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| (e) Re-run the deploy verifier against the deployed tree: exactly 3 `gate16` findings, exit code 0 | The orchestrator dispatch for this task explicitly instructed: "Do NOT run deploy-headless.sh yourself — the orchestrator owns the redeploy checkpoint. Edit source only." `.claude/` is currently a stale, partial deploy (6 of 19 extensions synced: core, email, literature, memory, nix, nvim — missing `cslib` and `lean`), so even a read-only verifier run against it cannot show the literal "3 findings" the plan anticipated, and running it post-redeploy is exactly the checkpoint the orchestrator reserved for itself. | gate16 logic itself was proven correct at Phase 4: (1) an isolated 4-extension scratch fixture (core/cslib/lean declaring, one not) produced exactly 3 `[WARN]` lines, `CHECKS=3`, `FAILURES=0`; (2) a live run of the edited `verify-deploy.sh` against the current (partial) deployed tree produced 1 `gate16` WARN for `core` (the only one of the 3 source-store declarers currently deployed) and confirmed `gate16` contributed 0 to `FAILURES` — the run's overall FAIL was from unrelated pre-existing drift/gate3/gate10 findings predating this task, plus this task's own not-yet-redeployed source/deploy content-hash drift (gate3/gate5), which is expected and resolves once the orchestrator's own redeploy checkpoint runs. |
+| Deploy the source store to `.claude/` and re-run the verifier against the deployed tree | Same prohibition as above — deploying `.claude/` is reserved for the orchestrator's own checkpoint immediately following this dispatch, not this implementation agent. | Orchestrator dispatch message, "CRITICAL CONSTRAINTS" section, 3rd bullet. |
 
 ---
 
