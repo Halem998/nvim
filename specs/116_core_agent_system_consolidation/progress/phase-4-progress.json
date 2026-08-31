@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Phase A design -- preserved assets, deletion ledger, and completeness gate (A6-A7)",
+  "started_at": "2026-08-31T01:30:00Z",
+  "last_updated": "2026-08-31T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "A6 preserved-assets table, correcting REBUILD-vs-PRESERVE for 6 mechanisms not live in /orchestrate today", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]},
+    {"id": 2, "description": "A7 deletion ledger, projected totals, double-count netting", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]},
+    {"id": 3, "description": "Completeness gate: deferral-language grep, PASS", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.A6", "description": "Task description implied --lit/memory were the only rehome items; verified that --fast, --team, --hard, and all four model flags are also entirely absent from /orchestrate's own Options table today", "type": "correction", "reason": "Recorded as the load-bearing A6 correction rather than silently narrowing the REBUILD-REQUIRED set to match the original framing"}
+  ]
+}

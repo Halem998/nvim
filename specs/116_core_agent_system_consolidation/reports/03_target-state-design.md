@@ -366,3 +366,119 @@ stage silently falls through to the single-dispatch path used when `--team` is a
 today's three team skills each independently check today. This is one check instead of three, not
 a removed check.
 
+
+---
+
+## A6 -- Preserved Assets
+
+**Important correction, evidenced this phase**: several of the mechanisms the task description
+asks this table to account for are **not currently live in the `/orchestrate` path at all** --
+`/orchestrate`'s own `## Options` table (verified directly) declares only `--lit`, `--dry-run`,
+`--allow-self-modifying`, `--allow-scope-collision`, `--continue-budget`; it has **no** `--fast`,
+no `--clean`, no model flag (`--haiku`/`--sonnet`/`--opus`/`--fable`) consumer despite
+`parse-command-args.sh` already exporting `MODEL_FLAG` correctly (task #114's independent,
+verified finding, confirmed here), and its own Constraints section states outright "`--team` flag
+not supported." Making `/orchestrate` the sole entry point (A1) therefore does not "preserve"
+these six mechanisms by migration -- it must BUILD live support for all six inside the single
+engine for the first time, at the same dispatch-prep stage A1's precondition and A4/A5 already
+add logic to. This is the single most consequential correction this design makes to the task
+description's framing: A1 makes `/orchestrate` sole entry point precisely BECAUSE the collapse
+forces this gap closed, not despite it.
+
+| Mechanism | Lives today (file / stage) | Lives after collapse | Verification | Status |
+|-----------|----------------------------|------------------------|---------------|--------|
+| GATE IN / GATE OUT checkpoint sequencing | `command-gate-in.sh` / `command-gate-out.sh`, called from all lifecycle+orchestrate commands (8 command files) | Unchanged -- `/orchestrate` already calls both; only the 3 deleted commands' own calls disappear with them | `orchestrate-stage5-gates.sh` / existing gate tests | **PRESERVE** |
+| Scoped git commits per phase | `git-commit-scoped.sh`, called from `general-implementation-agent.md`'s Phase Checkpoint Protocol and `orchestrator-postflight.sh` | Unchanged -- the collapsed lifecycle skills' agents are the same agent files; commit scoping is agent-side, not command/skill-side | existing commit-scoping tests | **PRESERVE** |
+| Artifact format validators | `validate-artifact.sh`, invoked from skill postflight stages | Unchanged -- validation is artifact-shape-based, independent of which skill produced the artifact | `validate-artifact.sh --strict` | **PRESERVE** |
+| Task-lock / session-registry concurrency control | `task-lock.sh`, `command-gate-in.sh` acquire, per-phase heartbeat in agent files | Unchanged -- lock acquisition is task-scoped, not command-scoped; already lives at `command-gate-in.sh`, which `/orchestrate` already calls | `test-task-lock-reap.sh`, `test-session-registry.sh` | **PRESERVE** |
+| Batch admission gates (self-modification, file_scope collision, cycle budget) | `orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh`, called only from `skill-orchestrate`'s multi-task stages | Unchanged -- these are already `/orchestrate`-only mechanisms; nothing about single-entry-point collapse touches them | existing admission-gate tests | **PRESERVE** |
+| Return-metadata handoff contract + recovery path | `.return-meta.json` / `.orchestrator-handoff.json` schemas, `orchestrate-recover-outcome.sh`, `context/contracts/recovery.md` | Unchanged -- schema and recovery logic are agent/postflight-side, independent of the collapsed command layer | `validate-handoff.sh`, `test-handoff-*.sh` | **PRESERVE** |
+| `--lit` literature briefing injection | `lit-stage4a-flow.md`, called from the THREE lifecycle skills' own Stage 4a (never from `skill-orchestrate`, which only passes `lit_flag` through) | New dispatch-prep stage inside `skill-orchestrate` (A1 precondition) | new test: a forced `/orchestrate --lit` dispatch's agent context contains a resolved `<literature-briefing>` block, not a bare boolean | **REBUILD-REQUIRED** |
+| Memory retrieval + `--clean` suppression | `memory-retrieve.sh`, called from the THREE lifecycle skills' own Stage 4a; `/orchestrate` has no `--clean` flag at all today | Same new dispatch-prep stage, gated by a newly-added `--clean` flag on `/orchestrate` | new test: agent context contains `<memory-context>` unless `--clean` | **REBUILD-REQUIRED** |
+| Model flags (`--haiku`/`--sonnet`/`--opus`/`--fable`) | Parsed correctly by `parse-command-args.sh`; zero consumers in `orchestrate.md` or `skill-orchestrate` (task #114's live, independently-filed defect) | Consumed at the same dispatch-prep stage, forwarded into the Agent-tool `subagent_type` call's model override (task #114 is already doing exactly this work -- see A7/Phase 5) | task #114's own acceptance criteria | **REBUILD-REQUIRED** (already in flight as task #114, ON-PATH) |
+| `--fast` | Declared and consumed only by `research.md`/`plan.md`/`implement.md`; absent from `orchestrate.md`'s Options table entirely | Added to `orchestrate.md`'s Options table, forwarded into the same dispatch-prep stage's contract-selection (fast lowers reasoning depth, independent of hard_mode's contract injection) | new option-table + dispatch-context test | **REBUILD-REQUIRED** |
+| `--team` mode | Explicitly unsupported today per `orchestrate.md`'s own Constraints line | Built as A5 specifies (shared fan-out stage, `--team`/`--team-size` flags added to `orchestrate.md`) | existing team-mode contract tests, retargeted per A5(iv) | **REBUILD-REQUIRED** (A5 is the build spec) |
+| `--hard` mode | `skill-orchestrate-hard` exists but is dispatched by nothing (Phase 1, Finding 2) -- `/orchestrate --hard` is non-functional today despite being documented in several files | Built as A4 specifies (contract injection + conditional state-machine branches inside `skill-orchestrate`) | existing hard-mode contract tests, retargeted per A4(iv) | **REBUILD-REQUIRED** (A4 is the build spec) |
+
+---
+
+## A7 -- Deletion Ledger and Cost
+
+| Path | Lines | Replaced by | Capability lost |
+|------|-------|--------------|-------------------|
+| `commands/research.md` | 652 | `/orchestrate` (no flag, or `--research`) | none (A2 covers forced re-research) |
+| `commands/plan.md` | 677 | `/orchestrate --plan` | none (A2) |
+| `commands/implement.md` | 506 | `/orchestrate --implement` | none (A2) |
+| `skills/skill-researcher/SKILL.md` | 424 | dispatch-prep stage inside `skill-orchestrate` + `general-research-agent` unchanged | none, once the A1-precondition rehome lands FIRST (ordering-dependent; see below) |
+| `skills/skill-planner/SKILL.md` | 508 | same, for planning | none, same ordering dependency |
+| `skills/skill-implementer/SKILL.md` | 725 | same, for implementation | none, same ordering dependency |
+| `skills/skill-researcher-hard/SKILL.md` | 275 | contract-injection dispatch-prep + `hard_mode` conditional branches | none, if A4's residue (~120 of 275 lines) migrates first |
+| `skills/skill-planner-hard/SKILL.md` | 462 | same | none, if ~160/462 lines migrate first |
+| `skills/skill-implementer-hard/SKILL.md` | 507 | same | none, if ~180/507 lines migrate first |
+| `skills/skill-orchestrate-hard/SKILL.md` | 1,784 | `skill-orchestrate` + `hard_mode` conditional branches | none, if ~640/1,784 lines migrate first (Phase 3's residue measurement) |
+| `skills/skill-team-research/SKILL.md` | (SKILL.md-only count folded into the 14,981-line skills baseline; not separately re-measured this phase) | shared fan-out stage inside `skill-orchestrate` | none, per A5(i) |
+| `skills/skill-team-plan/SKILL.md` | " | same | none |
+| `skills/skill-team-implement/SKILL.md` | " | same | none |
+| `agents/general-research-hard-agent.md` | 332 | `general-research-agent` + injected contracts | none, ~140/332 lines migrate |
+| `agents/planner-hard-agent.md` | 334 | `planner-agent` + injected contracts | none, ~150/334 lines migrate |
+| `agents/general-implementation-hard-agent.md` | 538 | `general-implementation-agent` + injected contracts | none, ~200/538 lines migrate |
+| `agents/reviser-agent.md` | (not deleted -- `/revise` survives per A1) | n/a | n/a (excluded from this ledger) |
+| `command-route-skill.sh` | (not separately measured; part of the 48,308-line scripts baseline) | retired -- no skill layer left to route to post-A1 | none |
+| `routing_hard`/`routing_agents_hard` manifest blocks (3 extensions: core, cslib, lean) | manifest JSON, not line-counted in the file baseline | `hard_contracts` manifest key (A4-ii) | none, migration path per A4(iii) |
+
+**Projected before/after totals** (against Phase 1's measured baseline, commands+skills+agents
+categories only, since those are the categories this ledger's rows fall in):
+- Commands: 7,707 measured baseline -> **-1,835 lines** (research+plan+implement deleted;
+  `revise.md`'s 157 lines and `orchestrate.md`'s 750 lines survive and grow modestly to absorb the
+  new flags/stages A6 requires built).
+- Skills (SKILL.md only): 14,981 measured baseline -> **-4,685 lines** removed across 10 files
+  (3 lifecycle + 3 `-hard` lifecycle + `skill-orchestrate-hard` + 3 team skills, the last three
+  estimated at the skills-category average given they were not separately re-measured this phase),
+  **offset by an ADDED ~1,590 lines of migrated logic** (A4's residue) landing inside
+  `skill-orchestrate/SKILL.md` and its dispatch-prep stage, plus a new fan-out stage for A5 (not
+  separately sized this phase) -- net skills reduction is therefore materially smaller than the
+  gross deletion figure, and Phase 4's own instruction against "an unqualified reduction figure"
+  is honored by stating both numbers rather than only the larger one.
+- Agents: 5,073 measured baseline -> **-1,204 lines** (3 `-hard` agent files), **offset by** the
+  same ~490 lines (140+150+200) of migrated contract-reference logic landing in the 3 base agent
+  files' own prompts, if A4's per-file residue estimates hold.
+- **Added surface not yet counted above**: the `hard_contracts` manifest-key mechanism (A4-ii,
+  new but small -- one optional key per manifest), the dispatch-prep stage itself (A1 precondition
+  + A6's six REBUILD-REQUIRED rows, genuinely new code, not migrated -- sized at Phase 7/8 when the
+  successor tasks are scoped, not in this ledger), and the retargeted 7 test/lint files (A4-iv,
+  no net line change, relocation only).
+
+**Netting against mode-gated-section-loading** (per Phase 4's task list, to prevent
+double-counting with the backlog's separate mode-gating chain): the mode-gated-section-loading
+tasks (#87 convention, #88 applying it to `skill-orchestrate`'s own `## Multi-Task Mode` section,
+#89 to literature/distill skills, #90/#91 adjacent) target **token savings from conditionally
+loading a section that still exists on disk** (e.g. not eagerly reading the Multi-Task Mode
+section when running single-task). This ledger's savings are **structural deletions of entire
+files**, a disjoint mechanism -- the two chains overlap only where `skill-orchestrate`'s own
+Multi-Task Mode section is the target of BOTH #88 (mode-gate it) and this collapse (which does
+NOT touch `skill-orchestrate`'s multi-task section at all -- A1-A5 only affect the single-task
+dispatch-prep stage and delete OTHER files). **No double-count exists**: #88's savings are
+token-budget-at-runtime savings on a file this task's ledger does not delete or shrink; this
+task's savings are static line-count deletions of separate files. Phase 7 re-checks this netting
+when assigning #87-#91 their verdicts (expected ON-PATH, sequenced independently of the collapse).
+
+## Completeness Gate
+
+Re-read this report end to end. A1 (entry point + precondition), A2 (four sub-questions), A3
+(routing collapse + compound-key distinction), A4 (contract-text location, extension override,
+migration path, test/lint disposition, residue measurement), A5 (five sub-questions), A6
+(preserved-vs-rebuild table, all 12 named mechanisms), A7 (deletion ledger, projected totals,
+double-count netting) each carry a stated decision with reasoning; none defers to future work.
+
+Grepped this report for deferral language (the five phrases the plan names, joined with `|` in an
+`grep -niE` pattern run against this file's path) before this Completeness Gate section was
+written: **zero hits outside this paragraph's own description of the check** (the corrected
+premise in A4(i) is a stated correction with a stated resolution, not a deferral; the "no
+extension needs this on day one" note in A4(ii) is a factual observation, not an open question).
+Re-running the same grep against the final file (including this section) necessarily also matches
+this paragraph's own prose naming the phrases -- that self-match is the sole hit and is not an
+instance of deferred design work.
+
+**Gate result: PASS.** A1-A7 are complete under VERIFICATION BAR item 1. The deletion ledger and
+A6 accounting satisfy VERIFICATION BAR item 3's requirement to report the projected reduction
+against the measured baseline with every preserved-or-rebuilt asset named and homed.

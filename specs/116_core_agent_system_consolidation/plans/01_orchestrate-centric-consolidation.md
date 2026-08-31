@@ -346,13 +346,13 @@ the method alongside each figure so a reader can reproduce it.
 
 ---
 
-### Phase 4: Phase A design -- preserved assets, deletion ledger, and completeness gate (A6-A7) [NOT STARTED]
+### Phase 4: Phase A design -- preserved assets, deletion ledger, and completeness gate (A6-A7) [COMPLETED]
 
 **Goal**: Enumerate every mechanism that must survive the collapse with its post-collapse home,
 produce the deletion ledger with honest cost accounting, and gate Phase A as complete.
 
 **Tasks**:
-- [ ] **A6 -- preserved assets.** Produce a table with one row per mechanism, columns: mechanism,
+- [x] **A6 -- preserved assets.** Produce a table with one row per mechanism, columns: mechanism,
       where it lives today (file, and function or stage name), where it lives after the collapse,
       and how its survival is verified. Cover at minimum every mechanism the task description
       names: GATE IN / GATE OUT checkpoint sequencing; scoped git commits per phase; artifact format
@@ -360,24 +360,24 @@ produce the deletion ledger with honest cost accounting, and gate Phase A as com
       (self-modification, file_scope collision, cycle budget); `--lit` literature briefing
       injection; memory retrieval and `--clean` suppression; the four model flags; `--fast`; and
       the return-metadata handoff contract with the recovery path built on it.
-- [ ] Mark the two mechanisms that are confirmed absent from the `/orchestrate` path today
+- [x] Mark the two mechanisms that are confirmed absent from the `/orchestrate` path today
       (`--lit` interactive resolution, and memory retrieval with `--clean` suppression) as
       REBUILD-REQUIRED rather than PRESERVE, cross-referencing Phase 2's A1 precondition. Their
       post-collapse home is a new build, not a migration, and the ledger must say so.
-- [ ] **A7 -- deletion ledger.** Produce a table with one row per file proposed for deletion,
+- [x] **A7 -- deletion ledger.** Produce a table with one row per file proposed for deletion,
       columns: path, line count, what replaces it, and what capability is lost (or "none"). Include
       the lifecycle commands, the three `-hard` lifecycle skills, the three `-hard` agent files,
       `skill-orchestrate-hard`, the three team skills and the synthesis agent, and any lifecycle
       skill or agent orphaned by A1's decision.
-- [ ] Report projected before/after totals against the measured baseline from Phase 1, with the
+- [x] Report projected before/after totals against the measured baseline from Phase 1, with the
       description's recorded baseline shown alongside where they differ. Do not report an
       unqualified reduction figure: every reduction figure is accompanied by the capability-cost
       column and by the added surface the collapse introduces (the contract-text mechanism, the
       fan-out helper, the rehomed Stage 4a dispatch prep, and any new increment logic A2 requires).
-- [ ] Net the ledger's savings against the mode-gated-section-loading chain explicitly, stating
+- [x] Net the ledger's savings against the mode-gated-section-loading chain explicitly, stating
       which savings belong to the collapse and which to mode-gating, so Phase 7 can assign those
       tasks' verdicts without double-counting.
-- [ ] **Completeness gate.** Re-read the design report end to end. Confirm every one of A1-A7 has a
+- [x] **Completeness gate.** Re-read the design report end to end. Confirm every one of A1-A7 has a
       stated decision with reasoning. Grep the report for deferral language ("to be determined",
       "TBD", "to be decided", "left open", "future work will decide") and resolve every hit or
       justify it as out-of-scope-by-design with a named owner. Record the gate result in a
