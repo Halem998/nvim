@@ -682,29 +682,29 @@ existing backlog.
 
 ---
 
-### Phase 10: Phase C -- dependency ordering, TODO regeneration, and verification-bar closeout [NOT STARTED]
+### Phase 10: Phase C -- dependency ordering, TODO regeneration, and verification-bar closeout [COMPLETED]
 
 **Goal**: Write the dependency ordering into `state.json`, regenerate `specs/TODO.md`, and close
 every item of the task's VERIFICATION BAR with evidence.
 
 **Tasks**:
-- [ ] Apply the manifest's DEPEND operations: write each `dependencies` array so the wave generator
+- [x] Apply the manifest's DEPEND operations: write each `dependencies` array so the wave generator
       produces the intended sequence. Encode at minimum the BLOCKING set as dependencies of the
       collapse tasks that would otherwise inherit their defects, the rehome-before-deletion ordering
       from Phase 2's A1 precondition, and the sequencing directions Phase 7 fixed for the
       call-site-counting tasks and the model-flag mirror task.
-- [ ] Confirm every dependency edge references an existing `project_number`, including the numbers
+- [x] Confirm every dependency edge references an existing `project_number`, including the numbers
       allocated in Phase 8.
-- [ ] Regenerate the ordering and TODO.md via `generate-task-order.sh` (and `generate-todo.sh` where
+- [x] Regenerate the ordering and TODO.md via `generate-task-order.sh` (and `generate-todo.sh` where
       the regeneration path requires it, or `state-write.sh --regen-todo` on the final write). Never
       hand-edit `specs/TODO.md`.
-- [ ] Confirm the generated dependency waves are acyclic: the generator's Kahn's-algorithm wave
+- [x] Confirm the generated dependency waves are acyclic: the generator's Kahn's-algorithm wave
       computation must place every task in a wave, with no task left unplaced. A cycle manifests as
       unplaced tasks; treat any such report as a phase failure and repair the offending edge.
-- [ ] Confirm the Core Agent System section of the regenerated TODO.md reflects the new ordering,
+- [x] Confirm the Core Agent System section of the regenerated TODO.md reflects the new ordering,
       including the created successor tasks and excluding the abandoned ones per the generator's
       own rendering rules.
-- [ ] Write a closeout section into
+- [x] Write a closeout section into
       `specs/116_core_agent_system_consolidation/reports/05_backlog-operation-manifest.md` recording
       evidence for each of the five VERIFICATION BAR items: (1) every A1-A7 answered with a
       decision, citing the Phase 4 completeness gate; (2) every audit-scope task carries exactly one
@@ -714,9 +714,9 @@ every item of the task's VERIFICATION BAR with evidence.
       Agent System section, citing this phase's generator output; (5) no file under
       `agent-system/extensions/**` or `.claude/**` was created, modified, or deleted, citing the
       working-tree check below.
-- [ ] Run the boundary check: `git status --porcelain` plus a diff of committed paths for this task's
+- [x] Run the boundary check: `git status --porcelain` plus a diff of committed paths for this task's
       commits must show no path outside `specs/`. Record the command and its output in the closeout.
-- [ ] Write the execution summary to
+- [x] Write the execution summary to
       `specs/116_core_agent_system_consolidation/summaries/01_orchestrate-centric-consolidation-summary.md`.
 
 **Timing**: 1 hour

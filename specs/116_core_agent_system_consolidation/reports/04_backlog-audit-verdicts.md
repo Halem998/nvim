@@ -55,11 +55,18 @@ each task's own description names.
 - **Model-flag threading tasks (#114 ON-PATH, #115 partially MOOT under A4)**: **CONFIRMED**, with
   the additional finding that #115 need not be separately implemented at all once #114 and A4 both
   land (see #115's row above).
-- **`--lit` threading through the three team skills**: no standalone backlog task with this exact
-  scope was found in the roster (the null result is itself informative: A5's fold makes such a
-  task moot by construction before it was ever filed, since `--lit` threading through team mode
-  becomes a single dispatch-prep-stage concern per A1's precondition + A5, not a per-team-skill
-  concern). **No verdict needed** -- there is no roster row to assign one to.
+- **`--lit` threading through the three team skills**: a matching task DOES exist (task #94,
+  "Wire the --lit flag through the three team skills so literature m..."), but it carries the
+  `literature` topic and is therefore explicitly OUT OF SCOPE for this task's audit authority
+  ("OUT OF SCOPE: all 15 literature-topic tasks" -- the task description's own AUDIT SCOPE
+  section). Correction to an earlier draft of this finding, which stated no such task was found at
+  all -- the accurate statement is that #94 exists but sits outside this task's re-topic/verdict
+  authority. **No verdict assigned here, by design of the audit-scope boundary, not because the
+  task does not exist.** #94's own eventual handler will need A5's fold (report 03) as context
+  when it is worked: once task 122 (build_team_mode_fanout_stage) lands, `--lit` threading through
+  team mode becomes a single dispatch-prep-stage concern (already covered by task 117's rehome),
+  making #94 MOOT in its current form -- but that determination belongs to whichever
+  literature-topic-authorized process handles #94, not to this task.
 - **The two team-mode-lifecycle defect tasks (#72, #73)**: **CONFIRMED** RESCOPE-or-MOOT under A5,
   resolved to RESCOPE (both defects survive the fold since A5 preserves teammates) -- see their
   rows above.

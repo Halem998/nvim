@@ -107,3 +107,59 @@ post-phase set (59 entries, +11).
 Dependency edges were written directly using these real numbers at creation time (e.g. 124's
 `dependencies: [117, 68, 81]`), so Phase 9's REVISE/DEPEND operations on pre-existing tasks
 (#48, #90, #88, #72, #73) reference these same real numbers, not placeholders.
+
+## Phase 10 Closeout -- VERIFICATION BAR Evidence
+
+**Item 1** (every A1-A7 answered with a decision): report 03's Completeness Gate section recorded
+a PASS, with a deferral-language grep against the finished report returning zero hits outside the
+gate's own description of the check. Citing report 03 directly.
+
+**Item 2** (every audit-scope task carries exactly one verdict, every MOOT names its ledger
+entry): report 04's coverage line closed at 33/33 (Phase 5's 18-task design-coupled cluster +
+Phase 6's 15-task remainder cluster). The one MOOT-adjacent verdict (#115, "PARTIALLY MOOT under
+A4", refined to a firm ABANDON in this phase's manifest) cites A7 ledger row
+`skill-orchestrate-hard/SKILL.md` directly; #46's routing-half mootness cites the same A7 ledger
+row set via `command-route-skill.sh`'s retirement. No roster row was left without a verdict.
+
+**Item 3** (projected reduction reported against measured baseline, A6 accounted item by item):
+report 03's A7 section reports both the gross deletion figures (-1,835 commands / -4,685 skills /
+-1,204 agents) AND the offsetting added-logic figures (~1,590 lines of migrated hard-mode
+residue, plus new dispatch-prep/fan-out-stage code sized at the successor-task level), explicitly
+declining to report an unqualified reduction number. A6's table names all 12 preserved-or-rebuilt
+mechanisms with a post-collapse home each (6 PRESERVE unchanged, 6 REBUILD-REQUIRED with a named
+new location).
+
+**Item 4** (regenerated TODO.md has acyclic waves, updated Core Agent System section): ran
+`bash .claude/scripts/generate-task-order.sh --update-todo specs/TODO.md specs/state.json`,
+result `OK: Task Order section updated in specs/TODO.md`. The generator placed all 57 non-abandoned
+active tasks across 13 acyclic dependency waves (Kahn's-algorithm computation; no task left
+unplaced -- verified by counting task numbers across all 13 printed waves: 57, matching
+`.active_projects | length` minus the 2 abandoned entries). The Core Agent System section renders
+all 11 new successor tasks (117-127) with correct dependency nesting (verified directly: 124
+nests under both 68 and 81; 118-121 chain under 117; 122-123/72-73 chain under 117; 127 nests
+under both 121 and 124; 88 nests under 127) and correctly excludes both abandoned tasks (#64,
+#115 -- confirmed absent from the rendered section).
+
+**Item 5** (no file under `agent-system/extensions/**` or `.claude/**` created/modified/deleted):
+every one of this task's 9 phase-boundary commits (Phase 1 through Phase 9) was checked via
+`git show --name-only` and confirmed to touch only paths under `specs/`. `git status --porcelain`
+at this closeout point shows exactly two additional specs/-scoped modifications pending commit
+(`specs/TODO.md`'s regeneration, `specs/116_core_agent_system_consolidation/reports/04_...md`'s
+#94 accuracy correction) plus a small set of files OUTSIDE this task's control that this task
+never touched and does not stage: `.claude-extensions.json`, `after/ftplugin/{markdown,tex,typst}.lua`,
+`agent-system/extensions/latex/README.md`, `docs/{MAPPINGS,TYPST}.md`,
+`lua/neotex/plugins/editor/{README.md,which-key.lua}`, `lua/neotex/util/{README.md,process.lua}`,
+and an untracked `agent-system/extensions/literature/scripts/literature-pyenv/` directory --
+observed as foreign, concurrently-modified working-tree state (likely other active sessions in
+this multi-agent workspace), reported per this task's observation duty rather than acted on. None
+of these paths appear in any commit this task made.
+
+**All five VERIFICATION BAR items: PASS.**
+
+### Boundary check command and output
+
+```
+git status --porcelain
+```
+(output recorded above; the specs/-only commit-path check via `git show --name-only` on all 9
+commits is recorded in this section).

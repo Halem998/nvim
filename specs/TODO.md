@@ -1,5 +1,5 @@
 ---
-next_project_number: 117
+next_project_number: 128
 ---
 
 # TODO
@@ -11,14 +11,19 @@ next_project_number: 117
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113,114,116 | -- | core-agent-system, extensions, literature |
-| 2 | 30,64,75,76,88,104,105,109,112,115 | 29,42,74,87,102,108,114 | core-agent-system, extensions, literature |
-| 3 | 44,107 | 88,104 | core-agent-system, literature |
-| 4 | 89 | 44 | core-agent-system |
-| 5 | 90 | 89 | core-agent-system |
-| 6 | 48 | 90 | core-agent-system |
-| 7 | 50 | 48 | core-agent-system |
-| 8 | 91 | 50 | core-agent-system |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,74,81,87,94,100,102,103,106,108,110,111,113,114,116,117 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,104,105,109,112,118,122,124,126 | 29,68,74,81,102,108,117 | core-agent-system, extensions, literature |
+| 3 | 72,73,107,119,123,125 | 104,118,122,124 | core-agent-system, literature |
+| 4 | 120 | 119 | core-agent-system |
+| 5 | 121 | 120 | core-agent-system |
+| 6 | 127 | 121,124 | core-agent-system |
+| 7 | 88 | 87,127 | core-agent-system |
+| 8 | 44 | 88 | core-agent-system |
+| 9 | 89 | 44 | core-agent-system |
+| 10 | 90 | 89 | core-agent-system |
+| 11 | 48 | 90 | core-agent-system |
+| 12 | 50 | 48 | core-agent-system |
+| 13 | 91 | 50 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -33,27 +38,40 @@ next_project_number: 117
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
-46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
+46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
 68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
-72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
-73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
+  └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
+    └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19 
+      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+        └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+          └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+            └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+              └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+                └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+                  └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
+  └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-    └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-      └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-        └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-          └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-            └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-              └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-  └─ 115 [NOT STARTED] — Mirror model-flag consumption into skill-orchestrate-hard, and re
 116 [IMPLEMENTING] — Design the target state for an orchestrate-centric core agent sys
+117 [NOT STARTED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
+  └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
+    └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
+      └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
+        └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+          └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+  └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
+    └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
+    └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
+    └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
+  └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
+  └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
 
 ### Extensions
 
@@ -78,11 +96,226 @@ next_project_number: 117
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
-### Uncategorized
+### Neovim
 
-100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
+45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
 
 ## Tasks
+
+### 127. Collapse routing ladder to routing agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 124, Task 121
+
+**Description**: Collapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.
+
+CONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.
+
+WORK. (1) Remove the routing and routing_hard blocks from every extension manifest that declares them, retaining only routing_agents (plus any extension-specific op like present's critique). (2) Retire command-route-skill.sh -- confirm no remaining caller (only the now-deleted /research, /plan, /implement, /revise-adjacent paths called it; /revise itself does not use this resolver and is unaffected). (3) Update context/guides/manifest-routing-schema.md to document the collapsed two-block model (down from four), including the completeness-lint contract re-scoped to check only routing_agents completeness against itself. (4) Re-scope lint-routing-wiring.sh's Checks A/C accordingly.
+
+DEPENDS ON both the command deletions (routing/skill-dispatch has no remaining caller) and the hard-mode file deletions (routing_hard/routing_agents_hard has no remaining caller) having already landed.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19), agent-system/extensions/core/scripts/command-route-skill.sh, agent-system/extensions/core/context/guides/manifest-routing-schema.md, agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).
+
+---
+
+### 126. Implement orchestrate phase forcing flags
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117
+
+**Description**: Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.
+
+CONTEXT. /orchestrate has no mechanism today to re-run a lifecycle phase that already produced an artifact (e.g. `/orchestrate NNN --research` to run an additional research round on a task already [PLANNED] or beyond). No increment mechanism exists for a forced re-plan or re-implement either: orchestrator-postflight.sh's Stage 7a next_artifact_number increment fires only on research ("research only"), and skill-base.sh's "prev" mode read (next_artifact_number - 1) assumes plan/implement always share the round research just opened.
+
+WORK. (1) Add --research/--plan/--implement flags to orchestrate.md's Options table and parse-command-args.sh, threading them into the delegation context as force_phases (e.g. ["research","plan"]). (2) Extend skill-orchestrate's Stage 1b/2 phase-resolution logic to check force_phases FIRST: when set, run exactly the composed sequence (composition means "stop after the last named phase", not "force both starting from the first") instead of the status-derived phase; with no flag, resume-from-first-incomplete-phase (today's behavior) is unchanged. (3) Change orchestrator-postflight.sh's Stage 7a increment condition from "phase == research" to "phase was force-invoked, any phase" -- a forced phase always opens a new MM_ round (append, never replace), so the round-numbering convention already in use for research works identically for a forced plan or implement. (4) Add a monotonic-max clamp to the forced-phase status write: a forced --research on a task already at [PLANNED] or beyond must never regress status back to [RESEARCHED] -- the status write is skipped (report/artifact link still added) whenever the new value would be a regression.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md, agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/scripts/orchestrator-postflight.sh, agent-system/extensions/core/scripts/skill-base.sh, agent-system/extensions/core/scripts/parse-command-args.sh (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A2, all four sub-questions).
+
+---
+
+### 125. Delete base lifecycle skills
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117, Task 124
+
+**Description**: Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).
+
+PRECONDITION (verify before starting). Both the dispatch-prep rehome and the command deletions must already be landed -- once /research, /plan, /implement are deleted, nothing calls these three skills any longer (skill-orchestrate already bypasses them entirely by dispatching agents directly, per the design report's re-verified dispatch-bypass finding), so this task is pure deletion, not rewiring.
+
+WORK. Delete skills/skill-researcher/SKILL.md (424 lines), skills/skill-planner/SKILL.md (508 lines), skills/skill-implementer/SKILL.md (725 lines), each in full (directory removal). Confirm a repo-wide grep for each skill's name (excluding this task's own specs/ artifacts, and excluding the now-historical CLAUDE.md Skill-to-Agent Mapping table row removal, which this task also performs) returns zero hits. Update the Skill-to-Agent Mapping table in CLAUDE.md / merge-sources/claudemd.md to remove the three rows.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-researcher/, .../skill-planner/, .../skill-implementer/, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 migration note, A7 ledger).
+
+---
+
+### 124. Delete lifecycle commands and update reference
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117, Task 68, Task 81
+
+**Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
+
+PRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.
+
+WORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).
+
+---
+
+### 123. Delete team mode skills
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 122
+
+**Description**: Delete the three team-mode skills (skill-team-research, skill-team-plan, skill-team-implement).
+
+PRECONDITION (verify before starting). The shared team-mode fan-out stage inside skill-orchestrate must already be landed and verified working -- this task is pure deletion, and synthesis-agent is explicitly NOT touched (it is preserved unchanged; the fan-out logic being deleted here is the per-phase spawn/correlate mechanism, not the cross-teammate synthesis reader).
+
+WORK. Delete skills/skill-team-research/SKILL.md, skills/skill-team-plan/SKILL.md, skills/skill-team-implement/SKILL.md in full (directory removal, not just SKILL.md). Confirm a repo-wide grep for each deleted skill's name (excluding this task's own specs/ artifacts) returns zero hits, and confirm any command-to-skill routing table entry that named one of the three (if any survives from the pre-collapse routing model) is also removed.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-team-research/, agent-system/extensions/core/skills/skill-team-plan/, agent-system/extensions/core/skills/skill-team-implement/ (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5-i, A7 ledger).
+
+---
+
+### 122. Build team mode fanout stage
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117
+
+**Description**: Build the team-mode shared fan-out stage in skill-orchestrate.
+
+CONTEXT. skill-team-research, skill-team-plan, and skill-team-implement each independently declare per-teammate finding-file naming ({NN}_{letter}-findings.md), territory contracts (file-ownership declarations preventing teammate collision), and SubagentStop-postflight-to-owning-session correlation -- triplicated because the only real difference between the three is which lifecycle phase's dispatch context to fan out. synthesis-agent is unaffected by this task (it already runs as a fresh-context, phase-agnostic reader/writer and is not touched).
+
+WORK. Add a phase-parameterized fan-out stage to skill-orchestrate/SKILL.md implementing the finding-file convention, territory contracts, and session-correlation once, taking the lifecycle phase (research/plan/implement) as a parameter rather than being copy-pasted per phase. Add --team and --team-size flags to orchestrate.md (orchestrate.md's own Constraints section currently states "--team flag not supported" -- this task removes that constraint), defaulting --team-size to 3 (Primary + Alternatives + Critic), 2 under --fast, 4 under --hard, matching the existing documented cost table. Preserve the CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS-unset graceful-degradation path as an early check in the same stage: when unset, --team is accepted but silently falls through to single-dispatch.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/commands/orchestrate.md (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5).
+
+---
+
+### 121. Delete hard mode lifecycle files
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 118, Task 119, Task 120
+
+**Description**: Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.
+
+PRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.
+
+WORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).
+
+---
+
+### 120. Retarget hard mode tests to engine branch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 118, Task 119
+
+**Description**: Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.
+
+CONTEXT. Once the hard-mode contract-injection and state-machine logic land inside skill-orchestrate/SKILL.md as hard_mode-gated branches (rather than in the separate skill-orchestrate-hard/SKILL.md file), these 7 files' fixtures/assertions must be retargeted so their coverage is preserved rather than silently dropped when skill-orchestrate-hard is deleted: test-loop-guard-budget-override.sh, test-routing-resolution.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-handoff-dispatch-identity.sh, test-resume-scan-nonconformance.sh, lint-contract-compliance.sh.
+
+WORK. For each file, update fixture paths and assertions to exercise skill-orchestrate/SKILL.md's hard_mode=true branch instead of skill-orchestrate-hard/SKILL.md. Verify each test still exercises the SAME underlying mechanism it did before (loop-guard budget, routing resolution, handoff reader parity, resume-scan nonconformance detection, contract compliance) -- this is a retarget, not a rewrite of intent. Run the full suite after retargeting and confirm no regression in what each test actually catches (a mutation check: temporarily reintroduce the bug each test guards against and confirm the retargeted test still fails).
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/tests/**, agent-system/extensions/core/scripts/lint/** (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md (Finding 2, enumerated file set); reports/03_target-state-design.md (A4-iv).
+
+---
+
+### 119. Migrate hard mode state machine logic
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117, Task 118
+
+**Description**: Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 churn/three-strikes, burnout breaker) into skill-orchestrate.
+
+CONTEXT. skill-orchestrate-hard/SKILL.md's genuinely hard-specific residue (measured by stage-header comparison: Stage 1b agent routing ~50 lines, Stage 1c discipline preamble ~16 lines, Stage 2 loop-guard/churn-state init ~279 lines, Stage 3c burnout circuit-breaker ~38 lines, Stage 4b churn detection ~56 lines, plus an estimated ~200 of Stage 4's 484-line dispatch-construction lines) is NOT reducible to prompt-injected text -- it implements stateful counters and thresholds (three-strikes churn detection, single-blocking-phase-per-implement-cycle dispatch limiting, a burnout circuit breaker) that only function as actual conditional logic in the engine's own state machine.
+
+WORK. Port this residue into skill-orchestrate/SKILL.md as `if $hard_mode` conditional branches: (1) loop-guard/churn-state initialization at the equivalent of today's Stage 2; (2) the burnout circuit-breaker gate; (3) per-target churn-detection counters and the three-strikes audit-dispatch trigger, run after each implement dispatch; (4) the H1 single-blocking-phase-per-cycle limiter on implement dispatch (vs. base mode's whole-plan-per-cycle). This is the SAME file the dispatch-prep and contract-injection prerequisite tasks also edit -- coordinate to avoid overlapping edits within the same dispatch window.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i residue measurement table).
+
+---
+
+### 118. Build hard contracts injection
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 117
+
+**Description**: Build hard_contracts manifest key and contract-text injection at dispatch-prep time.
+
+CONTEXT. context/contracts/*.md already exists as a shared contract-text store (one file per H-item: anti-analysis.md=H2, reference-grounding.md=H3, adversarial-verification.md=H4, convergence.md=H6, territory.md=H7, wrap-up.md=H9, plus recovery.md/phase-closure.md/pre-edit-gate.md/orchestrator-discipline.md), already referenced by backtick path from the 7 duplicate -hard files (3 lifecycle -hard skills, 3 -hard agents, skill-orchestrate-hard). The reduction opportunity is consumer-count, not content-authoring: today 7 files independently decide which contracts to reference; this task creates exactly one call site.
+
+WORK. (1) Extend the dispatch-prep stage this task depends on (built by the prerequisite task) so that, when hard_mode is set, it builds and appends the ordered context/contracts/*.md reference block to the dispatch prompt. (2) Add an optional hard_contracts manifest key (shape: {task_type: [path, ...]}) letting an extension add or override a contract for its own task types, resolved by the existing manifest-routing ladder's compound-key (ext:subtype) matching; an entry prefixed "replace:core-file.md:override-file.md" substitutes rather than adds. (3) Add a deploy-time warning (not a hard error, not silent ignore) in verify-deploy.sh for any extension still declaring routing_hard/routing_agents_hard after this collapse, naming the extension and pointing at hard_contracts as the migration path.
+
+NOT IN SCOPE. The stateful hard-mode logic (churn/three-strikes counters, burnout circuit breaker, single-phase-per-cycle implement dispatch) is NOT prompt-injectable text and is out of scope for this task -- it is a separate, dependent task (state-machine migration).
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i, A4-ii, A4-iii).
+
+---
+
+### 117. Build orchestrate dispatch prep stage
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.
+
+CONTEXT (do not re-derive; see the design spec cited below). skill-orchestrate/SKILL.md dispatches every lifecycle phase (research/plan/implement) via the Agent tool directly against general-research-agent/planner-agent/general-implementation-agent, bypassing skill-researcher/skill-planner/skill-implementer entirely -- the sole home today of Stage 4a memory retrieval (memory-retrieve.sh, gated by clean_flag) and interactive --lit resolution (lit-stage4a-flow.md). Verified live: skill-orchestrate/SKILL.md has zero occurrences of memory-retrieve, clean_flag, lit-stage4a, or literature-briefing, against 13 pass-through lit_flag occurrences that are never resolved into a briefing. orchestrate.md's own Options table today has no --clean flag and no --fast flag at all (both present only on the now-superseded research.md/plan.md/implement.md).
+
+WORK. Add a single dispatch-prep stage to skill-orchestrate/SKILL.md, invoked once per dispatch (both the single-task path and each multi-task wave member), immediately before the Agent-tool subagent_type call, that: (1) calls memory-retrieve.sh gated by a newly-added --clean flag on orchestrate.md, injecting a <memory-context> block into the dispatch context in the same shape skill-researcher's Stage 4a already produces; (2) calls the shared lit-stage4a-flow.md flow to resolve lit_flag into a <literature-briefing> block; (3) adds a --fast flag to orchestrate.md's Options table and threads it into dispatch-context construction the same way research.md/plan.md/implement.md already do today.
+
+ORDERING (binding, load-bearing for the wider consolidation this task is part of). This task must land and be verified working BEFORE any task that deletes commands/research.md, commands/plan.md, commands/implement.md, or the three lifecycle skills (skill-researcher, skill-planner, skill-implementer) -- the system must never pass through a state where skill-orchestrate dispatches an agent without memory/--lit support while the skills that used to provide it are already gone.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+REFERENCE: full design reasoning is specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 precondition, A6).
+
+---
 
 ### 116. Design the orchestrate-centric core consolidation and rebuild the backlog around it
 - **Status**: [IMPLEMENTING]
@@ -290,7 +523,7 @@ core. Boiling down the extensions themselves is deferred work and must not be st
 ---
 
 ### 115. Mirror model-flag consumption into skill-orchestrate-hard and reconcile the composability docs
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 114
@@ -822,6 +1055,7 @@ WHY THIS IS FOUNDATIONAL: the glue-check task's routes (a) re-OCR and (c) distin
 ### 100. Close aggregator file scope blind spot
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Close the file_scope blind spot for AGGREGATOR/REGISTRATION files: a task that adds a new module must edit its parent aggregator, which by construction lies outside the new module's own declared path, so the admission gates never see that edit coming.
@@ -941,7 +1175,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 84, Task 89
+- **Dependencies**: Task 84, Task 89, Task 124
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
 
@@ -979,7 +1213,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 87
+- **Dependencies**: Task 87, Task 127
 
 **Description**: Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.
 
@@ -1258,9 +1492,9 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 122
 
-**Description**: The SubagentStop postflight hook picks an arbitrary .postflight-pending marker with no correlation to the session that owns it. In a team run, teammate stops burn the orchestrator's continuation budget and can delete the orchestrator's marker mid-run, silently removing the premature-termination guard.
+**Description**: RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode fold as the sibling teammate-return-meta-write-conflict task: this defect (SubagentStop marker correlation) survives the fold and must be re-expressed against the new shared fan-out stage's own session-correlation logic, built by task 122 (build_team_mode_fanout_stage), rather than against the current per-skill postflight-marker convention. Retarget once task 122 lands. Original description follows.\n\nThe SubagentStop postflight hook picks an arbitrary .postflight-pending marker with no correlation to the session that owns it. In a team run, teammate stops burn the orchestrator's continuation budget and can delete the orchestrator's marker mid-run, silently removing the premature-termination guard.
 
 VERIFIED MECHANISM (do not re-derive), file agent-system/extensions/core/hooks/subagent-postflight.sh:
 - find_marker() runs `find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1`. It takes the FIRST marker found anywhere under specs/, with no correlation to which session or agent is stopping. The marker's own JSON carries a session_id field (written by skill_create_postflight_marker in agent-system/extensions/core/scripts/skill-base.sh) which the hook never reads.
@@ -1297,9 +1531,9 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 122
 
-**Description**: Teammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
+**Description**: RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fold (specs/116_core_agent_system_consolidation/reports/03_target-state-design.md A5) preserves teammate capability but collapses skill-team-research/skill-team-plan/skill-team-implement into a single shared fan-out stage inside skill-orchestrate/SKILL.md, built by task 122 (build_team_mode_fanout_stage). This defect survives the fold unchanged and must be fixed against that NEW shared stage, not against the three separate team-skill files named below -- retarget the fix location accordingly once task 122 lands. Original description follows.\n\nTeammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
 
 VERIFIED MECHANISM (do not re-derive):
 skill-team-research/SKILL.md Stage 11 specifies that THE SKILL writes a single specs/{NNN}_{SLUG}/.return-meta.json for the whole team run, carrying the team_execution block (teammates_spawned/completed/failed), teammate_results, and synthesis conflict counts. A teammate's only deliverable is reports/{RR}_teammate-{letter}-findings.md, which the skill collects by glob. Teammates have no postflight step and are not supposed to write .return-meta.json at all.
@@ -1410,7 +1644,7 @@ Edit ONLY `agent-system/extensions/core/**`, NEVER the deployed `.claude/**` tre
 ---
 
 ### 64. Decide and implement how --hard behavioral contracts reach agents system-wide
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 42
@@ -1569,7 +1803,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 90
+- **Dependencies**: Task 90, Task 124
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
@@ -1600,17 +1834,17 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: Fix present extension compound-skill routing so /implement resolves to a real skill. The present manifest's routing.implement declares "present:grant" -> "skill-grant:assemble" and "present:slides" -> "skill-slides:assemble", but the shared routing resolver (scripts/lib/manifest-routing-lib.sh, consumed via command-route-skill.sh) returns those values verbatim with no colon splitting, and no skill directories named skill-grant:assemble or skill-slides:assemble exist -- only skill-grant and skill-slides do. Running /implement on a present:grant or present:slides task therefore resolves SKILL_NAME to a nonexistent skill (verified: resolver returned skill-grant:assemble via noncore-exact). skill-grant/SKILL.md documents "assemble" as a workflow_type value, not part of the skill name, so the manifest is encoding skill + workflow_type in one field that no consumer ever splits. Decide whether the fix belongs in the manifest (drop the :suffix and carry workflow_type another way) or in the resolver (split on the first colon and expose the suffix as a workflow_type/sub-mode variable), implement it, and add a lint check so any routing or routing_hard value naming a nonexistent skill fails verify-deploy -- lint-routing-wiring.sh currently validates declared agent names but not skill names. Scope is exactly 2 occurrences, both in agent-system/extensions/present/manifest.json under routing.implement; present declares no routing_hard, and no other extension uses colon-bearing routing values. Found during a deploy-integrity audit of the Logos/Theory repo.
+**Description**: RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agent_system_consolidation/reports/03_target-state-design.md A3: the routing-half of this defect (present's routing.implement colon-suffixed skill-name values) becomes MOOT once task 124 (delete_lifecycle_commands_and_update_reference) retires command-route-skill.sh and the skill-dispatch layer it serves. This task's live scope narrows to the routing_agents-half only: if present's routing_agents block carries the analogous colon-suffixed AGENT name, fix that, plus the lint-routing-wiring.sh extension. file_scope backfilled from description evidence (was previously empty). Original description follows.\n\nFix present extension compound-skill routing so /implement resolves to a real skill. The present manifest's routing.implement declares "present:grant" -> "skill-grant:assemble" and "present:slides" -> "skill-slides:assemble", but the shared routing resolver (scripts/lib/manifest-routing-lib.sh, consumed via command-route-skill.sh) returns those values verbatim with no colon splitting, and no skill directories named skill-grant:assemble or skill-slides:assemble exist -- only skill-grant and skill-slides do. Running /implement on a present:grant or present:slides task therefore resolves SKILL_NAME to a nonexistent skill (verified: resolver returned skill-grant:assemble via noncore-exact). skill-grant/SKILL.md documents "assemble" as a workflow_type value, not part of the skill name, so the manifest is encoding skill + workflow_type in one field that no consumer ever splits. Decide whether the fix belongs in the manifest (drop the :suffix and carry workflow_type another way) or in the resolver (split on the first colon and expose the suffix as a workflow_type/sub-mode variable), implement it, and add a lint check so any routing or routing_hard value naming a nonexistent skill fails verify-deploy -- lint-routing-wiring.sh currently validates declared agent names but not skill names. Scope is exactly 2 occurrences, both in agent-system/extensions/present/manifest.json under routing.implement; present declares no routing_hard, and no other extension uses colon-bearing routing values. Found during a deploy-integrity audit of the Logos/Theory repo.
 
 ---
 
 ### 45. Global update extension repo registry
 - **Status**: [NOT STARTED]
 - **Task Type**: general
-- **Topic**: core-agent-system
+- **Topic**: neovim
 - **Dependencies**: None
 
-**Description**: Implement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
+**Description**: TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carried topic core-agent-system, but its real scope (the <leader>al extension picker's 'Global Update' action) is nvim-config Lua UI code at lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**, NOT agent-system/extensions/** -- it is unrelated to the orchestrate-engine collapse. Re-topiced to neovim; file_scope backfilled from description evidence (was previously empty). Original description follows.\n\nImplement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
 
 ---
 
