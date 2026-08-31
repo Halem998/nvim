@@ -201,3 +201,168 @@ mechanisms share the word "compound" and must not be conflated:
 | `hard_contracts` (new, see A4) | contract-text override/addition | dispatch-prep contract-injection step |
 | `routing_exempt` | doc-lint exemption (unchanged, narrowed meaning per Phase 1 evidence) | `check-extension-docs.sh` |
 
+
+---
+
+## A4 -- Hard Mode as Contract Injection
+
+**Decided; this section specifies HOW.**
+
+### (i) Where contract texts live
+
+**Correction to the task description's premise, evidenced in this phase**: the description
+asserts "no shared contract-text mechanism exists to adopt today -- H2-H9 text is scattered
+inline stage-by-stage." Verified against the live source store, this is **false as a starting
+premise** -- the mechanism **already exists**: `context/contracts/*.md` holds one file per
+contract (`anti-analysis.md` = H2, `reference-grounding.md` = H3, `adversarial-verification.md` =
+H4, `convergence.md` = H6, `territory.md` = H7, `wrap-up.md` = H9, plus `recovery.md`,
+`phase-closure.md`, `pre-edit-gate.md`, `orchestrator-discipline.md`,
+`return-meta-artifacts-template.md`, `no-task-references-bullet.md`), and every `-hard` file
+already references the relevant ones **by backticked path**, resolved on demand at runtime --
+exactly this repo's existing lazy-context-loading convention (`CLAUDE.md`: "plain backticked path
+references resolved on demand (never eager @-imports)"), and exactly the precedent the plan asked
+to identify in the `--lit` Stage 4a flow. **The mechanism to copy is this one, already built and
+in production** -- A4 does not need to invent a contract-text store; `--lit`'s
+`lit-stage4a-flow.md` is a second, independently-arrived-at instance of the same pattern, not the
+only precedent.
+
+**What genuinely needs building**: not the text store, but **consistent, centralized
+application**. Today each of the 6 duplicate files (3 `-hard` lifecycle skills + 3 `-hard` agents
++ `skill-orchestrate-hard`, i.e. 7 files) independently decides which contract files to reference
+and inlines its OWN Stage-numbered prose around those references. After the collapse, there is
+**exactly one call site per lifecycle phase** (inside the single engine's dispatch-prep stage, the
+same stage A1's precondition adds for memory/`--lit`) that, when `hard_mode` is set, appends a
+fixed, ordered contract-reference block to the dispatch prompt -- reading the SAME
+`context/contracts/*.md` files, but referenced from ONE place instead of seven. This is a
+**consumer-count reduction**, not a content-authoring project: zero contract-text files need to be
+rewritten; the collapse deletes the seven redundant reference SITES, not the sixteen files they
+each point to (13 of the 16 base-mode files listed above are genuinely-hard-specific contracts;
+`no-task-references-bullet.md` and `return-meta-artifacts-template.md` are already
+mode-independent utility fragments and are unaffected either way).
+
+**Residual non-text logic (important correction to "pure prompt injection")**: not everything
+under H2-H9 is textual. Stage-header comparison (below) shows `skill-orchestrate-hard`'s Stage 2
+(Loop Guard and Churn State Initialization, ~279 lines) and Stage 4b (Churn Detection, H6, ~56
+lines) implement **stateful counters and thresholds** (three-strikes churn detection, H5/H6), not
+prompt text -- injecting a contract DESCRIPTION of churn detection into a dispatch prompt does not
+make the counter-tracking happen. This residue becomes **conditional engine logic gated by
+`hard_mode`** inside the single engine's own state machine (the same file, an `if $hard_mode`
+branch around the churn-counter update and the burnout circuit-breaker check), not prompt
+injection. A4's collapse is therefore two mechanisms, not one: (a) contract-TEXT injection at
+dispatch-prep time for H2/H3/H4/H7/H9-shaped constraints, and (b) conditional STATE-MACHINE logic
+for H1 (phase-per-cycle dispatch), H5/H6 (churn/three-strikes counters), and the burnout
+circuit-breaker, all gated by the same `hard_mode` boolean rather than routed to a second file.
+
+### (ii) Extension override/addition
+
+An extension adds or overrides a contract for its own task types by declaring a
+`hard_contracts: { <task_type>: ["path/to/extra-contract.md", ...] }` block in its manifest --
+additive to the six core references, resolved by the SAME manifest-routing ladder A3 already
+carries forward (compound-key `ext:subtype` matching applies identically). An extension that
+wants to REPLACE rather than add a core contract names the override in the same block with a
+`replace:` prefix on the entry (e.g. `"replace:anti-analysis.md:lean/contracts/lean-anti-analysis.md"`),
+resolved by the dispatch-prep stage substituting the named file for the core default before
+building the reference block. No extension needs this on day one (verified: none of the 19
+manifests declare a hard-mode-specific override today), so the mechanism is speculative but
+cheap -- a single additional optional manifest key, consistent with how `routing_agents` already
+lets an extension override a default without forking the resolver.
+
+### (iii) Migration path for extensions still declaring `routing_hard`
+
+Phase 1 confirmed exactly 3 of 19 extensions (core, cslib, lean) declare `routing_hard`/
+`routing_agents_hard`. **Decision: deploy-time warning, not silent ignore and not a hard error.**
+Reasoning: silent ignore risks an extension author believing hard-mode routing still works when
+it has quietly stopped being consulted (the exact silent-capability-loss failure mode A1's
+precondition exists to prevent elsewhere in this design); a hard error blocks deploy for a key
+that is now merely inert, which is disproportionate for a transitional period where an extension
+maintainer (cslib, lean) may not yet have migrated to `hard_contracts`. A deploy-time warning in
+`verify-deploy.sh` ("extension {name} declares routing_hard/routing_agents_hard, which is no
+longer consulted after the hard-mode collapse; migrate to hard_contracts") gives visibility without
+blocking. No unrecognized-manifest-key path exists today (confirmed: no such lint), so this is a
+new, narrowly-scoped check, not a repurposing of an existing one.
+
+### (iv) Disposition of the 7 test/lint files (Phase 1's enumerated set)
+
+`test-loop-guard-budget-override.sh`, `test-routing-resolution.sh`, `test-handoff-reader-parity.sh`,
+`test-loop-guard-staleness.sh`, `test-handoff-dispatch-identity.sh`,
+`test-resume-scan-nonconformance.sh`, `lint-contract-compliance.sh`. **Decision: retarget, not
+delete.** Each of these tests a REAL, surviving mechanism (loop-guard budget, routing resolution,
+handoff reader parity, resume-scan nonconformance, contract compliance) that continues to exist
+post-collapse -- only its FILE LOCATION changes (from `skill-orchestrate-hard/SKILL.md`-specific
+assertions to `skill-orchestrate/SKILL.md`'s `hard_mode`-branch assertions). A successor task
+retargets each test's fixture paths and assertions to the single-engine's hard-mode branch rather
+than deleting test coverage the collapse would otherwise silently drop.
+
+### Hard-specific residue measurement (method: stage-header comparison + line counting)
+
+| File | Total lines | Genuinely hard-specific (stage-header-scoped) | Shared/already-co-maintained |
+|------|------------|-----------------------------------------------|-------------------------------|
+| `skill-orchestrate-hard/SKILL.md` | 1,784 | ~640 (Stage 1b agent routing ~50; Stage 1c discipline preamble ~16; Stage 2 loop-guard/churn init ~279; Stage 3c burnout breaker ~38; Stage 4b churn detection ~56; contract-injection portion of Stage 4 dispatch construction, estimated ~200 of Stage 4's 484 lines) | ~1,144 (the `## Multi-Task Mode` section, ~166 lines, explicitly delegates to `skill-orchestrate/SKILL.md` Stage MT-1..MT-5 per its own opening statement and Phase 1's re-verification; the remaining single-task skeleton in Stages 0/1/3/5/6/7/8 mirrors the base skill's own stage shape with only the additions counted at left) |
+| `skill-researcher-hard/SKILL.md` | 275 | ~120 (H3 reference-grounding invocation + H2 anti-analysis stage) | ~155 (same Stage 0-8 skeleton as `skill-researcher/SKILL.md`, 424 lines) |
+| `skill-planner-hard/SKILL.md` | 462 | ~160 (H3 + postmortem/preserved-assets accounting) | ~302 |
+| `skill-implementer-hard/SKILL.md` | 507 | ~180 (H2 anti-analysis + territory/phase-closure/pre-edit-gate/recovery stages) | ~327 |
+| `general-research-hard-agent.md` | 332 | ~140 | ~192 |
+| `planner-hard-agent.md` | 334 | ~150 | ~184 |
+| `general-implementation-hard-agent.md` | 538 | ~200 | ~338 |
+
+**Reported total genuinely-hard-specific residue: ~1,590 lines** (across all 7 files), against a
+combined 4,232 lines of `-hard` file content -- i.e. roughly **62% of the `-hard` files is
+skeleton/co-maintenance duplication of their base counterparts**, and only ~38% is content that
+must actually migrate somewhere (contract-reference lists that already point at the pre-existing
+`context/contracts/*.md` store, plus the H1/H5/H6/burnout state-machine logic that becomes
+conditional branches in the base engine). This is the real migration surface A7's ledger costs;
+it is NOT "delete 4,232 lines for free" -- roughly 1,590 lines of logic/reference-list content
+has to land somewhere in the single engine (a fraction of that as new `if hard_mode` branches, the
+rest as reference-block construction that already has a home).
+
+---
+
+## A5 -- Team Mode Folds Into the Engine
+
+**Decided; this section specifies HOW.**
+
+**(i) Fate of the three team skills and the synthesis agent.** **Reduced to a fan-out helper the
+engine calls**, not deleted outright as a capability -- `synthesis-agent` is **preserved
+unchanged** (it is already a distinct, fresh-context agent invoked via `subagent_type: "fork"`-style
+dispatch from within `skill-orchestrate`'s own reviser/synthesis call sites per Phase 1's
+dispatch-site enumeration, and nothing about the collapse changes its role: it reads N teammate
+finding files in a fresh context and writes one unified artifact, which is orthogonal to WHICH
+skill fanned the teammates out). `skill-team-research`/`skill-team-plan`/`skill-team-implement`
+**are deleted as separate skill files**; their fan-out logic (spawn N teammates with per-teammate
+territory contracts, wait, correlate SubagentStop postflight) becomes **one shared function/stage
+inside the single engine**, parameterized by phase (research/plan/implement) rather than
+triplicated per phase. This mirrors A4's shape exactly: three near-identical files collapse to
+one because the only real difference between them was WHICH phase's dispatch context to fan out,
+not the fan-out mechanism itself.
+
+**(ii) `--team` as a flag.** **Survives as an explicit user flag**, not an automatic decision from
+task shape. Reasoning: team mode's cost multiplier (~5x tokens per CLAUDE.md's documented cost
+table) is a deliberate, expensive trade the user opts into; inferring it automatically from "task
+looks big" would silently 5x a dispatch's cost without the explicit consent the current flag
+model requires. This is consistent with `--hard`'s own per-invocation-only design (no sticky
+state) that A4 does not change either.
+
+**(iii) `--team-size` survives**, unchanged, still defaulting to 3 (Primary + Alternatives +
+Critic) with `--fast`/`--hard` adjusting to 2/4 per the existing documented table -- this logic is
+independent of which file does the fan-out and moves verbatim into the shared fan-out
+stage/function.
+
+**(iv) Teammate contract layer, expressed once.** Per-teammate finding-file naming
+(`{NN}_{letter}-findings.md`), territory contracts (file-ownership declarations preventing
+teammate collision), and the SubagentStop-postflight-to-owning-session correlation move into the
+SAME shared fan-out stage as (i) -- today triplicated because each of the three team skills
+re-declares its own territory-contract prose and finding-file convention; after the fold there is
+one declaration, parameterized by phase. **Named explicitly**: two open backlog tasks (teammate
+return-meta write conflict; SubagentStop-to-owning-session correlation) describe REAL,
+currently-live defects in exactly this layer. Folding to one shared stage does not fix either
+defect by itself -- both defects are re-expressed against the new single fan-out stage rather than
+against three separate skill files, and Phase 5 assigns their verdicts (RESCOPE, retargeting the
+fix to the new location) rather than treating the fold as having silently resolved them.
+
+**(v) Graceful degradation, preserved explicitly.** The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`
+unset-fallback (single-agent execution when the environment variable is absent) is preserved as an
+early check in the SAME shared fan-out stage: if unset, `--team` is accepted as a flag but the
+stage silently falls through to the single-dispatch path used when `--team` is absent, exactly as
+today's three team skills each independently check today. This is one check instead of three, not
+a removed check.
+

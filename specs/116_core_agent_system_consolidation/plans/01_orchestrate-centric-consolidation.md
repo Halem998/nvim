@@ -280,13 +280,13 @@ any deletion decision is stated.
 
 ---
 
-### Phase 3: Phase A design -- hard-mode contract injection and team-mode fold (A4-A5) [NOT STARTED]
+### Phase 3: Phase A design -- hard-mode contract injection and team-mode fold (A4-A5) [COMPLETED]
 
 **Goal**: Specify HOW the two already-decided collapses are carried out, without re-litigating
 whether they happen.
 
 **Tasks**:
-- [ ] **A4 -- hard mode as contract injection.** The decision is settled: the H2-H9 contracts are
+- [x] **A4 -- hard mode as contract injection.** The decision is settled: the H2-H9 contracts are
       injected into the dispatch prompt rather than routed to a duplicate skill/agent tree,
       collapsing the three `-hard` lifecycle skills, the three `-hard` agent files, and
       `skill-orchestrate-hard`, and removing `routing_hard` / `routing_agents_hard` from every
@@ -301,13 +301,13 @@ whether they happen.
       unrecognized-manifest-key path exists today; (iv) the disposition of the test and lint files
       Phase 1 enumerated as referencing `skill-orchestrate-hard` (updated, retargeted, or deleted),
       since they need handling regardless of the collapse.
-- [ ] **A4 -- measure before assuming cheap.** Using Phase 1's measurements and a stage-header
+- [x] **A4 -- measure before assuming cheap.** Using Phase 1's measurements and a stage-header
       comparison, record how much of `skill-orchestrate-hard` is genuinely hard-specific versus
       shared skeleton, and how much of each `-hard` lifecycle skill and agent is boilerplate
       duplicated from its base counterpart. Report the hard-specific residue as the real migration
       surface. Record explicitly that the engine's multi-task stages live solely in the base
       engine, so none of that half migrates.
-- [ ] **A5 -- team mode folds into the engine.** The decision is settled: parallel-teammate
+- [x] **A5 -- team mode folds into the engine.** The decision is settled: parallel-teammate
       capability is preserved as a flag inside the single engine. Specify: (i) what happens to the
       three team skills and the synthesis agent -- deleted, or reduced to a fan-out helper the
       engine calls -- and state which, with reasoning; (ii) whether `--team` survives as a user
@@ -316,7 +316,7 @@ whether they happen.
       the subagent-postflight correlation to the owning session) is expressed once instead of three
       times; (v) the graceful-degradation path when the experimental agent-teams environment
       variable is unset, which must be preserved explicitly, not dropped as incidental.
-- [ ] Record in A5 that two open backlog tasks describe real defects in exactly the teammate
+- [x] Record in A5 that two open backlog tasks describe real defects in exactly the teammate
       contract layer being folded, so the fold must state where each defect is re-expressed if
       teammates are preserved at all. Do not assign their verdicts here; that is Phase 5's work.
 
