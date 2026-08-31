@@ -1,17 +1,39 @@
 {
-  "dispatch_seq": 2,
-  "status": "planned",
+  "dispatch_seq": 3,
+  "status": "implemented",
   "task_number": 116,
   "session_id": "sess_1788197681_a534a5",
-  "summary": "Implementation plan complete for task 116. Plan at specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md: 10 fully-sequential phases, ~15 hours, treating this as a meta-task whose deliverables are documents plus backlog state, never edits to agent-system/extensions/** or .claude/**. Structure: Phase 1 baseline verification and audit-scope evidence roster; Phases 2-4 the Phase A design spec (A1-A3 entry point/phase forcing/dispatch defaults; A4-A5 hard-mode contract injection and team fold; A6-A7 preserved assets, deletion ledger, and a completeness gate closing VERIFICATION BAR items 1 and 3); Phases 5-6 the Phase B audit split into a design-coupled cluster and a remainder, closing with coverage arithmetic for VERIFICATION BAR item 2; Phase 7 verdict reconciliation, the three sequencing-tension directions, the BLOCKING set, and an ordered Phase C operation manifest; Phases 8-10 the Phase C application (create successors, then revise/abandon/re-topic/backfill, then dependency ordering plus TODO regeneration and the VERIFICATION BAR closeout for items 4 and 5). The research dispatch-bypass finding was independently re-verified at planning time (skill-orchestrate/SKILL.md: zero occurrences of memory-retrieve, clean_flag, lit-stage4a, literature-briefing, against 13 pass-through lit_flag occurrences; the three dispatched agent files: zero occurrences of either mechanism) and is carried as a first-class design input: Phase 2 must name a post-collapse home for memory retrieval and --lit resolution and state a rehome-before-deletion ordering constraint, Phase 4's A6 marks both REBUILD-REQUIRED rather than PRESERVE, and Phase 10 encodes the ordering as a real dependency edge. Planning also corrected one research detail: the null-file_scope data gap covers three audit-scope tasks (#45, #46, #51), not two, and the state.json human-readable field is project_name (a query against .title returns null for every task and must not be read as missing data). Phases 8-10 carry Verification Tier full and route every state.json write through state-write.sh one task at a time with an explicit MAX_ARG_STRLEN payload guard.",
+  "summary": "All 10 plan phases completed in a single implementation dispatch, writes confined to specs/** throughout (verified per-commit via git show --name-only on all 9 phase commits). Phase A design (report 03) answers A1-A7 with a stated decision and reasoning each, ending in a completeness-gate PASS; two significant corrections surfaced during verification: (1) the premise that no shared hard-mode contract-text mechanism exists was found false -- context/contracts/*.md already exists and is already referenced by path from every -hard consumer, so A4's real migration surface is consumer-count reduction (7 sites -> 1) plus ~1,590 lines of genuinely stateful residue, not fresh text-authoring; (2) A6 required REBUILD-REQUIRED (not PRESERVE/migrate) classification for six mechanisms, not two -- --fast, --team, --hard, and all four model flags are entirely absent from /orchestrate's own Options table today, not merely unwired. Phase B audit (report 04) assigned exactly one verdict to all 33 roster tasks (18 design-coupled + 15 remainder), confirmed two BLOCKING tasks (#68, #81) and one NOT-BLOCKING softer candidate (#53), and corrected an inaccurate early finding about --lit-through-team-skills (task #94 exists but is out of this task's literature-topic-excluded audit authority, not nonexistent). Phase C (reports 05, state.json) created 11 successor tasks (117-127, each independently dispatchable with its own agent-system/extensions/**-only file_scope and correct dependency ordering including the BLOCKING and rehome-before-deletion edges), applied 4 REVISE / 2 ABANDON / 2 RETOPIC / 3 BACKFILL / 3 DEPEND operations to pre-existing tasks, and regenerated specs/TODO.md via generate-task-order.sh (57/57 non-abandoned tasks placed across 13 acyclic waves). All five VERIFICATION BAR items closed with recorded evidence in report 05's Phase 10 Closeout section.",
   "blockers": [],
   "continuation_path": null,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
-      "summary": "10-phase implementation plan for the Phase A design spec, Phase B backlog audit, and Phase C backlog operations; writes confined to specs/**."
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md",
+      "summary": "Re-measured baseline, re-verified all five research findings, and the 33-row audit-scope roster with evidence tiers."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/03_target-state-design.md",
+      "summary": "Phase A target-state design (A1-A7) plus a completeness gate; two load-bearing corrections to the task description's premises."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md",
+      "summary": "One verdict per audit-scope task (33/33), the finalized BLOCKING set, and coverage arithmetic."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/05_backlog-operation-manifest.md",
+      "summary": "Ordered backlog operation manifest, 11 allocated successor task numbers (117-127), and the VERIFICATION BAR closeout."
+    },
+    {
+      "type": "summary",
+      "path": "specs/116_core_agent_system_consolidation/summaries/01_orchestrate-centric-consolidation-summary.md",
+      "summary": "Full implementation summary covering all 10 phases."
     }
   ],
-  "next_steps": "Run /implement 116 to execute the plan, beginning with Phase 1 baseline verification and the audit-scope evidence roster."
+  "next_steps": "Task 116 is fully implemented; all 10 phases COMPLETED. Successor tasks 117-127 are created and dependency-ordered in specs/state.json / specs/TODO.md, ready to be picked up by /research, /plan, or /implement in their own dispatches. Two pre-existing tasks (#68, #81) are now flagged BLOCKING and should be prioritized before task 124 (delete_lifecycle_commands_and_update_reference) is worked.",
+  "phases_completed": 10,
+  "phases_total": 10
 }

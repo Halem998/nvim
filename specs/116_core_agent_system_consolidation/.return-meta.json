@@ -1,8 +1,83 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 116,
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1788197681_a534a5",
-  "dispatch_seq": 3
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md",
+      "summary": "Re-measured baseline, re-verified all five research findings, and the 33-row audit-scope roster with evidence tiers."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/03_target-state-design.md",
+      "summary": "Phase A target-state design (A1-A7) plus a completeness gate; two load-bearing corrections to the task description's premises."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md",
+      "summary": "One verdict per audit-scope task (33/33), the finalized BLOCKING set, and coverage arithmetic."
+    },
+    {
+      "type": "report",
+      "path": "specs/116_core_agent_system_consolidation/reports/05_backlog-operation-manifest.md",
+      "summary": "Ordered backlog operation manifest, 11 allocated successor task numbers (117-127), and the VERIFICATION BAR closeout."
+    },
+    {
+      "type": "summary",
+      "path": "specs/116_core_agent_system_consolidation/summaries/01_orchestrate-centric-consolidation-summary.md",
+      "summary": "Full implementation summary covering all 10 phases."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Designed the orchestrate-centric core consolidation (A1-A7, with two load-bearing corrections to the task description's premises found during verification) and rebuilt the backlog: 33/33 audit-scope tasks verdicted, 2 confirmed BLOCKING, 11 successor tasks created (117-127) with dependency-correct ordering, 4 REVISE/2 ABANDON/2 RETOPIC/3 BACKFILL/3 DEPEND operations applied, specs/TODO.md regenerated with 57/57 tasks placed across 13 acyclic waves. All writes confined to specs/**, verified per-commit."
+  },
+  "modified_files": [
+    "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
+    "specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md",
+    "specs/116_core_agent_system_consolidation/reports/03_target-state-design.md",
+    "specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md",
+    "specs/116_core_agent_system_consolidation/reports/05_backlog-operation-manifest.md",
+    "specs/116_core_agent_system_consolidation/summaries/01_orchestrate-centric-consolidation-summary.md",
+    "specs/116_core_agent_system_consolidation/progress/phase-1-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-2-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-3-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-4-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-5-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-6-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-7-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-8-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-9-progress.json",
+    "specs/116_core_agent_system_consolidation/progress/phase-10-progress.json",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/events.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When re-verifying a task-description premise before implementing it (e.g. 'no shared X mechanism exists to adopt'), grep for the mechanism directly rather than trusting the premise -- in this codebase, context/contracts/*.md already existed as a shared hard-mode contract-text store, referenced by path from every -hard consumer, contradicting the task description's claim that it needed to be built. Verifying premises during implementation (not just during research/planning) catches drift between when a task was authored and when it is executed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/116_core_agent_system_consolidation/reports/03_target-state-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["premise-verification", "contract-text-store", "hard-mode-collapse", "re-verify-before-implement"]
+    },
+    {
+      "content": "When auditing a command's flag surface for a consolidation/collapse design, check the command's own Options table directly rather than assuming flags documented elsewhere (in other files, in prose) are actually wired. In this codebase /orchestrate's own Options table lacked --fast, --team, --hard, and all four model flags entirely, despite scattered documentation implying partial support -- the correct A6 classification was REBUILD-REQUIRED for six mechanisms, not the two the task description anticipated.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/116_core_agent_system_consolidation/reports/03_target-state-design.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["flag-surface-audit", "preserved-vs-rebuild", "consolidation-design", "orchestrate-flags"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788197681_a534a5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
+  }
 }
