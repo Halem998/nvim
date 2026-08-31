@@ -64,6 +64,7 @@
 #   | blocked, dependency outstanding or empty dependencies[]                    | skip        | needs_human   |
 #   | blocked, dependency abandoned/expanded (non-completed terminal)            | needs_human | needs_human   |
 #   | blocked, handoff blockers present (discharge otherwise satisfied)          | needs_human | needs_human   |
+#   | blocked, previous_status missing or unrecognized (discharge otherwise satisfied) | needs_human | needs_human |
 #   | researching (NEW -- was skip, folded into the old "researching, planning, unknown" row) | research | research |
 #   | planning (NEW -- was skip, folded into the old "researching, planning, unknown" row)    | plan     | plan     |
 #   | unknown (unrecognized/garbage status)       | skip        | skip          |

@@ -1,0 +1,29 @@
+{
+  "phase": 8,
+  "phase_name": "Cross-file agreement, deploy verification, and acceptance walkthrough",
+  "started_at": "2026-08-31T02:55:00Z",
+  "last_updated": "2026-08-31T03:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Repo-wide grep sweep for surviving stale assertions; verify verdict-table agreement (added a missing header-table row for the previous_status-missing/unrecognized sub-case); task-reference lint; full classifier test suite; deploy and re-run from deployed location; six-criterion acceptance walkthrough with recorded evidence; widen file_scope for the one out-of-file-scope repair needed",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.file-scope-widen",
+      "description": "agent-system/extensions/core/index-entries.json needed a one-line line_count correction (919 -> 922) for patterns/batch-orchestration-guardrails.md, found by check-extension-docs.sh doc-lint during this phase's deploy-verification step",
+      "type": "altered",
+      "reason": "Phase 6 added three rows to batch-orchestration-guardrails.md, changing its line count; the maintenance index's declared line_count drifted out of sync and doc-lint's Rule R caught it",
+      "annotation": "*(deviation: altered -- an eighth file needed a one-line line_count correction; file_scope widened deliberately via state-write.sh)*"
+    }
+  ]
+}

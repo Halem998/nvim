@@ -1,7 +1,7 @@
 # Implementation Plan: Task #68
 
 - **Task**: 68 - Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md
@@ -532,33 +532,33 @@ through for `blocked` candidates per the recorded scope decision.
 
 ---
 
-### Phase 8: Cross-file agreement, deploy verification, and acceptance walkthrough [NOT STARTED]
+### Phase 8: Cross-file agreement, deploy verification, and acceptance walkthrough [COMPLETED]
 
 **Goal**: Prove by grep that no co-maintained copy still asserts the changed premise, prove the
 change works from the deployed tree rather than the source store, and walk the acceptance criteria
 one by one.
 
 **Tasks**:
-- [ ] Grep the whole source store for surviving assertions of the old premise: `grep -rn "blocked"
+- [x] Grep the whole source store for surviving assertions of the old premise: `grep -rn "blocked"
       agent-system/extensions/core/ | grep -i "skip\|diverg\|needs_human\|do NOT"` and read every
       hit. Any hit asserting unconditional mt-skip is a defect this phase must fix, not defer.
-- [ ] Verify all co-maintained verdict tables agree: the classifier header table, Stage MT-4's
+- [x] Verify all co-maintained verdict tables agree: the classifier header table, Stage MT-4's
       grouping table, and the state-machine doc's state row must name the same groups for the same
       sub-cases.
-- [ ] Run the repo's task-reference lint (`scripts/check-task-references.sh` or equivalent) and
+- [x] Run the repo's task-reference lint (`scripts/check-task-references.sh` or equivalent) and
       confirm zero task-number references were introduced outside `specs/**`.
-- [ ] Run the full classifier test suite plus any adjacent orchestrate suites; confirm FAILED == 0.
-- [ ] Deploy the source store to `.claude/**` by the normal deploy path and re-run the classifier
+- [x] Run the full classifier test suite plus any adjacent orchestrate suites; confirm FAILED == 0.
+- [x] Deploy the source store to `.claude/**` by the normal deploy path and re-run the classifier
       from the deployed location to confirm `deploy-root-guard.sh` and `PROJECT_ROOT` resolution
       still hold. Do not edit the deploy tree.
-- [ ] Walk each acceptance criterion explicitly and record the evidence for each: (1) a chain
+- [x] Walk each acceptance criterion explicitly and record the evidence for each: (1) a chain
       batch runs end-to-end with no hand-editing — demonstrate via a synthetic state fixture
       showing each successor classifying to a real dispatch group once its predecessor is
       `completed`; (2) an out-of-batch or unresolved block still skips loudly or escalates, and
       which one is recorded; (3) a failed predecessor still lands its dependents in `failed_tasks`
       — confirm Stage MT-3 step 3's untouched path; (4) all verdict tables agree by grep; (5) new
       fixtures fail pre-fix; (6) the dry-run predicts the new behavior.
-- [ ] If any file outside the current `file_scope` turned out to need editing, widen `file_scope`
+- [x] If any file outside the current `file_scope` turned out to need editing, widen `file_scope`
       deliberately via `state-write.sh`, naming each file exactly — no bare directory roots, no
       duplicate entries.
 
@@ -572,7 +572,13 @@ one by one.
 (classifier, its test suite, dry-run report, base skill, hard-mode skill, guardrails pattern,
 state-machine doc) and that the four `file_scope` entries listed as Non-Goals were not touched.
 Confirm with `git diff --name-only`; any deviation must be reconciled with the Non-Goals section
-and the `file_scope` widened deliberately.
+and the `file_scope` widened deliberately. *(deviation: altered -- an eighth file,
+`agent-system/extensions/core/index-entries.json`, needed a one-line `line_count` correction
+(919 -> 922) after Phase 6 added three rows to batch-orchestration-guardrails.md; found via
+`check-extension-docs.sh`'s doc-lint gate during this phase's deploy-verification step, fixed
+here, and `file_scope` widened deliberately via `state-write.sh` rather than left implicit. The
+four Non-Goals files (skill-spawn/SKILL.md, orchestrator-postflight.sh,
+reconcile-task-status.sh, orchestrate-batch-admit.sh) were confirmed untouched.)*
 
 **Files to modify**:
 - None expected; any file this phase must repair is a Phase 4-7 escapee and should be noted as
@@ -588,25 +594,25 @@ and the `file_scope` widened deliberately.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` reports
-      FAILED == 0.
-- [ ] Every new `blocked` fixture confirmed RED against the pre-fix classifier (mutation-check
-      discipline, evidence in the Phase 3 commit body).
-- [ ] Discharged case: dependency `completed`, `previous_status` set, no handoff -> routes to the
-      group `previous_status` names, for BOTH engines.
-- [ ] Discharged-with-blockers case: handoff `blockers[]` non-empty -> `needs_human`, BOTH engines.
-- [ ] Non-discharged case: dependency still in-progress -> `skip` (mt) / `needs_human` (single),
-      unchanged from today.
-- [ ] Abandoned-dependency case: -> `needs_human` with a loud named reason, BOTH engines.
-- [ ] Empty `dependencies[]` case: -> `skip` (mt) / `needs_human` (single), never vacuous discharge.
-- [ ] Missing `previous_status` on an otherwise-discharged candidate -> `needs_human`, no guessing.
-- [ ] The discharged fixture's dependency is NOT in the classifier's argument list and the case
-      still passes (proves the state.json-lookup mechanism, not candidate-list membership).
-- [ ] `bash -n` clean on the classifier and the dry-run report.
-- [ ] Dry-run against a synthetic discharged chain admits the successor and prints its wave.
-- [ ] Repo-wide grep shows no surviving "blocked always skips" assertion in the source store.
-- [ ] Task-reference lint clean outside `specs/**`.
-- [ ] Deploy completed and the deployed classifier runs correctly from `.claude/scripts/`.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` reports
+      FAILED == 0. *(completed: 36 passed, 0 failed)*
+- [x] Every new `blocked` fixture confirmed RED against the pre-fix classifier (mutation-check
+      discipline, evidence in the Phase 3 commit body). *(completed: 12/12 new assertions RED pre-fix)*
+- [x] Discharged case: dependency `completed`, `previous_status` set, no handoff -> routes to the
+      group `previous_status` names, for BOTH engines. *(completed)*
+- [x] Discharged-with-blockers case: handoff `blockers[]` non-empty -> `needs_human`, BOTH engines. *(completed)*
+- [x] Non-discharged case: dependency still in-progress -> `skip` (mt) / `needs_human` (single),
+      unchanged from today. *(completed)*
+- [x] Abandoned-dependency case: -> `needs_human` with a loud named reason, BOTH engines. *(completed)*
+- [x] Empty `dependencies[]` case: -> `skip` (mt) / `needs_human` (single), never vacuous discharge. *(completed)*
+- [x] Missing `previous_status` on an otherwise-discharged candidate -> `needs_human`, no guessing. *(completed)*
+- [x] The discharged fixture's dependency is NOT in the classifier's argument list and the case
+      still passes (proves the state.json-lookup mechanism, not candidate-list membership). *(completed)*
+- [x] `bash -n` clean on the classifier and the dry-run report. *(completed)*
+- [x] Dry-run against a synthetic discharged chain admits the successor and prints its wave. *(completed: task 221/241 tests, Phase 7)*
+- [x] Repo-wide grep shows no surviving "blocked always skips" assertion in the source store. *(completed: Phase 8 grep sweep)*
+- [x] Task-reference lint clean outside `specs/**`. *(completed: check-task-references.sh PASS)*
+- [x] Deploy completed and the deployed classifier runs correctly from `.claude/scripts/`. *(completed)*
 
 ## Artifacts & Outputs
 

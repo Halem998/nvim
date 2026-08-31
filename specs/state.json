@@ -399,7 +399,7 @@
     {
       "project_number": 68,
       "project_name": "discriminate_blocked_on_in_batch_predecessor",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever",
@@ -416,7 +416,8 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
         "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "artifacts": [
         {
@@ -430,7 +431,7 @@
           "summary": "8-phase plan (4 waves) for the discriminating blocked classifier row: state.json dependency lookup discriminator, atomic-batch mechanism phase, fixture guard against candidate-list-membership implementations, Gate Catalogue and dry-run threading"
         }
       ],
-      "last_updated": "2026-08-31T19:11:37Z",
+      "last_updated": "2026-08-31T19:13:03Z",
       "session_id": "sess_1788202255_53c3de_68"
     },
     {
