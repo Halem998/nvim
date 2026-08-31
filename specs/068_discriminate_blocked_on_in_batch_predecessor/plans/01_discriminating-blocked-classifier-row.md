@@ -444,31 +444,31 @@ the architecture doc for the now-false premise.
 
 ---
 
-### Phase 6: Gate Catalogue rows in the guardrails pattern [NOT STARTED]
+### Phase 6: Gate Catalogue rows in the guardrails pattern [COMPLETED]
 
 **Goal**: Give the `blocked` classifier verdict rows in the Gate Catalogue, and fold in the
 adjacent pre-existing "Unmet predecessor" omission per the recorded scope decision above.
 
 **Tasks**:
-- [ ] Add a row: `blocked` (discharged — dependency `completed`, no handoff blockers) ->
+- [x] Add a row: `blocked` (discharged — dependency `completed`, no handoff blockers) ->
       ORDERING CONSTRAINT. Why: self-clears as soon as the classifier next runs after the
       predecessor's `status` write lands; the dependent is dispatched to the phase its
       `previous_status` names.
-- [ ] Add a row: `blocked` (not discharged — dependency outstanding, dependency abandoned/expanded,
+- [x] Add a row: `blocked` (not discharged — dependency outstanding, dependency abandoned/expanded,
       empty `dependencies[]`, or handoff blockers present) -> whatever the non-discharged
       classification already is, surfaced loudly with a named reason. Note the documented,
       independently-implemented single/mt divergence for this sub-case explicitly so the row is
       not later read as an accidental exclusion.
-- [ ] Add the folded-in row: "Unmet predecessor (dependency-graph eligibility)" -> ORDERING
+- [x] Add the folded-in row: "Unmet predecessor (dependency-graph eligibility)" -> ORDERING
       CONSTRAINT, matching how the Blocking-vs-Advisory table above already classifies it, so the
       two tables stop disagreeing by omission.
-- [ ] Preserve the note immediately below the table that `defer_reason` values are echoed verbatim
+- [x] Preserve the note immediately below the table that `defer_reason` values are echoed verbatim
       from what `orchestrate-batch-admit.sh` actually emits — the new rows are classifier verdicts,
       not admit verdicts, so their `defer_reason` cell must read `n/a` with the same parenthetical
       form the existing non-admit rows (held lock, `deploy_checkpoint`) already use. A catalogue
       naming a `defer_reason` the script does not emit would introduce exactly the false premise
       this file exists to prevent.
-- [ ] Cite no task numbers.
+- [x] Cite no task numbers.
 
 **Timing**: 0.5 hours
 
