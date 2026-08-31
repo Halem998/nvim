@@ -55,11 +55,11 @@
 #   fast/full split and exit-code contract.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all sixteen gates
-#   (gate0 through gate15) plus a gate0 "could not run" sentinel, printed to stdout after the
+#   Emits a normalized, one-per-line, machine-diffable findings set across all seventeen gates
+#   (gate0 through gate16) plus a gate0 "could not run" sentinel, printed to stdout after the
 #   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate15`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate16`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -161,6 +161,23 @@ fail() {
     [ -n "$3" ] && FINDINGS_LIST+=("FINDING $CURRENT_GATE $3")
   else
     FINDINGS_LIST+=("FINDING $CURRENT_GATE $1")
+  fi
+  return 0
+}
+
+# warn(): a WARN-level cousin of fail() for gate16's non-blocking migration notice. Increments
+# CHECKS but NEVER FAILURES -- a warning must never flip the verifier's exit code. Echoes to
+# stderr the same way fail() does, and appends to FINDINGS_LIST when FINDINGS mode is on.
+warn() {
+  CHECKS=$((CHECKS + 1))
+  echo "  [WARN] $1" >&2
+  [ -n "${2:-}" ] && echo "         $2" >&2
+  if [ "$FINDINGS" = "true" ]; then
+    if [ $# -ge 3 ]; then
+      [ -n "$3" ] && FINDINGS_LIST+=("FINDING $CURRENT_GATE $3")
+    else
+      FINDINGS_LIST+=("FINDING $CURRENT_GATE $1")
+    fi
   fi
   return 0
 }
@@ -717,6 +734,32 @@ else
     fi
   fi
 fi
+
+say ""
+
+# ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
+# routing_hard/routing_agents_hard are being replaced -- migrate to the flat hard_contracts
+# manifest key (see manifest-routing-schema.md). This gate WARNS, never fails: both blocks
+# remain genuinely consulted by command-route-skill.sh (for /research, /plan, /implement) and by
+# command-route-agent.sh until the two dependent follow-on tasks land, so declaring them today is
+# not yet an error -- only a migration nudge for new/updated extensions.
+say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
+CURRENT_GATE="gate16"
+gate16_hits=0
+for gate16_manifest in "$CLAUDE_DIR"/extensions/*/manifest.json; do
+  [ -f "$gate16_manifest" ] || continue
+  gate16_ext=$(jq -r '.name // empty' "$gate16_manifest" 2>/dev/null)
+  gate16_declares=$(jq -r '(has("routing_hard") or has("routing_agents_hard"))' "$gate16_manifest" 2>/dev/null)
+  if [ "$gate16_declares" = "true" ]; then
+    gate16_hits=$((gate16_hits + 1))
+    warn "${gate16_ext:-$gate16_manifest} still declares routing_hard/routing_agents_hard" \
+         "being replaced -- migrate to the hard_contracts manifest key (see context/guides/manifest-routing-schema.md)"
+  fi
+done
+if [ "$gate16_hits" -eq 0 ]; then
+  pass "no extension manifest declares routing_hard/routing_agents_hard"
+fi
+unset gate16_manifest gate16_ext gate16_declares gate16_hits
 
 say ""
 if [ "$FAILURES" -eq 0 ]; then

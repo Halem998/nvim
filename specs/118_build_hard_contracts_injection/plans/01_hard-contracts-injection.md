@@ -317,25 +317,25 @@ pattern. Any deviation is a scope change, not an edit to force through.
 
 ---
 
-### Phase 4: `verify-deploy.sh` non-blocking migration warning [NOT STARTED]
+### Phase 4: `verify-deploy.sh` non-blocking migration warning [COMPLETED]
 
 **Goal**: The deploy verifier warns — without failing — about any extension still declaring
 `routing_hard` or `routing_agents_hard`.
 
 **Tasks**:
-- [ ] Add a `warn()` helper alongside `pass()` / `fail()`: increments `CHECKS`, NEVER `FAILURES`,
+- [x] Add a `warn()` helper alongside `pass()` / `fail()`: increments `CHECKS`, NEVER `FAILURES`,
       echoes to stderr the way `fail()` does, and appends to `FINDINGS_LIST` when `FINDINGS` mode
       is on.
-- [ ] Add `gate16` immediately after `gate15`'s closing `fi` and before the final `say ""` /
+- [x] Add `gate16` immediately after `gate15`'s closing `fi` and before the final `say ""` /
       PASS-FAIL summary block.
-- [ ] `gate16` iterates `${CLAUDE_DIR}/extensions/*/manifest.json` and warns on any manifest
+- [x] `gate16` iterates `${CLAUDE_DIR}/extensions/*/manifest.json` and warns on any manifest
       matching `has("routing_hard") or has("routing_agents_hard")`, naming the extension.
-- [ ] Warning text uses the "being replaced / migrate to `hard_contracts`" framing and points at
+- [x] Warning text uses the "being replaced / migrate to `hard_contracts`" framing and points at
       `context/guides/manifest-routing-schema.md`. **Do NOT use "no longer consulted"** — see
       Decision 4; that phrasing would be factually false while those blocks are still consulted.
-- [ ] Update the file's header comment gate range from "(gate0 through gate15)" to
+- [x] Update the file's header comment gate range from "(gate0 through gate15)" to
       "(gate0 through gate16)".
-- [ ] Emit a `pass()` when no manifest declares either block, so the gate is never silent.
+- [x] Emit a `pass()` when no manifest declares either block, so the gate is never silent.
 
 **Timing**: 1 hour
 
