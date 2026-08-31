@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Stage 2 — conditional MAX_CYCLES and unified loop-guard schema",
+  "started_at": "2026-08-31T23:06:49Z",
+  "last_updated": "2026-08-31T23:06:49Z",
+  "objectives": [
+    {"id": 1, "description": "Conditional MAX_CYCLES (13 vs 5) + current_plan_version computation", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Add hard_mode/burnout_signals_this_session/plan_version to fresh-init jq -n literal", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Add burnout_signals_this_session reads to both resume paths", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Gate resume echo lines on hard_mode", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Reset burnout_signals_this_session=0 in fresh-init success path", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Nested if/else directly wrapping the resume echo line", "result": "failed", "reason": "left two unclosed if blocks at the test's extraction anchor line, breaking test-loop-guard-budget-override.sh's bash -n check; fixed by using a self-closed hard-mode-only echo before the unconditional (unchanged) echo"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

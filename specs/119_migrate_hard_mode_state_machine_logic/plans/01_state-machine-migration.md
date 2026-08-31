@@ -221,29 +221,29 @@ proceeding on the plan-time number.
 
 ---
 
-### Phase 2: Stage 2 — conditional `MAX_CYCLES` and unified loop-guard schema [NOT STARTED]
+### Phase 2: Stage 2 — conditional `MAX_CYCLES` and unified loop-guard schema [COMPLETED]
 
 **Goal**: Make the cycle budget mode-aware and extend the loop-guard JSON to one schema serving
 both modes, so later phases have `burnout_signals_this_session` and `plan_version` in scope.
 
 **Tasks**:
-- [ ] Replace the bare `MAX_CYCLES=5` at the top of Stage 2 with an `if [ "$hard_mode" = "true" ]`
+- [x] Replace the bare `MAX_CYCLES=5` at the top of Stage 2 with an `if [ "$hard_mode" = "true" ]`
       branch selecting `13` vs `5`, carrying over the source engine's inline rationale (per-phase
       dispatch needs roughly one cycle per phase). Keep it strictly before the
-      `orchestrate-loop-guard-init.sh` call, which takes no `MAX_CYCLES` argument.
-- [ ] Add the `current_plan_version` computation (`ls -1 "${TASK_DIR}/plans/"*.md | sort -V | tail -1`,
+      `orchestrate-loop-guard-init.sh` call, which takes no `MAX_CYCLES` argument. *(completed)*
+- [x] Add the `current_plan_version` computation (`ls -1 "${TASK_DIR}/plans/"*.md | sort -V | tail -1`,
       `basename`, `:-none` fallback) with its "absent plans/ is never evidence of staleness"
-      comment, before the guard is read.
-- [ ] Add `"hard_mode": $hard_mode_json`, `"burnout_signals_this_session": 0`, and
-      `"plan_version": $plan_version` to the fresh-init `jq -n` literal (D3).
-- [ ] Add `burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' ...)` to BOTH
+      comment, before the guard is read. *(completed)*
+- [x] Add `"hard_mode": $hard_mode_json`, `"burnout_signals_this_session": 0`, and
+      `"plan_version": $plan_version` to the fresh-init `jq -n` literal (D3). *(completed)*
+- [x] Add `burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' ...)` to BOTH
       resume paths — the main `if [ -f "$loop_guard_file" ]` branch and the lost-init-race `else`
       branch — alongside the existing `cycle_count`/`infra_failures`/`detected_defects`/
-      `dispatch_seq_counter` reads.
-- [ ] Extend both resume echo lines to report burnout signals only when `hard_mode` is true, so
-      base-mode output is unchanged.
-- [ ] Set `burnout_signals_this_session=0` in the fresh-init success path alongside the other
-      counter resets.
+      `dispatch_seq_counter` reads. *(completed)*
+- [x] Extend both resume echo lines to report burnout signals only when `hard_mode` is true, so
+      base-mode output is unchanged. *(completed)*
+- [x] Set `burnout_signals_this_session=0` in the fresh-init success path alongside the other
+      counter resets. *(completed)*
 
 **Timing**: 0.75 hours
 

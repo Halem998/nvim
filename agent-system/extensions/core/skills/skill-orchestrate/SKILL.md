@@ -122,19 +122,37 @@ pair — exactly the hazard this file's gitignore coverage exists to prevent. Se
 `context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
 
 ```bash
-MAX_CYCLES=5
+# Cycle budget is mode-aware: hard mode's per-phase dispatch (H1) needs roughly one cycle per
+# phase, so a 7-phase plan needs ~7 cycles minimum — the same rationale
+# skill-orchestrate-hard/SKILL.md's Stage 2 carried for its own fixed MAX_CYCLES=13. Base mode's
+# whole-plan-per-dispatch handler keeps its original budget.
+if [ "$hard_mode" = "true" ]; then
+  MAX_CYCLES=13
+else
+  MAX_CYCLES=5
+fi
 # Single shared implementation, orchestrate-loop-guard-init.sh — see that script's header for
 # the full contract (MAX_INFRA_FAILURES constant, loop_guard_file/handoff_file assignment,
 # mkdir -p "$TASK_DIR", and the blocker-escalation counter pair applied further below in this
 # same fence). This is the same call skill-orchestrate-hard/SKILL.md's Stage 2 makes for its own
-# genuinely-common portion — everything else in this stage (MAX_CYCLES's own value, the
-# hard-only loop-guard-staleness detector, churn-state init) stays per-engine, either because it
-# differs or because it sits inside the locked budget-continuation-override region below, which
-# this script and its call site never touch.
+# genuinely-common portion — everything else in this stage (the hard-only loop-guard-staleness
+# detector, churn-state init) stays per-engine, either because it differs or because it sits
+# inside the locked budget-continuation-override region below, which this script and its call
+# site never touch.
 loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TASK_DIR" "${HANDOFF_PATH_ABS}")
 loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
 handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
 MAX_INFRA_FAILURES=$(echo "$loop_guard_init_json" | jq -r '.max_infra_failures')
+
+# Live plan-lineage reference, written into the guard's `plan_version` field in BOTH modes (D3 —
+# one loop-guard JSON schema, not a per-mode fork). Computing it is a single cheap
+# `ls | sort -V | tail -1` even in base mode, and the hard-only `loop-guard-staleness` detector
+# (Stage 2, below) reads it as its Signal 2. Safe when plans/ does not exist yet (task in
+# researching/planning status): the ls glob then matches nothing, `sort -V | tail -1` on empty
+# input yields an empty string, and `basename ""` also yields an empty string here, so the
+# explicit `:-none` fallback is required — absent plans/ is never itself evidence of staleness.
+current_plan_version=$(basename "$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)" 2>/dev/null)
+current_plan_version="${current_plan_version:-none}"
 
 # --- budget-continuation-override:begin ---
 # Defect B: cycle_count is a per-task, CUMULATIVE budget that survives re-invocation BY DESIGN --
@@ -186,6 +204,10 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # repeating a value already minted this task since the counter only ever increments (see
   # mint_dispatch_seq() below).
   dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
+  # burnout_signals_this_session: hard-mode-only counter (D3 — written in BOTH modes via the
+  # unified loop-guard schema below, so this read is unconditional and forward-compatible; base
+  # mode simply never increments or reports it). `// 0` matches the other counters' idiom.
+  burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
   # Observational-only session_id tracking (NEVER a gate — see Ephemeral note above and
   # context/standards/status-markers.md's rationale: SESSION_ID is regenerated per /orchestrate
   # invocation, while this guard is explicitly designed to survive across conversational turns.
@@ -195,6 +217,15 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   if [ -n "$guard_session_id" ] && [ "$guard_session_id" != "$session_id" ]; then
     echo "[orchestrate] INFO: loop guard was last written by a different session_id ('${guard_session_id}' vs current '${session_id}') — expected on conversational resume, not gated."
   fi
+  # Hard-mode-only burnout reporting, fully self-closed BEFORE the unconditional echo below so
+  # the always-present resume-read `if [ -f "$loop_guard_file" ]` above this block stays the
+  # ONLY still-open conditional at the point of that echo (test-loop-guard-budget-override.sh
+  # extracts from the budget-continuation-override sentinel through that exact echo text and
+  # appends one synthetic `fi`; a conditional wrapped around the echo itself would leave two
+  # unclosed `if`s there and break the extraction's bash -n check).
+  if [ "${hard_mode:-false}" = "true" ]; then
+    echo "[orchestrate] Resuming (hard mode) — burnout signals so far: $burnout_signals_this_session"
+  fi
   echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
   # Fresh start: create guard atomically via init-marker. A plain
@@ -202,11 +233,16 @@ else
   # this branch and stomp each other's counters; init-marker's mkdir-gate +
   # tmp-mv payload guarantees exactly one winner. On a lost race (exit 1),
   # degrade to the same resume-read the `if`-branch above performs.
+  # hard_mode_json: JSON-boolean form of the existing $hard_mode string ("true"/"false" is
+  # already valid JSON, so this is a direct --argjson pass-through, not a re-derivation).
+  hard_mode_json="$hard_mode"
   if jq -n \
     --arg session_id "$session_id" \
     --argjson max_cycles "$MAX_CYCLES" \
     --argjson max_infra_failures "$MAX_INFRA_FAILURES" \
     --arg started "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --argjson hard_mode_json "$hard_mode_json" \
+    --arg plan_version "$current_plan_version" \
     '{
       "session_id": $session_id,
       "cycle_count": 0,
@@ -217,12 +253,16 @@ else
       "detected_defects": [],
       "started": $started,
       "last_updated": $started,
-      "dispatch_seq_counter": 0
+      "dispatch_seq_counter": 0,
+      "hard_mode": $hard_mode_json,
+      "burnout_signals_this_session": 0,
+      "plan_version": $plan_version
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
     infra_failures=0
     detected_defects='[]'
     dispatch_seq_counter=0
+    burnout_signals_this_session=0
     echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES, MAX_INFRA_FAILURES=$MAX_INFRA_FAILURES"
   else
     # Lost the creation race: another writer won. Resume from their guard, reading BOTH
@@ -231,7 +271,12 @@ else
     infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
     detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
     dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
-    echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
+    burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
+    if [ "$hard_mode" = "true" ]; then
+      echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
+    else
+      echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
+    fi
   fi
 fi
 
