@@ -1,7 +1,7 @@
 # Implementation Plan: Build the dispatch-prep stage in skill-orchestrate
 
 - **Task**: 117 - Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None. **Blocks**: any successor task that deletes `commands/research.md`,
   `commands/plan.md`, `commands/implement.md`, or `skill-researcher`/`skill-planner`/

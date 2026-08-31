@@ -11,19 +11,18 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,87,94,100,102,103,106,108,110,111,113,114,117 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,104,105,109,112,118,124 | 29,74,102,108,117 | core-agent-system, extensions, literature |
-| 3 | 107,119,125 | 104,118,124 | core-agent-system, literature |
-| 4 | 120,122 | 31,119 | core-agent-system |
-| 5 | 72,73,121,123,126 | 120,122 | core-agent-system |
-| 6 | 127 | 121,124 | core-agent-system |
-| 7 | 88 | 87,127 | core-agent-system |
-| 8 | 44 | 88 | core-agent-system |
-| 9 | 89 | 44 | core-agent-system |
-| 10 | 90 | 89 | core-agent-system |
-| 11 | 48 | 90 | core-agent-system |
-| 12 | 50 | 48 | core-agent-system |
-| 13 | 91 | 50 | core-agent-system |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,87,94,100,102,103,106,108,110,111,113,114,118,124 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,104,105,109,112,119,125 | 29,74,102,108,118,124 | core-agent-system, extensions, literature |
+| 3 | 107,120,122 | 31,104,119 | core-agent-system, literature |
+| 4 | 72,73,121,123,126 | 120,122 | core-agent-system |
+| 5 | 127 | 121,124 | core-agent-system |
+| 6 | 88 | 87,127 | core-agent-system |
+| 7 | 44 | 88 | core-agent-system |
+| 8 | 89 | 44 | core-agent-system |
+| 9 | 90 | 89 | core-agent-system |
+| 10 | 48 | 90 | core-agent-system |
+| 11 | 50 | 48 | core-agent-system |
+| 12 | 91 | 50 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -56,18 +55,17 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-117 [PLANNED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
-  └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
-    └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
-      └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
-      └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
-        └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
-        └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
-        └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
-        └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-  └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
-    └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
+  └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
+    └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
+    └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
+      └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
+      └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
+      └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
+      └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
+  └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+  └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 
 ### Extensions
 
@@ -293,12 +291,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 117. Build orchestrate dispatch prep stage
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md]
 - **Plan**: [117_build_orchestrate_dispatch_prep_stage/plans/01_dispatch-prep-stage.md]
+- **Summary**: [117_build_orchestrate_dispatch_prep_stage/summaries/01_dispatch-prep-stage-summary.md]
 
 **Description**: Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.
 

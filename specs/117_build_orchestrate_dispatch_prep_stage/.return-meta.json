@@ -1,9 +1,41 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/117_build_orchestrate_dispatch_prep_stage/summaries/01_dispatch-prep-stage-summary.md",
+      "summary": "Built Stage 3.5 Dispatch Prep in skill-orchestrate (memory retrieval + --lit resolution), threaded --clean/--fast end to end, fixed the multi-task description gap, and wired all 10 dispatch sites."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a single shared Stage 3.5 Dispatch Prep procedure to skill-orchestrate/SKILL.md providing memory retrieval and --lit literature-briefing resolution, threaded --clean/--fast through orchestrate.md and the skill's Stage 1/1b/MT-1, fixed the pre-existing multi-task description gap, and wired all 7 single-task dispatch sites and 3 multi-task dispatch loops to inject the new stage's outputs into their prompts."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When editing a large prose/pseudo-code SKILL.md file with many structurally-identical dispatch-site blocks (same bash snippet, same table shape, differing only in preceding heading text), disambiguate Edit tool old_string matches by including the following unique heading (e.g. the next `#### State:` line) as trailing context in old_string, rather than trying to make the preceding text unique. This lets each Edit call target one occurrence precisely even when 5+ near-identical blocks exist in the same file.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/summaries/01_dispatch-prep-stage-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["Edit tool", "disambiguation", "duplicate blocks", "SKILL.md editing", "old_string uniqueness"]
+    },
+    {
+      "content": "Before wiring a shared procedure into every 'Agent-dispatch site' named in a plan's audit phase, distinguish lifecycle dispatch sites (Stage 4/MT-4 style: research/plan/implement, writes a real handoff) from narrow helper dispatches (drift-inspection forks, blocker-escalation forks/revisers) that share the same 'Invoke the Agent tool:' surface syntax but serve a different, single purpose with a different orchestrator_mode. A plan's explicitly repeated closed count (e.g. '7+3=10') is a strong signal that helper dispatches are deliberately out of scope, not an oversight to fix silently.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/summaries/01_dispatch-prep-stage-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["orchestrate", "scope boundary", "dispatch sites", "plan audit", "Non-Goals precedent"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788202255_53c3de",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
