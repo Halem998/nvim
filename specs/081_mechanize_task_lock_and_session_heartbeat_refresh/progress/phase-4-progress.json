@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Functional test proving the heartbeat advances",
+  "started_at": "2026-08-31T20:15:00Z",
+  "last_updated": "2026-08-31T20:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-phase-heartbeat.sh following existing suite conventions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh"]},
+    {"id": 2, "description": "Backdated fixture: holder.json + session entry, no sleep/wall-clock race", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh"]},
+    {"id": 3, "description": "8 assertion groups (advance, session advance, second-transition monotonic, stdout contract, never-blocking x3, mismatch trace, fingerprint, opt-out)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh"]},
+    {"id": 4, "description": "Register in run-all.sh (auto-discovered) and manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Re-run the four existing suites that invoke update-phase-status.sh in a fixture repo, confirm no regressions", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": [
+    "bash agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh: 19 passed, 0 failed.",
+    "grep -rln 'update-phase-status' agent-system/extensions/core/scripts/tests/ confirms exactly the four suites named in the plan plus the new one -- no additional consumer suites missed.",
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh (source-store mode): 57 passed, 0 failed, 0 skipped (56 pre-existing + the new suite)."
+  ]
+}

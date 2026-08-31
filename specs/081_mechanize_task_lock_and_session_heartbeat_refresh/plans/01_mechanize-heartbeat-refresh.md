@@ -342,7 +342,7 @@ phase.
 
 ---
 
-### Phase 4: Functional test proving the heartbeat advances [NOT STARTED]
+### Phase 4: Functional test proving the heartbeat advances [COMPLETED]
 
 **Goal**: Provide the deterministic, repeatable evidence for acceptance criteria 1 and 2 that
 does not depend on catching a live long-running run: a fixture harness that exercises the real
@@ -352,17 +352,17 @@ transitions.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh`, following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh`, following the
       structural conventions of an existing suite in that directory (read
       `test-phase-heading-patterns.sh` and `test-update-task-status.sh` first and match their
       fixture-repo construction, assertion helpers, and exit-code conventions rather than
       inventing new ones).
-- [ ] Fixture: a temporary repo root with `specs/{NNN}_{slug}/plans/01_x.md` containing two
+- [x] Fixture: a temporary repo root with `specs/{NNN}_{slug}/plans/01_x.md` containing two
       conforming phase headings, a `.lock/holder.json` whose `acquired_at` and `heartbeat_at` are
       both set to a **fixed past timestamp**, and a `specs/.sessions/{session_id}.json` entry
       with `started_at` and `heartbeat_at` at that same past value. Using a backdated fixture
       makes the assertion deterministic with no `sleep` and no wall-clock race.
-- [ ] Assertions, one test case each:
+- [x] Assertions, one test case each:
       1. After one 4-argument `update-phase-status.sh ... IN_PROGRESS` call, `holder.json`'s
          `heartbeat_at` is strictly greater than its `acquired_at`, and `acquired_at` is
          unchanged. (Acceptance criterion 2, task-lock half.)
@@ -387,9 +387,9 @@ transitions.
          criterion 7, wired to Phase 3.)
       8. **Opt-out**: with `PHASE_HEARTBEAT_DISABLE=1`, no heartbeat fires and no trace line is
          written.
-- [ ] Register the new test in `agent-system/extensions/core/scripts/tests/run-all.sh` and in the
+- [x] Register the new test in `agent-system/extensions/core/scripts/tests/run-all.sh` and in the
       `manifest.json` file list, matching how the neighbouring test scripts are registered.
-- [ ] Re-run the existing suites that invoke `update-phase-status.sh` in a fixture repo
+- [x] Re-run the existing suites that invoke `update-phase-status.sh` in a fixture repo
       (`test-update-task-status.sh`, `test-postflight-deploy-gate.sh`,
       `test-skill-base-lifecycle.sh`, `test-phase-heading-patterns.sh`) and confirm none regressed.
 
