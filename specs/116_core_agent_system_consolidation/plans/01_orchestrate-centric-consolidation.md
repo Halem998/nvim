@@ -412,38 +412,38 @@ command so the figures are reproducible.
 
 ---
 
-### Phase 5: Backlog audit -- design-coupled cluster [NOT STARTED]
+### Phase 5: Backlog audit -- design-coupled cluster [COMPLETED]
 
 **Goal**: Assign exactly one verdict, with its citation, to every audit-scope task whose fate
 depends on a Phase A decision.
 
 **Tasks**:
-- [ ] Create `specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md` with a
+- [x] Create `specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md` with a
       Verdict Vocabulary section (ON-PATH, RESCOPE, ABSORB, MOOT, plus the orthogonal BLOCKING
       flag), a Method section, and a verdict table.
-- [ ] Partition the Phase 1 roster into a design-coupled cluster and a remainder. The design-coupled
+- [x] Partition the Phase 1 roster into a design-coupled cluster and a remainder. The design-coupled
       cluster is every task whose `file_scope` or description-derived scope touches: the
       orchestrate engine (either variant), a lifecycle command, a lifecycle skill or agent (either
       variant), a team skill or the synthesis agent, the routing ladder or its consumers or a
       manifest routing block, the model-flag threading path, or the context-loading convention
       chain that targets the engine's multi-task section. Record the partition and its rule in the
       Method section so the remainder is defined by exclusion rather than by omission.
-- [ ] For each task in the design-coupled cluster, read its full description and assign exactly one
+- [x] For each task in the design-coupled cluster, read its full description and assign exactly one
       verdict, citing the specific Phase A decision (by A-item and by the sentence it turns on)
       that produces it. A MOOT verdict MUST name the specific row in Phase 4's deletion ledger that
       makes it moot; "probably obsolete" is not a verdict and must be rejected in review.
-- [ ] Flag BLOCKING separately from the verdict where applicable. Evaluate at minimum the two
+- [x] Flag BLOCKING separately from the verdict where applicable. Evaluate at minimum the two
       candidates research surfaced: the blocked-verdict discrimination defect in the engine that A1
       makes the sole entry point, and the task-lock / session-registry heartbeat defect touching an
       A6 preserved asset. Also evaluate the handoff-absence-signal task as a softer candidate,
       since it governs whether the collapse's own rollout telemetry can be trusted. For each, state
       BLOCKING or NOT BLOCKING with reasoning; do not leave a candidate unevaluated.
-- [ ] Verify, do not re-derive, the findings the task description already established for this
+- [x] Verify, do not re-derive, the findings the task description already established for this
       cluster: the two model-flag threading tasks and the second's partial mootness under A4; the
       `--lit` threading task through the team skills; the two team-mode-lifecycle defect tasks; the
       hard-contract-delivery task the description states A4 subsumes; and the mode-gated-section
       chain. Record confirmation or contradiction with evidence in each case.
-- [ ] For any task marked EVIDENCE-GAP in Phase 1, record its verdict as provisional and state the
+- [x] For any task marked EVIDENCE-GAP in Phase 1, record its verdict as provisional and state the
       backfill required before the verdict is final. Do not assign a confident verdict on absent
       evidence.
 

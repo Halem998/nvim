@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Backlog audit -- design-coupled cluster",
+  "started_at": "2026-08-31T02:00:00Z",
+  "last_updated": "2026-08-31T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Partition roster into design-coupled (18) vs remainder (15) cluster, verdict table with citations", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md"]},
+    {"id": 2, "description": "Evaluate 3 BLOCKING candidates (#68, #81 BLOCKING; #53 NOT BLOCKING)", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md"]},
+    {"id": 3, "description": "Verify pre-established findings", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "5.cluster", "description": "Task #89 (mode_gate_literature_and_distill_skills) reassigned from design-coupled to remainder since it does not touch the engine's own multi-task section", "type": "refinement", "reason": "Partition rule narrowly scopes to skill-orchestrate's multi-task section, not the whole mode-gating family"}
+  ]
+}
