@@ -345,35 +345,35 @@ than silently padding or dropping the required case)*
 
 ---
 
-### Phase 4: skill-orchestrate co-maintenance (three sites) [NOT STARTED]
+### Phase 4: skill-orchestrate co-maintenance (three sites) [COMPLETED]
 
 **Goal**: Bring `skills/skill-orchestrate/SKILL.md` into agreement with the classifier at all
 three sites the classifier's own header names as MUST-change-together.
 
 **Tasks**:
-- [ ] Stage MT-4 phase-grouping table: split the `| \`blocked\`, unknown | skip | — |` row so
+- [x] Stage MT-4 phase-grouping table: split the `| \`blocked\`, unknown | skip | — |` row so
       `unknown` keeps `skip` unchanged and `blocked` becomes the discriminated rows matching the
       classifier's header table byte-for-byte in substance (discharged -> the group
       `previous_status` names; non-discharged -> `skip`; abandoned-dependency or handoff-blockers
       -> `failed_tasks` (mark blocked), consistent with this stage's existing `needs_human` ->
       `failed_tasks` filter).
-- [ ] Rewrite the paragraph beginning "`blocked` folding into `skip` here is the one row that still
+- [x] Rewrite the paragraph beginning "`blocked` folding into `skip` here is the one row that still
       diverges" so it states the narrowed divergence: the two engines now CONVERGE on the
       discharged case and diverge only on the non-discharged case. Do not delete the Decision 1
       citation — narrow it and say so.
-- [ ] Single-task Stage 4 `#### State: \`blocked\`` handler: add the discriminating read before
+- [x] Single-task Stage 4 `#### State: \`blocked\`` handler: add the discriminating read before
       escalation, delegating to `scripts/orchestrate-triage-classify.sh single $task_number` in
       the manner the adjacent `partial` handler's existing "Cross-reference" precedent already
       establishes. A discharged verdict routes to the phase its group names; every non-discharged
       verdict falls through to the existing Stage 6 blocker escalation unchanged.
-- [ ] Rewrite the handler's "Why this handler stays engine-unconditional (Decision 1, intentional
+- [x] Rewrite the handler's "Why this handler stays engine-unconditional (Decision 1, intentional
       divergence from `mt`)" note to match: it stays engine-unconditional for the NON-discharged
       case only.
-- [ ] Update the `partial` handler's sentence "both engines now agree on every row here except
+- [x] Update the `partial` handler's sentence "both engines now agree on every row here except
       `blocked`" — the exception is now narrower and the sentence as written is false after this
       change.
-- [ ] Leave Stage MT-3 step 3's eligibility rules and its failed-predecessor handling untouched.
-- [ ] Cite no task numbers.
+- [x] Leave Stage MT-3 step 3's eligibility rules and its failed-predecessor handling untouched.
+- [x] Cite no task numbers.
 
 **Timing**: 1.25 hours
 
@@ -383,7 +383,10 @@ three sites the classifier's own header names as MUST-change-together.
 
 **Scope Hypothesis**: This phase asserts exactly five edit sites in one file. Confirm by grepping
 the file for `blocked` after the edit and reading every hit; any hit still asserting unconditional
-skip means a sixth site exists and must be handled here, not deferred to Phase 8.
+skip means a sixth site exists and must be handled here, not deferred to Phase 8. *(deviation:
+altered — the post-edit grep sweep found a sixth site, Stage 6 Blocker Escalation's opening
+"Called when" sentence, asserting the same stale unconditional premise; narrowed in this phase
+per this Scope Hypothesis's own instruction)*
 
 **Files to modify**:
 - `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` - Stage MT-4 grouping table and

@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "skill-orchestrate co-maintenance (three sites)",
+  "started_at": "2026-08-31T01:15:00Z",
+  "last_updated": "2026-08-31T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Split Stage MT-4 phase-grouping table blocked/unknown row into discriminated rows; rewrite the folding-into-skip justification paragraph; add discriminating read to single-task Stage 4 blocked handler delegating to the classifier; rewrite the engine-unconditional note; update the partial handler cross-reference sentence; leave Stage MT-3 step 3 untouched; no task-number citations",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra-site",
+      "description": "Stage 6 Blocker Escalation's opening sentence ('Called when: partial state with non-empty blockers, or blocked state.') also asserted an unconditional premise not listed among the plan's five named edit sites",
+      "type": "altered",
+      "reason": "The Scope Hypothesis itself instructs handling any additional stale-premise hit found by the post-edit grep sweep in this phase rather than deferring to Phase 8; the sentence was narrowed to name the non-discharged case explicitly",
+      "annotation": "*(deviation: altered — a sixth site (Stage 6's opening sentence) was found and fixed per this phase's own Scope Hypothesis contingency)*"
+    }
+  ]
+}

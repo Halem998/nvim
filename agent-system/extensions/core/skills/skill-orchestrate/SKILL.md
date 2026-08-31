@@ -525,7 +525,9 @@ After Agent tool returns: read handoff. Increment cycle_count.
 executable check, `scripts/orchestrate-triage-classify.sh single`. That script is the executable
 form of this same rule, including its dual-form continuation-pointer resolution (nested
 `continuation_context.handoff_path` OR flat `continuation_path`), and both engines now agree on
-every row here except `blocked` (see the justification in the "State: `blocked`" handler below).
+every row here except the NON-discharged sub-case of `blocked` — a narrower exception than
+before this task, since the DISCHARGED sub-case now converges too (see the justification in the
+"State: `blocked`" handler below).
 
 Read `.orchestrator-handoff.json` to determine sub-state:
 
@@ -657,7 +659,28 @@ the `mt` engine already does today; `MAX_CYCLES` bounds it.
 
 #### State: `blocked`
 
-Read blockers from state.json (not handoff — task was blocked outside orchestrator context):
+**Discriminating read (added by this narrowing)**: before falling through to blocker escalation,
+determine whether this block has already DISCHARGED — its `dependencies[]` all reached
+`status: "completed"` and its handoff carries no blockers — by invoking the executable classifier
+directly, the same script Stage MT-4 already calls for the `mt` engine:
+
+```bash
+single_verdict=$(bash .claude/scripts/orchestrate-triage-classify.sh single "$task_number")
+verdict_group=$(echo "$single_verdict" | jq -r '.group')
+```
+
+If `$verdict_group` is `research`, `plan`, or `implement`: the block is DISCHARGED. Dispatch
+identically to the corresponding `#### State:` handler above (`not_started`/`researching` for
+`research`, `researched`/`planning` for `plan`, `planned`/`implementing` for `implement`) — same
+`skill_preflight_update("$task_number", <target-phase>, "$session_id")` call, same dispatch-window
+reset, same Agent tool invocation shape as that handler, keyed off `$task_number`/`$session_id`
+exactly as already bound in this cycle; no special-casing beyond selecting the target phase named
+by `$verdict_group`.
+
+If `$verdict_group` is anything else (`needs_human`) — a dependency still outstanding, empty
+`dependencies[]`, a dependency stuck at a non-completed terminal status (`abandoned`/`expanded`),
+handoff blockers present, or a discharged block with no recorded `previous_status` — fall through
+to the read-blockers-and-escalate flow below, UNCHANGED:
 
 ```bash
 blocker_desc=$(jq -r --argjson num "$task_number" \
@@ -667,12 +690,15 @@ blocker_desc=$(jq -r --argjson num "$task_number" \
 
 Invoke blocker escalation (Stage 6) with blocker_desc.
 
-**Why this handler stays engine-unconditional (Decision 1, intentional divergence from `mt`)**:
-this handler always escalates to a human, regardless of engine — a solo invocation has no sibling
-task to make progress on, so escalation is the only meaningful action, whereas a batch invocation
-(Stage MT-4) skips the blocked task so its siblings can proceed. This is the one row where the
-two engines still diverge; it is documented, not an oversight (see
-`scripts/orchestrate-triage-classify.sh`'s header table for the full discriminator).
+**Why this handler stays engine-unconditional for the NON-discharged case (Decision 1, narrowed
+by this task, intentional divergence from `mt`)**: for a block that has NOT resolved, this
+handler always escalates to a human, regardless of engine — a solo invocation has no sibling task
+to make progress on, so escalation is the only meaningful action, whereas a batch invocation
+(Stage MT-4) skips the still-blocked task so its siblings can proceed. This narrower row is where
+the two engines still diverge; it is documented, not an oversight. For the DISCHARGED case, both
+engines now converge on the SAME `previous_status`-routed dispatch — see
+`scripts/orchestrate-triage-classify.sh`'s header table and justification paragraph for the full
+six-branch discriminator.
 
 #### State: `completed`
 
@@ -1098,7 +1124,9 @@ Capped at MAX_DRIFT_INSPECTIONS=1 per /orchestrate invocation.
 
 ### Stage 6: Blocker Escalation (5-Step Sequence)
 
-Called when: `partial` state with non-empty blockers, or `blocked` state.
+Called when: `partial` state with non-empty blockers, or `blocked` state that has NOT discharged
+(a discharged `blocked` task dispatches directly to the phase its `previous_status` names instead
+of reaching this stage — see the `#### State: blocked` handler's discriminating read).
 Capped at MAX_BLOCKER_ESCALATIONS=2 per /orchestrate invocation.
 
 **If `blocker_escalation_count >= MAX_BLOCKER_ESCALATIONS`**: log error and return. Manual intervention required. Suggest: (1) `/research $task_number`, (2) `/revise $task_number`, (3) `/implement $task_number`.
@@ -2027,7 +2055,10 @@ never independently, and must always agree) — classify each eligible task by i
 | `partial` with continuation | implement_tasks | `implement_agents[task_num]` |
 | `partial` with blockers | failed_tasks (mark blocked) | — |
 | `partial` with no handoff | implement_tasks | `implement_agents[task_num]` |
-| `blocked`, unknown | skip | — |
+| `blocked`, discharged (all `dependencies[]` completed, no handoff blockers) | the group `previous_status` names (research_tasks/plan_tasks/implement_tasks) | the corresponding agent |
+| `blocked`, dependency outstanding or empty `dependencies[]` | skip | — |
+| `blocked`, dependency abandoned/expanded, handoff blockers present, or `previous_status` missing | failed_tasks (mark blocked) | — |
+| `unknown` | skip | — |
 
 `researching` folds into the SAME group as `not_started`, and `planning` folds into the SAME
 group as `researched` — this is the eligibility-not-status-gated convergence: a task stranded in
@@ -2036,13 +2067,22 @@ merely for carrying an in-flight status string; it re-dispatches to the phase it
 `unknown` (any status string that is none of the classifier's recognized rows) keeps the old
 `skip` behavior unchanged.
 
-`blocked` folding into `skip` here is the one row that still diverges from single-task Stage 4
-(which routes `blocked` to `needs_human`/escalation) — and it is intentional, documented, not an
-oversight (Decision 1): a batch invocation skips the blocked task so its siblings can proceed,
-whereas the single-task engine has no siblings and so escalates to a human instead. See the
-`#### State: blocked` handler above and `scripts/orchestrate-triage-classify.sh`'s header table
-for the full discriminator between this documented divergence and the now-removed `partial`
-divergence.
+`blocked` is NARROWED, not unconditionally folded into `skip`: a `blocked` task that is
+DISCHARGED — its `dependencies[]` all reached `status: "completed"` and its handoff carries no
+blockers — now converges with single-task Stage 4 on the SAME `previous_status`-routed group for
+BOTH engines, rather than diverging. The row that still diverges from single-task Stage 4 (which
+always escalates a `blocked` task to `needs_human`/escalation) is narrower than before: only the
+NON-discharged case (a dependency still outstanding, or empty `dependencies[]`) still folds into
+`skip` here — and that narrower divergence remains intentional, documented, not an oversight
+(Decision 1, narrowed by this task): a batch invocation skips a still-blocked task so its
+siblings can proceed, whereas the single-task engine has no siblings and so escalates to a human
+instead. A dependency stuck at a non-completed terminal status (`abandoned`/`expanded`) or a
+handoff carrying unresolved blockers routes to `failed_tasks` (mark blocked) instead, consistent
+with this stage's existing `needs_human` -> `failed_tasks` filter above, since both engines agree
+`needs_human` for those sub-cases. See the `#### State: blocked` handler above and
+`scripts/orchestrate-triage-classify.sh`'s header table and justification paragraph for the full
+six-branch discriminator between the discharged case (converged), the narrowed non-discharged
+divergence (still documented), and the now-removed `partial` divergence (converged previously).
 
 **Task-lock acquire (per-task, before dispatch)**: Multi-task dispatch bypasses the single-task
 gate scripts entirely (`command-gate-in.sh`/`command-gate-out.sh` are never sourced here), so
