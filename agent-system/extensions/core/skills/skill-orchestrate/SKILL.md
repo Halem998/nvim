@@ -1350,7 +1350,10 @@ mode; see `context/patterns/infra-failure-discrimination.md`).
 Initialize `mt_state_file = "specs/.orchestrator-multi-state-${session_id}.json"` with fields: `session_id`,
 `task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`,
 `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
-`implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0),
+`implement_agents: {}`, `descriptions: {}` (map task_num -> task description, written once per
+task by Stage MT-2 below; read by Stage MT-4's three dispatch loops for both the existing
+`$description` prompt interpolation and the new Stage 3.5 Dispatch Prep's hard-required
+`description` precondition), `infra_failures: {}` (map task_num -> count, default 0),
 `dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time),
 `dispatch_seq_counter: 0` (batch-scoped monotonic counter, Defect A — never repeats a value
 across the whole batch, mirroring the single-task engine's loop-guard `dispatch_seq_counter`),
@@ -1509,7 +1512,8 @@ any future MT path variant that might lack the field, but no such variant exists
 
 ### Stage MT-2: Build Per-Task Routing Table
 
-For each task in `task_numbers`, read `state.json` to get `task_type`, `project_name`. Compute `task_dir = "specs/${padded}_${project_name}"`. Resolve `research_agent` and `implement_agent` using the same routing table as Stage 1b:
+For each task in `task_numbers`, read `state.json` to get `task_type`, `project_name`,
+`description`. Compute `task_dir = "specs/${padded}_${project_name}"`. Resolve `research_agent` and `implement_agent` using the same routing table as Stage 1b:
 
 | task_type | research_agent | implement_agent |
 |-----------|----------------|-----------------|
@@ -1519,6 +1523,13 @@ For each task in `task_numbers`, read `state.json` to get `task_type`, `project_
 | *(default)* | `general-research-agent` | `general-implementation-agent` |
 
 Check `.claude/extensions/${task_type}/manifest.json` for override routing. Populate all per-task maps into `mt_state_file`.
+
+**Per-task description capture (must-fix, do not drop as redundant)**: within the same per-task
+loop below, read `description=$(echo "$task_data" | jq -r '.description // ""')` and write it
+into `mt_state_file`'s `descriptions` map, keyed by task number. Both `memory-retrieve.sh` (hard
+`exit 1` on an empty description argument) and `lit-stage4a-flow.md` (`--query "$description"`)
+hard-require this value — without this capture, the new Stage 3.5 Dispatch Prep silently no-ops
+(no memory retrieval, no literature briefing) for every multi-task dispatch.
 
 **Entry reconcile (once per task, never per-cycle)**: within this same per-task iteration — not
 inside Stage MT-3's cycling loop — run `reconcile-task-status.sh` once for each task. This rides
@@ -1530,6 +1541,10 @@ way as the single-task entry reconcile above (a live no-op prints nothing):
 for task_number in "${task_numbers[@]}"; do
   # ... existing routing-table resolution for this task_number (task_type, project_name,
   # task_dir, research_agent, implement_agent) ...
+  task_description=$(echo "$task_data" | jq -r '.description // ""')
+  jq --arg t "$task_number" --arg d "$task_description" \
+    '.descriptions[$t] = $d' \
+    "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
   recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_number" "$session_id" 2>&1 || true)
   if [ -n "$recon_out" ]; then
     echo "$recon_out"
@@ -2137,12 +2152,17 @@ jq --arg t "$task_num" --argjson ts "$(date -u +%s)" --argjson seq "$task_dispat
 ```
 
 For each task in `research_tasks`:
+- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
+  per-task description Stage MT-2 captured, consumed both by this loop's existing `$description`
+  prompt interpolation and by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `plan_tasks`:
+- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
+  per-task description Stage MT-2 captured, consumed by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
@@ -2150,6 +2170,8 @@ For each task in `plan_tasks`:
 - Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `implement_tasks`:
+- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
+  per-task description Stage MT-2 captured, consumed by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)

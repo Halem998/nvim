@@ -231,7 +231,7 @@ before editing; wire every site found.
 
 ---
 
-### Phase 3: Fix the multi-task `description` gap [NOT STARTED]
+### Phase 3: Fix the multi-task `description` gap [COMPLETED]
 
 **Goal**: A per-task `description` is captured in Stage MT-2 and persisted into `mt_state_file`, so
 Stage MT-4's existing `$description` interpolation and the new Stage 3.5's hard preconditions both
@@ -239,19 +239,19 @@ resolve to real text.
 
 **Tasks**:
 
-- [ ] Re-anchor on `### Stage MT-1: Parse Multi-Task Context` (the `mt_state_file` init field list) and
+- [x] Re-anchor on `### Stage MT-1: Parse Multi-Task Context` (the `mt_state_file` init field list) and
       `### Stage MT-2: Build Per-Task Routing Table`.
-- [ ] Stage MT-1: add `descriptions: {}` (map task_num -> description) to the `mt_state_file` init field
+- [x] Stage MT-1: add `descriptions: {}` (map task_num -> description) to the `mt_state_file` init field
       list, placed alongside the existing `task_dirs: {}`, `research_agents: {}`, `implement_agents: {}`
       siblings.
-- [ ] Stage MT-2: extend the opening prose ("read `state.json` to get `task_type`, `project_name`") to
+- [x] Stage MT-2: extend the opening prose ("read `state.json` to get `task_type`, `project_name`") to
       also name `description`, and add
       `description=$(echo "$task_data" | jq -r '.description // ""')` to the existing per-task loop.
-- [ ] Stage MT-2: write the captured value into `mt_state_file`'s `descriptions` map in the same
+- [x] Stage MT-2: write the captured value into `mt_state_file`'s `descriptions` map in the same
       per-task iteration.
-- [ ] Add a one-sentence note at the MT-2 capture point stating that both `memory-retrieve.sh` and
+- [x] Add a one-sentence note at the MT-2 capture point stating that both `memory-retrieve.sh` and
       `lit-stage4a-flow.md` hard-require this value, so it must not be dropped as redundant.
-- [ ] Stage MT-4: at the top of each of the three dispatch loops, read
+- [x] Stage MT-4: at the top of each of the three dispatch loops, read
       `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` so the
       existing `$description` prompt interpolation and Stage 3.5 both see it.
 
