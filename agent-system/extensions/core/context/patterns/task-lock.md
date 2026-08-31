@@ -1114,15 +1114,21 @@ the same conversation) always succeeds. This property has a dedicated functional
 2. **Multi-task/wave dispatch**: `skill-orchestrate/SKILL.md` Stage MT (per-task
    acquire/release inside each wave dispatch) and `implement.md` Step 3 (per-task
    acquire/release in the multi-task loop) — these paths bypass the gate scripts entirely and
-   need their own acquire/release bracketing. Heartbeat refresh is wired at existing natural
-   checkpoints: `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (alongside the existing
-   `.orchestrator-loop-guard` refresh) and `agents/general-implementation-agent.md`'s Stage 4D
-   phase transition (alongside `update-phase-status.sh`) — the implementer's real per-phase
-   checkpoint; `skill-implementer/SKILL.md` has none and is not touched by this wiring (see item 5
-   below, which states this same fact). Because create-if-missing lives inside `acquire` itself
-   (see the `acquire` contract above), both of these gate-bypassing consumers dispatch tasks whose
-   directory does not exist yet without any change of their own — the fix is entirely internal to
-   `cmd_acquire`/`resolve_task_dir`.
+   need their own acquire/release bracketing. Heartbeat refresh is wired at two distinct layers:
+   a CYCLE-layer refresh at existing natural checkpoints (`skill-orchestrate/SKILL.md`'s Stage 3
+   cycle loop, alongside the existing `.orchestrator-loop-guard` refresh, and
+   `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write, mirroring it exactly) for
+   research/plan cycles which have no phase transitions of their own to hook; and a PHASE-layer
+   refresh that is now MECHANIZED INSIDE `update-phase-status.sh` itself, firing at every phase
+   transition of every caller (including `agents/general-implementation-agent.md`'s Stage 4D and
+   `agents/general-implementation-hard-agent.md`'s equivalent call) with `session_id` derived
+   from the task's own `.lock/holder.json` — no per-caller wiring or argument threading required.
+   `skill-implementer/SKILL.md` has no phase-transition point of its own and needs none, since it
+   delegates its entire phase loop to `general-implementation-agent`, which already inherits the
+   mechanized refresh (see item 5 below, which states this same fact). Because create-if-missing
+   lives inside `acquire` itself (see the `acquire` contract above), both of these
+   gate-bypassing consumers dispatch tasks whose directory does not exist yet without any change
+   of their own — the fix is entirely internal to `cmd_acquire`/`resolve_task_dir`.
 
    **Register/acquire parity invariant**: the `session_id` argument a wave-dispatch consumer
    passes to `acquire`/`release`/`heartbeat` for a given task MUST be byte-identical to the
@@ -1163,9 +1169,14 @@ the same conversation) always succeeds. This property has a dedicated functional
      separate wiring: its CHECKPOINT 1/2 already routes through the gate scripts above.
    - Heartbeat refresh is wired at existing checkpoints only, never a new one:
      `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (single-task) and Stage MT-3 step 1 status
-     refresh (multi-task batch), and `agents/general-implementation-agent.md`'s Stage 4D phase
-     transition (the implementer's real per-phase checkpoint — `skill-implementer/SKILL.md` has
-     none and is not touched by this wiring).
+     refresh (multi-task batch), `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write
+     (single-task `--hard`, mirroring `skill-orchestrate/SKILL.md`'s Stage 3 site exactly), and
+     the phase-layer refresh MECHANIZED INSIDE `update-phase-status.sh` itself — fired at every
+     phase transition of every caller, `agents/general-implementation-agent.md`'s Stage 4D
+     included, with `session_id` derived from the task's own `.lock/holder.json` rather than
+     threaded as an argument (`skill-implementer/SKILL.md` has no phase-transition point of its
+     own and needs none, since it delegates the whole phase loop and inherits the mechanized
+     refresh for free).
    - `session-reap` is explicit-invocation-only, wired into `skill-refresh/SKILL.md` Step 4.6,
      mirroring `reap`'s own wiring shape (item 4 above).
 6. **`session-list` reader call sites** (see the "Session-Registry Reader Contract" section

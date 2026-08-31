@@ -1,0 +1,35 @@
+{
+  "phase": 6,
+  "phase_name": "Close the cycle-layer and documentation rows of the survey",
+  "started_at": "2026-08-31T20:12:00Z",
+  "last_updated": "2026-08-31T20:14:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-orchestrate-hard/SKILL.md: add task-lock+session-registry heartbeat pair at Stage 3 loop-guard write", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 2, "description": "skill-orchestrate/SKILL.md: add complementary cycle-layer note at Stage 3 site (code unchanged)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "implement.md: correct falsified 'no intra-batch heartbeat' deferral reasoning", "status": "done", "files_touched": ["agent-system/extensions/core/commands/implement.md"]},
+    {"id": 4, "description": "skill-implementer/SKILL.md: repoint heartbeat note to mechanized site", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 5, "description": "task-lock.md: update Consumers item 2 and item 5 wiring description, add skill-orchestrate-hard cycle-layer site", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 6, "description": "Record completed survey table for Phase 7 summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": [
+    "grep -rn 'task-lock.sh \\(session-\\)?heartbeat \"{' agent-system/extensions/core/ returns nothing -- no brace-placeholder heartbeat invocation anywhere.",
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh (source-store mode): 56 passed, 0 failed.",
+    "Extracted the new skill-orchestrate-hard/SKILL.md Stage 3b bash block and ran bash -n against it: syntax OK."
+  ],
+  "call_site_survey": [
+    {"site": "agent-system/extensions/core/scripts/update-phase-status.sh", "status": "mechanized", "note": "Phase 1: derives session_id from holder.json, fires task-lock heartbeat + session-heartbeat at every phase transition, traces every outcome."},
+    {"site": "agent-system/extensions/core/scripts/task-lock.sh (write_holder/cmd_reap/cmd_acquire)", "status": "fixed", "note": "Phase 2: pid liveness added; cmd_reap and cmd_acquire's stale-override refuse to act on a live-pid lock."},
+    {"site": "agent-system/extensions/core/scripts/task-lock.sh (cmd_check/cmd_reap output)", "status": "fixed", "note": "Phase 3: never_heartbeated=<true|false|unknown> fingerprint appended to check/reap output lines."},
+    {"site": "agent-system/extensions/core/agents/general-implementation-agent.md Stage 4D", "status": "demonstrated (0/8 fired historically) -> retired, superseded by mechanized site", "note": "Phase 5: the two never-executed prose bash blocks were deleted and replaced with a mechanized-here note."},
+    {"site": "agent-system/extensions/core/agents/general-implementation-hard-agent.md Stage 4D-equivalent", "status": "deliberately absent (closed via inheritance)", "note": "Phase 5: no call site was ever added -- the hard agent inherits the mechanized refresh for free via its own update-phase-status.sh call."},
+    {"site": "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md Stage 3", "status": "fixed (absent-caller gap closed)", "note": "Phase 6: added the cycle-layer heartbeat pair, mirroring skill-orchestrate/SKILL.md's Stage 3 site exactly (shell-variable form)."},
+    {"site": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md Stage 3 (3 sites)", "status": "deliberately retained, documented", "note": "Phase 6: code left unchanged (correct shell-var form); added a note explaining these are the complementary cycle-layer heartbeat, necessary because research/plan cycles have no phase transitions."},
+    {"site": "agent-system/extensions/core/commands/implement.md Step 3", "status": "deliberately absent, reasoning corrected", "note": "Phase 6: 'no intra-batch session-registry heartbeat' omission reasoning corrected to point at the now-mechanized phase-layer site rather than the previously-nonfiring prose."},
+    {"site": "agent-system/extensions/core/skills/skill-implementer/SKILL.md", "status": "deliberately absent, documentation updated", "note": "Phase 6: thin wrapper has no phase-transition point of its own; note repointed from the retired Stage 4D prose to the mechanized site."},
+    {"site": "specs/events.jsonl cross-session attribution", "status": "deferred to project 73 (out of file_scope here)", "note": "Phase 7 will append a recorded amendment to project 73's acceptance criteria; no hooks/** file is touched by this task."}
+  ]
+}

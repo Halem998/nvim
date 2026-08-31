@@ -481,14 +481,14 @@ heartbeat` and `update-phase-status.sh` in both files rather than editing by lin
 
 ---
 
-### Phase 6: Close the cycle-layer and documentation rows of the survey [NOT STARTED]
+### Phase 6: Close the cycle-layer and documentation rows of the survey [COMPLETED]
 
 **Goal**: Complete acceptance criterion 5 for every remaining surveyed site, and correct the
 documentation whose stated premise research falsified.
 
 **Tasks**:
 
-- [ ] `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`: add the task-lock
+- [x] `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`: add the task-lock
       and session-registry heartbeat pair at the Stage 3 state-machine loop's per-cycle loop-guard
       write (the `jq ... '.current_state = $state | .last_updated = $updated | .cycle_count =
       $count | .plan_version = $plan_version'` block), mirroring `skill-orchestrate/SKILL.md`'s
@@ -496,26 +496,26 @@ documentation whose stated premise research falsified.
       brace-placeholder form. This is a genuine absent-caller gap at the cycle layer that the
       phase-layer mechanization does not cover, because a research or plan cycle has no phase
       transitions.
-- [ ] `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`: leave its three existing
+- [x] `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`: leave its three existing
       call sites' code unchanged (correct shell-var form) and add a one-line note at the Stage 3
       site recording that these are the **cycle-layer** heartbeat, complementary to and now
       backstopped by the mechanized phase-layer refresh inside `update-phase-status.sh`, and that
       they remain necessary for research/plan cycles which have no phase transitions.
-- [ ] `agent-system/extensions/core/commands/implement.md`: correct the "No intra-batch
+- [x] `agent-system/extensions/core/commands/implement.md`: correct the "No intra-batch
       session-registry heartbeat" reasoning. Its justification currently defers to a per-phase
       heartbeat that did not fire; rewrite it to point at the mechanized site inside
       `update-phase-status.sh` and to state that the deferral is sound **because** the refresh is
       now mechanically guaranteed at every phase transition. Keep the omission itself — it is
       intentional and correct.
-- [ ] `agent-system/extensions/core/skills/skill-implementer/SKILL.md`: update its note that "the
+- [x] `agent-system/extensions/core/skills/skill-implementer/SKILL.md`: update its note that "the
       refresh lives in the agent's Stage 4D" to name the mechanized site instead, and keep the
       documented-as-deliberately-absent statement that this wrapper has no phase-transition point
       of its own.
-- [ ] `agent-system/extensions/core/context/patterns/task-lock.md`: update the "Consumers (Six
+- [x] `agent-system/extensions/core/context/patterns/task-lock.md`: update the "Consumers (Six
       Distinct Wiring Paths)" item 2 wiring description — the phase-transition heartbeat is now
       internal to `update-phase-status.sh`, not a call site in the agent file — and add the
       `skill-orchestrate-hard` cycle-layer site to the consumer list.
-- [ ] Record the completed survey table (every site: fixed / mechanized / demonstrated /
+- [x] Record the completed survey table (every site: fixed / mechanized / demonstrated /
       deliberately absent with reason) in this phase's progress file, so Phase 7's summary can
       carry it into the task summary verbatim.
 

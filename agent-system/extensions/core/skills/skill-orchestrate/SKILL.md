@@ -310,6 +310,13 @@ jq --arg state "$current_status" \
 # CHECKPOINT 1) never goes stale under its own hand. No-op with a warning if the lock is
 # somehow missing or held by another session — heartbeat never blocks this loop. See
 # .claude/context/patterns/task-lock.md.
+#
+# This is the CYCLE-layer heartbeat, complementary to (and now backstopped by) the mechanized
+# PHASE-layer refresh inside update-phase-status.sh itself: it remains necessary here because a
+# research or plan cycle has no phase transitions of its own to hook, so this per-cycle site is
+# the only refresh those cycles get. It is not redundant with the mechanized site during an
+# implement cycle either — this fires once per whole cycle, the mechanized site fires once per
+# phase transition within that cycle.
 bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/null || true
 
 # In-flight session registry heartbeat: same per-cycle boundary, refreshing the entry

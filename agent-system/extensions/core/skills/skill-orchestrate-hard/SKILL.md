@@ -522,6 +522,21 @@ jq --arg state "$current_status" \
    --arg plan_version "$current_plan_version" \
   '.current_state = $state | .last_updated = $updated | .cycle_count = $count | .plan_version = $plan_version' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+
+# Task-lock heartbeat: refresh at the same per-cycle boundary as the loop guard, mirroring
+# skill-orchestrate/SKILL.md's own Stage 3 site exactly, so a multi-hour single-task
+# --hard /orchestrate run (whose lock was acquired once at orchestrate.md's CHECKPOINT 1)
+# never goes stale under its own hand. This is a genuine CYCLE-layer gap the phase-layer
+# mechanization inside update-phase-status.sh does not cover on its own, because a research or
+# plan cycle has no phase transitions to hook. No-op with a warning if the lock is somehow
+# missing or held by another session — heartbeat never blocks this loop. See
+# .claude/context/patterns/task-lock.md.
+bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/null || true
+
+# In-flight session registry heartbeat: same per-cycle boundary, refreshing the entry
+# command-gate-in.sh registered at CHECKPOINT 1. Best-effort and non-blocking. See
+# .claude/context/patterns/task-lock.md's Session-Registry CLI section.
+bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null || true
 ```
 
 ---

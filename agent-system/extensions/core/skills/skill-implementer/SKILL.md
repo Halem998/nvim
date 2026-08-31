@@ -216,10 +216,11 @@ The format content will be included as a delimited section in the Stage 5 prompt
 
 **Task-lock heartbeat note**: this skill is a thin wrapper that delegates the entire phase loop
 to `general-implementation-agent` in a single Agent tool call — it has no per-phase-transition
-point of its own to hook a `task-lock.sh heartbeat` call into. The heartbeat refresh lives inside
-`general-implementation-agent.md`'s Stage 4D ("Mark Phase Complete"), which fires once per phase
-as the subagent progresses through the plan. See `.claude/context/patterns/task-lock.md` for the
-full contract.
+point of its own to hook a heartbeat call into, and needs none: the heartbeat refresh is
+mechanized INSIDE `update-phase-status.sh` itself, fired automatically once per phase as the
+subagent progresses through the plan (the call already made at every "Mark Phase Complete" step,
+with no separate action or call site required). See `.claude/context/patterns/task-lock.md` for
+the full contract.
 
 **CRITICAL**: You MUST use the **Agent** tool to spawn the subagent.
 
