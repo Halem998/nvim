@@ -1,9 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+      "summary": "Discriminating blocked classifier arm shipped across 8 phases: classifier mechanism, its fixtures, dry-run reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue all converged on the narrowed premise."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the multi-task /orchestrate classifier's unconditional blocked verdict with a six-branch discriminating arm so a task blocked purely on an in-batch predecessor dispatches once that predecessor completes, instead of skipping forever; propagated the change through the classifier's own tables/prose, its test fixtures (12 new RED-confirmed assertions), the dry-run report's reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a jq classifier's status arm needs to look up a related entity's status from the same already-slurped array (e.g. resolving a dependency's own status by project_number), bind the outer value with `. as $x` before entering a nested `select()` filter. A bare `.` inside `map({..., dep_status: (... | select(.project_number == .) ...)})` silently resolves to the INNER filter's context (the array element being tested), not the outer mapped value, causing every lookup to fail/return null with no error. Symptom: all cross-referenced lookups return the same wrong/null value regardless of input. Fix: `map(. as $d | {dep: $d, dep_status: (($all[] | select(.project_number == $d) | .status) // null)})`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "nested-select", "dot-context", "dependency-lookup", "bash-classifier"]
+    },
+    {
+      "content": "When converging a discriminating verdict from 'always skip/escalate' to 'discriminate by looking up related state', treat the discriminator as a lookup against the full already-loaded state array (not the caller's own candidate-list arguments) whenever the caller's candidate list is a shrinking, per-cycle eligibility set. A dependency that JUST became eligible for the discriminated case is, by construction, the same one that just dropped OUT of the caller's per-cycle candidate list -- so membership-based discrimination reproduces the exact defect being fixed. Verify this design guard with a fixture whose dependency is deliberately never passed as an argument to the function under test.",
+      "category": "PATTERN",
+      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-lookup", "eligibility-gate", "candidate-list-membership", "discriminating-verdict", "mutation-check"]
+    },
+    {
+      "content": "When adding rows to a markdown table inside a maintained context/pattern file that is tracked by a maintenance index (index-entries.json with a per-file line_count field), re-run the repo's doc-lint (check-extension-docs.sh) before considering the phase done -- a table-row addition changes the file's line count and silently drifts the index's declared value, which a downstream deploy-verification gate (Rule R) catches as a FAIL. Cheap to catch immediately; easy to miss if verification is deferred past the edit.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["index-entries.json", "line_count", "doc-lint", "deploy-verification", "check-extension-docs"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788202255_53c3de",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

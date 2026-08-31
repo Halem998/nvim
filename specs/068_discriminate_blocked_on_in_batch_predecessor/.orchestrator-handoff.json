@@ -1,29 +1,49 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "phase": "research",
-  "summary": "Re-derived the cause: Stage MT-3's dependency-graph eligibility gate already correctly discriminates in-batch predecessor completion, but the classifier's blocked row ignores that signal and unconditionally emits skip (mt), so nothing ever rewrites the stale blocked status and the successor spins until MAX_CYCLES_MT. Recommended fix: classifier reads dependencies[] and the (already-slurped) predecessor's own status from state.json plus the handoff's blockers[] for the blocked candidate -- no new read, no new CLI argument, no call-site change -- and routes a discharged block through previous_status (which /spawn already writes and preserves unchanged). No status-rewrite component is needed; normal dispatch preflight self-heals the stale status, confirmed by direct read.",
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phase": "implement",
+  "summary": "Replaced the multi-task /orchestrate classifier's unconditional blocked verdict with a six-branch discriminating arm across 8 plan phases: empty dependencies[] / dependency abandoned-or-expanded / dependency outstanding / handoff blockers present / previous_status missing or unrecognized / discharged. A discharged blocked candidate (all dependencies[] status exactly \"completed\", no handoff blockers) now routes via previous_status through the classifier's existing status-routing logic for BOTH engines, converging mt and single; every non-discharged sub-case preserves today's skip(mt)/needs_human(single) divergence with a specific named reason. Propagated the change through the classifier's own header table/justification/schema docs, its test suite (12 new fixtures, all confirmed RED pre-fix), the dry-run report's reason threading, both orchestrate skills' blocked handlers and grouping tables, the state-machine doc's state row, and the guardrails Gate Catalogue (3 new rows). Deployed and verified from .claude/scripts/; only two pre-existing, unrelated verify-deploy.sh findings remain (confirmed via git log to predate this task).",
   "artifacts": [
     {
       "type": "report",
       "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md",
       "summary": "Cause re-derivation, discriminator design, prior-Decision-3 narrowing, and full co-maintenance edit set with file/line anchors."
+    },
+    {
+      "type": "plan",
+      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/plans/01_discriminating-blocked-classifier-row.md",
+      "summary": "8-phase plan (4 waves) for the discriminating blocked classifier row: state.json dependency lookup discriminator, atomic-batch mechanism phase, fixture guard against candidate-list-membership implementations, Gate Catalogue and dry-run threading."
+    },
+    {
+      "type": "summary",
+      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+      "summary": "Discriminating blocked classifier arm shipped across 8 phases: classifier mechanism, its fixtures, dry-run reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue all converged on the narrowed premise."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
+  "phases_completed": 8,
+  "phases_total": 8,
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
+  "next_action_hint": "postflight",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
   "decisions_made": [
-    "Discharge requires predecessor status exactly 'completed', not the broader is_terminal set (abandoned/expanded predecessors get a distinct loud needs_human warning, never silent promotion).",
-    "single engine's non-discharged blocked->needs_human stays unconditional and stays diverging from mt's non-discharged blocked->skip (Decision 1 from prior task reaffirmed for this sub-case).",
-    "single engine's DISCHARGED blocked case should also route through previous_status rather than staying needs_human, applying the classifier header's own audit discriminator honestly (recommended, flagged as the one recommendation beyond the task's literal 'mt classifier row' framing -- planning may accept, defer, or reject with reasons).",
-    "No separate status-rewrite component is needed; verdict alone suffices because skill_validate_input and update-task-status.sh's preflight write have no precondition on prior status (confirmed by direct read, not assumed by analogy).",
-    "/spawn keeps writing blocked + previous_status unchanged; the redundancy with dependencies[] is deliberate and load-bearing, not something to remove.",
-    "Prior task's Decision 3 ('blocked and unknown rows: leave unchanged') is narrowed, not overturned: unknown stays untouched; blocked's non-discharged case stays unconditional; only the discharged, in-batch, no-recorded-blockers case becomes discriminating."
+    "Dependency status is resolved via a second select(.project_number == $d) against the already-slurped $all array, bound through '. as $d' (a jq dot-context pitfall discovered and fixed during Phase 2), never via candidate-list ($candidates) membership -- verified by a fixture whose dependency is deliberately absent from the classifier's own argument list.",
+    "Empty dependencies[] is its own FIRST branch, evaluated before the all-completed check, so a vacuous 'all' over an empty list never discharges.",
+    "Discharge requires literal \"completed\", never the broader is_terminal set; a dependency stuck at abandoned/expanded gets its own loud needs_human branch.",
+    "A discharged candidate with a missing or unrecognized previous_status never guesses -- stays needs_human with a named reason (this is a distinct sixth branch beyond the plan's five-sub-case estimate, added because Testing & Validation explicitly requires it).",
+    "No status-rewrite component was added: the stale blocked string is overwritten by the dispatched skill's own skill_preflight_update, the same mechanism the shipped researching/planning convergence already relies on.",
+    "single engine's DISCHARGED blocked case now also routes through previous_status (converging with mt), applying the classifier header's own audit discriminator honestly -- both engines independently implement the non-discharged divergence in their own handlers, but neither independently implements a discharged-case divergence, so it converges.",
+    "Two out-of-plan-file-list repairs made and recorded as deviations: Stage 6's opening sentence (Phase 4) and index-entries.json's line_count (Phase 8, file_scope widened via state-write.sh)."
   ],
   "dead_ends": [
-    "Discriminator based on 'is the dependency present in the classifier's own CLI candidate list' (checking $candidates directly) was considered and rejected: in the live per-cycle path the predecessor typically drops out of eligible_tasks (Stage MT-3 step 3 excludes terminal tasks) by the exact cycle the successor becomes eligible, so this membership check would read false in precisely the reproduction scenario. The working discriminator instead looks up the dependency's own status from the classifier's already-slurped full active_projects array, independent of which task numbers were passed as CLI arguments this call."
+    "Discriminator based on 'is the dependency present in the classifier's own CLI candidate list' ($candidates membership) was rejected per the research report and reconfirmed empirically: this is exactly the reproduction scenario, since a just-completed predecessor drops out of eligible_tasks before the successor is reclassified."
   ]
 }
