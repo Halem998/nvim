@@ -399,7 +399,7 @@
     {
       "project_number": 68,
       "project_name": "discriminate_blocked_on_in_batch_predecessor",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever",
@@ -436,8 +436,9 @@
           "summary": "Implementation summary: discriminating blocked classifier arm shipped across 8 phases; classifier, its fixtures, dry-run reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue all converged."
         }
       ],
-      "last_updated": "2026-08-31T19:13:03Z",
-      "session_id": "sess_1788202255_53c3de_68"
+      "last_updated": "2026-08-31T19:47:15Z",
+      "session_id": "sess_1788202255_53c3de_68",
+      "completion_summary": "Replaced the multi-task /orchestrate classifier's unconditional blocked verdict with a six-branch discriminating arm so a task blocked purely on an in-batch predecessor dispatches once that predecessor completes, instead of skipping forever; propagated the change through the classifier's own tables/prose, its test fixtures (12 new RED-confirmed assertions), the dry-run report's reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue."
     },
     {
       "project_number": 72,

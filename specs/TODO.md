@@ -11,8 +11,8 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,74,81,87,94,100,102,103,106,108,110,111,113,114,117 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,104,105,109,112,118,124 | 29,68,74,81,102,108,117 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,81,87,94,100,102,103,106,108,110,111,113,114,117 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,104,105,109,112,118,124 | 29,74,81,102,108,117 | core-agent-system, extensions, literature |
 | 3 | 107,119,125 | 104,118,124 | core-agent-system, literature |
 | 4 | 120,122 | 31,119 | core-agent-system |
 | 5 | 72,73,121,123,126 | 120,122 | core-agent-system |
@@ -52,12 +52,10 @@ next_project_number: 128
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-68 [IMPLEMENTING] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
+81 [PLANNED] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
-81 [PLANNED] — Task-lock and session-registry heartbeats never fire during a rea
-  └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
@@ -1572,7 +1570,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
