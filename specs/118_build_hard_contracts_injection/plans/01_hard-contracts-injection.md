@@ -270,25 +270,25 @@ still match before transcribing them.
 
 ---
 
-### Phase 3: Thread `hard_contracts_block` through all 10 dispatch sites [NOT STARTED]
+### Phase 3: Thread `hard_contracts_block` through all 10 dispatch sites [COMPLETED]
 
 **Goal**: Every dispatch-site pointer line in `skill-orchestrate/SKILL.md` names
 `hard_contracts_block` as the 4th appended output.
 
 **Tasks**:
-- [ ] **Precondition (hard gate)**: re-run all three greps against
+- [x] **Precondition (hard gate)**: re-run all three greps against
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and confirm the counts
       below exactly. If ANY count differs, stop and re-scope rather than editing:
       - `` `lit_context`, and `effort_note`. `` -> 10 (the "to produce X, Y, and Z" lead-in;
         note this is the SHORTER substring, per Decision 6)
       - ``then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty`` -> 7 (single-task rows)
       - ``with `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5 appended, each skipped when empty`` -> 3 (multi-task loop rows)
-- [ ] Pass 1 (10 sites): extend the lead-in phrase so each pointer line says it produces the
+- [x] Pass 1 (10 sites): extend the lead-in phrase so each pointer line says it produces the
       fourth output too.
-- [ ] Pass 2 (7 single-task rows): extend the trailing append clause with `hard_contracts_block`
+- [x] Pass 2 (7 single-task rows): extend the trailing append clause with `hard_contracts_block`
       as the final item, preserving the "each skipped when empty" rule.
-- [ ] Pass 3 (3 multi-task rows): same extension to the multi-task phrasing.
-- [ ] Confirm no dispatch site adds any of the four outputs to its `context` JSON object.
+- [x] Pass 3 (3 multi-task rows): same extension to the multi-task phrasing.
+- [x] Confirm no dispatch site adds any of the four outputs to its `context` JSON object.
 
 **Timing**: 1 hour
 
