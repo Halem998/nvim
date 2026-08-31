@@ -289,7 +289,7 @@ implement_tasks), each a single prose bullet ending in `Invoke Agent tool: ...`.
 
 ---
 
-### Phase 4: Author "Stage 3.5: Dispatch Prep" [NOT STARTED]
+### Phase 4: Author "Stage 3.5: Dispatch Prep" [COMPLETED]
 
 **Goal**: One canonical, self-contained stage exists between Stage 3 and Stage 4 that takes a `phase`
 parameter and produces `memory_context`, `lit_context`, and an optional effort-depth note — structured
@@ -297,43 +297,43 @@ to mirror `skill-researcher`'s Stage 4a closely enough to diff side by side.
 
 **Tasks**:
 
-- [ ] Re-anchor: locate the boundary between `### Stage 3: State Machine Loop` and
+- [x] Re-anchor: locate the boundary between `### Stage 3: State Machine Loop` and
       `### Stage 4: State Handlers`; insert the new stage there.
-- [ ] Write the stage header `### Stage 3.5: Dispatch Prep (shared, runs immediately before every
+- [x] Write the stage header `### Stage 3.5: Dispatch Prep (shared, runs immediately before every
       Agent dispatch)` and a short paragraph stating it is the single canonical copy, referenced by a
       pointer line at every dispatch site in Stage 4 and Stage MT-4, and that it must never be inlined
       or duplicated.
-- [ ] Document the stage's inputs as an explicit table: `phase` (`research` | `plan` | `implement`),
+- [x] Document the stage's inputs as an explicit table: `phase` (`research` | `plan` | `implement`),
       `description`, `task_type`, `focus_prompt`, `clean_flag`, `effort_flag`, `lit_flag`,
       `orchestrator_mode`.
-- [ ] Add the case-alias line with its rationale comment:
+- [x] Add the case-alias line with its rationale comment:
       `description="${DESCRIPTION:-${description:-}}"` — single-task mode defines `DESCRIPTION`
       (uppercase) while the shared lit flow and `memory-retrieve.sh` expect lowercase `description`.
       State explicitly that this alias must not be "simplified" away.
-- [ ] Add the loud, non-blocking empty-description warning, matching the file's existing warning style:
+- [x] Add the loud, non-blocking empty-description warning, matching the file's existing warning style:
       `if [ -z "$description" ]; then echo "[orchestrate] WARNING: empty description at dispatch prep
       (phase=$phase) — memory retrieval and literature briefing will be skipped" >&2; fi`.
-- [ ] Write the memory-retrieval block gated on `clean_flag`, reproducing
+- [x] Write the memory-retrieval block gated on `clean_flag`, reproducing
       `skill-researcher`/`skill-planner`/`skill-implementer` Stage 4a verbatim except for the 3rd
       argument, which is selected by `phase`. Include a small table making the asymmetry explicit:
       `research` -> `"$focus_prompt"`; `plan` and `implement` -> `""`. Note that `memory-retrieve.sh`
       emits its own `<memory-context>` wrapper (verified against the script), so the injection must not
       re-wrap, and that it exits 1 with empty output when nothing matches.
-- [ ] Write the literature block as a verbatim reference to
+- [x] Write the literature block as a verbatim reference to
       `@.claude/context/patterns/lit-stage4a-flow.md`, following `skill-researcher`'s wording: follow
       the file in full, branch on all six directives, and note that because `skill-orchestrate` always
       sets `orchestrator_mode: true`, the interactive `AskUserQuestion` branches are unreachable here
       and the deterministic `[lit:auto]` autonomous fallback always applies. State that this stage
       supplies the flow's three preconditions (`lit_flag`, `description`, `orchestrator_mode`).
-- [ ] Add the `clean_flag`/`lit_flag` independence note verbatim from the lifecycle skills: `--clean
+- [x] Add the `clean_flag`/`lit_flag` independence note verbatim from the lifecycle skills: `--clean
       --lit` suppresses memory but still injects literature.
-- [ ] Add the effort-depth output: when `effort_flag` is non-empty, set a one-line
+- [x] Add the effort-depth output: when `effort_flag` is non-empty, set a one-line
       `effort_note` to be appended to the dispatch prompt as reasoning-depth guidance, mirroring
       `research.md`'s existing instruction. Empty `effort_flag` produces no note.
-- [ ] Write the "Outputs and injection contract" subsection: `memory_context` then `lit_context` then
+- [x] Write the "Outputs and injection contract" subsection: `memory_context` then `lit_context` then
       `effort_note`, appended to the end of the dispatch site's existing prompt string; never inject an
       empty `<memory-context>` or `<literature-briefing>` tag pair; nothing goes into the `context` JSON.
-- [ ] Note in the stage that `skill-orchestrate` has no format-spec injection today, so unlike the
+- [x] Note in the stage that `skill-orchestrate` has no format-spec injection today, so unlike the
       lifecycle skills there is no format block for these to sit after — the blocks are simply the
       first content appended after the base prompt text.
 

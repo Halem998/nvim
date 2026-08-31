@@ -337,6 +337,103 @@ bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null ||
 
 ---
 
+### Stage 3.5: Dispatch Prep (shared, runs immediately before every Agent dispatch)
+
+This is the SINGLE canonical copy of the memory-retrieval and literature-briefing procedure for
+`/orchestrate`. Every dispatch site in Stage 4 (single-task) and Stage MT-4 (multi-task)
+references this stage with a short pointer line rather than inlining a second copy — see the
+"Shared-snippet convention" mitigation in this task's plan. **Never duplicate this procedure at a
+dispatch site.**
+
+**Inputs**:
+
+| Input | Source |
+|-------|--------|
+| `phase` | `research` \| `plan` \| `implement` — passed by the calling dispatch site |
+| `description` | task description (see case-alias below) |
+| `task_type` | `TASK_TYPE` (single-task) / per-task `task_type` (multi-task) |
+| `focus_prompt` | `focus_prompt` from the delegation context |
+| `clean_flag` | Stage 1 / Stage MT-1 (this invocation's `--clean` state) |
+| `effort_flag` | Stage 1 / Stage MT-1 (this invocation's `--fast` state) |
+| `lit_flag` | Stage 1 / Stage MT-1 |
+| `orchestrator_mode` | always `true` for every `/orchestrate` dispatch |
+
+**Case alias (do not "simplify" away)**: single-task Stage 1 extracts the task description into
+the uppercase `DESCRIPTION` shell variable (from `state.json` via `jq`), while the shared lit flow
+(`lit-stage4a-flow.md`) and `memory-retrieve.sh` both expect the lowercase `description`. Multi-
+task mode already reads the per-task value into lowercase `description` (Stage MT-4, per Phase 3
+of this task's plan). This alias reconciles both call shapes in one line:
+
+```bash
+description="${DESCRIPTION:-${description:-}}"
+```
+
+**Empty-description warning (loud, non-blocking)**: both `memory-retrieve.sh` and
+`lit-stage4a-flow.md` hard-require a non-empty `description` to do anything useful. An empty value
+here most often means the multi-task `descriptions` capture (Phase 3) regressed — surface it
+immediately rather than silently no-op-ing:
+
+```bash
+if [ -z "$description" ]; then
+  echo "[orchestrate] WARNING: empty description at dispatch prep (phase=$phase) — memory retrieval and literature briefing will be skipped" >&2
+fi
+```
+
+**Memory retrieval (Auto), skipped when `clean_flag` is true**: reproduces
+`skill-researcher`/`skill-planner`/`skill-implementer`'s own Stage 4a verbatim, except the 3rd
+`memory-retrieve.sh` argument is selected by `phase`, preserving the existing per-phase asymmetry:
+
+| `phase` | 3rd `memory-retrieve.sh` argument |
+|---------|-----------------------------------|
+| `research` | `"$focus_prompt"` |
+| `plan` | `""` |
+| `implement` | `""` |
+
+```bash
+if [ "$clean_flag" != "true" ]; then
+  memory_arg3=""
+  [ "$phase" = "research" ] && memory_arg3="$focus_prompt"
+  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
+fi
+```
+
+`memory-retrieve.sh` emits its own `<memory-context>` wrapper around its output (verified against
+the script's own tail) — do NOT re-wrap `memory_context` here. The script exits 1 with empty
+stdout when `clean_flag` is true (skipped), `memory-index.json` is missing/empty, no keywords
+matched, or it otherwise errored; in every one of those cases `memory_context` is simply empty and
+nothing is injected.
+
+**Literature detection and injection (shared block)**: follow `@.claude/context/patterns/lit-stage4a-flow.md`
+in full to resolve `--lit` and set `lit_context`: call `literature-lit-flag-resolve.sh`, branch on
+all six directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
+`AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`). Because `skill-orchestrate` always sets
+`orchestrator_mode: true`, the two interactive directives that would otherwise issue
+`AskUserQuestion` are unreachable here — the deterministic `[lit:auto]` autonomous fallback always
+applies instead. This stage supplies the shared flow's three preconditions: `lit_flag`,
+`description`, and `orchestrator_mode`.
+
+**Independence note**: `lit_flag` is independent of `clean_flag`. `--clean --lit` suppresses
+memory retrieval but still injects literature briefing; literature briefing is gated solely on
+`lit_flag == "true"`.
+
+**Effort-depth note**: when `effort_flag` is non-empty, set a one-line `effort_note` to be
+appended to the dispatch prompt as reasoning-depth guidance, mirroring `commands/research.md`'s
+existing "pass it as prompt context to the skill/agent for reasoning depth guidance" instruction.
+An empty `effort_flag` produces no note (`effort_note` stays empty).
+
+**Outputs and injection contract**: this stage produces `memory_context`, `lit_context`, and
+`effort_note`. The calling dispatch site appends them, in that order, to the END of its own
+prompt string — `memory_context` first, then `lit_context`, then `effort_note` — skipping any
+of the three that is empty. Never inject an empty `<memory-context>` or `<literature-briefing>`
+tag pair. None of the three outputs is ever added to the dispatch's `context` JSON object.
+Unlike the three lifecycle skills, `skill-orchestrate` injects no format specification
+(`report-format.md`/`plan-format.md`) into its dispatch prompts today (a real, separate,
+pre-existing gap — see Non-Goals in this task's plan) — so these blocks are simply the first
+content appended after the dispatch site's own base prompt text, with no format block for them
+to follow.
+
+---
+
 ### Stage 4: State Handlers
 
 #### State: `not_started` or `not started`
