@@ -562,7 +562,7 @@
     {
       "project_number": 81,
       "project_name": "mechanize_task_lock_and_session_heartbeat_refresh",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run",
@@ -590,11 +590,17 @@
           "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/plans/01_mechanize-heartbeat-refresh.md",
           "type": "plan",
           "summary": "7-phase plan (4 waves) mechanizing the heartbeat inside update-phase-status.sh with session_id derived from holder.json (zero caller changes), pid-liveness and fingerprint hardening, agent-prose retirement, and a backdated-fixture reproduction test"
+        },
+        {
+          "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+          "type": "summary",
+          "summary": "Mechanized the heartbeat inside update-phase-status.sh (session_id derived from holder.json), pid liveness + never_heartbeated fingerprint in task-lock.sh, never-executed prose retired, 19-assertion fixture test, full live reproduction after deploy"
         }
       ],
       "created": "2026-08-20T23:01:37Z",
-      "last_updated": "2026-08-31T19:58:56Z",
-      "session_id": "sess_1788202255_53c3de_81"
+      "last_updated": "2026-08-31T20:45:16Z",
+      "session_id": "sess_1788202255_53c3de_81",
+      "completion_summary": "Mechanized the task-lock and session-registry heartbeat refresh inside update-phase-status.sh (deriving session_id from holder.json), hardened task-lock.sh with pid liveness and a never-heartbeated fingerprint, retired the confirmed-non-firing prose from both implementation agents, closed every remaining call-site-survey row, added a deterministic fixture test (19/19 passing) plus a full live reproduction, and recorded the events.jsonl attribution amendment to project 73."
     },
     {
       "project_number": 87,

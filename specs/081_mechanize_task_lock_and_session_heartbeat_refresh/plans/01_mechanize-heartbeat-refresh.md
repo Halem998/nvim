@@ -1,7 +1,7 @@
 # Implementation Plan: Task #81
 
 - **Task**: 81 - Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None declared. Cross-reference only to project 73 (`correlate_subagent_postflight_hook_to_owning_session`, status `not_started`) for the events.jsonl amendment in Phase 7; no `file_scope` overlap.
 - **Research Inputs**: `specs/081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md`
