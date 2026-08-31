@@ -1,0 +1,15 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "path": "specs/124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md",
+      "type": "report",
+      "summary": "Verifies deletion preconditions: (a) Stage 3.5 Dispatch Prep rehome and (b) both blocking defects are resolved, but (c) /orchestrate phase-forcing flags are not implemented."
+    }
+  ],
+  "blockers": [
+    "Task 126 (orchestrate phase-forcing flags) is not_started; the --research/--plan/--implement replacement spelling this task must document does not exist yet."
+  ],
+  "completion_summary": "Deletion must not proceed until phase-forcing flags land (Task 126).",
+  "modified_files": []
+}

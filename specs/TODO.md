@@ -55,7 +55,7 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
+118 [RESEARCHING] — Build hard_contracts manifest key and contract-text injection at 
   └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
     └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
     └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
@@ -63,7 +63,7 @@ next_project_number: 128
       └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
       └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
       └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
+124 [RESEARCHED] — Delete /research, /plan, /implement commands and update the CLAUD
   └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 
@@ -156,10 +156,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 124. Delete lifecycle commands and update reference
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 68, Task 81
+- **Research**: [124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md]
 
 **Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
 
@@ -270,7 +271,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 118. Build hard contracts injection
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117

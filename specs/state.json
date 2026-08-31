@@ -1051,12 +1051,12 @@
     {
       "project_number": 118,
       "project_name": "build_hard_contracts_injection",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Build hard_contracts manifest key and contract-text injection at dispatch-prep time.\n\nCONTEXT. context/contracts/*.md already exists as a shared contract-text store (one file per H-item: anti-analysis.md=H2, reference-grounding.md=H3, adversarial-verification.md=H4, convergence.md=H6, territory.md=H7, wrap-up.md=H9, plus recovery.md/phase-closure.md/pre-edit-gate.md/orchestrator-discipline.md), already referenced by backtick path from the 7 duplicate -hard files (3 lifecycle -hard skills, 3 -hard agents, skill-orchestrate-hard). The reduction opportunity is consumer-count, not content-authoring: today 7 files independently decide which contracts to reference; this task creates exactly one call site.\n\nWORK. (1) Extend the dispatch-prep stage this task depends on (built by the prerequisite task) so that, when hard_mode is set, it builds and appends the ordered context/contracts/*.md reference block to the dispatch prompt. (2) Add an optional hard_contracts manifest key (shape: {task_type: [path, ...]}) letting an extension add or override a contract for its own task types, resolved by the existing manifest-routing ladder's compound-key (ext:subtype) matching; an entry prefixed \"replace:core-file.md:override-file.md\" substitutes rather than adds. (3) Add a deploy-time warning (not a hard error, not silent ignore) in verify-deploy.sh for any extension still declaring routing_hard/routing_agents_hard after this collapse, naming the extension and pointing at hard_contracts as the migration path.\n\nNOT IN SCOPE. The stateful hard-mode logic (churn/three-strikes counters, burnout circuit breaker, single-phase-per-cycle implement dispatch) is NOT prompt-injectable text and is out of scope for this task -- it is a separate, dependent task (state-machine migration).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i, A4-ii, A4-iii).\n",
       "created": "2026-08-31T18:11:22Z",
-      "last_updated": "2026-08-31T18:11:22Z",
+      "last_updated": "2026-08-31T21:33:30Z",
       "dependencies": [
         117
       ],
@@ -1065,7 +1065,8 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/context/guides/manifest-routing-schema.md"
       ],
-      "artifacts": []
+      "artifacts": [],
+      "session_id": "sess_1788211958_b7b5e8_118"
     },
     {
       "project_number": 119,
@@ -1179,12 +1180,12 @@
     {
       "project_number": 124,
       "project_name": "delete_lifecycle_commands_and_update_reference",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.\n\nWORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-08-31T21:37:08Z",
       "dependencies": [
         117,
         68,
@@ -1196,7 +1197,15 @@
         "agent-system/extensions/core/commands/implement.md",
         "agent-system/extensions/core/merge-sources/claudemd.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md",
+          "summary": "Preconditions for lifecycle-command deletion: (a),(b) met; (c) phase-forcing flags absent — deletion blocked",
+          "created": "2026-08-31T21:37:18Z"
+        }
+      ],
+      "session_id": "sess_1788211958_b7b5e8_124"
     },
     {
       "project_number": 125,
