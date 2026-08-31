@@ -128,11 +128,23 @@
 #     1 - held, fresh
 #     2 - held, stale (heartbeat older than the threshold)
 #     3 - usage/task-not-found error
+#   Both the held-fresh and held-stale output lines carry an APPENDED
+#   `never_heartbeated=<true|false>` field (`acquired_at == heartbeat_at`) -- a distinct
+#   diagnostic from staleness itself: "fresh, never heartbeated yet" (acquired a moment ago, not
+#   a problem) is a different condition from "stale, never heartbeated even once" (the exact
+#   defect class this exists to make legible, versus "heartbeated for a while then went quiet").
+#   The line PREFIX and all three exit codes are unchanged; this is an appended field only, safe
+#   for every consumer that reads the line as a prefix/substring (see the "never_heartbeated"
+#   section of context/patterns/task-lock.md for the full consumer survey).
 #   reap (explicit-invocation-only sweep; NEVER called from acquire/heartbeat/release/check —
 #   see context/patterns/task-lock.md's Reap Contract section for the full threshold reasoning):
 #     0 - always (whether or not anything qualified for reaping; reap reports, it never fails
 #         on "nothing to do")
 #     2 - usage error (unrecognized argument)
+#   `would reap:`/`reaped:`/`SKIP:` lines also carry the same appended `never_heartbeated=`
+#   field (`unknown` when holder.json is missing/unparseable, since there is no acquired_at to
+#   compare) -- a dry-run sweep can distinguish "this lock's owner died" from "this lock's owner
+#   never heartbeated once" at a glance.
 #   init-marker (generic atomic-on-creation marker-file primitive,
 #   file-granularity, independent of and unrelated to the acquire/heartbeat/
 #   release/check task-number `.lock/` mechanism above):
@@ -381,6 +393,26 @@ age_minutes() {
   fi
   now=$(now_epoch)
   echo $(( (now - then_epoch) / 60 ))
+}
+
+# --- never_heartbeated_flag: acquired_at == heartbeat_at fingerprint ---
+# Distinct diagnostic from staleness: a lock can be FRESH-but-never-heartbeated (acquired a
+# moment ago, no heartbeat call has fired yet -- not itself a problem) or STALE-and-
+# never-heartbeated (acquired long ago and its heartbeat mechanism never fired even once --
+# the exact defect class this field exists to make legible, as opposed to "heartbeated for a
+# while, then the holder went quiet"). Prints "true", "false", or "unknown" (either input
+# timestamp empty/unparseable, e.g. the reap fallback branch with no valid holder.json at all).
+never_heartbeated_flag() {
+  local acquired_at="$1" heartbeat_at="$2"
+  if [ -z "$acquired_at" ] || [ -z "$heartbeat_at" ]; then
+    echo "unknown"
+    return 0
+  fi
+  if [ "$acquired_at" = "$heartbeat_at" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
 }
 
 # --- get_file_scope: task_number -> compact JSON file_scope array ---
@@ -977,16 +1009,18 @@ cmd_check() {
     return 0
   fi
 
-  local holder_session holder_heartbeat age
+  local holder_session holder_heartbeat holder_acquired age never_hb
   holder_session=$(read_holder_field "$lock_dir" "session_id")
   holder_heartbeat=$(read_holder_field "$lock_dir" "heartbeat_at")
+  holder_acquired=$(read_holder_field "$lock_dir" "acquired_at")
   age=$(age_minutes "$holder_heartbeat")
+  never_hb=$(never_heartbeated_flag "$holder_acquired" "$holder_heartbeat")
 
   if [ "$age" -le "$TASK_LOCK_STALE_MIN" ]; then
-    echo "held-fresh session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN"
+    echo "held-fresh session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb"
     return 1
   else
-    echo "held-stale session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN"
+    echo "held-stale session=$holder_session heartbeat_age_min=$age threshold_min=$TASK_LOCK_STALE_MIN never_heartbeated=$never_hb"
     return 2
   fi
 }
@@ -1028,13 +1062,17 @@ cmd_reap() {
     [ -n "$lock_dir" ] || continue
     total_count=$(( total_count + 1 ))
 
-    local task_number session_id operation age reason_suffix="" holder_pid=""
+    local task_number session_id operation age reason_suffix="" holder_pid="" never_hb="unknown"
     if [ -f "$lock_dir/holder.json" ] && jq -e . "$lock_dir/holder.json" >/dev/null 2>&1; then
       task_number=$(read_holder_field "$lock_dir" "task_number")
       session_id=$(read_holder_field "$lock_dir" "session_id")
       operation=$(read_holder_field "$lock_dir" "operation")
-      age=$(age_minutes "$(read_holder_field "$lock_dir" "heartbeat_at")")
+      local holder_heartbeat_val holder_acquired_val
+      holder_heartbeat_val=$(read_holder_field "$lock_dir" "heartbeat_at")
+      holder_acquired_val=$(read_holder_field "$lock_dir" "acquired_at")
+      age=$(age_minutes "$holder_heartbeat_val")
       holder_pid=$(read_holder_field "$lock_dir" "pid")
+      never_hb=$(never_heartbeated_flag "$holder_acquired_val" "$holder_heartbeat_val")
     else
       # Missing/unparseable holder.json (e.g. an interrupted acquire's mkdir-then-write
       # race window): fall back to the .lock directory's own mtime. Reap only if that
@@ -1062,21 +1100,21 @@ cmd_reap() {
       # or an unresolvable/non-numeric pid falls through unchanged to today's timestamp-only
       # reap behavior below.
       if [[ "$holder_pid" =~ ^[0-9]+$ ]] && kill -0 "$holder_pid" 2>/dev/null; then
-        echo "SKIP: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age (holder pid $holder_pid is alive; refusing to reap a live process's lock)"
+        echo "SKIP: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age never_heartbeated=$never_hb (holder pid $holder_pid is alive; refusing to reap a live process's lock)"
         continue
       fi
       reaped_count=$(( reaped_count + 1 ))
       if [ "$dry_run" = true ]; then
-        echo "would reap: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
+        echo "would reap: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age never_heartbeated=$never_hb${reason_suffix}"
       else
         rm -rf "$lock_dir" 2>/dev/null || true
-        echo "reaped: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
+        echo "reaped: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age never_heartbeated=$never_hb${reason_suffix}"
       fi
     elif [ -n "$reason_suffix" ]; then
       # Corrupt/missing holder.json but not yet stale by directory mtime: report and
       # leave in place. A normal fresh lock (valid holder.json, age within threshold)
       # is silent here -- it is not reap-relevant and does not belong in the output.
-      echo "SKIP: $lock_dir age_min=$age (below ${TASK_LOCK_REAP_MIN}min reap threshold)${reason_suffix}"
+      echo "SKIP: $lock_dir age_min=$age never_heartbeated=$never_hb (below ${TASK_LOCK_REAP_MIN}min reap threshold)${reason_suffix}"
     fi
   done < <(find "$PROJECT_ROOT/specs" -mindepth 2 -maxdepth 3 -type d -name ".lock" 2>/dev/null)
 

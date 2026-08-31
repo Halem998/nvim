@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Surface the never-heartbeated fingerprint as a distinct diagnostic",
+  "started_at": "2026-08-31T20:08:00Z",
+  "last_updated": "2026-08-31T20:09:00Z",
+  "objectives": [
+    {"id": 1, "description": "Grep every consumer of cmd_check's stdout/exit codes and confirm no exact whole-line match", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend cmd_check's held-fresh/held-stale lines with never_heartbeated= field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Extend cmd_reap's would-reap/reaped/SKIP lines with same field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Document fingerprint in task-lock.sh header and task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh", "agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "consumer_survey": [
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh -- captures $lock_check_output as an opaque string for logging and gates on task-lock.sh check's EXIT CODE only (0/1/2/3); never does whole-line equality.",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh -- captures $lock_out similarly, interpolates into note strings, gates on exit code; never does whole-line equality."
+  ],
+  "manual_smoke_evidence": [
+    "A freshly acquired lock with equal acquired_at/heartbeat_at (backdated fixture) reports never_heartbeated=true on a held-stale check line.",
+    "After one heartbeat call the same lock reports never_heartbeated=false on a held-fresh check line.",
+    "reap --dry-run on a never-heartbeated stale+dead-pid lock reports never_heartbeated=true on its 'would reap:' line."
+  ],
+  "regression_evidence": "bash agent-system/extensions/core/scripts/tests/run-all.sh (source-store mode): 56 passed, 0 failed."
+}

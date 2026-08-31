@@ -257,6 +257,28 @@ since `check` is a query, not a gate). Task-directory resolution here is strictl
 `check` never creates a directory, even against a task that `state.json` names but that has no
 directory on disk yet.
 
+### `never_heartbeated`: the Acquired-Equals-Heartbeat Fingerprint
+
+Both `check`'s held-fresh/held-stale output lines and `reap`'s `would reap:`/`reaped:`/`SKIP:`
+lines carry an appended `never_heartbeated=<true|false|unknown>` field
+(`unknown` only from `reap`'s missing/unparseable-holder.json fallback branch, which has no
+`acquired_at` to compare). It is computed as `acquired_at == heartbeat_at` and is a **distinct**
+diagnostic from staleness itself:
+
+- A **fresh, never-heartbeated** lock (`never_heartbeated=true` on a `held-fresh` line) is
+  ordinary and not a problem -- the lock was acquired a moment ago and no heartbeat call has had
+  a chance to fire yet.
+- A **stale, never-heartbeated** lock (`never_heartbeated=true` on a `held-stale` line, or on a
+  `reap` line past the reap threshold) is the exact defect class this fingerprint exists to make
+  legible: the holder's heartbeat mechanism never fired even once, as distinct from "heartbeated
+  normally for a while, then the holder process went quiet" (`never_heartbeated=false`).
+
+The line PREFIX (`held-fresh`/`held-stale`/`would reap:`/`reaped:`/`SKIP:`) and every exit code
+are unchanged -- this is an appended field only. Both consumers that read `check`'s output today
+(`reconcile-task-status.sh`, `orchestrate-dry-run-report.sh`) capture the whole line as an
+opaque string for logging/exit-code branching and never do an exact whole-line equality match,
+so the appended field is safe for both without any consumer-side change.
+
 ### `init-marker <file_path>` (stdin = JSON content)
 
 A generic, atomic-on-creation primitive for marker/state files elsewhere in the codebase that

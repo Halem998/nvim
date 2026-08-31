@@ -288,25 +288,25 @@ in this same phase rather than deferring.
 
 ---
 
-### Phase 3: Surface the never-heartbeated fingerprint as a distinct diagnostic [NOT STARTED]
+### Phase 3: Surface the never-heartbeated fingerprint as a distinct diagnostic [COMPLETED]
 
 **Goal**: Make `acquired_at == heartbeat_at` legible as its own signal, distinct from
 "heartbeated then went quiet". This satisfies acceptance criterion 7.
 
 **Tasks**:
 
-- [ ] Before editing, grep every consumer of `cmd_check`'s stdout and exit codes across
+- [x] Before editing, grep every consumer of `cmd_check`'s stdout and exit codes across
       `agent-system/extensions/core/` (research named `reconcile-task-status.sh` as one) and
       confirm no consumer does an exact whole-line match that an appended field would break.
       Record the consumer list in the phase's progress file.
-- [ ] Extend `cmd_check`'s `held-fresh` / `held-stale` output lines with an appended
+- [x] Extend `cmd_check`'s `held-fresh` / `held-stale` output lines with an appended
       `never_heartbeated=<true|false>` field, computed as
       `acquired_at == heartbeat_at`. Line prefix and all three exit codes (0 free / 1 held-fresh /
       2 held-stale) are unchanged.
-- [ ] Extend `cmd_reap`'s `would reap:` / `reaped:` / `SKIP:` lines with the same
+- [x] Extend `cmd_reap`'s `would reap:` / `reaped:` / `SKIP:` lines with the same
       `never_heartbeated=` field, so a dry-run sweep distinguishes "this lock's owner died" from
       "this lock's owner never heartbeated once".
-- [ ] Document the fingerprint and its two distinct meanings in the exit-code / output-contract
+- [x] Document the fingerprint and its two distinct meanings in the exit-code / output-contract
       comment block at the top of `task-lock.sh`, and in
       `agent-system/extensions/core/context/patterns/task-lock.md`.
 
