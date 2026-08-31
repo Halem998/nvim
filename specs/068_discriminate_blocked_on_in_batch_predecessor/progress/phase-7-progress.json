@@ -1,0 +1,20 @@
+{
+  "phase": 7,
+  "phase_name": "Dry-run report predicts the new behavior",
+  "started_at": "2026-08-31T02:20:00Z",
+  "last_updated": "2026-08-31T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm by execution that a discharged blocked candidate composes into Admitted; thread classifier .reason into t_skip_reason for blocked status only; confirm static-vs-cycling note unchanged; verify out-of-batch exclusion does not double-exclude a discharged candidate; no task-number citations",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

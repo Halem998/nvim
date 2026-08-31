@@ -490,28 +490,28 @@ what was recorded and must be re-justified in the commit body.
 
 ---
 
-### Phase 7: Dry-run report predicts the new behavior [NOT STARTED]
+### Phase 7: Dry-run report predicts the new behavior [COMPLETED]
 
 **Goal**: Confirm the dry-run's independent wave and out-of-batch-predecessor computations still
 compose correctly with the discriminated verdicts, and thread the classifier's richer `reason`
 through for `blocked` candidates per the recorded scope decision.
 
 **Tasks**:
-- [ ] Trace the report's classifier-consumption path and confirm by execution, not by reading,
+- [x] Trace the report's classifier-consumption path and confirm by execution, not by reading,
       that a `blocked` candidate now classifying to `implement`/`plan`/`research` composes into the
       Admitted set rather than being excluded — the exclusion arms key on
       `skip`/`needs_human`/`terminal`/`exit_partial`, so a discharged verdict should fall through
       to admission with no code change.
-- [ ] Thread the classifier's `.reason` field into `t_skip_reason` for candidates whose status is
+- [x] Thread the classifier's `.reason` field into `t_skip_reason` for candidates whose status is
       `blocked`, replacing the templated "handoff-triage skip (status blocked)" for that case only.
       Keep the existing templated form as the fallback for every other status so no other row's
       output changes.
-- [ ] Confirm the existing static-vs-cycling divergence note remains accurate after the change and
+- [x] Confirm the existing static-vs-cycling divergence note remains accurate after the change and
       needs no rewording; record that as a checked result rather than silently leaving it.
-- [ ] Verify the independent out-of-batch-predecessor exclusion (which keys on `dependencies[]`
+- [x] Verify the independent out-of-batch-predecessor exclusion (which keys on `dependencies[]`
       plus the dependency's own status, not the candidate's status) still fires for the case it
       owns and does not double-exclude a discharged candidate.
-- [ ] Cite no task numbers.
+- [x] Cite no task numbers.
 
 **Timing**: 0.75 hours
 

@@ -490,7 +490,18 @@ if [ "$triage_checked" = true ]; then
         t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }handoff-triage exit_partial (reserved verdict value, not currently emitted by any classifier row; excluded defensively if it is ever emitted)"
         ;;
       skip)
-        t_skip_reason[$t]="handoff-triage skip (status ${t_status[$t]:-unknown})"
+        if [ "${t_status[$t]:-}" = "blocked" ]; then
+          # Thread the classifier's own richer .reason through for a blocked candidate, replacing
+          # the generic templated form for this status only -- a "blocked" task may be skipped for
+          # several distinct sub-reasons (empty dependencies[], a still-outstanding dependency, a
+          # non-completed-terminal dependency) that the generic template cannot distinguish, and
+          # that indistinguishability is exactly the diagnostic gap this threading closes. Every
+          # other status keeps the unchanged templated form below.
+          trow_reason=$(echo "$trow" | jq -r '.reason // ""')
+          t_skip_reason[$t]="${trow_reason:-handoff-triage skip (status blocked)}"
+        else
+          t_skip_reason[$t]="handoff-triage skip (status ${t_status[$t]:-unknown})"
+        fi
         ;;
       research|plan|implement)
         t_phase[$t]="$group"
