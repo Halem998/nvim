@@ -60,7 +60,10 @@
 #   | partial + continuation                     | implement   | implement     |
 #   | partial + blockers, no continuation         | needs_human | needs_human   |
 #   | partial, neither                            | implement   | implement     |
-#   | blocked                                     | skip        | needs_human   |
+#   | blocked, discharged (all dependencies[] completed, no handoff blockers)   | previous_status-routed | previous_status-routed |
+#   | blocked, dependency outstanding or empty dependencies[]                    | skip        | needs_human   |
+#   | blocked, dependency abandoned/expanded (non-completed terminal)            | needs_human | needs_human   |
+#   | blocked, handoff blockers present (discharge otherwise satisfied)          | needs_human | needs_human   |
 #   | researching (NEW -- was skip, folded into the old "researching, planning, unknown" row) | research | research |
 #   | planning (NEW -- was skip, folded into the old "researching, planning, unknown" row)    | plan     | plan     |
 #   | unknown (unrecognized/garbage status)       | skip        | skip          |
@@ -74,21 +77,53 @@
 # the above) keeps the old `skip` behavior unchanged — this row split is scoping-only, not a
 # widening of what "unknown" means.
 #
-# `blocked` is the one row that still diverges, and it is intentional: this is a DESIGN, not an
-# undocumented assertion, because both engines independently corroborate it in their own handlers
-# rather than only in this shared table — Stage 4's `#### State: blocked` handler contains no
-# engine conditional at all (it always escalates to a human), and Stage MT-4's table independently
-# folds `blocked` into its generic `skip` group. Two handlers, written separately, already agree
-# with the classifier. Semantically: a solo invocation has no sibling task to make progress on, so
-# escalation is the only meaningful action; a batch invocation skips the blocked task so its
-# siblings can proceed. Converging `single` to `skip` here would introduce a new defect (a solo
-# `/orchestrate` on a blocked task would do nothing at all), not fix one. This is unlike the
-# now-removed `partial`-with-neither divergence, which was asserted only by this script and one
-# prose paragraph citing an untraceable historical decision — nothing else in the system
-# independently implemented it. The discriminator for any future audit of a table row: does the
-# OTHER engine's own handler implement the divergence in its own code, or does only this shared
-# table assert it? Independent implementation by both sides = design (keep it, documented, as
-# here); bare assertion by one shared table = defect (converge it, as was done for `partial`).
+# `blocked` is NARROWED, not unconditional: a `blocked` candidate is DISCHARGED — its ordering
+# constraint has actually resolved — when ALL of the following hold, resolved against the
+# already-slurped `$all` array (a second `select(.project_number == ...)` against data already in
+# memory, never against the classifier's own `$candidates`/CLI argument list: a dependency that
+# has JUST completed is no longer among this cycle's eligible-task candidates, so checking
+# candidate-list membership would reproduce the very infinite-skip defect this discrimination
+# fixes):
+#   1. `dependencies[]` is non-empty (empty is never evidence of resolution — a vacuous `all` over
+#      an empty list must not silently discharge).
+#   2. every listed dependency's own `status` in state.json is exactly `"completed"` (never the
+#      broader terminal set — a dependency stuck at `abandoned`/`expanded` must never silently
+#      promote a dependent whose precondition can never be met; that case is its own loud
+#      `needs_human` branch instead).
+#   3. the candidate's own handoff `blockers[]` (read under the SAME widened per-candidate read
+#      this file already performs for `partial`, now extended to `blocked`) is empty or the
+#      handoff is absent.
+# When discharged, BOTH engines converge: route the candidate's `previous_status` through the
+# SAME not_started/researched/planned-or-implementing/researching/planning logic already applied
+# to a live `status` above, using `previous_status` as the input instead. A discharged candidate
+# with no recorded `previous_status` never guesses — it stays `needs_human` with a reason naming
+# the gap.
+#
+# For the NON-discharged case (dependencies[] empty, a dependency still outstanding, a dependency
+# stuck non-completed-terminal, or handoff blockers present), the row STAYS the one that still
+# diverges, and this remains intentional: this is a DESIGN, not an undocumented assertion, because
+# both engines independently corroborate it in their own handlers rather than only in this shared
+# table — Stage 4's `#### State: blocked` handler contains no engine conditional at all (it always
+# escalates to a human), and Stage MT-4's table independently folds the non-discharged `blocked`
+# case into its generic `skip` group. Two handlers, written separately, already agree with the
+# classifier. Semantically: a solo invocation has no sibling task to make progress on, so
+# escalation is the only meaningful action for a block that has NOT resolved; a batch invocation
+# skips the still-blocked task so its siblings can proceed. Converging `single` to `skip` here
+# would introduce a new defect (a solo `/orchestrate` on a genuinely blocked task would do nothing
+# at all), not fix one. For the DISCHARGED case, by contrast, both engines converge on the SAME
+# `previous_status`-routed group: a solo invocation escalating a factually-resolved block to a
+# human is not a deliberate design, it is exactly the "bare assertion by one shared table" failure
+# mode named below, so `single` discriminates too rather than keeping its conservative default.
+# This narrows, but does not overturn, the archived `orchestrate_eligibility_not_status_gated`
+# report's Decision 3 ("blocked and unknown rows: leave unchanged") — `unknown` stays untouched;
+# `blocked` stays unconditional only for the non-discharged case. This is unlike the now-removed
+# `partial`-with-neither divergence, which was asserted only by this script and one prose
+# paragraph citing an untraceable historical decision — nothing else in the system independently
+# implemented it. The discriminator for any future audit of a table row: does the OTHER engine's
+# own handler implement the divergence in its own code, or does only this shared table assert it?
+# Independent implementation by both sides = design (keep it, documented, as here for the
+# non-discharged case); bare assertion by one shared table = defect (converge it, as was done for
+# `partial`, and as is now done for `blocked`'s discharged case).
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order (duplicates
 # preserved verbatim if given). Verdict schema (pinned as "orchestrate-triage-v1"; field order is
@@ -105,13 +140,16 @@
 #                                 exit-without-dispatch verdict; see orchestrate-dry-run-report.sh's
 #                                 defensive exclusion arm, which still treats it as an exclusion if
 #                                 it is ever emitted).
-#   handoff_state       string  "absent" (partial status, no readable handoff file), "continuation"
-#                                 (a continuation pointer present in either accepted form: nested
-#                                 continuation_context.handoff_path or flat continuation_path),
-#                                 "blockers" (blockers present, no continuation), "empty" (partial,
-#                                 handoff present, neither), or "not_applicable" (status is not
-#                                 partial — no handoff was read).
-#   blocker_count       int    Length of the handoff's blockers array (0 when not applicable).
+#   handoff_state       string  "absent" (partial or blocked status, no readable handoff file),
+#                                 "continuation" (a continuation pointer present in either accepted
+#                                 form: nested continuation_context.handoff_path or flat
+#                                 continuation_path; partial status only — blocked candidates never
+#                                 carry a continuation pointer), "blockers" (blockers present, no
+#                                 continuation), "empty" (handoff present, neither continuation nor
+#                                 blockers), or "not_applicable" (status is neither partial nor
+#                                 blocked — no handoff was read).
+#   blocker_count       int    Length of the handoff's blockers array (0 when status is neither
+#                                 partial nor blocked, or no handoff file exists).
 #   handoff_age_min     int|null  Handoff file mtime age in minutes; null when no handoff was read.
 #   reason              string  Machine-templated human-readable summary; never the sole carrier
 #                                 of a fact already present as a structured field above.
@@ -186,8 +224,12 @@ if [ "$lookup_exit" -ne 0 ]; then
   exit 2
 fi
 
-# Per-partial-candidate handoff read (Context Flatness Constraint: only for status == "partial",
-# and only .orchestrator-handoff.json — never a plan, report, or summary).
+# Per-partial-or-blocked-candidate handoff read (Context Flatness Constraint: only for
+# status == "partial" or status == "blocked", and only .orchestrator-handoff.json — never a plan,
+# report, or summary). Widened from "partial"-only so the discriminating `blocked` arm below can
+# read the SAME `blocker_count`/`continuation_ok`/`age_min` extraction for a `blocked` candidate's
+# discharge-blockers check (discriminator 3), reusing this loop verbatim rather than duplicating
+# it.
 handoff_info_json="{}"
 lookup_count=$(echo "$lookup_json" | jq 'length')
 idx=0
@@ -196,7 +238,7 @@ while [ "$idx" -lt "$lookup_count" ]; do
   idx=$((idx + 1))
 
   row_status=$(echo "$row" | jq -r '.status // ""')
-  [ "$row_status" = "partial" ] || continue
+  [ "$row_status" = "partial" ] || [ "$row_status" = "blocked" ] || continue
 
   row_task=$(echo "$row" | jq -r '.task_number')
   row_project=$(echo "$row" | jq -r '.project_name // ""')
@@ -309,10 +351,62 @@ if verdicts=$(jq -n -c \
        reason:("task #" + ($c|tostring) + " is partial with neither continuation nor blockers; routes to implement")}
     end
   elif $status == "blocked" then
-    ((if $engine == "mt" then "skip" else "needs_human" end)) as $grp |
-    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$grp,
-     handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
-     reason:("task #" + ($c|tostring) + " is blocked; " + (if $engine == "mt" then "mt skips" else "single needs human" end))}
+    ($entry.dependencies // []) as $deps |
+    ($entry.previous_status // null) as $prev |
+    (($hinfo.state // "absent")) as $hstate |
+    (($hinfo.blocker_count // 0)) as $bc |
+    (($hinfo.age_min // null)) as $age |
+    (if $hstate == "absent" then "absent" elif $bc > 0 then "blockers" else "empty" end) as $hstate_out |
+    # Mechanism constraint (do not substitute candidate-list membership for this lookup): each
+    # dependency status is resolved from the already-slurped $all array, NOT from $candidates --
+    # a dependency that has JUST completed is no longer among this cycle eligible-task candidates
+    # in the live path, so checking membership here would reproduce the very infinite-skip defect
+    # this discrimination fixes.
+    ($deps | map(. as $d | {dep: $d, dep_status: (([$all[] | select(.project_number == $d)] | first).status // null)})) as $dep_rows |
+    ($dep_rows | map(select(.dep_status == "abandoned" or .dep_status == "expanded"))) as $dep_terminal_bad |
+    ($dep_rows | map(select(.dep_status != "completed"))) as $dep_outstanding |
+    if ($deps | length) == 0 then
+      ((if $engine == "mt" then "skip" else "needs_human" end)) as $grp |
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$grp,
+       handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+       reason:("task #" + ($c|tostring) + " is blocked with no tracked dependencies; likely externally or manually blocked (" + (if $engine == "mt" then "mt skips" else "single needs human" end) + ")")}
+    elif ($dep_terminal_bad | length) > 0 then
+      ($dep_terminal_bad | map((.dep|tostring) + " (" + .dep_status + ")") | join(", ")) as $bad_list |
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"needs_human",
+       handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+       reason:("task #" + ($c|tostring) + " is blocked on dependency(ies) " + $bad_list + " which reached a non-completed terminal status; this precondition can never be met, needs human")}
+    elif ($dep_outstanding | length) > 0 then
+      ($dep_outstanding | map((.dep|tostring) + " (" + (.dep_status // "unknown") + ")") | join(", ")) as $outstanding_list |
+      ((if $engine == "mt" then "skip" else "needs_human" end)) as $grp |
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$grp,
+       handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+       reason:("task #" + ($c|tostring) + " is blocked on outstanding dependency(ies) " + $outstanding_list + " (" + (if $engine == "mt" then "mt skips" else "single needs human" end) + ")")}
+    elif ($bc > 0) then
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"needs_human",
+       handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+       reason:("task #" + ($c|tostring) + " has all dependencies completed but its handoff carries " + ($bc|tostring) + " unresolved blocker(s); needs human")}
+    elif ($prev == null) then
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"needs_human",
+       handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+       reason:("task #" + ($c|tostring) + " is blocked with satisfied dependencies but no previous_status; cannot determine discharge phase, needs human")}
+    else
+      ($prev) as $p |
+      (if $p == "not_started" then "research"
+       elif $p == "researched" then "plan"
+       elif ($p == "planned" or $p == "implementing") then "implement"
+       elif $p == "researching" then "research"
+       elif $p == "planning" then "plan"
+       else null end) as $routed_group |
+      if $routed_group == null then
+        {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"needs_human",
+         handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+         reason:("task #" + ($c|tostring) + " is discharged (dependencies completed, no handoff blockers) but previous_status \"" + $p + "\" is unrecognized; needs human")}
+      else
+        {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$routed_group,
+         handoff_state:$hstate_out, blocker_count:$bc, handoff_age_min:$age,
+         reason:("task #" + ($c|tostring) + " is blocked but discharged (all dependencies completed, no handoff blockers); routes via previous_status \"" + $p + "\" to " + $routed_group)}
+      end
+    end
   else
     {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"skip",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,

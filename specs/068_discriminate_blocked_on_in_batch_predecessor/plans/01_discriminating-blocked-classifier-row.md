@@ -198,18 +198,18 @@ file list must be widened before proceeding.
 
 ---
 
-### Phase 2: Discriminating classifier arm, widened handoff read, and in-file documentation [NOT STARTED]
+### Phase 2: Discriminating classifier arm, widened handoff read, and in-file documentation [COMPLETED]
 
 **Goal**: Make `scripts/orchestrate-triage-classify.sh` discriminate the `blocked` row, and bring
 its header verdict table, justification prose, and verdict-schema field docs into agreement in the
 same objective so the file is never left self-contradicting.
 
 **Tasks**:
-- [ ] Widen the per-candidate handoff-read loop's gate from `[ "$row_status" = "partial" ] ||
+- [x] Widen the per-candidate handoff-read loop's gate from `[ "$row_status" = "partial" ] ||
       continue` to also admit `blocked`, reusing the existing `blocker_count`, `continuation_ok`,
       and `age_min` extraction unchanged. Update the loop's Context-Flatness comment to name both
       statuses. Read nothing but `.orchestrator-handoff.json` — never a plan, report, or summary.
-- [ ] Replace the `elif $status == "blocked"` arm with the discriminating form. Resolve
+- [x] Replace the `elif $status == "blocked"` arm with the discriminating form. Resolve
       `$deps` as `($all[] | select(.project_number == $c) | .dependencies // [])` and `$prev` as
       `($all[] | select(.project_number == $c) | .previous_status // null)`. Branch order is
       load-bearing:
@@ -234,30 +234,30 @@ same objective so the file is never left self-contradicting.
     tempting one: resolve each dependency's status from the already-slurped `$all` array, NOT from
     the candidate list `$candidates`. A dependency that has just completed is no longer in
     `eligible_tasks`, so it is absent from `$@` in exactly the reproduction cycle.
-- [ ] Emit real `handoff_state` and `blocker_count` values for `blocked` candidates (`absent` /
+- [x] Emit real `handoff_state` and `blocker_count` values for `blocked` candidates (`absent` /
       `blockers` / `empty`) instead of the current hardcoded `"not_applicable"` / `0`. Keep the
       `$schema` value `orchestrate-triage-v1` — the field domain widens, no field is added or
       removed, and no field's type changes.
-- [ ] Update the verdict-schema field docs in the header: `handoff_state`'s `"not_applicable"`
+- [x] Update the verdict-schema field docs in the header: `handoff_state`'s `"not_applicable"`
       description changes from "status is not partial" to "status is neither partial nor blocked",
       and `blocker_count`'s parenthetical widens correspondingly.
-- [ ] Rewrite the header verdict table's `| blocked | skip | needs_human |` row into the
+- [x] Rewrite the header verdict table's `| blocked | skip | needs_human |` row into the
       discriminated rows: `blocked, discharged` -> `previous_status`-routed group for both
       engines; `blocked, dependency outstanding or empty deps` -> `skip` / `needs_human`;
       `blocked, dependency abandoned/expanded` -> `needs_human` / `needs_human`;
       `blocked, handoff blockers present` -> `needs_human` / `needs_human`.
-- [ ] Rewrite the justification paragraph so it no longer asserts unconditional divergence. It
+- [x] Rewrite the justification paragraph so it no longer asserts unconditional divergence. It
       must: state the new discriminated behavior; NARROW rather than delete the "two independently
       corroborating handlers = design" framing (it remains true for the non-discharged case);
       apply the file's own audit discriminator honestly to the discharged case and record that
       both engines now converge there because a solo invocation escalating a factually-resolved
       block is not a deliberate design; and note that the prior work's Decision 3 is narrowed, not
       overturned, with the `unknown` row untouched.
-- [ ] Do NOT add any write call. The file's read-only contract and its enumerated forbidden calls
+- [x] Do NOT add any write call. The file's read-only contract and its enumerated forbidden calls
       (`task-lock.sh acquire`, `update-task-status.sh`, `generate-todo.sh`, `skill-base.sh` write
       functions, `reconcile-task-status.sh` without `--dry-run`, Agent/Skill dispatch) stand
       unchanged.
-- [ ] Cite no task numbers in the file. Reference filenames and section headings only.
+- [x] Cite no task numbers in the file. Reference filenames and section headings only.
 
 **Timing**: 2 hours
 
