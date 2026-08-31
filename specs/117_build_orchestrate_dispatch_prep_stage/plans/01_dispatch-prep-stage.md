@@ -179,7 +179,7 @@ every site found rather than the assumed 2.
 
 ---
 
-### Phase 2: Consume the new flags inside `skill-orchestrate` [NOT STARTED]
+### Phase 2: Consume the new flags inside `skill-orchestrate` [COMPLETED]
 
 **Goal**: `clean_flag` and `effort_flag` are read from the delegation context in both the single-task
 and multi-task entry stages and are in scope wherever Stage 3.5 will run; `effort_flag` also reaches
@@ -187,17 +187,21 @@ agent routing.
 
 **Tasks**:
 
-- [ ] Re-anchor on `### Stage 1: Input Validation`, `### Stage 1b: Resolve Task-Type Routing`, and
+- [x] Re-anchor on `### Stage 1: Input Validation`, `### Stage 1b: Resolve Task-Type Routing`, and
       `### Stage MT-1: Parse Multi-Task Context`.
-- [ ] Stage 1: add `clean_flag` (default `"false"`) and `effort_flag` (default `""`) to the
+- [x] Stage 1: add `clean_flag` (default `"false"`) and `effort_flag` (default `""`) to the
       "Read from delegation context" bullet list, with a one-line note that `clean_flag` suppresses
       memory retrieval in Stage 3.5 and `effort_flag` supplies reasoning-depth guidance.
-- [ ] Stage 1b: change the three `command-route-agent.sh` calls to pass `"$EFFORT_FLAG"` as the 4th
+- [x] Stage 1b: change the three `command-route-agent.sh` calls to pass `"$effort_flag"` as the 4th
       argument in place of the current literal `""`, with a one-line comment noting only `"hard"`
       changes resolution behavior so `--fast` is a no-op here today and this is future-proofing.
-- [ ] Stage MT-1: add `clean_flag` and `effort_flag` to the delegation-context field list read there,
+      *(deviation: altered — used lowercase `$effort_flag`, not `$EFFORT_FLAG`, to match this
+      file's existing convention that delegation-context-sourced flags like `lit_flag` are
+      referenced lowercase throughout, distinct from state.json-extracted uppercase vars like
+      `TASK_TYPE`)*
+- [x] Stage MT-1: add `clean_flag` and `effort_flag` to the delegation-context field list read there,
       with the same defaults.
-- [ ] Verify no other stage in the file shadows or re-derives either variable.
+- [x] Verify no other stage in the file shadows or re-derives either variable.
 
 **Timing**: 30 minutes
 

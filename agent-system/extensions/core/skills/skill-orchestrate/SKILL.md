@@ -45,6 +45,10 @@ Read from delegation context:
   operator-typed budget-continuation override for an exhausted work-cycle budget, threaded from
   the command's `--continue-budget` flag. Never inferred from `session_id`, mtime, or any
   automatic signal. See Stage 2 below for the override mechanism.
+- `clean_flag` (default: `"false"`) — threaded from the command's `--clean` flag; suppresses
+  Stage 3.5 Dispatch Prep's automatic memory retrieval for every dispatch this invocation makes.
+- `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
+  depth guidance to Stage 3.5 Dispatch Prep and to Stage 1b's agent routing below.
 
 Resolve from `specs/state.json`:
 ```bash
@@ -79,11 +83,15 @@ declarations. No case table, no directory probe, no sed derivation: agent names 
 data, not derived strings (see `context/guides/manifest-routing-schema.md`).
 
 ```bash
-source .claude/scripts/command-route-agent.sh "research" "$TASK_TYPE" "general-research-agent" ""
+# 4th argument is the effort flag ("fast"/"hard"/""). Only "hard" currently changes resolution
+# behavior in manifest-routing-lib.sh's routing_agents_hard block, so passing $effort_flag here
+# is a no-op for "fast"/"" today — future-proofing the call sites rather than a live behavior
+# change for --fast.
+source .claude/scripts/command-route-agent.sh "research" "$TASK_TYPE" "general-research-agent" "$effort_flag"
 RESEARCH_AGENT="$AGENT_NAME"
-source .claude/scripts/command-route-agent.sh "plan" "$TASK_TYPE" "planner-agent" ""
+source .claude/scripts/command-route-agent.sh "plan" "$TASK_TYPE" "planner-agent" "$effort_flag"
 PLANNER_AGENT="$AGENT_NAME"
-source .claude/scripts/command-route-agent.sh "implement" "$TASK_TYPE" "general-implementation-agent" ""
+source .claude/scripts/command-route-agent.sh "implement" "$TASK_TYPE" "general-implementation-agent" "$effort_flag"
 IMPLEMENT_AGENT="$AGENT_NAME"
 echo "[orchestrate] Task type: $TASK_TYPE → research=$RESEARCH_AGENT, plan=$PLANNER_AGENT, implement=$IMPLEMENT_AGENT"
 ```
@@ -1329,6 +1337,11 @@ Read from delegation context:
   `file_scope_collision` admission gate only, never `in_batch` (D1); never passed to
   `orchestrate-batch-admit.sh` itself (see Stage MT-3 step 4.5's `file_scope_collision` ->
   `cross_batch` branch below)
+- `clean_flag` (default: `"false"`) — threaded from the command's `--clean` flag; suppresses
+  Stage 3.5 Dispatch Prep's automatic memory retrieval for every per-task dispatch this batch
+  makes.
+- `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
+  depth guidance to Stage 3.5 Dispatch Prep for every per-task dispatch this batch makes.
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was
