@@ -1,0 +1,39 @@
+{
+  "phase": 7,
+  "phase_name": "Reproduction, telemetry-finding placement, and closeout",
+  "started_at": "2026-08-31T20:20:00Z",
+  "last_updated": "2026-08-31T20:36:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy source-store changes to working .claude/ tree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Live corroboration attempt against this task's own real holder.json/session entry", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Criterion 8: append recorded amendment to project 73 in specs/state.json (jq-based, non-destructive)", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 4, "description": "Write task summary", "status": "done", "files_touched": ["specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md"]},
+    {"id": 5, "description": "Optional context-extension recommendation note (deferred as follow-up, not authored under this task)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "live_reproduction": {
+    "task_dir": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh",
+    "session_id": "sess_1788202255_53c3de",
+    "before": {"holder_acquired_at": "2026-08-31T19:58:56Z", "holder_heartbeat_at": "2026-08-31T19:58:56Z", "session_started_at": "2026-08-31T18:51:11Z", "session_heartbeat_at": "2026-08-31T19:58:42Z"},
+    "after": {"holder_acquired_at": "2026-08-31T19:58:56Z", "holder_heartbeat_at": "2026-08-31T20:30:26Z", "session_started_at": "2026-08-31T18:51:11Z", "session_heartbeat_at": "2026-08-31T20:30:26Z"},
+    "note": "Full live reproduction obtained (not merely attempted): deploy landed before this phase's own transitions, both trace lines read ok."
+  },
+  "unrelated_pre_existing_issues_observed": [
+    "doc-lint: scripts/test-state-write-large-payload.sh and scripts/tests/test-roadmap-argv-ceiling.sh missing from provides.scripts (pre-existing, confirmed via git log, unrelated to task 81 file_scope)",
+    "doc-lint: lean extension's multi-instance-optimization.md line_count stale (pre-existing, unrelated extension)",
+    "validate-state.sh --deep: abandon_reason (project_numbers 64,115) and blocks_note (project_numbers 106,107,109) unknown-field findings (pre-existing, confirmed via git show HEAD:specs/state.json before this task's first commit)"
+  ],
+  "fixed_as_side_effect": [
+    "index-entries.json's declared line_count for patterns/task-lock.md corrected from 1191 to 1247, since this task's own edits grew the file and would otherwise have introduced a new doc-lint failure."
+  ],
+  "verification_evidence": [
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh (source-store mode): 57 passed, 0 failed, 0 skipped.",
+    "bash agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh: 19 passed, 0 failed.",
+    "bash .claude/scripts/validate-state.sh: only the two pre-existing, unrelated failures remain.",
+    "No task-number reference found via grep across every agent-system/** file this task touched.",
+    "git log --name-only across every commit this task made confirms every touched path is under agent-system/** or specs/**, never .claude/**."
+  ]
+}

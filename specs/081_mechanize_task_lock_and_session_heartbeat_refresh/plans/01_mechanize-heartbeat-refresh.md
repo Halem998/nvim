@@ -556,16 +556,16 @@ in scope for this phase, not a deferral.
 
 ---
 
-### Phase 7: Reproduction, telemetry-finding placement, and closeout [NOT STARTED]
+### Phase 7: Reproduction, telemetry-finding placement, and closeout [COMPLETED]
 
 **Goal**: Satisfy acceptance criteria 1 and 8, and record the complete survey and design-decision
 narrative.
 
 **Tasks**:
 
-- [ ] Deploy the source-store changes to the working `.claude/` tree using the repository's own
+- [x] Deploy the source-store changes to the working `.claude/` tree using the repository's own
       deploy path (never by hand-editing `.claude/**`), so the mechanized script is live.
-- [ ] **Live corroboration attempt**: sample this task's own
+- [x] **Live corroboration attempt**: sample this task's own
       `specs/081_mechanize_task_lock_and_session_heartbeat_refresh/.lock/holder.json` and the
       corresponding `specs/.sessions/{session_id}.json` before and after this phase's own status
       transitions. Record `acquired_at`, `heartbeat_at`, and the delta. If the deploy landed
@@ -573,7 +573,7 @@ narrative.
       load-bearing evidence for criteria 1-2 is Phase 4's deterministic fixture test, and a
       partial or unavailable live observation must never be written up as a successful
       reproduction.
-- [ ] **Criterion 8**: append a recorded amendment to project 73
+- [x] **Criterion 8**: append a recorded amendment to project 73
       (`correlate_subagent_postflight_hook_to_owning_session`) in `specs/state.json`, adding an
       acceptance criterion that the fix must be shown to correct **event attribution** in
       `specs/events.jsonl`, not merely marker selection — citing the observed three
@@ -581,14 +581,14 @@ narrative.
       touch `agent-system/extensions/core/hooks/**`. Use the state-management update pattern
       (append/edit the description via a jq-based edit, then regenerate TODO.md); do not
       wholesale-replace any array.
-- [ ] Write the task summary to
+- [x] Write the task summary to
       `specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md`,
       carrying: the completed call-site survey table from Phase 6, the explicit statement of which
       mechanism guarantees execution and why it cannot be skipped (criterion 3), the pid-liveness
       decision (criterion 6), the fingerprint decision (criterion 7), the trace-mechanism design
       (criterion 4), the reproduction evidence and its honest limits (criteria 1-2), and the
       project 73 amendment (criterion 8).
-- [ ] Optional, only if time permits and it does not expand scope: note in the summary the
+- [x] Optional, only if time permits and it does not expand scope: note in the summary the
       research report's context-extension recommendation — a `context/patterns/` or
       `context/standards/` note on when a behavior MUST be mechanized versus when agent prose is
       acceptable — as a follow-up candidate, with this work cited as a worked example. Do not
@@ -624,32 +624,32 @@ already covers event attribution, record that instead of appending a duplicate c
 
 ## Testing & Validation
 
-- [ ] **Criterion 1**: `test-phase-heartbeat.sh` demonstrates `heartbeat_at` advancing across two
+- [x] **Criterion 1**: `test-phase-heartbeat.sh` demonstrates `heartbeat_at` advancing across two
       consecutive phase transitions against a real `holder.json` and a real session-registry
       entry; a live observation on this task's own lock is recorded (or its unavailability is
       recorded honestly).
-- [ ] **Criterion 2**: both `holder.json.heartbeat_at > acquired_at` and
+- [x] **Criterion 2**: both `holder.json.heartbeat_at > acquired_at` and
       `sessions/{sid}.json.heartbeat_at > started_at` are asserted, with `acquired_at` /
       `started_at` proven unchanged.
-- [ ] **Criterion 3**: the summary and `update-phase-status.sh`'s header both state which
+- [x] **Criterion 3**: the summary and `update-phase-status.sh`'s header both state which
       mechanism guarantees execution (the refresh is internal to the one script that must run for
       a phase transition to exist) and why it cannot be skipped.
-- [ ] **Criterion 4**: every no-op class (missing lock, corrupt holder, session mismatch,
+- [x] **Criterion 4**: every no-op class (missing lock, corrupt holder, session mismatch,
       unresolvable task dir, unresolvable `task-lock.sh`) writes a distinct, findable trace line
       and never blocks or changes the exit code.
-- [ ] **Criterion 5**: the survey table in the summary lists every site as
+- [x] **Criterion 5**: the survey table in the summary lists every site as
       fixed / mechanized / demonstrated / deliberately-absent-with-reason.
-- [ ] **Criterion 6**: pid-aware refusal is proven for both `cmd_reap` and `cmd_acquire`'s
+- [x] **Criterion 6**: pid-aware refusal is proven for both `cmd_reap` and `cmd_acquire`'s
       stale-override, with legacy pid-less holders shown to keep today's behavior.
-- [ ] **Criterion 7**: `never_heartbeated=true|false` is emitted by `check` and by
+- [x] **Criterion 7**: `never_heartbeated=true|false` is emitted by `check` and by
       `reap --dry-run` and flips correctly across one heartbeat.
-- [ ] **Criterion 8**: project 73's entry carries the recorded amendment.
-- [ ] **Regression**: `run-all.sh` shows no new failures against a baseline captured before
+- [x] **Criterion 8**: project 73's entry carries the recorded amendment.
+- [x] **Regression**: `run-all.sh` shows no new failures against a baseline captured before
       Phase 1 begins.
-- [ ] **No stdout regression**: `update-phase-status.sh` stdout is byte-identical to the
+- [x] **No stdout regression**: `update-phase-status.sh` stdout is byte-identical to the
       pre-change contract in every tested path.
-- [ ] **Deliverable rule**: no task-number reference appears in any file outside `specs/**`.
-- [ ] **Source-store rule**: no file under `.claude/**` was hand-edited; every change targets
+- [x] **Deliverable rule**: no task-number reference appears in any file outside `specs/**`.
+- [x] **Source-store rule**: no file under `.claude/**` was hand-edited; every change targets
       `agent-system/extensions/core/**`.
 
 ## Artifacts & Outputs
