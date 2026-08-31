@@ -987,19 +987,25 @@
     {
       "project_number": 117,
       "project_name": "build_orchestrate_dispatch_prep_stage",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.\n\nCONTEXT (do not re-derive; see the design spec cited below). skill-orchestrate/SKILL.md dispatches every lifecycle phase (research/plan/implement) via the Agent tool directly against general-research-agent/planner-agent/general-implementation-agent, bypassing skill-researcher/skill-planner/skill-implementer entirely -- the sole home today of Stage 4a memory retrieval (memory-retrieve.sh, gated by clean_flag) and interactive --lit resolution (lit-stage4a-flow.md). Verified live: skill-orchestrate/SKILL.md has zero occurrences of memory-retrieve, clean_flag, lit-stage4a, or literature-briefing, against 13 pass-through lit_flag occurrences that are never resolved into a briefing. orchestrate.md's own Options table today has no --clean flag and no --fast flag at all (both present only on the now-superseded research.md/plan.md/implement.md).\n\nWORK. Add a single dispatch-prep stage to skill-orchestrate/SKILL.md, invoked once per dispatch (both the single-task path and each multi-task wave member), immediately before the Agent-tool subagent_type call, that: (1) calls memory-retrieve.sh gated by a newly-added --clean flag on orchestrate.md, injecting a <memory-context> block into the dispatch context in the same shape skill-researcher's Stage 4a already produces; (2) calls the shared lit-stage4a-flow.md flow to resolve lit_flag into a <literature-briefing> block; (3) adds a --fast flag to orchestrate.md's Options table and threads it into dispatch-context construction the same way research.md/plan.md/implement.md already do today.\n\nORDERING (binding, load-bearing for the wider consolidation this task is part of). This task must land and be verified working BEFORE any task that deletes commands/research.md, commands/plan.md, commands/implement.md, or the three lifecycle skills (skill-researcher, skill-planner, skill-implementer) -- the system must never pass through a state where skill-orchestrate dispatches an agent without memory/--lit support while the skills that used to provide it are already gone.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: full design reasoning is specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 precondition, A6).\n",
       "created": "2026-08-31T18:11:08Z",
-      "last_updated": "2026-08-31T18:52:03Z",
+      "last_updated": "2026-08-31T18:59:42Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/commands/orchestrate.md",
         "agent-system/extensions/core/scripts/parse-command-args.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md",
+          "type": "report",
+          "summary": "Design for a shared Dispatch Prep stage resolving memory retrieval, --lit briefing, and --fast threading at every dispatch site, plus a must-fix latent bug (missing per-task description capture in Stage MT-2)"
+        }
+      ],
       "session_id": "sess_1788202255_53c3de_117"
     },
     {

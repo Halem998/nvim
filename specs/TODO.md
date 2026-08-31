@@ -62,7 +62,7 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-117 [RESEARCHING] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
+117 [RESEARCHED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
   └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
     └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
       └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
@@ -297,10 +297,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 117. Build orchestrate dispatch prep stage
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md]
 
 **Description**: Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.
 
