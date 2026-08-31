@@ -56,7 +56,7 @@ next_project_number: 128
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
-81 [PLANNING] — Task-lock and session-registry heartbeats never fire during a rea
+81 [PLANNED] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
@@ -1259,11 +1259,12 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 
 ### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
 - **Effort**: 3-6 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md]
+- **Plan**: [081_mechanize_task_lock_and_session_heartbeat_refresh/plans/01_mechanize-heartbeat-refresh.md]
 
 **Description**: Task-lock and session-registry heartbeats never fire during a real single-task /implement run. Both liveness timestamps stay frozen at their acquire-time value for the entire run, so every staleness-based consumer sees a healthy, actively-working session as long-dead.
 
