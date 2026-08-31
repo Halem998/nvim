@@ -50,6 +50,7 @@
 #   via="$_ROUTE_LAST_VIA"                        # noncore-exact|noncore-compound|core-exact|core-compound|miss
 #   manifest=$(routing_manifest_for_task_type "epi")
 #   routing_trace "research" "epi" "" "$value" "$via"
+#   routing_lookup_flat "hard_contracts" "general"
 #
 # routing_lookup is called DIRECTLY (never via `$(routing_lookup ...)` command substitution) --
 # command substitution forks a subshell, and a subshell's variable assignments never propagate
@@ -193,6 +194,94 @@ routing_lookup() {
 
   # Step 5 -- total miss ($_ROUTE_LAST_VALUE stays "", $_ROUTE_LAST_VIA stays "miss")
   unset _route_block _route_op _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+  return 0
+}
+
+# routing_lookup_flat -- a SIBLING ladder for one-level manifest blocks shaped
+# `{task_type: [...]}`, e.g. the `hard_contracts` block: `$1`=block, `$2`=task_type. This is
+# deliberately NOT a wrapper over routing_lookup() with a fabricated `$op` key: routing_lookup's
+# four-argument jq path (`.[$b][$op][$tt]`) assumes a TWO-level block (`{op: {task_type: value}}`)
+# and a fake `$op` would silently coerce a one-level block into that two-level shape, corrupting
+# resolution the moment a manifest actually declares one. Keep this function's jq path
+# one-level (`.[$b][$tt]`) and do not "simplify" it into a call to routing_lookup().
+#
+# Same 4-step first-match-wins precedence as routing_lookup(): non-core exact -> non-core
+# compound-base -> core exact -> core compound-base -> miss (empty output, return 0). Uses
+# `jq -c`, not `-r`, because the resolved value here is a JSON array, not a scalar.
+#
+# Outputs: $_ROUTE_LAST_VALUE (the resolved JSON array as a compact string, or empty on a total
+# miss) and $_ROUTE_LAST_VIA (one of noncore-exact|noncore-compound|core-exact|core-compound|
+# miss) -- same two globals routing_lookup() sets, on the same terms. Must be called directly,
+# never as `$(routing_lookup_flat ...)` -- see the Usage note above for why.
+routing_lookup_flat() {
+  local _route_block="$1"
+  local _route_task_type="$2"
+  local _route_manifest _route_value _route_name _route_base _route_core_manifest
+
+  _ROUTE_LAST_VALUE=""
+  _ROUTE_LAST_VIA="miss"
+
+  # Step 1 -- non-core, exact match
+  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
+    [ -f "$_route_manifest" ] || continue
+    _route_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
+    [ "$_route_name" = "core" ] && continue
+    _route_value=$(jq -c --arg b "$_route_block" --arg tt "$_route_task_type" \
+      '(.[$b] // {})[$tt] // empty' "$_route_manifest" 2>/dev/null)
+    if [ -n "$_route_value" ]; then
+      _ROUTE_LAST_VALUE="$_route_value"
+      _ROUTE_LAST_VIA="noncore-exact"
+      unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+      return 0
+    fi
+  done
+
+  # Step 2 -- non-core, compound-base match
+  if printf '%s' "$_route_task_type" | grep -q ":"; then
+    _route_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
+    for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
+      [ -f "$_route_manifest" ] || continue
+      _route_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
+      [ "$_route_name" = "core" ] && continue
+      _route_value=$(jq -c --arg b "$_route_block" --arg tt "$_route_base" \
+        '(.[$b] // {})[$tt] // empty' "$_route_manifest" 2>/dev/null)
+      if [ -n "$_route_value" ]; then
+        _ROUTE_LAST_VALUE="$_route_value"
+        _ROUTE_LAST_VIA="noncore-compound"
+        unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+        return 0
+      fi
+    done
+  fi
+
+  # Step 3 -- core, exact match
+  _route_core_manifest=$(routing_core_manifest)
+  if [ -n "$_route_core_manifest" ]; then
+    _route_value=$(jq -c --arg b "$_route_block" --arg tt "$_route_task_type" \
+      '(.[$b] // {})[$tt] // empty' "$_route_core_manifest" 2>/dev/null)
+    if [ -n "$_route_value" ]; then
+      _ROUTE_LAST_VALUE="$_route_value"
+      _ROUTE_LAST_VIA="core-exact"
+      unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+      return 0
+    fi
+  fi
+
+  # Step 4 -- core, compound-base match
+  if [ -n "$_route_core_manifest" ] && printf '%s' "$_route_task_type" | grep -q ":"; then
+    _route_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
+    _route_value=$(jq -c --arg b "$_route_block" --arg tt "$_route_base" \
+      '(.[$b] // {})[$tt] // empty' "$_route_core_manifest" 2>/dev/null)
+    if [ -n "$_route_value" ]; then
+      _ROUTE_LAST_VALUE="$_route_value"
+      _ROUTE_LAST_VIA="core-compound"
+      unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+      return 0
+    fi
+  fi
+
+  # Step 5 -- total miss ($_ROUTE_LAST_VALUE stays "", $_ROUTE_LAST_VIA stays "miss")
+  unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
   return 0
 }
 

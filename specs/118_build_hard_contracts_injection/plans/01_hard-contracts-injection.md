@@ -1,7 +1,7 @@
 # Implementation Plan: Build hard_contracts manifest key and contract-text injection
 
 - **Task**: 118 - Build hard_contracts manifest key and contract-text injection at dispatch-prep time
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: Task 117 (Stage 3.5 Dispatch Prep) — landed, confirmed by research
 - **Research Inputs**: specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md
@@ -156,29 +156,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add `routing_lookup_flat()` to the routing library [NOT STARTED]
+### Phase 1: Add `routing_lookup_flat()` to the routing library [COMPLETED]
 
 **Goal**: `manifest-routing-lib.sh` can resolve a one-level manifest block
 (`{task_type: [...]}`) with the same precedence ladder it already applies to two-level blocks,
 without changing any existing function.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh` in full, noting
+- [x] Read `agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh` in full, noting
       `routing_lookup()`'s local-variable naming (`_route_*`), its unset-before-return discipline,
       and how it sets `_ROUTE_LAST_VALUE` / `_ROUTE_LAST_VIA`.
-- [ ] Add `routing_lookup_flat(block, task_type)` immediately after `routing_lookup()`'s closing
+- [x] Add `routing_lookup_flat(block, task_type)` immediately after `routing_lookup()`'s closing
       brace and before `routing_trace()`.
-- [ ] Implement the same 4-step first-match-wins precedence: non-core exact -> non-core
+- [x] Implement the same 4-step first-match-wins precedence: non-core exact -> non-core
       compound-base -> core exact -> core compound-base -> miss (empty output, return 0).
-- [ ] Use `jq -c '(.[$b] // {})[$tt] // empty'` — `-c`, not `-r`, because the resolved value is a
+- [x] Use `jq -c '(.[$b] // {})[$tt] // empty'` — `-c`, not `-r`, because the resolved value is a
       JSON array, not a scalar.
-- [ ] Set `_ROUTE_LAST_VALUE` / `_ROUTE_LAST_VIA` on the same terms as `routing_lookup()`
+- [x] Set `_ROUTE_LAST_VALUE` / `_ROUTE_LAST_VIA` on the same terms as `routing_lookup()`
       (`noncore-exact|noncore-compound|core-exact|core-compound|miss`).
-- [ ] Preserve the library's stated contract: never call `exit`, never set shell options, prefix
+- [x] Preserve the library's stated contract: never call `exit`, never set shell options, prefix
       and unset every internal variable, always return 0.
-- [ ] Write a doc comment above the function stating the one-level vs. two-level shape mismatch
+- [x] Write a doc comment above the function stating the one-level vs. two-level shape mismatch
       and why this is NOT a wrapper over `routing_lookup()` (Decision 5).
-- [ ] Add one `routing_lookup_flat "hard_contracts" "general"` usage line to the file's header
+- [x] Add one `routing_lookup_flat "hard_contracts" "general"` usage line to the file's header
       `# Usage:` block.
 
 **Timing**: 1 hour
