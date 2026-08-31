@@ -1,0 +1,29 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "phase": "research",
+  "summary": "Re-derived the cause: Stage MT-3's dependency-graph eligibility gate already correctly discriminates in-batch predecessor completion, but the classifier's blocked row ignores that signal and unconditionally emits skip (mt), so nothing ever rewrites the stale blocked status and the successor spins until MAX_CYCLES_MT. Recommended fix: classifier reads dependencies[] and the (already-slurped) predecessor's own status from state.json plus the handoff's blockers[] for the blocked candidate -- no new read, no new CLI argument, no call-site change -- and routes a discharged block through previous_status (which /spawn already writes and preserves unchanged). No status-rewrite component is needed; normal dispatch preflight self-heals the stale status, confirmed by direct read.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md",
+      "summary": "Cause re-derivation, discriminator design, prior-Decision-3 narrowing, and full co-maintenance edit set with file/line anchors."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Discharge requires predecessor status exactly 'completed', not the broader is_terminal set (abandoned/expanded predecessors get a distinct loud needs_human warning, never silent promotion).",
+    "single engine's non-discharged blocked->needs_human stays unconditional and stays diverging from mt's non-discharged blocked->skip (Decision 1 from prior task reaffirmed for this sub-case).",
+    "single engine's DISCHARGED blocked case should also route through previous_status rather than staying needs_human, applying the classifier header's own audit discriminator honestly (recommended, flagged as the one recommendation beyond the task's literal 'mt classifier row' framing -- planning may accept, defer, or reject with reasons).",
+    "No separate status-rewrite component is needed; verdict alone suffices because skill_validate_input and update-task-status.sh's preflight write have no precondition on prior status (confirmed by direct read, not assumed by analogy).",
+    "/spawn keeps writing blocked + previous_status unchanged; the redundancy with dependencies[] is deliberate and load-bearing, not something to remove.",
+    "Prior task's Decision 3 ('blocked and unknown rows: leave unchanged') is narrowed, not overturned: unknown stays untouched; blocked's non-discharged case stays unconditional; only the discharged, in-batch, no-recorded-blockers case becomes discriminating."
+  ],
+  "dead_ends": [
+    "Discriminator based on 'is the dependency present in the classifier's own CLI candidate list' (checking $candidates directly) was considered and rejected: in the live per-cycle path the predecessor typically drops out of eligible_tasks (Stage MT-3 step 3 excludes terminal tasks) by the exact cycle the successor becomes eligible, so this membership check would read false in precisely the reproduction scenario. The working discriminator instead looks up the dependency's own status from the classifier's already-slurped full active_projects array, independent of which task numbers were passed as CLI arguments this call."
+  ]
+}

@@ -1,38 +1,34 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#68) in the nvim source-store repo to make the multi-task /orchestrate classifier's blocked verdict discriminating rather than unconditional.",
+  "status": "researched",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #68 added to TODO.md under the Orchestration Concurrency topic"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #68 added to active_projects with topic, dependencies, and an 11-entry file_scope"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/068_discriminate_blocked_on_in_batch_predecessor/",
-      "summary": "Task directory created with reports/, plans/, summaries/"
+      "type": "report",
+      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md",
+      "summary": "Re-derives the cause (Stage MT-3's dependency gate already discriminates ordering correctly; the classifier's blocked row throws that signal away), settles the four design questions, narrows prior Decision 3, and enumerates the full co-maintenance edit set with anchors."
     }
   ],
+  "next_steps": "Run /plan 68 to create an implementation plan from this report",
   "metadata": {
-    "session_id": "sess_1787068901_a3f2b1",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "task_numbers": [68],
-    "confirmation": "not_prompted_tool_unavailable"
+    "session_id": "sess_1788202255_53c3de_68",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
   },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
-  ],
-  "next_steps": "Run /research 68 in /home/benjamin/.config/nvim to begin research"
+  "memory_candidates": [
+    {
+      "content": "In this repo's /orchestrate multi-task engine, the classifier (orchestrate-triage-classify.sh) already slurps the ENTIRE specs/state.json active_projects array, not just the candidates being classified. A classifier row that needs to reason about a related task's status (e.g. a dependency) can look that other task up from the already-loaded array with zero new reads and zero call-site/CLI changes -- avoid the tempting-but-wrong shortcut of checking membership in the classifier's own CLI candidate list instead, which is a shrinking per-cycle subset (eligible_tasks) in the live path and will not reliably contain a predecessor that has already gone terminal and dropped out of eligibility.",
+      "category": "PATTERN",
+      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-triage-classify", "jq", "state.json", "dependency-lookup", "no-call-site-change"]
+    },
+    {
+      "content": "In skill-orchestrate/SKILL.md, dispatching a task to research/plan/implement via skill_preflight_update unconditionally overwrites specs/state.json's status field with no precondition check on the prior value (skill_validate_input only rejects the three terminal statuses). This means routing a stale/misleading status (e.g. a discharged 'blocked') to its real phase group requires no separate status-rewrite component -- the dispatched skill's own preflight self-heals the status as a side effect, exactly as the prior researching/planning eligibility convergence already relied on.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill_preflight_update", "update-task-status.sh", "status-rewrite", "self-healing", "orchestrate"]
+    }
+  ]
 }
