@@ -54,6 +54,16 @@ Read from delegation context:
   and reserved for later conditional state-machine branches (churn/three-strikes counters, the
   burnout circuit breaker) that read this same boolean rather than re-deriving it.
 
+**Hard-mode residue not yet migrated**: the `researched`-state adversarial verification gate
+(H4) — the `#### State: researched` handler in the `-hard` engine and its `adversarial_verified`
+state variable, set at three separate sites and driving a verify-then-re-dispatch loop before
+planning — has NOT been ported into this engine's `researched` handler below. This is a
+deliberate, recorded scope decision, not an oversight: it is a structurally independent residue
+(its own state variable, its own re-dispatch loop, a different handler than the four behaviors
+this engine does reproduce) and remains the one still-unmigrated piece of hard-mode
+state-machine logic. A future removal of the `-hard` engine must account for this gate
+separately; its absence here is not evidence it was folded in elsewhere in this file.
+
 Resolve from `specs/state.json`:
 ```bash
 PADDED_NUM=$(printf "%03d" "$task_number")

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Record scope decisions and verify preconditions",
+  "started_at": "2026-08-31T23:02:57Z",
+  "last_updated": "2026-08-31T23:02:57Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm -hard file untouched and no other dispatch holds base file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-verify D2 grep evidence for 3a/3b/3c", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-verify skill-base.sh helper functions exist", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-verify Stage 3.5 territory input row text", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add H4 residue note to skill-orchestrate/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
