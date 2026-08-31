@@ -49,6 +49,10 @@ Read from delegation context:
   Stage 3.5 Dispatch Prep's automatic memory retrieval for every dispatch this invocation makes.
 - `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
   depth guidance to Stage 3.5 Dispatch Prep and to Stage 1b's agent routing below.
+- `hard_mode` — derived once, here, as `hard_mode="false"; [ "$effort_flag" = "hard" ] &&
+  hard_mode="true"`. Consumed by Stage 3.5 Dispatch Prep's hard-mode contract injection below,
+  and reserved for later conditional state-machine branches (churn/three-strikes counters, the
+  burnout circuit breaker) that read this same boolean rather than re-deriving it.
 
 Resolve from `specs/state.json`:
 ```bash
@@ -357,6 +361,8 @@ dispatch site.**
 | `effort_flag` | Stage 1 / Stage MT-1 (this invocation's `--fast` state) |
 | `lit_flag` | Stage 1 / Stage MT-1 |
 | `orchestrator_mode` | always `true` for every `/orchestrate` dispatch |
+| `hard_mode` | Stage 1 / Stage MT-1 (derived from `effort_flag == "hard"`) |
+| `territory` | optional; no call site sets this today (base mode does not gain a `territory` dispatch key — see Stage MT-3's existing "Decision record" for the rationale) |
 
 **Case alias (do not "simplify" away)**: single-task Stage 1 extracts the task description into
 the uppercase `DESCRIPTION` shell variable (from `state.json` via `jq`), while the shared lit flow
@@ -421,11 +427,72 @@ appended to the dispatch prompt as reasoning-depth guidance, mirroring `commands
 existing "pass it as prompt context to the skill/agent for reasoning depth guidance" instruction.
 An empty `effort_flag` produces no note (`effort_note` stays empty).
 
-**Outputs and injection contract**: this stage produces `memory_context`, `lit_context`, and
-`effort_note`. The calling dispatch site appends them, in that order, to the END of its own
-prompt string — `memory_context` first, then `lit_context`, then `effort_note` — skipping any
-of the three that is empty. Never inject an empty `<memory-context>` or `<literature-briefing>`
-tag pair. None of the three outputs is ever added to the dispatch's `context` JSON object.
+**Hard-mode contract injection (gated on `hard_mode == "true"`)**: when `hard_mode` is `"false"`
+(the default path), `hard_contracts_block` stays empty and this whole subsection is skipped — no
+`<hard-mode-contracts>` tag pair is ever emitted. When `hard_mode` is `"true"`:
+
+(a) Start from a fixed, ordered `core_contracts` array selected by `$phase` — the exact three
+lists from this task's plan Decision 2, with `territory.md` appended only when the `territory`
+input is non-empty (per Decision 3, no call site sets it today, so this branch never fires in
+practice):
+
+```bash
+case "$phase" in
+  research) core_contracts=(anti-analysis.md reference-grounding.md adversarial-verification.md) ;;
+  plan)     core_contracts=(reference-grounding.md wrap-up.md anti-analysis.md) ;;
+  implement)
+    core_contracts=(anti-analysis.md wrap-up.md)
+    [ -n "$territory" ] && core_contracts+=(territory.md)
+    core_contracts+=(recovery.md phase-closure.md pre-edit-gate.md)
+    ;;
+esac
+```
+
+(b) Resolve extension-declared entries via `routing_lookup_flat` (never `routing_lookup` — see
+Decision 5 and `manifest-routing-lib.sh`'s own doc comment for why these are siblings, not a
+wrapper). On a hit, apply every `replace:{core-basename}:{override-path}` entry as an in-place
+substitution of the matching `core_contracts` element (matched by exact basename), then append
+every remaining non-`replace:` entry additively, in the order the manifest lists them. On a miss,
+`core_contracts` stands unchanged:
+
+```bash
+source .claude/scripts/lib/manifest-routing-lib.sh
+routing_lookup_flat "hard_contracts" "$task_type"
+if [ -n "$_ROUTE_LAST_VALUE" ]; then
+  while IFS= read -r entry; do
+    case "$entry" in
+      replace:*)
+        core_basename="${entry#replace:}"; core_basename="${core_basename%%:*}"
+        override_path="${entry#replace:*:}"
+        for i in "${!core_contracts[@]}"; do
+          [ "${core_contracts[$i]}" = "$core_basename" ] && core_contracts[$i]="$override_path"
+        done
+        ;;
+      *)
+        core_contracts+=("$entry")
+        ;;
+    esac
+  done < <(echo "$_ROUTE_LAST_VALUE" | jq -r '.[]')
+fi
+```
+
+(c) Build `hard_contracts_block` as a `<hard-mode-contracts>` tag wrapping one
+`- context/contracts/{file}` line per resolved `core_contracts` entry, in resolved order:
+
+```bash
+hard_contracts_block="<hard-mode-contracts>"$'\n'
+for c in "${core_contracts[@]}"; do
+  hard_contracts_block+="- context/contracts/${c}"$'\n'
+done
+hard_contracts_block+="</hard-mode-contracts>"
+```
+
+**Outputs and injection contract**: this stage produces `memory_context`, `lit_context`,
+`effort_note`, and `hard_contracts_block`. The calling dispatch site appends them, in that
+order, to the END of its own prompt string — `memory_context` first, then `lit_context`, then
+`effort_note`, then `hard_contracts_block` — skipping any of the four that is empty. Never
+inject an empty `<memory-context>`, `<literature-briefing>`, or `<hard-mode-contracts>` tag pair.
+None of the four outputs is ever added to the dispatch's `context` JSON object.
 Unlike the three lifecycle skills, `skill-orchestrate` injects no format specification
 (`report-format.md`/`plan-format.md`) into its dispatch prompts today (a real, separate,
 pre-existing gap — see Non-Goals in this task's plan) — so these blocks are simply the first
@@ -1460,6 +1527,11 @@ Read from delegation context:
   makes.
 - `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
   depth guidance to Stage 3.5 Dispatch Prep for every per-task dispatch this batch makes.
+- `hard_mode` — derived once, here, as `hard_mode="false"; [ "$effort_flag" = "hard" ] &&
+  hard_mode="true"`. Consumed by Stage 3.5 Dispatch Prep's hard-mode contract injection below,
+  for every per-task dispatch this batch makes, and reserved for later conditional
+  state-machine branches (churn/three-strikes counters, the burnout circuit breaker) that read
+  this same boolean rather than re-deriving it.
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was

@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Stage 3.5 hard-mode contract injection",
+  "started_at": "2026-08-31T00:35:00Z",
+  "last_updated": "2026-08-31T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add hard_mode bullet to Stage 1 and Stage MT-1", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Add hard_mode and territory rows to Stage 3.5 Inputs table", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Insert Hard-mode contract injection subsection (a/b/c) between Effort-depth note and Outputs paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Update Outputs and injection contract paragraph to name hard_contracts_block as 4th output", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Verify contract file existence, exclusion of convergence.md/orchestrator-discipline.md, hard_mode grep scope, bash syntax of all 3 snippets, and functional replace:/additive resolution behavior", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

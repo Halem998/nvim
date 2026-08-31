@@ -207,36 +207,36 @@ without changing any existing function.
 
 ---
 
-### Phase 2: Stage 3.5 hard-mode contract injection [NOT STARTED]
+### Phase 2: Stage 3.5 hard-mode contract injection [COMPLETED]
 
 **Goal**: `skill-orchestrate/SKILL.md` derives `hard_mode` once and Stage 3.5 produces a 4th
 output, `hard_contracts_block`, when `hard_mode == "true"`.
 
 **Tasks**:
-- [ ] Stage 1 ("Input Validation"): add a `hard_mode` bullet to the delegation-context read list,
+- [x] Stage 1 ("Input Validation"): add a `hard_mode` bullet to the delegation-context read list,
       derived as `hard_mode="false"; [ "$effort_flag" = "hard" ] && hard_mode="true"`, with a
       one-line note that it is consumed by Stage 3.5 and reserved for later conditional
       state-machine branches.
-- [ ] Stage MT-1 ("Parse Multi-Task Context"): add the identical derivation and note.
-- [ ] Stage 3.5 `Inputs` table: add a `hard_mode` row (source: Stage 1 / Stage MT-1) and a
+- [x] Stage MT-1 ("Parse Multi-Task Context"): add the identical derivation and note.
+- [x] Stage 3.5 `Inputs` table: add a `hard_mode` row (source: Stage 1 / Stage MT-1) and a
       `territory` row (optional; currently set by no call site — per Decision 3).
-- [ ] Insert a new subsection, "Hard-mode contract injection (gated on `hard_mode == \"true\"`)",
+- [x] Insert a new subsection, "Hard-mode contract injection (gated on `hard_mode == \"true\"`)",
       between the existing "Effort-depth note" and "Outputs and injection contract" paragraphs.
-- [ ] In that subsection, specify (a) the fixed per-phase `core_contracts` array via a case
+- [x] In that subsection, specify (a) the fixed per-phase `core_contracts` array via a case
       statement over `$phase`, using the exact three lists in Decision 2, with `territory.md`
       appended only when the `territory` input is non-empty.
-- [ ] Specify (b) extension resolution: call
+- [x] Specify (b) extension resolution: call
       `routing_lookup_flat "hard_contracts" "$task_type"`; on a hit, apply every
       `replace:{core-basename}:{override-path}` entry as an in-place substitution of the matching
       core-list element (matched by exact basename), then append every remaining non-`replace:`
       entry additively. On a miss, the core list stands unchanged.
-- [ ] Specify (c) the `hard_contracts_block` string build: a `<hard-mode-contracts>` tag wrapping
+- [x] Specify (c) the `hard_contracts_block` string build: a `<hard-mode-contracts>` tag wrapping
       one `- context/contracts/{file}` line per resolved entry, in resolved order. When
       `hard_mode` is `"false"`, `hard_contracts_block` stays empty and NO tag is emitted.
-- [ ] Update the "Outputs and injection contract" paragraph: name `hard_contracts_block` as a 4th
+- [x] Update the "Outputs and injection contract" paragraph: name `hard_contracts_block` as a 4th
       output, appended LAST (after `effort_note`), under the same empty-skip rule, and likewise
       never added to the dispatch's `context` JSON object.
-- [ ] Use durable anchors only — no task-number references anywhere in the added prose.
+- [x] Use durable anchors only — no task-number references anywhere in the added prose.
 
 **Timing**: 1.5 hours
 
