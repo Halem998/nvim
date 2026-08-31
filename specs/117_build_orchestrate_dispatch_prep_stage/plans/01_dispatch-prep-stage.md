@@ -1,7 +1,7 @@
 # Implementation Plan: Build the dispatch-prep stage in skill-orchestrate
 
 - **Task**: 117 - Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None. **Blocks**: any successor task that deletes `commands/research.md`,
   `commands/plan.md`, `commands/implement.md`, or `skill-researcher`/`skill-planner`/
@@ -124,7 +124,7 @@ Phase 5 for exactly this reason, not because of a content dependency. Only Phase
 
 ---
 
-### Phase 1: Thread `--clean` and `--fast` through `orchestrate.md` [NOT STARTED]
+### Phase 1: Thread `--clean` and `--fast` through `orchestrate.md` [COMPLETED]
 
 **Goal**: The command file documents and forwards `clean_flag` and `effort_flag` to
 `skill-orchestrate` in both single-task and multi-task delegation, reusing the already-exported
@@ -132,21 +132,21 @@ shell variables rather than adding parsing logic.
 
 **Tasks**:
 
-- [ ] Re-anchor: grep `agent-system/extensions/core/commands/orchestrate.md` for `## Options`,
+- [x] Re-anchor: grep `agent-system/extensions/core/commands/orchestrate.md` for `## Options`,
       `source .claude/scripts/parse-command-args.sh`, and both `skill: "skill-orchestrate"` /
       `skill-orchestrate` Skill-invocation blocks; record current line numbers before editing.
-- [ ] Add two rows to the `## Options` table, copying wording verbatim from `implement.md`'s existing
+- [x] Add two rows to the `## Options` table, copying wording verbatim from `implement.md`'s existing
       rows: `--clean` -> "Skip automatic memory retrieval" (default false); `--fast` -> "Low-effort
       mode: lighter reasoning, faster responses" (default false).
-- [ ] Update the STAGE 0 `# Exports:` comment after the `parse-command-args.sh` source call to include
+- [x] Update the STAGE 0 `# Exports:` comment after the `parse-command-args.sh` source call to include
       `CLEAN_FLAG` and `EFFORT_FLAG` — the parser already exports them; the comment is merely stale.
-- [ ] Add a short prose sentence after that block, matching the existing `ALLOW_SELF_MODIFYING_FLAG`
+- [x] Add a short prose sentence after that block, matching the existing `ALLOW_SELF_MODIFYING_FLAG`
       paragraph's shape, stating that `CLEAN_FLAG` (default `"false"`) and `EFFORT_FLAG` (default
       `""`) are read here and passed into the Skill delegation context below.
-- [ ] Single-task STAGE 2: append `clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG}` to the Skill
+- [x] Single-task STAGE 2: append `clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG}` to the Skill
       `args:` string, and add `"clean_flag": "{CLEAN_FLAG}"` and `"effort_flag": "{EFFORT_FLAG}"` to
       the JSON delegation context alongside the existing `"lit_flag"`.
-- [ ] Multi-task delegation block: make the identical two additions to its `args:` string and its JSON
+- [x] Multi-task delegation block: make the identical two additions to its `args:` string and its JSON
       delegation context.
 
 **Timing**: 30 minutes
