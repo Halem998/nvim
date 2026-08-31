@@ -1,7 +1,7 @@
 # Implementation Plan: Task #81
 
 - **Task**: 81 - Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None declared. Cross-reference only to project 73 (`correlate_subagent_postflight_hook_to_owning_session`, status `not_started`) for the events.jsonl amendment in Phase 7; no `file_scope` overlap.
 - **Research Inputs**: `specs/081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md`
@@ -126,7 +126,7 @@ are independent. Phases 5 and 6 own disjoint markdown sets.
 
 ---
 
-### Phase 1: Mechanize the heartbeat inside update-phase-status.sh [NOT STARTED]
+### Phase 1: Mechanize the heartbeat inside update-phase-status.sh [COMPLETED]
 
 **Goal**: Make both heartbeats fire from the one script empirically proven to run at every phase
 transition, with `session_id` derived rather than supplied, so that no caller change and no agent
@@ -145,17 +145,17 @@ brace-placeholder landmine.
 
 **Tasks**:
 
-- [ ] Add a `heartbeat_after_phase_transition()` function to
+- [x] Add a `heartbeat_after_phase_transition()` function to
       `agent-system/extensions/core/scripts/update-phase-status.sh`, invoked **once**,
       immediately after `plan_dir` has been resolved and validated and **before** both the
       "Phase N not found" exit and the idempotency early-exit — so that a no-op status update and
       an unmatched phase number both still refresh liveness (the caller is demonstrably alive and
       working the task in both cases).
-- [ ] Resolve the task directory as `dirname "$plan_dir"` (already computed with the
+- [x] Resolve the task directory as `dirname "$plan_dir"` (already computed with the
       padded/unpadded fallback) and read `session_id` from `${task_dir}/.lock/holder.json` via
       `jq -r '.session_id // empty'`. Absent lock directory, absent/unparseable `holder.json`, or
       empty `session_id` => trace and return, never fail.
-- [ ] Accept an **optional** 5th positional argument `session_id`. When supplied and non-empty:
+- [x] Accept an **optional** 5th positional argument `session_id`. When supplied and non-empty:
       compare against the value read from `holder.json`; on mismatch, write a
       `noop:session-mismatch` trace line naming both values and do **not** heartbeat. When
       absent: use the derived value (which is byte-identical to the holder's by construction, so
@@ -163,29 +163,29 @@ brace-placeholder landmine.
       line, the header comment block, and the argument-count validation accordingly — the
       existing 4-argument invocation must remain valid and unchanged in behavior for every
       current caller.
-- [ ] Resolve `task-lock.sh` using the same deploy-tree-first / source-store-fallback candidate
+- [x] Resolve `task-lock.sh` using the same deploy-tree-first / source-store-fallback candidate
       list already used in this file for `phase-heading-patterns.sh`
       (`${repo_root}/.claude/scripts/task-lock.sh`, then
       `${repo_root}/agent-system/extensions/core/scripts/task-lock.sh`). Unlike the phase-library
       resolution, a missing `task-lock.sh` here is **not** an environment error: trace
       `error:task-lock-unresolved` and return 0.
-- [ ] Invoke `bash "$task_lock" heartbeat "$task_number" "$sid"` and
+- [x] Invoke `bash "$task_lock" heartbeat "$task_number" "$sid"` and
       `bash "$task_lock" session-heartbeat "$sid"`, **capturing stderr and exit status** rather
       than discarding them with `2>/dev/null`. This is the "never block, but never silent" split
       that design question 3 asks for and criterion 4 requires.
-- [ ] Append one trace line per subcommand to `${repo_root}/.agent-logs/heartbeat-trace.log`
+- [x] Append one trace line per subcommand to `${repo_root}/.agent-logs/heartbeat-trace.log`
       (the `.agent-logs` directory is already created by this script for
       `phase-transitions.log`), in the shape:
       `[<ISO8601>] task <N> phase <P> <subcommand>: <ok|noop:<reason>|error:<reason>> session=<sid> sid_source=<derived|argument>` —
       with any captured stderr appended as a trailing `msg=<...>` field, newlines collapsed.
       `cmd_heartbeat`'s existing `WARN: heartbeat no-op — ...` stderr text is what makes the
       `noop:` reasons informative; do not suppress it.
-- [ ] Guard the entire block so it can neither alter the script's exit code nor write to stdout:
+- [x] Guard the entire block so it can neither alter the script's exit code nor write to stdout:
       every command inside ends `|| true`; the function is called as
       `heartbeat_after_phase_transition >/dev/null || true`; and it is skipped entirely when
       `PHASE_HEARTBEAT_DISABLE` is set to a non-empty value (an opt-out for fixture harnesses,
       documented in the header comment).
-- [ ] Extend the script's header comment block: document the new optional argument, the derived-
+- [x] Extend the script's header comment block: document the new optional argument, the derived-
       `session_id` rationale (including the explicit statement of why this mechanism cannot be
       skipped, above), the trace-log path and line grammar, the `PHASE_HEARTBEAT_DISABLE`
       opt-out, and the invariant that the heartbeat block never affects stdout or exit code.

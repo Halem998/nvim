@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Mechanize the heartbeat inside update-phase-status.sh",
+  "started_at": "2026-08-31T00:00:00Z",
+  "last_updated": "2026-08-31T20:03:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add heartbeat_after_phase_transition() function, invoked once after plan_dir resolved/validated, before Phase-not-found exit and idempotency early-exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 2, "description": "Resolve task_dir and read session_id from holder.json via jq", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 3, "description": "Accept optional 5th positional session_id argument with mismatch trace", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 4, "description": "Resolve task-lock.sh via deploy-tree-first/source-store-fallback candidate list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 5, "description": "Invoke heartbeat and session-heartbeat capturing stderr/exit status", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 6, "description": "Append trace line to .agent-logs/heartbeat-trace.log", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 7, "description": "Guard block: no stdout/exit-code effect, PHASE_HEARTBEAT_DISABLE opt-out", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 8, "description": "Extend header comment documentation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "manual_smoke_evidence": [
+    "No .lock/ present: stdout is plan path only, exit 0, noop:no-holder trace lines written for both subcommands.",
+    "Real holder.json + session entry: heartbeat_at advanced past acquired_at/started_at on both files after a single call; both trace lines show ok.",
+    "5th-arg session-id mismatch: heartbeat NOT applied (holder.json byte-unchanged), noop:session-mismatch trace lines written naming both session ids.",
+    "Idempotency early-exit path (status already at target): heartbeat still fires (ok) even though stdout is empty.",
+    "Phase-not-found path (phase 9 absent): heartbeat still fires (ok) even though the script exits 1.",
+    "PHASE_HEARTBEAT_DISABLE=1: no trace log created at all; script behaves exactly as pre-change."
+  ]
+}

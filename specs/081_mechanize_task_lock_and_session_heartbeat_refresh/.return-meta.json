@@ -1,28 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 81,
-  "session_id": "sess_1788202255_53c3de_81",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "dispatch_seq": 5,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/plans/01_mechanize-heartbeat-refresh.md",
-      "summary": "7-phase plan mechanizing the task-lock and session-registry heartbeat inside update-phase-status.sh with a holder-derived session_id, plus pid liveness, never-heartbeated fingerprint, and full call-site survey closeout."
-    }
-  ],
-  "phase_count": 7,
-  "estimated_hours": 5.5,
-  "dependency_waves": 4,
-  "memory_candidates": [
-    {
-      "content": "When a behavior must happen at a lifecycle transition, do not encode it as a bash snippet in an agent/skill markdown file -- prose instructions compete with, and lose to, the agent's own judgment about what constitutes the actionable step (measured: 0/8 execution across a real successful run, while the script call four lines above it fired 16/16). Mechanize it INSIDE the one script the transition cannot happen without. Corollary and the real design lever: do not thread the required identifier in as a new argument either, because the argument still has to be typed by the same prose that was proven not to execute -- derive it from state already reachable from the script's own resolved paths (here: session_id read from the task's .lock/holder.json, which additionally makes the callee's session-mismatch no-op branch unreachable by construction). Deriving rather than threading also closes absent-caller gaps for free: every existing caller of that script inherits the behavior with zero edits. Pair it with a non-blocking recorded trace -- '2>/dev/null || true' correctly means never-block but wrongly also means never-report, which is what makes such omissions undiagnosable.",
-      "category": "PATTERN",
-      "source_artifact": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/plans/01_mechanize-heartbeat-refresh.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["mechanization", "agent-prose-reliability", "lifecycle-hook", "derived-identifier", "silent-failure", "observability"]
-    }
-  ],
-  "next_steps": "Run /implement 81 to execute the plan"
+  "session_id": "sess_1788202255_53c3de",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }
