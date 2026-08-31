@@ -63,7 +63,7 @@ next_project_number: 128
       └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
       └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
       └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-124 [RESEARCHED] — Delete /research, /plan, /implement commands and update the CLAUD
+124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
   └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 
@@ -156,7 +156,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 124. Delete lifecycle commands and update reference
-- **Status**: [RESEARCHED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 68, Task 81

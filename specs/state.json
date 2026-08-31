@@ -1180,12 +1180,12 @@
     {
       "project_number": 124,
       "project_name": "delete_lifecycle_commands_and_update_reference",
-      "status": "researched",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.\n\nWORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-08-31T21:37:08Z",
+      "last_updated": "2026-08-31T21:37:42Z",
       "dependencies": [
         117,
         68,
@@ -1205,7 +1205,8 @@
           "created": "2026-08-31T21:37:18Z"
         }
       ],
-      "session_id": "sess_1788211958_b7b5e8_124"
+      "session_id": "sess_1788211958_b7b5e8_124",
+      "blockers": "Unmet precondition: /orchestrate has no --research/--plan/--implement phase-forcing flags (task 126 is not_started). The replacement spelling this task must document does not exist, so deleting commands/research.md, plan.md, implement.md and updating the CLAUDE.md Command Reference must not proceed."
     },
     {
       "project_number": 125,
