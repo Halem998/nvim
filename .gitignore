@@ -37,6 +37,13 @@
 **/.orchestrator-multi-state*.json
 **/.drift-inspection.json
 **/.return-meta-*.json
+# Archived copies of the two ephemeral files above, written by the loop-guard-staleness
+# detector (hard mode only) and the budget-continuation override (both modes) before
+# reinitializing at cycle_count=0 / total_churn=0. Same freshness-gate rationale as the live
+# files they archive.
+**/.stale-loop-guard-*.json
+**/.stale-churn-state-*.json
+**/.exhausted-loop-guard-*.json
 **/.events.lock
 **/.errors.lock
 **/.commit-lock/

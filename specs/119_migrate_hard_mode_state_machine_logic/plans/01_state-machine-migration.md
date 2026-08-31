@@ -265,39 +265,39 @@ both modes, so later phases have `burnout_signals_this_session` and `plan_versio
 
 ---
 
-### Phase 3: Stage 2 — `loop-guard-staleness` detector and churn-state init [NOT STARTED]
+### Phase 3: Stage 2 — `loop-guard-staleness` detector and churn-state init [COMPLETED]
 
 **Goal**: Port the 3-signal operational-staleness detector and the churn-state file
 initialization into Stage 2 as `$hard_mode`-gated regions, positioned so the existing
 `budget-continuation-override` and resume blocks are left completely unmodified.
 
 **Tasks**:
-- [ ] Add `churn_file="${TASK_DIR}/.orchestrator-churn-state.json"` inside a `$hard_mode` branch
-      near the `loop_guard_file`/`handoff_file` assignments.
-- [ ] Insert the `loop-guard-staleness:begin` / `:end` sentinel region, wrapped in
+- [x] Add `churn_file="${TASK_DIR}/.orchestrator-churn-state.json"` inside a `$hard_mode` branch
+      near the `loop_guard_file`/`handoff_file` assignments. *(completed)*
+- [x] Insert the `loop-guard-staleness:begin` / `:end` sentinel region, wrapped in
       `if [ "$hard_mode" = "true" ]`, positioned strictly BEFORE the existing
       `budget-continuation-override:begin` marker and before the `if [ -f "$loop_guard_file" ]`
       resume branch. Port all three signals verbatim in behavior: `max_cycles` drift,
       `plan_version` drift (skipped when either side is empty or `none`), and the
-      `ORCHESTRATOR_LOOP_GUARD_STALE_DAYS` mtime backstop (default 7, `mtime == 0` is NOT stale).
-- [ ] Port the archive-and-fall-through behavior: `mv` the guard to
+      `ORCHESTRATOR_LOOP_GUARD_STALE_DAYS` mtime backstop (default 7, `mtime == 0` is NOT stale). *(completed)*
+- [x] Port the archive-and-fall-through behavior: `mv` the guard to
       `.stale-loop-guard-{ts}.json`, co-archive `$churn_file` to `.stale-churn-state-{ts}.json`
       under the guard's inherited verdict when it exists, and warn (never fail) when either `mv`
       fails. The region must only read, decide, and `mv` — no `task-lock.sh` dependency, so it
-      stays directly executable in a fixture harness.
-- [ ] Change the log prefix from `[hard-orchestrate]` to `[orchestrate]` throughout the ported
-      region, matching the host file's convention.
-- [ ] Add the `$hard_mode`-gated churn-state init/resume block after `mint_dispatch_seq()`:
+      stays directly executable in a fixture harness. *(completed)*
+- [x] Change the log prefix from `[hard-orchestrate]` to `[orchestrate]` throughout the ported
+      region, matching the host file's convention. *(completed)*
+- [x] Add the `$hard_mode`-gated churn-state init/resume block after `mint_dispatch_seq()`:
       `task-lock.sh init-marker` atomic creation with the
       `{session_id, total_churn, target_churn, adversarial_triggers, audit_dispatches}` schema, the
-      lost-race `total_churn` resume read, and the non-gating `session_id` mismatch INFO log.
-- [ ] Update the base file's existing "Asymmetry decision" note at the end of Stage 2 so it states
+      lost-race `total_churn` resume read, and the non-gating `session_id` mismatch INFO log. *(completed)*
+- [x] Update the base file's existing "Asymmetry decision" note at the end of Stage 2 so it states
       the detector now exists behind the hard gate and that whether base mode should gain it
-      unconditionally remains a separate, undecided question (D4).
-- [ ] Update the Stage 2 ephemerality note to cover `.orchestrator-churn-state.json` as a second
-      ephemeral, gitignored, never-committed runtime file.
-- [ ] Confirm `.orchestrator-churn-state.json` and `.stale-*` archives are already covered by
-      gitignore; if not, add coverage.
+      unconditionally remains a separate, undecided question (D4). *(completed)*
+- [x] Update the Stage 2 ephemerality note to cover `.orchestrator-churn-state.json` as a second
+      ephemeral, gitignored, never-committed runtime file. *(completed)*
+- [x] Confirm `.orchestrator-churn-state.json` and `.stale-*` archives are already covered by
+      gitignore; if not, add coverage. *(completed)*
 
 **Timing**: 1 hour
 

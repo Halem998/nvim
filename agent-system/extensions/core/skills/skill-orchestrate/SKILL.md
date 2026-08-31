@@ -118,7 +118,10 @@ Create or read the loop guard file. This tracks cycle count across conversationa
 freshness check on read (see the resume branch below: any syntactically valid guard file at this
 path is trusted, with no `session_id` or mtime comparison against the current dispatch). A
 git-restored copy of a stale guard would silently resume a wrong `cycle_count`/`infra_failures`
-pair — exactly the hazard this file's gitignore coverage exists to prevent. See
+pair — exactly the hazard this file's gitignore coverage exists to prevent. The same is true, in
+hard mode only, of `.orchestrator-churn-state.json` (H5/H6 per-target churn counters): a second
+ephemeral, gitignored, never-committed runtime file with the identical no-freshness-check-on-read
+trust model, created and read only inside `$hard_mode` branches below. See
 `context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
 
 ```bash
@@ -143,16 +146,97 @@ loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TAS
 loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
 handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
 MAX_INFRA_FAILURES=$(echo "$loop_guard_init_json" | jq -r '.max_infra_failures')
+# Hard-mode-only per-target churn-state file (H5/H6). Assigned unconditionally so the variable is
+# always in scope, but only ever created/read inside `$hard_mode` branches below (churn-state
+# init, further down this stage, and Stage 5b's H6 detector).
+if [ "${hard_mode:-false}" = "true" ]; then
+  churn_file="${TASK_DIR}/.orchestrator-churn-state.json"
+fi
 
 # Live plan-lineage reference, written into the guard's `plan_version` field in BOTH modes (D3 —
 # one loop-guard JSON schema, not a per-mode fork). Computing it is a single cheap
 # `ls | sort -V | tail -1` even in base mode, and the hard-only `loop-guard-staleness` detector
-# (Stage 2, below) reads it as its Signal 2. Safe when plans/ does not exist yet (task in
+# (below) reads it as its Signal 2. Safe when plans/ does not exist yet (task in
 # researching/planning status): the ls glob then matches nothing, `sort -V | tail -1` on empty
 # input yields an empty string, and `basename ""` also yields an empty string here, so the
 # explicit `:-none` fallback is required — absent plans/ is never itself evidence of staleness.
 current_plan_version=$(basename "$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)" 2>/dev/null)
 current_plan_version="${current_plan_version:-none}"
+
+# --- loop-guard-staleness:begin ---
+# Hard-mode-only operational-staleness detector: a genuinely-present, never-git-touched guard
+# that is simply superseded or old on disk (distinct from the git-restoration hazard the
+# ephemeral/gitignored classification protects against). Three OR-combined signals; any one
+# tripping is sufficient. See context/standards/orchestrator-runtime-files.md's "Operational
+# staleness: a second, orthogonal freshness axis" for the full policy, thresholds, and the
+# anti-session_id defense. D4: this detector stays strictly `$hard_mode`-gated — whether base
+# mode should gain it unconditionally is a separate, undecided question (see the Asymmetry
+# decision note at the end of this stage). No task-lock.sh dependency in this region -- it only
+# reads, decides, and archives (mv), so it is directly executable in a fixture harness. The
+# pre-existing `budget-continuation-override` region and the resume/churn-state blocks that
+# follow are left completely unmodified: once a stale guard/churn file is mv'd aside, `[ -f ]` is
+# false and each falls through to its own existing fresh-init branch naturally, at
+# cycle_count=0 / total_churn=0.
+if [ "${hard_mode:-false}" = "true" ]; then
+  loop_guard_stale=false
+  if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
+    stale_reason=""
+
+    # Signal 1: schema/version drift.
+    guard_max_cycles=$(jq -r '.max_cycles // empty' "$loop_guard_file")
+    if [ -n "$guard_max_cycles" ] && [ "$guard_max_cycles" != "$MAX_CYCLES" ]; then
+      stale_reason="${stale_reason}max_cycles drift (guard=${guard_max_cycles}, live=${MAX_CYCLES}); "
+    fi
+
+    # Signal 2: plan-lineage drift. Skipped entirely when either side is empty or "none" -- a
+    # missing plan_version (old-format guard) or an absent plans/ directory is never itself
+    # evidence of staleness.
+    guard_plan_version=$(jq -r '.plan_version // "none"' "$loop_guard_file")
+    if [ -n "$guard_plan_version" ] && [ "$guard_plan_version" != "none" ] \
+       && [ -n "$current_plan_version" ] && [ "$current_plan_version" != "none" ] \
+       && [ "$guard_plan_version" != "$current_plan_version" ]; then
+      stale_reason="${stale_reason}plan_version drift (guard=${guard_plan_version}, live=${current_plan_version}); "
+    fi
+
+    # Signal 3: mtime-age backstop. An mtime of 0 (stat failed on both GNU and BSD forms) is
+    # treated as NOT stale -- an unreadable timestamp is not evidence.
+    guard_mtime=$(stat -c %Y "$loop_guard_file" 2>/dev/null || stat -f %m "$loop_guard_file" 2>/dev/null || echo 0)
+    stale_days="${ORCHESTRATOR_LOOP_GUARD_STALE_DAYS:-7}"
+    if [ "$guard_mtime" -gt 0 ]; then
+      now_ts=$(date -u +%s)
+      age_seconds=$((now_ts - guard_mtime))
+      stale_threshold_seconds=$((stale_days * 86400))
+      if [ "$age_seconds" -gt "$stale_threshold_seconds" ]; then
+        stale_reason="${stale_reason}mtime age (${age_seconds}s since last update, threshold ${stale_threshold_seconds}s / ${stale_days} days); "
+      fi
+    fi
+
+    if [ -n "$stale_reason" ]; then
+      loop_guard_stale=true
+      stale_ts=$(date -u +%s)
+      stale_guard_dest="${TASK_DIR}/.stale-loop-guard-${stale_ts}.json"
+      echo "[orchestrate] ERROR: STALE LOOP GUARD — ${stale_reason}Archived to ${stale_guard_dest} for inspection; reinitializing fresh guard at cycle 0." >&2
+      if mv "$loop_guard_file" "$stale_guard_dest" 2>/dev/null; then
+        :
+      else
+        echo "[orchestrate] WARNING: could not move stale guard aside to ${stale_guard_dest}; ${loop_guard_file} is still in place and must be removed manually before the next cycle." >&2
+      fi
+      # Co-archive the churn-state file under the loop guard's inherited verdict (not an
+      # independently-derived detector) and the same timestamp suffix, so the two archives are
+      # correlatable. Only when it exists -- never create an empty churn archive.
+      if [ -f "$churn_file" ]; then
+        stale_churn_dest="${TASK_DIR}/.stale-churn-state-${stale_ts}.json"
+        echo "[orchestrate] Co-archiving churn state to ${stale_churn_dest} (inherits the loop guard's stale verdict)." >&2
+        if mv "$churn_file" "$stale_churn_dest" 2>/dev/null; then
+          :
+        else
+          echo "[orchestrate] WARNING: could not move stale churn state aside to ${stale_churn_dest}; ${churn_file} is still in place and must be removed manually before the next cycle." >&2
+        fi
+      fi
+    fi
+  fi
+fi
+# --- loop-guard-staleness:end ---
 
 # --- budget-continuation-override:begin ---
 # Defect B: cycle_count is a per-task, CUMULATIVE budget that survives re-invocation BY DESIGN --
@@ -160,9 +244,9 @@ current_plan_version="${current_plan_version:-none}"
 # bypass MAX_CYCLES by simply re-invoking /orchestrate. test-session-runtime-files.sh Case 3 is
 # the regression protecting this decision; this override must never disturb it. The override
 # below is the sanctioned, explicit, loudly-logged escape hatch for a genuinely exhausted budget
-# -- never automatic, never session_id-gated, never inferred from mtime. Verbatim-twin mechanism
-# to skill-orchestrate-hard/SKILL.md's Stage 2 (base mode has no loop-guard-staleness detector to
-# sit after, so this runs immediately before the pre-existing resume-read block below).
+# -- never automatic, never session_id-gated, never inferred from mtime. Runs immediately after
+# the `$hard_mode`-gated `loop-guard-staleness` region above (which only ever archives a stale
+# guard aside and falls through) and before the pre-existing resume-read block below.
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   peek_cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   if [ "$peek_cycle_count" -ge "$MAX_CYCLES" ]; then
@@ -291,6 +375,34 @@ mint_dispatch_seq() {
   skill_orchestrate_mint_dispatch_seq "$loop_guard_file"
 }
 
+# Hard-mode-only churn-state init/resume (H5/H6): per-target churn counters and audit-dispatch
+# bookkeeping, read by Stage 5b's churn-detection/three-strikes logic. Gated identically to the
+# `churn_file` assignment and the `loop-guard-staleness` region above.
+if [ "${hard_mode:-false}" = "true" ]; then
+  if [ -f "$churn_file" ] && jq empty "$churn_file" 2>/dev/null; then
+    total_churn=$(jq -r '.total_churn // 0' "$churn_file")
+    # Observational-only session_id tracking (NEVER a gate — identical rationale to the loop
+    # guard's own treatment above: SESSION_ID is regenerated per /orchestrate invocation, while
+    # this file is explicitly designed to survive across conversational turns. The real
+    # same-task concurrency guard is task-lock.sh's acquire/heartbeat/release mutex, not
+    # session_id equality).
+    churn_session_id=$(jq -r '.session_id // ""' "$churn_file")
+    if [ -n "$churn_session_id" ] && [ "$churn_session_id" != "$session_id" ]; then
+      echo "[orchestrate] INFO: churn state was last written by a different session_id ('${churn_session_id}' vs current '${session_id}') — expected on conversational resume, not gated."
+    fi
+  else
+    # Fresh start: create churn state atomically via init-marker; on a lost race (exit 1),
+    # resume-read total_churn (matching the `if`-branch above).
+    if jq -n --arg session_id "$session_id" \
+      '{"session_id": $session_id, "total_churn": 0, "target_churn": {}, "adversarial_triggers": 0, "audit_dispatches": 0}' \
+      | bash .claude/scripts/task-lock.sh init-marker "$churn_file"; then
+      total_churn=0
+    else
+      total_churn=$(jq -r '.total_churn // 0' "$churn_file")
+    fi
+  fi
+fi
+
 # Blocker escalation counter (reset each /orchestrate invocation) — from the same shared
 # orchestrate-loop-guard-init.sh call above.
 blocker_escalation_count=$(echo "$loop_guard_init_json" | jq -r '.blocker_escalation_count')
@@ -318,11 +430,13 @@ design — this is the existing, deliberate semantics (protected by
 `test-session-runtime-files.sh` Case 3), not a new decision introduced by this override. The same
 record appears in `skill-orchestrate-hard/SKILL.md`'s Stage 2 so both engines visibly agree.
 
-**Asymmetry decision (recorded, "recorded not acted on" style, mirroring the hard engine's
-record so the two visibly agree)**: whether base mode should ever gain the general 3-signal
-`loop-guard-staleness` detector hard mode has is a SEPARATE, undecided question — its absence
-here remains deliberate and is not settled by adding the budget-continuation override, which is
-orthogonal to it and requires no such detector to function correctly.
+**Asymmetry decision (recorded, "recorded not acted on" style)**: the 3-signal
+`loop-guard-staleness` detector now exists in this engine, behind the `$hard_mode` gate (D4) —
+it is no longer absent from this file the way the note below once described. Whether base mode
+(`$hard_mode = false`) should gain the detector UNCONDITIONALLY is a SEPARATE, undecided
+question, left open by this migration: the detector's presence here is scoped to hard mode only,
+and extending it to base mode would be a distinct, future decision requiring its own rationale —
+not something this task settles by porting the hard-only region.
 
 ### Stage 3: State Machine Loop
 
