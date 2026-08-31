@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md",
+      "summary": "Empirically confirms hypothesis (a) STRUCTURAL via the incident's own subagent transcript: the task-lock/session-registry heartbeat calls in general-implementation-agent.md Stage 4D were never emitted (0/8 phase transitions), not emitted-and-failed; surveys all listed call sites and records placement decisions for the pid-liveness, fingerprint, and events.jsonl cross-session findings."
+    }
+  ],
+  "next_steps": "Run /plan 81 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788202255_53c3de_81",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "When an agent-contract markdown file's documented bash snippet is suspected of not executing, check for a Claude Code subagent transcript at ~/.claude/projects/<escaped-cwd>/<session-uuid>/subagents/agent-<name>-<hash>.jsonl before reasoning from source alone -- it records every actual tool_use the agent issued (with args and tool_result/is_error), turning 'did this fire' from an inference into a direct grep/json-parse. Located via `grep -rl '<session-id-fragment>' ~` or `find ~ -iname '*<fragment>*'`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["subagent transcript", "jsonl", "root cause", "tool_use", "empirical verification", "claude projects directory"]
+    },
+    {
+      "content": "This agent system's markdown agent/skill files mix two placeholder conventions inconsistently: `$var` shell-variable form (meant to be substituted into an actually-executing bash command) versus `{token}` brace form (meant to be substituted textually into a downstream prompt/template string, e.g. a --session argument passed to another subagent's prompt). When auditing whether a documented bash snippet is reliable, check which convention it uses -- brace-form snippets passed directly to bash are a stronger signal of unreliability (an unsubstituted literal placeholder reliably breaks numeric-arg parsing, e.g. `printf \"%03d\" \"{x}\"` exits 1) even before checking whether the snippet fires at all.",
+      "category": "PATTERN",
+      "source_artifact": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["placeholder convention", "brace placeholder", "shell variable", "agent markdown", "silent failure"]
+    }
+  ]
+}

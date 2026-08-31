@@ -52,17 +52,17 @@ next_project_number: 128
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
+68 [RESEARCHING] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
-81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
+81 [RESEARCHED] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-117 [NOT STARTED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
+117 [RESEARCHING] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
   └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
     └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
       └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
@@ -297,7 +297,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 117. Build orchestrate dispatch prep stage
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1257,10 +1257,11 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 
 ### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [081_mechanize_task_lock_and_session_heartbeat_refresh/reports/01_heartbeat-non-execution-root-cause.md]
 
 **Description**: Task-lock and session-registry heartbeats never fire during a real single-task /implement run. Both liveness timestamps stay frozen at their acquire-time value for the entire run, so every staleness-based consumer sees a healthy, actively-working session as long-dead.
 
@@ -1568,7 +1569,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
