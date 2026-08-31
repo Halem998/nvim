@@ -168,4 +168,6 @@ entry. Undeclared-but-deployed skills are automatically reachable via Step 4e.
 - `.claude/extensions/core/manifest.json` — Core routing_hard / routing_agents_hard entries
 - `.claude/extensions/cslib/manifest.json` — CSLib routing_hard / routing_agents_hard entries
 - `.claude/extensions/lean/manifest.json` — Lean routing_hard / routing_agents_hard entries
-- `context/guides/manifest-routing-schema.md` — Full routing model (all four manifest blocks)
+- `context/guides/manifest-routing-schema.md` — Full routing model (all five manifest blocks,
+  including the one-level `hard_contracts` block this document does not cover — a different
+  mechanism, contract-text injection rather than skill/agent resolution)

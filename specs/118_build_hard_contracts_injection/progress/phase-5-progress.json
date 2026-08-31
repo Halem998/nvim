@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Document hard_contracts in the routing guides",
+  "started_at": "2026-08-31T01:05:00Z",
+  "last_updated": "2026-08-31T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend manifest-routing-schema.md's Four Blocks section to Five Blocks, add hard_contracts row", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 2, "description": "Document one-level shape, contrast with two-level blocks, routing_lookup_flat() resolver", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 3, "description": "Document replace: entry form with example", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 4, "description": "Note no extension declares block today, consumer is Stage 3.5", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 5, "description": "Add cross-reference line to hard-mode-routing.md Related Files", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 6, "description": "Check and update stale Four Blocks references elsewhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

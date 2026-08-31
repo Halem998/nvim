@@ -365,27 +365,27 @@ gate, and by counting `gate16` findings after.
 
 ---
 
-### Phase 5: Document `hard_contracts` in the routing guides [NOT STARTED]
+### Phase 5: Document `hard_contracts` in the routing guides [COMPLETED]
 
 **Goal**: The canonical manifest-key enumeration covers `hard_contracts`, so the warning added in
 Phase 4 points at a live explanation rather than a dead reference.
 
 **Tasks**:
-- [ ] In `manifest-routing-schema.md`, extend the "## The Four Blocks" section to cover
+- [x] In `manifest-routing-schema.md`, extend the "## The Four Blocks" section to cover
       `hard_contracts` as a fifth block, renaming the heading accordingly (it is now five, and
       the fifth has a genuinely different shape).
-- [ ] Document `hard_contracts`'s one-level `{task_type: [path, ...]}` shape and contrast it with
+- [x] Document `hard_contracts`'s one-level `{task_type: [path, ...]}` shape and contrast it with
       the four two-level `{op: {task_type: value}}` blocks; state that it resolves via
       `routing_lookup_flat()`, not `routing_lookup()`.
-- [ ] Document the `replace:{core-basename}:{override-path}` entry form alongside plain additive
+- [x] Document the `replace:{core-basename}:{override-path}` entry form alongside plain additive
       entries, with one short example.
-- [ ] Note that no extension declares the block today and that its consumer is
+- [x] Note that no extension declares the block today and that its consumer is
       `skill-orchestrate/SKILL.md`'s Stage 3.5 Dispatch Prep.
-- [ ] Add one cross-reference line to `hard-mode-routing.md` (its "Related Files" section or the
+- [x] Add one cross-reference line to `hard-mode-routing.md` (its "Related Files" section or the
       nearest apt heading) pointing at the schema doc's `hard_contracts` coverage — do not
       duplicate the mechanism there; that file is scoped to `--hard` skill/agent resolution, a
       different mechanism.
-- [ ] Check whether "Four Blocks" is referenced by name elsewhere in the repo and update any such
+- [x] Check whether "Four Blocks" is referenced by name elsewhere in the repo and update any such
       reference to match the renamed heading.
 
 **Timing**: 45 minutes

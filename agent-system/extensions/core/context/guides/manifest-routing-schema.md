@@ -1,10 +1,10 @@
 # Manifest Routing Schema
 
-This document is the authoritative description of the consolidated routing model: the four
-manifest blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`), the single
-five-step first-match-wins ladder every routing consumer shares, core-manifest identification,
-`routing_exempt`'s narrowed meaning, and the rule that agent names are always declared data,
-never derived strings.
+This document is the authoritative description of the consolidated routing model: the five
+manifest blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`,
+`hard_contracts`), the single five-step first-match-wins ladder every routing consumer shares,
+core-manifest identification, `routing_exempt`'s narrowed meaning, and the rule that agent names
+are always declared data, never derived strings.
 
 **Scope**: This document covers the manifest-level routing schema. For the `--hard`-specific
 resolution path and its historical divergence (now eliminated), see
@@ -14,11 +14,12 @@ from `merge-sources/claudemd.md`).
 
 ---
 
-## The Four Blocks
+## The Five Blocks
 
-Every extension manifest may declare up to four routing blocks, all sharing the same
-`{ op: { task_type: value } }` shape (`op` is `"research"`, `"plan"`, or `"implement"`, plus
-occasionally an extension-specific op like `present`'s `"critique"`):
+Every extension manifest may declare up to four **two-level** routing blocks, all sharing the
+same `{ op: { task_type: value } }` shape (`op` is `"research"`, `"plan"`, or `"implement"`, plus
+occasionally an extension-specific op like `present`'s `"critique"`), plus one **one-level**
+block, `hard_contracts`, with a genuinely different shape (see its own subsection below):
 
 | Block | Value type | Consumed by |
 |-------|-----------|-------------|
@@ -26,17 +27,60 @@ occasionally an extension-specific op like `present`'s `"critique"`):
 | `routing_hard` | skill name (e.g. `"skill-lean-research-hard"`) | `command-route-skill.sh` (`--hard` mode) |
 | `routing_agents` | agent name, no `.md` suffix (e.g. `"epi-research-agent"`) | `command-route-agent.sh` (standard mode) |
 | `routing_agents_hard` | agent name (e.g. `"lean-research-hard-agent"`) | `command-route-agent.sh` (`--hard` mode) |
+| `hard_contracts` | array of contract paths/`replace:` entries (see below) | `skill-orchestrate/SKILL.md` Stage 3.5 Dispatch Prep, via `routing_lookup_flat()` |
 
 `routing`/`routing_hard` resolve which **skill** a command (`/research`, `/plan`, `/implement`)
 invokes. `routing_agents`/`routing_agents_hard` resolve which **agent** `/orchestrate` and
 `/orchestrate --hard` dispatch directly (bypassing the skill layer). Both pairs are read by the
-exact same underlying ladder — only the block name and the resolver script differ.
+exact same underlying ladder — only the block name and the resolver script differ. `hard_contracts`
+is unrelated to either pair — it does not resolve a skill or an agent name, it resolves the list
+of behavioral-contract files injected into a `--hard` dispatch's prompt.
 
 **Completeness rule**: every key present in `routing.{op}` MUST have a counterpart key in
 `routing_agents.{op}` on the same manifest, and every key in `routing_hard.{op}` MUST have a
 counterpart in `routing_agents_hard.{op}`. `lint-routing-wiring.sh` (Checks A and C) enforces
 this as a hard FAIL, not a silent gap — this is the mechanical backstop against the defect class
-that let sed-derived agent names silently resolve to non-existent files.
+that let sed-derived agent names silently resolve to non-existent files. `hard_contracts` has no
+counterpart-key rule; it is independently optional.
+
+---
+
+## The `hard_contracts` Block (One-Level Shape)
+
+Unlike the four blocks above, `hard_contracts` is a **one-level** map:
+`{ task_type: [ path_or_directive, ... ] }` — no intervening `op` key. A `--hard` dispatch's
+per-phase contract list already varies by `phase` (`research`/`plan`/`implement`), not by
+`task_type`, inside `skill-orchestrate/SKILL.md`'s own Stage 3.5 logic, so the manifest key only
+needs to vary by `task_type`; forcing a fabricated `op` level onto this block to reuse
+`routing_lookup()` would misrepresent its shape. It resolves through a dedicated sibling
+function, `routing_lookup_flat(block, task_type)`, in `scripts/lib/manifest-routing-lib.sh` —
+never through `routing_lookup()` — sharing the same 4-step non-core/core x exact/compound-base
+precedence (Steps 1-4 of the Five-Step Ladder above; a one-level block has no Step 5 "no match"
+distinction beyond the shared empty-output miss).
+
+Each array entry is either:
+- **A plain additive path** (e.g. `"extra-contract.md"`) — appended to the phase's fixed core
+  contract list, after all core entries.
+- **A `replace:{core-basename}:{override-path}` directive** — substitutes the named core-list
+  entry (matched by exact basename, e.g. `replace:anti-analysis.md:my-anti-analysis.md`)
+  in place, preserving its position in the list rather than appending.
+
+Example:
+```json
+{
+  "hard_contracts": {
+    "mytype": [
+      "replace:anti-analysis.md:mytype-anti-analysis.md",
+      "mytype-extra-contract.md"
+    ]
+  }
+}
+```
+
+**Current status**: no extension declares this block today — the mechanism is additive and
+stays unexercised by real data on day one. Its sole consumer is
+`skill-orchestrate/SKILL.md`'s Stage 3.5 Dispatch Prep ("Hard-mode contract injection" subsection),
+which builds the final `hard_contracts_block` prompt-injection string from the resolved list.
 
 ---
 
@@ -176,9 +220,12 @@ committing; it fails loudly on a missing counterpart key or a non-existent agent
 
 ## Related Files
 
-- `scripts/lib/manifest-routing-lib.sh` — the one ladder implementation
+- `scripts/lib/manifest-routing-lib.sh` — the one ladder implementation, plus the
+  `hard_contracts` sibling ladder, `routing_lookup_flat()`
 - `scripts/command-route-skill.sh` — skill resolution (`/research`, `/plan`, `/implement`)
 - `scripts/command-route-agent.sh` — agent resolution (`/orchestrate`, `/orchestrate --hard`)
 - `scripts/lint/lint-routing-wiring.sh` — wiring-validation gate (verify-deploy.sh gate7)
 - `scripts/tests/test-routing-resolution.sh` — table-driven parity test
+- `skills/skill-orchestrate/SKILL.md` — Stage 3.5 Dispatch Prep, the `hard_contracts` block's
+  sole consumer
 - `context/guides/hard-mode-routing.md` — `--hard`-specific resolution detail and history
