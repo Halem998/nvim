@@ -12,10 +12,10 @@ next_project_number: 128
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,74,81,87,94,100,102,103,106,108,110,111,113,114,117 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,104,105,109,112,118,122,124,126 | 29,68,74,81,102,108,117 | core-agent-system, extensions, literature |
-| 3 | 72,73,107,119,123,125 | 104,118,122,124 | core-agent-system, literature |
-| 4 | 120 | 119 | core-agent-system |
-| 5 | 121 | 120 | core-agent-system |
+| 2 | 30,75,76,104,105,109,112,118,124 | 29,68,74,81,102,108,117 | core-agent-system, extensions, literature |
+| 3 | 107,119,125 | 104,118,124 | core-agent-system, literature |
+| 4 | 120,122 | 31,119 | core-agent-system |
+| 5 | 72,73,121,123,126 | 120,122 | core-agent-system |
 | 6 | 127 | 121,124 | core-agent-system |
 | 7 | 88 | 87,127 | core-agent-system |
 | 8 | 44 | 88 | core-agent-system |
@@ -37,6 +37,16 @@ next_project_number: 128
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
+    └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+      └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19 
+        └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+          └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+            └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+              └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+                └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+                  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+                    └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
@@ -45,14 +55,7 @@ next_project_number: 128
 68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19 
-      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-        └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-          └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-            └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-              └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-                └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-                  └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
+    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
@@ -62,15 +65,13 @@ next_project_number: 128
 117 [NOT STARTED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
   └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
     └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
-      └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
-        └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
-          └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
-  └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
-    └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
-    └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
-    └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
+      └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
+      └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
+        └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
+        └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
+        └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
+        └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
-  └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
 
 ### Extensions
 
@@ -126,7 +127,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 117
+- **Dependencies**: Task 117, Task 122
 
 **Description**: Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.
 
@@ -202,7 +203,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 117
+- **Dependencies**: Task 117, Task 119
 
 **Description**: Build the team-mode shared fan-out stage in skill-orchestrate.
 
@@ -240,7 +241,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 118, Task 119
+- **Dependencies**: Task 31, Task 118, Task 119
 
 **Description**: Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.
 
