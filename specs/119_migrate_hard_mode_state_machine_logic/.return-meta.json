@@ -20,22 +20,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash -n", "sentinel extraction", "test fixture", "SKILL.md migration", "anchor text"]
+      "suggested_keywords": [
+        "bash -n",
+        "sentinel extraction",
+        "test fixture",
+        "SKILL.md migration",
+        "anchor text"
+      ]
     },
     {
       "content": "When porting a 'Increment cycle_count. Loop continues.' style directive from a source engine into a differently-ordered position in a target engine (e.g. moving Stage 4b's churn check to run strictly after Stage 5's own tail-end increment, to fix an ordering defect), do not port the literal increment statement verbatim — check whether the counter is already incremented exactly once elsewhere in the new position's control flow. A second literal increment silently double-charges a budget counter.",
       "category": "INSIGHT",
       "source_artifact": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["cycle_count", "stage ordering", "double increment", "state machine migration", "D7"]
+      "suggested_keywords": [
+        "cycle_count",
+        "stage ordering",
+        "double increment",
+        "state machine migration",
+        "D7"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788216532_9ded51",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

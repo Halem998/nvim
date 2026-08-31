@@ -1086,12 +1086,12 @@
     {
       "project_number": 119,
       "project_name": "migrate_hard_mode_state_machine_logic",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 churn/three-strikes, burnout breaker) into skill-orchestrate.\n\nCONTEXT. skill-orchestrate-hard/SKILL.md's genuinely hard-specific residue (measured by stage-header comparison: Stage 1b agent routing ~50 lines, Stage 1c discipline preamble ~16 lines, Stage 2 loop-guard/churn-state init ~279 lines, Stage 3c burnout circuit-breaker ~38 lines, Stage 4b churn detection ~56 lines, plus an estimated ~200 of Stage 4's 484-line dispatch-construction lines) is NOT reducible to prompt-injected text -- it implements stateful counters and thresholds (three-strikes churn detection, single-blocking-phase-per-implement-cycle dispatch limiting, a burnout circuit breaker) that only function as actual conditional logic in the engine's own state machine.\n\nWORK. Port this residue into skill-orchestrate/SKILL.md as `if $hard_mode` conditional branches: (1) loop-guard/churn-state initialization at the equivalent of today's Stage 2; (2) the burnout circuit-breaker gate; (3) per-target churn-detection counters and the three-strikes audit-dispatch trigger, run after each implement dispatch; (4) the H1 single-blocking-phase-per-cycle limiter on implement dispatch (vs. base mode's whole-plan-per-cycle). This is the SAME file the dispatch-prep and contract-injection prerequisite tasks also edit -- coordinate to avoid overlapping edits within the same dispatch window.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i residue measurement table).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-08-31T18:11:23Z",
+      "last_updated": "2026-08-31T23:45:24Z",
       "dependencies": [
         117,
         118
@@ -1099,7 +1099,25 @@
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/119_migrate_hard_mode_state_machine_logic/reports/01_state-machine-migration-design.md",
+          "type": "report",
+          "summary": "Maps the four unmigrated hard-mode state-machine residue items to exact line ranges, verifies prerequisites landed, flags an open H4 scope question."
+        },
+        {
+          "path": "specs/119_migrate_hard_mode_state_machine_logic/plans/01_state-machine-migration.md",
+          "type": "plan",
+          "summary": "7-phase sequential plan migrating the four hard-mode state-machine residues into skill-orchestrate/SKILL.md behind if hard_mode."
+        },
+        {
+          "path": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
+          "type": "summary",
+          "summary": "Migrated H1/H5/H6 and the burnout circuit breaker into skill-orchestrate as hard_mode conditional branches."
+        }
+      ],
+      "session_id": "sess_1788216532_9ded51",
+      "completion_summary": "Ported the four stateful hard-mode residues (Stage 2 loop-guard/churn-state init with conditional MAX_CYCLES, Stage 3 burnout circuit breaker, Stage 4 H1 per-phase implement dispatch, Stage 5b H5/H6 churn detection and three-strikes audit) from skill-orchestrate-hard/SKILL.md into skill-orchestrate/SKILL.md as $hard_mode conditional branches, defining the previously-unset phases_completed_before/after pair and gating Stage 5a to base-mode-only. The -hard file is byte-identical to its pre-task state and the full test suite (57/57) plus all 7 downstream-scope tests/lints pass."
     },
     {
       "project_number": 120,
