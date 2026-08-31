@@ -55,7 +55,7 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-118 [RESEARCHING] — Build hard_contracts manifest key and contract-text injection at 
+118 [RESEARCHED] — Build hard_contracts manifest key and contract-text injection at 
   └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
     └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
     └─ 122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
@@ -271,10 +271,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 118. Build hard contracts injection
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117
+- **Research**: [118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md]
 
 **Description**: Build hard_contracts manifest key and contract-text injection at dispatch-prep time.
 

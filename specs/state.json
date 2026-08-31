@@ -1051,12 +1051,12 @@
     {
       "project_number": 118,
       "project_name": "build_hard_contracts_injection",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Build hard_contracts manifest key and contract-text injection at dispatch-prep time.\n\nCONTEXT. context/contracts/*.md already exists as a shared contract-text store (one file per H-item: anti-analysis.md=H2, reference-grounding.md=H3, adversarial-verification.md=H4, convergence.md=H6, territory.md=H7, wrap-up.md=H9, plus recovery.md/phase-closure.md/pre-edit-gate.md/orchestrator-discipline.md), already referenced by backtick path from the 7 duplicate -hard files (3 lifecycle -hard skills, 3 -hard agents, skill-orchestrate-hard). The reduction opportunity is consumer-count, not content-authoring: today 7 files independently decide which contracts to reference; this task creates exactly one call site.\n\nWORK. (1) Extend the dispatch-prep stage this task depends on (built by the prerequisite task) so that, when hard_mode is set, it builds and appends the ordered context/contracts/*.md reference block to the dispatch prompt. (2) Add an optional hard_contracts manifest key (shape: {task_type: [path, ...]}) letting an extension add or override a contract for its own task types, resolved by the existing manifest-routing ladder's compound-key (ext:subtype) matching; an entry prefixed \"replace:core-file.md:override-file.md\" substitutes rather than adds. (3) Add a deploy-time warning (not a hard error, not silent ignore) in verify-deploy.sh for any extension still declaring routing_hard/routing_agents_hard after this collapse, naming the extension and pointing at hard_contracts as the migration path.\n\nNOT IN SCOPE. The stateful hard-mode logic (churn/three-strikes counters, burnout circuit breaker, single-phase-per-cycle implement dispatch) is NOT prompt-injectable text and is out of scope for this task -- it is a separate, dependent task (state-machine migration).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i, A4-ii, A4-iii).\n",
       "created": "2026-08-31T18:11:22Z",
-      "last_updated": "2026-08-31T21:33:30Z",
+      "last_updated": "2026-08-31T21:44:17Z",
       "dependencies": [
         117
       ],
@@ -1065,7 +1065,14 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/context/guides/manifest-routing-schema.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
+          "summary": "Design spec for hard-mode contract-text injection at Stage 3.5, the hard_contracts manifest key, and the verify-deploy.sh migration warning",
+          "created": "2026-08-31T21:44:22Z"
+        }
+      ],
       "session_id": "sess_1788211958_b7b5e8_118"
     },
     {

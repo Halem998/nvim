@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
+      "summary": "Design spec for hard-mode contract-text injection at Stage 3.5 Dispatch Prep, the hard_contracts manifest key, and the verify-deploy.sh migration warning."
+    }
+  ],
+  "next_steps": "Run /plan 118 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788211958_b7b5e8_118",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's manifest-routing-lib.sh, routing_lookup() only resolves two-level manifest blocks shaped {op: {task_type: value}} (routing, routing_hard, routing_agents, routing_agents_hard). A new manifest key shaped {task_type: value} (one level, no per-operation axis) needs a parallel function, not a forced reuse of routing_lookup() with a fake op key -- the shape mismatch would misrepresent the manifest schema. Mirror routing_lookup()'s same 4-step non-core/core x exact/compound precedence against a one-level jq path instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["manifest-routing-lib", "routing_lookup", "one-level-block", "hard_contracts", "manifest routing ladder"]
+    },
+    {
+      "content": "In this repo, /orchestrate --hard never actually invokes skill-orchestrate-hard: commands/orchestrate.md hardcodes skill: \"skill-orchestrate\" as its only Skill-tool target and threads effort_flag=\"hard\" into skill-orchestrate's own delegation context, which uses it only for agent routing (command-route-agent.sh against routing_agents_hard). skill-orchestrate-hard/SKILL.md is unreachable dead code, confirmed by a repo-wide grep for it as a Skill-tool target returning zero hits outside its own file. Any hard-mode logic addition belongs inside skill-orchestrate/SKILL.md as an if $hard_mode branch, never in the -hard file.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "hard-mode", "skill-orchestrate-hard", "dead-code", "dispatch-routing"]
+    }
+  ]
+}
