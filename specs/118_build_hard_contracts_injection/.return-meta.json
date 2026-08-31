@@ -15,7 +15,8 @@
     "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
     "agent-system/extensions/core/scripts/verify-deploy.sh",
     "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
-    "agent-system/extensions/core/context/guides/hard-mode-routing.md"
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/index-entries.json"
   ],
   "memory_candidates": [
     {
