@@ -1,0 +1,29 @@
+{
+  "phase": 6,
+  "phase_name": "Stage 5b — churn detection (H6), three-strikes audit (H5), and Stage 5a gating",
+  "started_at": "2026-08-31T23:18:00Z",
+  "last_updated": "2026-08-31T23:18:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Stage 5b heading after Stage 5a, before Stage 6, gated on hard_mode", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Set phases_completed_after and compute phases_delta (D7)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Port churn signature with unset phases_completed_before guard", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Increment target_churn/total_churn atomically, log H6 line", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Three-strikes divergence-audit dispatch to RESEARCH_AGENT", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Reset churn counter, increment audit_dispatches after audit", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 7, "description": "Gate Stage 5a and its Stage 2 drift constants to base mode only, with decision record", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Port the source engine's literal 'Increment cycle_count' inside the three-strikes branch", "result": "failed", "reason": "would double-charge the cycle budget since Stage 5b runs strictly after Stage 5's own tail-end cycle_count increment (D7's ordering fix); omitted the second increment and recorded as a plan deviation"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.6",
+      "description": "After the audit dispatch: reset target_churn[blocker_target] to 0, increment audit_dispatches, increment cycle_count, and let the loop continue.",
+      "type": "altered",
+      "reason": "cycle_count is not incremented a second time in Stage 5b since Stage 5's own tail already charges the cycle exactly once, and Stage 5b runs strictly after it; a second increment would double-charge the budget.",
+      "annotation": "*(deviation: altered — cycle_count is NOT incremented a second time...)*"
+    }
+  ]
+}

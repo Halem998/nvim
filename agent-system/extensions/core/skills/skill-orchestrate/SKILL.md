@@ -409,12 +409,17 @@ blocker_escalation_count=$(echo "$loop_guard_init_json" | jq -r '.blocker_escala
 MAX_BLOCKER_ESCALATIONS=$(echo "$loop_guard_init_json" | jq -r '.max_blocker_escalations')
 
 # Drift detection constants (reset each /orchestrate invocation) — base-mode-only; hard mode has
-# no Stage 5a Drift Inspection equivalent (its own H5 divergence-audit mechanism plays that role
-# instead), so these stay out of the shared script.
-drift_inspection_count=0
-MAX_DRIFT_INSPECTIONS=1
-DRIFT_COMPLETION_THRESHOLD=0.70
-DRIFT_REVISION_THRESHOLD=0.30
+# no Stage 5a Drift Inspection equivalent (its own Stage 5b H5 divergence-audit mechanism plays
+# that role instead — see the mutual-exclusion decision record at Stage 5a/5b below), so these
+# stay out of the shared script AND, now that both modes share this one file, out of scope when
+# `hard_mode` is true. Only ever read/incremented from inside Stage 5a's own base-mode-gated
+# call site, so leaving them unset in hard mode is safe.
+if [ "${hard_mode:-false}" != "true" ]; then
+  drift_inspection_count=0
+  MAX_DRIFT_INSPECTIONS=1
+  DRIFT_COMPLETION_THRESHOLD=0.70
+  DRIFT_REVISION_THRESHOLD=0.30
+fi
 ```
 
 **On the `budget-continuation-override` region above (Defect B)**: this rewrites the SAME
@@ -1687,8 +1692,10 @@ else
   fi
   # exit 1/exit 2 (recovered=false, or usage/jq error): no signal available, nothing to do here.
 
-  # Drift detection: arithmetic gate (cheap check before expensive inspection fork)
-  if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
+  # Drift detection: arithmetic gate (cheap check before expensive inspection fork). Base-mode
+  # only (D6/Phase 6 decision record) — Stage 5b's H5 divergence audit plays this role in hard
+  # mode instead; see the mutual-exclusion note at Stage 5a/5b below.
+  if [ "${hard_mode:-false}" != "true" ] && [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
     # Use awk for floating-point comparison (bash only does integer math)
     completion_ratio=$(awk "BEGIN { printf \"%.4f\", $phases_completed / $phases_total }")
     is_below_threshold=$(awk "BEGIN { print ($completion_ratio < $DRIFT_COMPLETION_THRESHOLD) ? \"yes\" : \"no\" }")
@@ -1755,8 +1762,17 @@ fi
 
 ### Stage 5a: Drift Inspection
 
-Called from Stage 5 when phase completion is below DRIFT_COMPLETION_THRESHOLD and dispatch_status is "partial".
+**Base mode only.** Called from Stage 5 when phase completion is below DRIFT_COMPLETION_THRESHOLD and dispatch_status is "partial".
 Capped at MAX_DRIFT_INSPECTIONS=1 per /orchestrate invocation.
+
+**Mutual exclusion with Stage 5b (decision record)**: Stage 5a and Stage 5b (below) are mutually
+exclusive by construction — exactly one is reachable for any given `hard_mode` value. Hard mode's
+H5 divergence-audit dispatch in Stage 5b plays the drift-inspection role that Stage 5a plays in
+base mode; they are two different mechanisms answering the same underlying question ("is this
+task's plan/execution drifting, and does it need outside intervention?"), not duplicates of each
+other. This makes the existing Stage 2 comment (asserting hard mode "has no Stage 5a Drift
+Inspection equivalent — its own H5 divergence-audit mechanism plays that role instead")
+executable rather than merely asserted.
 
 1. If `drift_inspection_count >= MAX_DRIFT_INSPECTIONS`: log warning and return (skip inspection).
 
@@ -1787,6 +1803,81 @@ Capped at MAX_DRIFT_INSPECTIONS=1 per /orchestrate invocation.
    After Agent tool returns: read handoff to confirm revision.
 
 6. If `drift_pct <= DRIFT_REVISION_THRESHOLD`: log "Drift check passed. Continuing."
+
+---
+
+### Stage 5b: Churn Detection (H6) and Three-Strikes Audit Dispatch (H5) — hard mode only
+
+**Placed AFTER Stage 5a Drift Inspection and before Stage 6.** Placement is load-bearing twice
+over: it must run after Stage 5's own `phases_completed` assignment (D7 — this stage supplies
+`phases_completed_after` from that already-assigned value) and it must stay strictly outside the
+Stage 5 region `test-handoff-reader-parity.sh` extracts. Gated on `hard_mode`; entirely skipped
+in base mode, where Stage 5a (above) plays the equivalent role — see that stage's mutual-exclusion
+decision record.
+
+```bash
+if [ "${hard_mode:-false}" = "true" ]; then
+  # D7: phases_completed_before/phases_completed_after were referenced by the source engine's
+  # churn signature but set by NO stage in either engine before this migration (verified by
+  # grep — exactly one occurrence across the pair, the consumer itself). phases_completed_before
+  # was captured in Stage 4's H1 branch, immediately after that branch's own handoff read;
+  # phases_completed_after is Stage 5's own already-assigned $phases_completed, taken here.
+  # Guard against a cycle where the H1 branch did not run at all (phases_completed_before never
+  # set this cycle) by skipping the churn check entirely rather than computing a false delta —
+  # an unset-vs-zero distinction matters here, so this is a presence check, not a `// 0` read.
+  if [ -n "${phases_completed_before+x}" ] && [ "${have_outcome:-false}" = "true" ] && [ -n "${handoff:-}" ]; then
+    phases_completed_after="$phases_completed"
+    phases_delta=$((phases_completed_after - phases_completed_before))
+
+    # Churn signature: no progress this cycle despite a partial dispatch with blockers.
+    has_blockers=$(echo "${blockers:-[]}" | jq 'length > 0' 2>/dev/null) || has_blockers=false
+    if [ "$dispatch_status" = "partial" ] && [ "$has_blockers" = "true" ] && [ "$phases_delta" -eq 0 ]; then
+      blocker_target=$(echo "$handoff" | jq -r '.blockers[0].target // "unknown"')
+      current_target_churn=$(jq -r --arg target "$blocker_target" \
+        '.target_churn[$target] // 0' "$churn_file")
+      new_target_churn=$((current_target_churn + 1))
+
+      # Update churn counters (atomic tmp-mv jq write, matching this file's other loop-guard/
+      # churn-file writes).
+      jq --arg target "$blocker_target" \
+         --argjson count "$new_target_churn" \
+         --argjson total "$((total_churn + 1))" \
+         --arg sid "$session_id" \
+        '.target_churn[$target] = $count | .total_churn = $total | .last_session_id = $sid' \
+        "$churn_file" > "${churn_file}.tmp" && mv "${churn_file}.tmp" "$churn_file"
+
+      echo "[orchestrate] H6: Churn detected on '$blocker_target' (count: $new_target_churn)" >&2
+
+      # Three-strikes: dispatch a divergence audit instead of another implement.
+      if [ "$new_target_churn" -ge 3 ]; then
+        echo "[orchestrate] H5: Three-strikes — dispatching divergence audit for '$blocker_target'" >&2
+        verbatim_goal=$(echo "$handoff" | jq -r '.blockers[0].verbatim_goal // ""')
+
+        # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
+        # Decision" in general-research-agent.md / general-research-hard-agent.md and the
+        # Handoff Writers table in docs/architecture/handoff-schema.md — so no absolute anchor
+        # (handoff_path) is passed here, and orchestrator_mode is explicitly false.
+        Agent tool:
+          subagent_type: $RESEARCH_AGENT
+          prompt: "DIVERGENCE AUDIT for task $task_number. Target: '$blocker_target'. Verbatim goal: '$verbatim_goal'. This target has failed 3 times. Identify root cause of repeated failure. Write a divergence table, postmortem, and corrected target definition."
+          delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target", orchestrator_mode: false}
+
+        # Reset the churn counter for this target after the audit dispatch.
+        jq --arg target "$blocker_target" --arg sid "$session_id" \
+          '.target_churn[$target] = 0 | .audit_dispatches += 1 | .last_session_id = $sid' \
+          "$churn_file" > "${churn_file}.tmp" && mv "${churn_file}.tmp" "$churn_file"
+
+        # cycle_count is NOT incremented again here: Stage 5b runs strictly after Stage 5's own
+        # tail, which already charged this cycle exactly once (D7's ordering fix — the source
+        # engine's Stage 4b/Stage 5 ordering left this ambiguous; positioning Stage 5b after
+        # Stage 5 resolves it to "exactly one increment per cycle", never two). Loop continues —
+        # the next iteration re-dispatches implement with the audit's findings available to it
+        # via the plan/handoff the audit informs.
+      fi
+    fi
+  fi
+fi
+```
 
 ---
 

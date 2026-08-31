@@ -440,41 +440,47 @@ the real figure rather than assuming the plan-time estimate.
 
 ---
 
-### Phase 6: Stage 5b — churn detection (H6), three-strikes audit (H5), and Stage 5a gating [NOT STARTED]
+### Phase 6: Stage 5b — churn detection (H6), three-strikes audit (H5), and Stage 5a gating [COMPLETED]
 
 **Goal**: Add per-target churn counters and the three-strikes divergence-audit dispatch as a new
 hard-only stage positioned after Stage 5's handoff read, and make it mutually exclusive with base
 mode's Stage 5a drift inspection.
 
 **Tasks**:
-- [ ] Add `### Stage 5b: Churn Detection (H6) and Three-Strikes Audit Dispatch (H5) — hard mode
+- [x] Add `### Stage 5b: Churn Detection (H6) and Three-Strikes Audit Dispatch (H5) — hard mode
       only`, placed AFTER Stage 5a Drift Inspection and before Stage 6, wrapped in
       `if [ "$hard_mode" = "true" ]`. Placement is load-bearing twice over: it must be after
       Stage 5's `phases_completed` assignment (D7) and strictly outside the Stage 5 region
-      `test-handoff-reader-parity.sh` extracts.
-- [ ] Set `phases_completed_after="$phases_completed"` from Stage 5's already-assigned value and
+      `test-handoff-reader-parity.sh` extracts. *(completed)*
+- [x] Set `phases_completed_after="$phases_completed"` from Stage 5's already-assigned value and
       compute `phases_delta` against `phases_completed_before` from Phase 5 (D7). Add a comment
       recording that these two variables were referenced-but-never-set in the source engine and
-      that this migration defines them.
-- [ ] Port the churn signature: `handoff_status == "partial"` AND `blockers | length > 0` AND
+      that this migration defines them. *(completed)*
+- [x] Port the churn signature: `handoff_status == "partial"` AND `blockers | length > 0` AND
       `phases_delta -eq 0`. Guard against an unset `phases_completed_before` (a cycle where the H1
-      branch did not run) by skipping the check rather than computing a false delta.
-- [ ] On a signature: increment `target_churn[blocker_target]` and `total_churn` in `$churn_file`
-      via atomic tmp-mv `jq`, and log the H6 detection line with `[orchestrate]`.
-- [ ] On `new_target_churn >= 3`: log the H5 three-strikes line, read
+      branch did not run) by skipping the check rather than computing a false delta. *(completed)*
+- [x] On a signature: increment `target_churn[blocker_target]` and `total_churn` in `$churn_file`
+      via atomic tmp-mv `jq`, and log the H6 detection line with `[orchestrate]`. *(completed)*
+- [x] On `new_target_churn >= 3`: log the H5 three-strikes line, read
       `blockers[0].verbatim_goal`, and dispatch `$RESEARCH_AGENT` with the DIVERGENCE AUDIT prompt
       (target, verbatim goal, explicit "failed 3 times" framing, request for a divergence table,
       postmortem, and corrected target definition) and `delegation_context` carrying
       `orchestrator_mode: false` with NO `handoff_path` — preserving the source engine's comment
       citing the research agents' Stage 3.6 Scoping Decision for why research agents never write
-      the handoff.
-- [ ] After the audit dispatch: reset `target_churn[blocker_target]` to 0, increment
+      the handoff. *(completed)*
+- [x] After the audit dispatch: reset `target_churn[blocker_target]` to 0, increment
       `audit_dispatches`, increment `cycle_count`, and let the loop continue.
-- [ ] Gate Stage 5a Drift Inspection (and its Stage 2 drift constants
+      *(deviation: altered — `cycle_count` is NOT incremented a second time inside this branch.
+      Stage 5b is positioned strictly after Stage 5's own tail, which already charges the cycle
+      exactly once per D7's ordering fix; the source engine's ambiguous Stage 4b/Stage 5 ordering
+      is exactly what made a literal second increment look correct there. A second increment here
+      would double-charge the cycle budget. `audit_dispatches`/`target_churn` reset and the
+      "loop continues" framing are otherwise ported verbatim.)*
+- [x] Gate Stage 5a Drift Inspection (and its Stage 2 drift constants
       `drift_inspection_count` / `MAX_DRIFT_INSPECTIONS` / the two thresholds) to base mode only,
       with a decision record stating Stage 5a and Stage 5b are mutually exclusive: H5's divergence
       audit plays the drift-inspection role in hard mode. The Stage 2 comment already asserts this
-      asymmetry; this makes it executable.
+      asymmetry; this makes it executable. *(completed)*
 
 **Timing**: 1 hour
 
