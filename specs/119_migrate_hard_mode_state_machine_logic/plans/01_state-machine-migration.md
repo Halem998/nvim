@@ -358,57 +358,57 @@ initialization into Stage 2 as `$hard_mode`-gated regions, positioned so the exi
 
 ---
 
-### Phase 5: Stage 4 — H1 single-blocking-phase-per-cycle dispatch fork [NOT STARTED]
+### Phase 5: Stage 4 — H1 single-blocking-phase-per-cycle dispatch fork [COMPLETED]
 
 **Goal**: Fork `#### State: planned or implementing` on `$hard_mode`, with the hard branch
 dispatching exactly one OPEN phase per cycle and the base branch preserved unchanged.
 
 **Tasks**:
-- [ ] Wrap the entire existing handler body in `if [ "$hard_mode" = "true" ]; then <H1> else
+- [x] Wrap the entire existing handler body in `if [ "$hard_mode" = "true" ]; then <H1> else
       <existing whole-plan body> fi` (D5), leaving the base body's text untouched inside the
-      `else`.
-- [ ] In the hard branch, read `phases_completed` / `phases_total` / `skeleton` from the handoff
+      `else`. *(completed)*
+- [x] In the hard branch, read `phases_completed` / `phases_total` / `skeleton` from the handoff
       (defaulting to `0`/`0`/`false` when absent), and set
-      `phases_completed_before="$phases_completed"` for Stage 5b (D7).
-- [ ] Port the heading-scan phase selection: source
+      `phases_completed_before="$phases_completed"` for Stage 5b (D7). *(completed)*
+- [x] Port the heading-scan phase selection: source
       `.claude/scripts/lib/phase-heading-patterns.sh`, run `has_nonconforming_phase_headings` over
       the WHOLE plan file FIRST (the ordering obligation), `warn_nonconforming` + set
       `phase_scan_inconclusive` on a hit, otherwise grep the first OPEN heading and extract its
       number via `extract_phase_number`. Include the `resume-scan-conformance-gate:begin`/`:end`
-      sentinels and the "the `| grep -q .` pipe form is forbidden under pipefail" note.
-- [ ] Port the four-way branch in order: (a) `phase_scan_inconclusive` -> `EXIT (partial, ...)`
+      sentinels and the "the `| grep -q .` pipe form is forbidden under pipefail" note. *(completed)*
+- [x] Port the four-way branch in order: (a) `phase_scan_inconclusive` -> `EXIT (partial, ...)`
       using this file's existing terminal-condition convention, never a raw `exit 1`;
       (b) `-n "$next_phase"` -> pre-dispatch marker/handoff crosscheck then dispatch;
       (c) `last_skeleton = true` -> skeleton-exhaustion routing; (d) trailing `else` -> no
-      dispatch, defer to the Stage 5 completion gate.
-- [ ] In branch (b), port the pre-dispatch marker/handoff crosscheck (compare
+      dispatch, defer to the Stage 5 completion gate. *(completed)*
+- [x] In branch (b), port the pre-dispatch marker/handoff crosscheck (compare
       `PHASE_HEADING_DONE_ERE` count against the handoff's `phases_completed`; on a mismatch where
       the plan claims more, downgrade the disputed heading to `[PARTIAL]` and `EXIT (partial, ...)`).
       Add a comment distinguishing it from base Stage 5's existing crosscheck: this one is
       pre-dispatch and dispatch-REFUSING; Stage 5's is post-dispatch and diagnostic-and-downgrading.
-      Both are retained.
-- [ ] In branch (b), mint `dispatch_seq`, then build the hard `dispatch_context` adding
+      Both are retained. *(completed)*
+- [x] In branch (b), mint `dispatch_seq`, then build the hard `dispatch_context` adding
       `phase_number` and the `territory` object (`owned_files` pointing at the phase's own "Files
       to modify" list, empty `read_only_files`/`forbidden_files`, and the predecessor-wake
       `concurrency_note`). Carry the source engine's rationale that this documents intra-task
-      predecessor hazards, not exclusive access.
-- [ ] Set the `territory` variable before running Stage 3.5 so `territory.md` is added to
+      predecessor hazards, not exclusive access. *(completed)*
+- [x] Set the `territory` variable before running Stage 3.5 so `territory.md` is added to
       `core_contracts` by the existing mechanism (D6), and update Stage 3.5's `territory` input-table
-      row, which currently says no call site sets it.
-- [ ] Add `build_hard_mode_phase_mission()` producing only the non-duplicated residue (D6): the
+      row, which currently says no call site sets it. *(completed)*
+- [x] Add `build_hard_mode_phase_mission()` producing only the non-duplicated residue (D6): the
       "implement phase N only, do not continue past this phase" mission line, the settled-design
       preamble instruction, and `PHASES COMPLETED: n of m`. Do NOT restate anti-analysis, wrap-up,
       recovery, phase-closure, or pre-edit-gate — Stage 3.5's `hard_contracts_block` already
-      injects them. Append it to the dispatch prompt before the Stage 3.5 blocks.
-- [ ] Keep `skill_preflight_update` inside branch (b) ONLY, never in (c) or (d), with the source
-      engine's comment explaining why no per-phase marker is written here.
-- [ ] Port the skeleton-exhaustion branch: derive follow-ups from
+      injects them. Append it to the dispatch prompt before the Stage 3.5 blocks. *(completed)*
+- [x] Keep `skill_preflight_update` inside branch (b) ONLY, never in (c) or (d), with the source
+      engine's comment explaining why no per-phase marker is written here. *(completed)*
+- [x] Port the skeleton-exhaustion branch: derive follow-ups from
       `sorry_inventory[].follow_up_task`, call
       `update-task-status.sh postflight ... pr_ready ... --allow-pr-ready` with the
       postflight-mapping rationale, call `skill_orchestrate_propagate_completion` via a local
-      named shim, `rm -f "$loop_guard_file"`, and `EXIT (success, ...)`.
-- [ ] Set `dispatch_start_ts` / `dispatch_was_transport_error` in the dispatch branch exactly as
-      the base body does, and change all `[hard-orchestrate]` log prefixes to `[orchestrate]`.
+      named shim, `rm -f "$loop_guard_file"`, and `EXIT (success, ...)`. *(completed)*
+- [x] Set `dispatch_start_ts` / `dispatch_was_transport_error` in the dispatch branch exactly as
+      the base body does, and change all `[hard-orchestrate]` log prefixes to `[orchestrate]`. *(completed)*
 
 **Timing**: 1.5 hours
 

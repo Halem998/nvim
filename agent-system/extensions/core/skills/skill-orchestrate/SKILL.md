@@ -570,7 +570,7 @@ dispatch site.**
 | `lit_flag` | Stage 1 / Stage MT-1 |
 | `orchestrator_mode` | always `true` for every `/orchestrate` dispatch |
 | `hard_mode` | Stage 1 / Stage MT-1 (derived from `effort_flag == "hard"`) |
-| `territory` | optional; no call site sets this today (base mode does not gain a `territory` dispatch key — see Stage MT-3's existing "Decision record" for the rationale) |
+| `territory` | optional; set by the hard-mode `planned`/`implementing` handler's H1 branch (Stage 4) before invoking this stage for `phase=implement`, so `territory.md` is appended by (a) above. No other call site sets it — base mode (`hard_mode = false`) does not gain a `territory` dispatch key (see Stage MT-3's existing "Decision record" for that rationale, which is unaffected by this hard-mode caller) |
 
 **Case alias (do not "simplify" away)**: single-task Stage 1 extracts the task description into
 the uppercase `DESCRIPTION` shell variable (from `state.json` via `jq`), while the shared lit flow
@@ -888,6 +888,262 @@ Read plan path:
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 ```
 
+**D5 — the whole handler body is forked on `$hard_mode`.** The hard branch (H1) dispatches
+exactly one OPEN phase per cycle; the base (`else`) branch below is the pre-existing whole-plan
+dispatch, byte-identical to before this fork.
+
+```bash
+if [ "${hard_mode:-false}" = "true" ]; then
+```
+
+##### Hard branch: Per-Phase Dispatch (H1)
+
+```bash
+# Read current handoff to determine phase progress.
+if [ -f "$handoff_file" ]; then
+  phases_completed=$(jq -r '.phases_completed // 0' "$handoff_file")
+  phases_total=$(jq -r '.phases_total // 0' "$handoff_file")
+  last_skeleton=$(jq -r '.skeleton // false' "$handoff_file")
+else
+  phases_completed=0
+  phases_total=0
+  last_skeleton=false
+fi
+# D7: phases_completed_before/phases_completed_after are referenced by the Stage 5b churn
+# signature below but were, before this migration, set by NO stage in either engine (verified by
+# grep — hard-file line 1091 is the only consumer). Capture it here, immediately after the
+# handoff read above, so it is in scope before any dispatch this cycle might make; Stage 5b
+# (after Stage 5's own phases_completed assignment) supplies phases_completed_after.
+phases_completed_before="$phases_completed"
+
+# Heading-scan phase selection, replacing a naive next_phase=$((phases_completed + 1)) integer
+# increment (could not address N.1/N.2 sub-phase headings, sparse numbering, or
+# skeleton-exhaustion). Mirrors skill-implementer-hard/SKILL.md Stage 3b's own fix.
+next_phase=""
+phase_scan_inconclusive=false
+if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
+  # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than
+  # re-derived inline. Uses the library's OPEN alternation (NOT STARTED|IN PROGRESS|PARTIAL|
+  # BLOCKED) and extract_phase_number so a non-conforming heading is never silently
+  # mis-selected or truncated.
+  . .claude/scripts/lib/phase-heading-patterns.sh
+  # --- resume-scan-conformance-gate:begin ---
+  # Whole-file conformance check BEFORE the filtered scan below. PHASE_HEADING_ERE admits
+  # conforming headings only, so a non-conforming heading is not merely unmatched by that grep
+  # -- it is INVISIBLE to it, and the scan would silently select the next conforming OPEN
+  # heading instead, dispatching out of order on top of unfinished work.
+  # has_nonconforming_phase_headings is the required boolean predicate; the
+  # `nonconforming_phase_headings | grep -q .` pipe form is forbidden (unsafe under pipefail).
+  if has_nonconforming_phase_headings "$plan_path"; then
+    warn_nonconforming "$plan_path" "orchestrate-h1-next-phase" || true
+    phase_scan_inconclusive=true
+  else
+    next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
+    if [ -n "$next_heading" ]; then
+      next_phase=$(extract_phase_number "$next_heading") || next_phase=""
+      if [ -z "$next_phase" ]; then
+        # Defense-in-depth only, and unreachable by construction: the grep above already
+        # guarantees this line matches PHASE_HEADING_ERE. Funnelled into the same sentinel so
+        # there is exactly one inconclusive path, never a second silent one.
+        phase_scan_inconclusive=true
+      fi
+    fi
+  fi
+  # --- resume-scan-conformance-gate:end ---
+fi
+
+if [ "$phase_scan_inconclusive" = "true" ]; then
+  echo "[orchestrate] H1: non-conforming phase heading(s) in $plan_path — the filtered resume scan cannot see them, so the true next phase is UNKNOWN." >&2
+  echo "[orchestrate] Refusing to dispatch, and refusing to claim skeleton-exhaustion or completion. Fix the plan's heading grammar (see plan-format.md's canonical phase-heading shape) and re-run." >&2
+  EXIT (partial)
+
+elif [ -n "$next_phase" ]; then
+  # --- marker-handoff-crosscheck-predispatch:begin ---
+  # Defect 6, PRE-DISPATCH and dispatch-REFUSING. Distinct from base Stage 5's own
+  # `marker-handoff-crosscheck` region, which is POST-dispatch and diagnostic-and-downgrading;
+  # both are retained (see this task's plan Phase 5). An interrupted dispatch can leave the
+  # plan's phase markers ahead of the handoff (marker claims [COMPLETED], handoff's own
+  # phases_completed has not confirmed it yet -- see context/contracts/wrap-up.md's "Ordering:
+  # Handoff Write Precedes Marker Promotion"). Compare the marker-derived completed count
+  # against the handoff's own phases_completed (already read above) before trusting the
+  # heading scan's next_phase selection. The has_nonconforming_phase_headings ordering
+  # obligation is already satisfied here by construction: this elif branch is reached only
+  # after that check already ran (and passed) earlier in this same block.
+  marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$plan_path" 2>/dev/null || echo 0)
+  if [ "$marker_completed_count" != "$phases_completed" ]; then
+    echo "[orchestrate] H1: MARKER/HANDOFF MISMATCH — plan file shows ${marker_completed_count} phase(s) marked [COMPLETED]/[COMPLETED WITH EXCLUSIONS], but the handoff's own phases_completed=${phases_completed}. Not dispatching the successor over unconfirmed work." >&2
+    if [ "$marker_completed_count" -gt "$phases_completed" ]; then
+      # Downgrade the specific disputed phase heading -- the (phases_completed + 1)-th
+      # [COMPLETED]/[COMPLETED WITH EXCLUSIONS] heading by order of appearance -- to
+      # [PARTIAL], matching the manual downgrade the operator performed in the observed
+      # incident.
+      disputed_line=$(grep -nE "$PHASE_HEADING_DONE_ERE" "$plan_path" | sed -n "$((phases_completed + 1))p")
+      if [ -n "$disputed_line" ]; then
+        disputed_linenum="${disputed_line%%:*}"
+        disputed_text="${disputed_line#*:}"
+        echo "[orchestrate] H1: downgrading disputed phase heading to [PARTIAL]: ${disputed_text}" >&2
+        sed -i -E "${disputed_linenum}s/\[(COMPLETED|COMPLETED WITH EXCLUSIONS)\]/[PARTIAL]/" "$plan_path"
+      fi
+    fi
+    EXIT (partial)
+  fi
+  # --- marker-handoff-crosscheck-predispatch:end ---
+
+  echo "[orchestrate] H1: Per-phase dispatch — phase $next_phase (heading-scan)" >&2
+
+  # Mint this phase's dispatch identity (Defect A) before building dispatch_context, so the
+  # per-phase JSON literal below can carry it inline alongside handoff_path.
+  dispatch_seq=$(mint_dispatch_seq)
+
+  # Territory (H7, Defect 5): no cross-agent FILE conflict exists within this orchestrator's OWN
+  # dispatches (exactly one blocking Agent call per cycle — see "Parallel Wave Dispatch:
+  # DISABLED" note below). Defect 5 is a DIFFERENT concern: a woken PREDECESSOR dispatch (see
+  # context/patterns/dispatch-report-not-termination.md) resuming outside this orchestrator's
+  # own control flow. The orchestrator does not parse the plan's "Files to modify" list itself
+  # -- it points the agent at the plan/phase location it already has in this same context, and
+  # the agent (unrestricted in what it may read) derives its own owned_files from the phase's
+  # own section. Setting `territory` here (non-empty) is what causes Stage 3.5's `implement`
+  # `core_contracts` to append `territory.md` — see that stage's `territory` input row.
+  territory='{
+    "owned_files": "derive from plan_path'\''s Phase '$next_phase' \"Files to modify\" list",
+    "read_only_files": [],
+    "forbidden_files": [],
+    "concurrency_note": "This declaration asserts only which files THIS dispatch owns. It does NOT assert exclusive access -- a still-live predecessor may exist. If you observe foreign commits, foreign uncommitted modifications, or a running build you did not start, STOP and report it rather than proceeding or dismissing it. See context/contracts/territory.md and context/patterns/dispatch-report-not-termination.md."
+  }'
+
+  dispatch_context='{
+    "task_number": '$task_number',
+    "task_type": "'$TASK_TYPE'",
+    "session_id": "'$session_id'",
+    "orchestrator_mode": true,
+    "effort_flag": "hard",
+    "plan_path": "'$plan_path'",
+    "roadmap_path": "specs/ROADMAP.md",
+    "phase_number": '$next_phase',
+    "task_dir": "'$TASK_DIR_ABS'",
+    "handoff_path": "'$HANDOFF_PATH_ABS'",
+    "dispatch_seq": '$dispatch_seq',
+    "territory": '$territory'
+  }'
+
+  # This preflight sits inside the `[ -n "$next_phase" ]` branch ONLY — never in the elif
+  # skeleton-exhaustion branch or the trailing else (all-complete) branch below, neither of
+  # which dispatches an implement agent. Its remaining side effects are the workflow-active
+  # marker write and the plan-level [STATUS] stamp (via update-plan-status.sh) — it writes NO
+  # per-phase marker, on any path: the dispatched implementation agent owns every per-phase
+  # [IN PROGRESS]/[COMPLETED] transition directly via its own explicit phase-status calls, as
+  # the first action of processing whichever phase it actually works on (see Stage 4A of
+  # general-implementation-hard-agent). This is deliberate, not an oversight — re-deriving "the
+  # first NOT STARTED phase" here with a narrower scan could advance a phase this dispatch
+  # never touched, diverging from the wider `next_phase` selection above whenever the
+  # dispatched phase was itself a resumed IN PROGRESS/PARTIAL/BLOCKED one.
+  skill_preflight_update "$task_number" "implement" "$session_id"
+
+  # Dispatch window for infra-failure discrimination — see
+  # context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch.
+  dispatch_start_ts=$(date -u +%s)
+  dispatch_was_transport_error=false
+```
+
+Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`. `territory` (set
+above) is non-empty, so `hard_contracts_block` includes `territory.md`.
+
+```bash
+# D6: build_hard_mode_phase_mission() carries ONLY the non-duplicated residue of the hard
+# engine's build_hard_mode_prompt_context() — the phase-only mission line, the settled-design
+# preamble instruction (which has no contract file of its own), and the "PHASES COMPLETED: n
+# of m" line. It deliberately does NOT restate anti-analysis, wrap-up, recovery,
+# phase-closure, or pre-edit-gate — Stage 3.5's hard_contracts_block (built above with
+# `territory` in scope) already injects all of those as <hard-mode-contracts> entries.
+build_hard_mode_phase_mission() {
+  echo "
+HARD MODE DISPATCH — PHASE MISSION:
+
+1. Mission: Implement phase $next_phase only. Do not continue past this phase.
+2. Settled Design Preamble: State the decided design before first tool call.
+
+PHASES COMPLETED: $phases_completed of $phases_total
+"
+}
+phase_mission_block=$(build_hard_mode_phase_mission)
+```
+
+Invoke the Agent tool:
+
+| Field | Value |
+|-------|-------|
+| `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `prompt` | "Implement phase $next_phase of task $task_number" then append `phase_mission_block`, then `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `context` | `$dispatch_context` (built above) |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output means `false`. Then read handoff (Stage 5), check churn
+state (Stage 5b), and increment `cycle_count`.
+
+```bash
+elif [ "$last_skeleton" = "true" ]; then
+  # Skeleton-exhaustion routing: no incomplete phase heading remains AND the last handoff
+  # declared skeleton=true. Derive the follow-up task list from the actually-shipped
+  # wrap-up.md field `sorry_inventory[].follow_up_task` — NOT the unpopulated top-level
+  # `.follow_up_tasks`.
+  follow_up_tasks=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | join(", ")' "$handoff_file")
+  follow_up_count=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | length' "$handoff_file")
+  echo "[orchestrate] Skeleton plan exhausted — follow-up tasks pending: {${follow_up_tasks}}" >&2
+
+  # This postflight call is routed through the pr_ready target argument (never raw-edit
+  # state.json). --allow-pr-ready is required here because update-task-status.sh restricts
+  # pr_ready to task_type == "pr" unless explicitly overridden; this skeleton-exhaustion
+  # branch is the sanctioned task-type-agnostic exception to that guard. Because this call is
+  # a postflight operation, update-task-status.sh's own postflight:pr_ready -> completed
+  # mapping (see context/standards/status-markers.md's "Target Arguments vs. Resting States"
+  # subsection) resolves the resting state to completed regardless of task type.
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id" --allow-pr-ready
+
+  # Propagate completion_summary/roadmap_items via the single shared implementation,
+  # skill_orchestrate_propagate_completion (scripts/skill-base.sh), through a locally-named
+  # shim (Stage 4/5 call sites elsewhere in this file pattern already say the shim name, not
+  # the shared function directly). No precomputed JSON is passed — this branch has no cached
+  # recovery JSON and needs a fresh read. dispatch_start_ts is still correct here: this branch
+  # is only entered on a cycle where no new dispatch occurred, so the variable still holds the
+  # last real per-phase implement dispatch's timestamp, preceding that dispatch's
+  # .return-meta.json write.
+  source .claude/scripts/skill-base.sh
+  hard_orchestrate_propagate_completion() {
+    skill_orchestrate_propagate_completion "$1" "$2" "$3" "$4" "${5:-}" "[orchestrate]"
+  }
+  hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}"
+
+  rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note.
+  EXIT (success)
+
+else
+  # No incomplete phase heading remains and the last handoff was NOT a skeleton: all phases
+  # are genuinely complete. Do not blindly dispatch phase 1 and do not loop toward MAX_CYCLES
+  # here -- fall through without a new Agent dispatch; Stage 5 Part B's
+  # phases_completed >= phases_total gate performs the actual status transition.
+  echo "[orchestrate] No incomplete phase heading remains and last handoff was not a skeleton — deferring to Stage 5 completion gate." >&2
+fi
+```
+
+**Parallel Wave Dispatch: DISABLED.** The Per-Phase Dispatch handler above is the sole
+implement-dispatch path in hard mode: the orchestrator dispatches exactly one phase per cycle
+and blocks on its return — no simultaneous/background `Agent` calls. Territory contracts (H7)
+still inform the single-phase dispatch context above, but never fan out into parallel dispatch.
+This is a statement about what this orchestrator's own Stage 4 does — it never issues two
+concurrent `Agent` calls — not a claim about the state of the world: a previously-dispatched
+agent may still be live via a self-armed watcher/monitor or an operator resume (see
+`context/patterns/dispatch-report-not-termination.md`), entirely outside this orchestrator's
+own control flow.
+
+##### Base branch: whole-plan dispatch (unchanged)
+
+```bash
+else
+```
+
 ```bash
 skill_preflight_update "$task_number" "implement" "$session_id"
 ```
@@ -920,6 +1176,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
+
+```bash
+fi
+```
 
 #### State: `partial`
 

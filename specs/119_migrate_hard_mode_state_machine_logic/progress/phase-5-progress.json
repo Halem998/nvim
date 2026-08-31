@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Stage 4 — H1 single-blocking-phase-per-cycle dispatch fork",
+  "started_at": "2026-08-31T23:14:31Z",
+  "last_updated": "2026-08-31T23:14:31Z",
+  "objectives": [
+    {"id": 1, "description": "Fork whole handler body on hard_mode (D5)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Read phases_completed/total/skeleton from handoff, set phases_completed_before (D7)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Port heading-scan phase selection with resume-scan-conformance-gate sentinels", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Port four-way branch (inconclusive/dispatch/skeleton-exhaustion/all-complete)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Port pre-dispatch marker/handoff crosscheck, distinguished from Stage 5's own", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Mint dispatch_seq, build dispatch_context with phase_number and territory object", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 7, "description": "Set territory before Stage 3.5, update territory input-table row (D6)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 8, "description": "Add build_hard_mode_phase_mission() trimmed residue (D6)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 9, "description": "Keep skill_preflight_update inside dispatch branch only", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 10, "description": "Port skeleton-exhaustion branch with propagate-completion shim", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 11, "description": "Set dispatch_start_ts/dispatch_was_transport_error, change log prefixes to [orchestrate]", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "Reused the exact sentinel name marker-handoff-crosscheck:begin/:end for the new pre-dispatch check", "result": "failed", "reason": "collides in intent with base Stage 5's existing post-dispatch crosscheck of the same name; disambiguated to marker-handoff-crosscheck-predispatch:begin/:end since no test enforces a specific name but clarity matters for future readers"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
