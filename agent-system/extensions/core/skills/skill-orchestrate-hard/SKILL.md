@@ -1036,7 +1036,21 @@ EXIT (success, pr_ready)
 
 #### State: `blocked`
 
-Read blockers from state.json. Invoke blocker escalation (Stage 6).
+**Discriminating read (added by this narrowing, matching the base skill's single-task Stage 4
+`#### State: blocked` handler byte-for-byte in substance)**: before falling through to blocker
+escalation, invoke the executable classifier directly to determine whether this block has
+DISCHARGED (`dependencies[]` all `status: "completed"`, handoff carries no blockers):
+
+```bash
+single_verdict=$(bash .claude/scripts/orchestrate-triage-classify.sh single "$task_number")
+verdict_group=$(echo "$single_verdict" | jq -r '.group')
+```
+
+If `$verdict_group` is `research`, `plan`, or `implement`: dispatch identically to the
+corresponding `#### State:` handler above. If `$verdict_group` is `needs_human` (dependency
+outstanding, empty `dependencies[]`, a dependency stuck non-completed-terminal, handoff blockers
+present, or a discharged block with no recorded `previous_status`): read blockers from
+state.json and invoke blocker escalation (Stage 6), unchanged.
 
 #### State: `completed`
 
@@ -1579,6 +1593,16 @@ condition, and this Stage 8 cleanup -- now visibly agree on this.
 
 Same as base `skill-orchestrate` multi-task stages (MT-1 through MT-5). Hard-mode applies
 to each individual task in the wave — they each use the per-phase dispatch H1 loop above.
+
+**Checked determination — the discriminating `blocked` row needs NO MT-specific edit here**: this
+file carries no phase-grouping table of its own; Stage MT-4's phase-grouping table in the base
+skill (`skill-orchestrate/SKILL.md`) is the sole MT authority for the `blocked` row's discharged/
+non-discharged routing, and this section's "Same as base" pointer already covers it correctly.
+This determination is recorded explicitly, rather than left as a silent absence, given this
+file's own stated concern immediately below that bare pointers demonstrably fail to carry a
+mechanism forward — that concern applies to the transcribed admission/redeploy mechanisms below,
+which DO need their own copy; the `blocked` row's MT routing has no per-file mechanism to omit in
+the first place, so the bare pointer is sufficient and no transcription is needed.
 
 **Why this section transcribes rather than merely points**: the two-sentence pointer above
 already nominally covered the self-modification admission gate and the inter-cycle redeploy

@@ -28,7 +28,8 @@ The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestr
 | `partial` (with blockers) | `.orchestrator-handoff.json` has non-empty `blockers` array | `dispatch_blocker_escalation()` → revise → implement | `implemented` | increment cycle |
 | `partial` (no handoff, cycle limit) | `cycle_count >= MAX_CYCLES` | Report state, exit | — | — |
 | `partial` (infra cap) | `infra_failures >= MAX_INFRA_FAILURES` | Report connectivity issue, exit | — | — |
-| `blocked` | `status = "blocked"` | Read blockers from `state.json`, `dispatch_blocker_escalation()` | `planned` | increment cycle |
+| `blocked`, discharged | `status = "blocked"`, all `dependencies[]` reached `status: "completed"`, and handoff carries no blockers | `dispatch(<phase>, task_n)` where `<phase>` is named by `previous_status` (research/plan/implement) | `researched`/`planned`/`implemented` | increment cycle |
+| `blocked`, not discharged | `status = "blocked"`, and a dependency is outstanding, empty `dependencies[]`, a dependency is stuck non-completed-terminal, handoff blockers are present, or `previous_status` is missing | Read blockers from `state.json`, `dispatch_blocker_escalation()` | `planned` | increment cycle |
 | `completed` | `status = "completed"` | Report success, exit | — | — |
 | `abandoned` | `status = "abandoned"` | Report abandoned status, exit | — | — |
 | `expanded` | `status = "expanded"` | Report expanded status, exit | — | — |

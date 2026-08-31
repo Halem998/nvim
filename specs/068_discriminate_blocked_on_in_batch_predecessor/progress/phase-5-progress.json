@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Hard-mode skill and state-machine doc",
+  "started_at": "2026-08-31T01:45:00Z",
+  "last_updated": "2026-08-31T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update hard-mode skill's blocked handler with the same discriminating read; record MT-inheritance determination; update state-machine doc's blocked state row; sweep adjacent prose; no task-number citations",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

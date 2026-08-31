@@ -401,29 +401,29 @@ per this Scope Hypothesis's own instruction)*
 
 ---
 
-### Phase 5: Hard-mode skill and state-machine doc [NOT STARTED]
+### Phase 5: Hard-mode skill and state-machine doc [COMPLETED]
 
 **Goal**: Apply the same single-task-scope change to the hard-mode engine's own `blocked` handler,
 record the determination about whether its Multi-Task Mode pointer genuinely inherits, and sweep
 the architecture doc for the now-false premise.
 
 **Tasks**:
-- [ ] `skills/skill-orchestrate-hard/SKILL.md`: update its compressed `#### State: \`blocked\``
+- [x] `skills/skill-orchestrate-hard/SKILL.md`: update its compressed `#### State: \`blocked\``
       handler ("Read blockers from state.json. Invoke blocker escalation (Stage 6)") with the same
       discriminating read Phase 4 gives the base skill's single-task handler, so the two engines
       do not drift.
-- [ ] Record explicitly, in that file, the determination that its Multi-Task Mode "Same as base"
+- [x] Record explicitly, in that file, the determination that its Multi-Task Mode "Same as base"
       pointer needs NO MT-specific edit here: research confirms it carries no phase-grouping table
       of its own, so the base skill's Stage MT-4 table is the sole MT authority. State this as a
       checked determination rather than leaving a silent absence, given that file's own stated
       concern that bare pointers demonstrably fail to carry mechanisms forward.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: update the `blocked` state-table row so it
+- [x] `docs/architecture/orchestrate-state-machine.md`: update the `blocked` state-table row so it
       reflects the discriminating handler (discharged -> dispatch the phase `previous_status`
       names; otherwise `dispatch_blocker_escalation()` unchanged).
-- [ ] Sweep that doc's surrounding prose (the failed-predecessor paragraph and the "No eligible
+- [x] Sweep that doc's surrounding prose (the failed-predecessor paragraph and the "No eligible
       tasks | partial | Deadlock or all blocked" exit row) and confirm neither asserts the changed
       premise; leave both unchanged if they do not, and record that as a checked result.
-- [ ] Cite no task numbers.
+- [x] Cite no task numbers.
 
 **Timing**: 0.75 hours
 
