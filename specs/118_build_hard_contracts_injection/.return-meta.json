@@ -1,34 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
-      "summary": "Design spec for hard-mode contract-text injection at Stage 3.5 Dispatch Prep, the hard_contracts manifest key, and the verify-deploy.sh migration warning."
+      "type": "plan",
+      "path": "specs/118_build_hard_contracts_injection/plans/01_hard-contracts-injection.md",
+      "summary": "Six-phase plan adding a hard_mode-gated contract-injection block to Stage 3.5 Dispatch Prep, a routing_lookup_flat() one-level manifest resolver for the new hard_contracts key, and a non-blocking verify-deploy migration warning."
     }
   ],
-  "next_steps": "Run /plan 118 to create implementation plan",
+  "next_steps": "Run /implement 118 to execute the plan",
   "metadata": {
     "session_id": "sess_1788211958_b7b5e8_118",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1, 4], [2, 5], [3], [6]]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's manifest-routing-lib.sh, routing_lookup() only resolves two-level manifest blocks shaped {op: {task_type: value}} (routing, routing_hard, routing_agents, routing_agents_hard). A new manifest key shaped {task_type: value} (one level, no per-operation axis) needs a parallel function, not a forced reuse of routing_lookup() with a fake op key -- the shape mismatch would misrepresent the manifest schema. Mirror routing_lookup()'s same 4-step non-core/core x exact/compound precedence against a one-level jq path instead.",
-      "category": "PATTERN",
-      "source_artifact": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["manifest-routing-lib", "routing_lookup", "one-level-block", "hard_contracts", "manifest routing ladder"]
-    },
-    {
-      "content": "In this repo, /orchestrate --hard never actually invokes skill-orchestrate-hard: commands/orchestrate.md hardcodes skill: \"skill-orchestrate\" as its only Skill-tool target and threads effort_flag=\"hard\" into skill-orchestrate's own delegation context, which uses it only for agent routing (command-route-agent.sh against routing_agents_hard). skill-orchestrate-hard/SKILL.md is unreachable dead code, confirmed by a repo-wide grep for it as a Skill-tool target returning zero hits outside its own file. Any hard-mode logic addition belongs inside skill-orchestrate/SKILL.md as an if $hard_mode branch, never in the -hard file.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/118_build_hard_contracts_injection/reports/01_hard-contracts-injection-design.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "hard-mode", "skill-orchestrate-hard", "dead-code", "dispatch-routing"]
+      "content": "When planning a global find-and-replace across a large markdown SKILL.md, re-verify every grep count from a research report before trusting it: a phrase that is single-line at some call sites is often line-wrapped at others, so an exact-substring count silently undercounts. In skill-orchestrate/SKILL.md the phrase '`memory_context`, `lit_context`, and `effort_note`.' matches only the 7 single-task dispatch sites; the 3 multi-task loop sites wrap it across two lines, and only the shorter substring '`lit_context`, and `effort_note`.' reaches all 10. Pick the shortest substring that is still unique, and make the pre-edit grep count a hard abort gate in the plan rather than a note.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/118_build_hard_contracts_injection/plans/01_hard-contracts-injection.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["grep-count", "find-and-replace", "line-wrapping", "skill-orchestrate", "dispatch-sites", "scope-hypothesis"]
     }
   ]
 }
