@@ -1,27 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 68,
-  "session_id": "sess_1788202255_53c3de_68",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/plans/01_discriminating-blocked-classifier-row.md",
-      "summary": "8-phase plan making the /orchestrate blocked classifier row discriminating via state.json dependency lookup, with full co-maintenance propagation across 7 source-store files."
-    }
-  ],
-  "phase_count": 8,
-  "estimated_hours": 7,
-  "dependency_waves": [[1], [2], [3, 4, 5, 6, 7], [8]],
-  "memory_candidates": [
-    {
-      "content": "Layered orchestration pipelines can lose a signal rather than lack a gate: an upstream admission gate correctly computes an ordering constraint (dependency-graph eligibility), then a downstream triage classifier re-derives its verdict purely from a stale literal status string and unconditionally discards that computation. The symptom is an infinite non-converging skip loop, not a hard failure, because nothing ever rewrites the stale status. Two design lessons generalize: (1) when the classifier already slurps the full state file, the fix is a second lookup against data already in memory -- not a new CLI argument, call-site change, or I/O class; (2) 'is the blocker among my sibling candidates?' is the tempting-but-wrong discriminator, because a just-terminated predecessor has already been dropped from the shrinking per-cycle eligible set and is absent from the candidate list in exactly the cycle the fix must handle. Look up the dependency's own status in the shared state instead. Corollary: an empty dependency list must be its own explicit non-discharging branch, since 'all elements satisfy P' is vacuously true over an empty list.",
-      "category": "PATTERN",
-      "source_artifact": "specs/068_discriminate_blocked_on_in_batch_predecessor/plans/01_discriminating-blocked-classifier-row.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestration", "classifier", "ordering-constraint", "stale-status", "dependency-graph", "vacuous-truth"]
-    }
-  ],
-  "next_steps": "Run /implement 68 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1788202255_53c3de",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

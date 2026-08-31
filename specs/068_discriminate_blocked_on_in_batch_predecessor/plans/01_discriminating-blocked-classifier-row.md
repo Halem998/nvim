@@ -1,7 +1,7 @@
 # Implementation Plan: Task #68
 
 - **Task**: 68 - Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md
@@ -143,16 +143,16 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-measure anchors and capture pre-fix RED evidence [NOT STARTED]
+### Phase 1: Re-measure anchors and capture pre-fix RED evidence [COMPLETED]
 
 **Goal**: Establish a verified green baseline, re-derive every line anchor the research report and
 task description cite (both explicitly warn they may have drifted), and capture the mutation-check
 RED output for the fixtures Phase 3 will add — all before any production file changes.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
-      and record the green baseline (PASSED/FAILED counts).
-- [ ] Re-derive current line anchors by grep, not by trusting the report: the `elif $status ==
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
+      and record the green baseline (PASSED/FAILED counts). *(completed: 26 passed, 0 failed)*
+- [x] Re-derive current line anchors by grep, not by trusting the report: the `elif $status ==
       "blocked"` arm, the header verdict-table `| blocked |` row, the justification paragraph
       beginning "`blocked` is the one row that still diverges", the `handoff_state` schema field
       description, the `[ "$row_status" = "partial" ] || continue` handoff-read gate, Stage MT-4's
@@ -162,13 +162,20 @@ RED output for the fixtures Phase 3 will add — all before any production file 
       engines now agree on every row here except `blocked`" sentence, the hard-mode skill's
       `#### State: \`blocked\`` handler, `orchestrate-state-machine.md`'s `blocked` state-table
       row, and the Gate Catalogue table. Record the measured anchors in the commit body.
-- [ ] Copy the pre-fix classifier to a scratch location via `git show HEAD:agent-system/extensions/core/scripts/orchestrate-triage-classify.sh`
+      *(completed: anchors re-measured, see commit body of Phase 2)*
+- [x] Copy the pre-fix classifier to a scratch location via `git show HEAD:agent-system/extensions/core/scripts/orchestrate-triage-classify.sh`
       and run the ten planned Phase 3 fixture cases against it; capture the RED output verbatim
       for the Phase 3 commit body. Confirm every planned fixture that asserts NEW behavior fails
       pre-fix; a fixture that passes pre-fix is not a regression guard and must be redesigned.
-- [ ] Confirm the reproduction premise by direct read rather than assumption: `state.json` entries
+      *(completed: 6 sub-cases (12 assertions, not 10 — deviation: a 6th "missing
+      previous_status" sub-case was added beyond the plan's "five discriminated sub-cases" count,
+      per the Testing & Validation section's explicit requirement) run against HEAD copy; see
+      Phase 2/3 commit bodies for verbatim RED output)*
+- [x] Confirm the reproduction premise by direct read rather than assumption: `state.json` entries
       written by `/spawn` carry both `previous_status` and a `dependencies[]` edge (grep
       `skills/skill-spawn/SKILL.md` for the two `state-write.sh` call sites).
+      *(completed: confirmed at SKILL.md lines 100-119 (previous_status write) and 415-427
+      (dependencies[] write))*
 
 **Timing**: 1 hour
 
