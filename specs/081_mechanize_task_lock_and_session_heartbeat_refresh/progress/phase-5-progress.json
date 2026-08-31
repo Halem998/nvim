@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Retire the never-executed prose at the implementation-agent sites",
+  "started_at": "2026-08-31T20:10:00Z",
+  "last_updated": "2026-08-31T20:11:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete the two trailing heartbeat paragraphs/bash blocks from base agent Stage 4D", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Replace with non-executable mechanized-here note in base agent", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Add mechanized-here note to hard agent's Stage 4D-equivalent", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 4, "description": "Verify no task-number references introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": [
+    "grep for 'task-lock.sh heartbeat|session-heartbeat' in both files returns only prose mentions, no fenced-block invocations.",
+    "bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose against the real agent tree: 106 passed, 0 warnings, 0 failed.",
+    "bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh: 13 passed, 0 failed.",
+    "grep for 'task 81' style references in both edited files: none found."
+  ]
+}

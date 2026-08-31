@@ -276,25 +276,18 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
 
-**Task-lock heartbeat**: at this same phase-transition point, refresh the task lock so a
-multi-phase `/implement` run never goes stale under its own hand (the lock was acquired once at
-`command-gate-in.sh`'s gate-in, before this agent was even spawned):
-```bash
-bash .claude/scripts/task-lock.sh heartbeat "{task_number}" "{session_id}" 2>/dev/null || true
-```
-No-op with a warning if the lock is missing or held by another session — heartbeat never blocks
-phase progression. See `.claude/context/patterns/task-lock.md` for the full contract. (This is
-the actual per-phase-transition site for single-task `/implement`; `skill-implementer/SKILL.md`
-is a thin wrapper that delegates the entire phase loop to this agent and has no phase-transition
-point of its own to hook.)
-
-**In-flight session registry heartbeat**: immediately adjacent to the task-lock heartbeat above,
-refresh the session registry entry `command-gate-in.sh` registered at gate-in. This is the
-implementer's real per-phase checkpoint; `skill-implementer/SKILL.md` has none and must not be
-edited. Best-effort and non-blocking, matching `session-heartbeat`'s own never-blocks contract:
-```bash
-bash .claude/scripts/task-lock.sh session-heartbeat "{session_id}" 2>/dev/null || true
-```
+**Task-lock and session-registry heartbeat — mechanized, not manual**: the task-lock and
+session-registry refresh for this exact phase transition now happens INSIDE
+`update-phase-status.sh` itself (the call four lines above, in step D), not as a separate call
+here. `update-phase-status.sh` derives `session_id` from the task's own `.lock/holder.json`, so
+no argument threading and no separate bash snippet are required — every existing 4-argument
+`update-phase-status.sh` call already fires both the task-lock heartbeat and the session-registry
+heartbeat as a side effect. A no-op (missing lock, corrupt holder, unresolvable task-lock.sh)
+leaves a trace line in `.agent-logs/heartbeat-trace.log` rather than failing silently. Do **not**
+re-add a manual `task-lock.sh heartbeat` / `session-heartbeat` call here — a second, independently
+maintained call site would only reintroduce the same class of defect this mechanization closed
+(a prose-authored bash snippet that is never reliably executed). See
+`.claude/context/patterns/task-lock.md` for the full contract.
 
 #### 4D-ii. Post-Phase Self-Review
 
@@ -712,9 +705,10 @@ For each phase in the implementation plan:
 1. **Read plan file**, identify current phase
 2. **Update phase status** to `[IN PROGRESS]` in plan file
 3. **Execute phase steps** as documented
-4. **Update phase status** to `[COMPLETED]` (Stage 4D) — refreshing the task-lock heartbeat at
-   the same point — then perform post-phase self-review (Stage 4D-ii) and write a progressive
-   handoff (Stage 4D-iii)
+4. **Update phase status** to `[COMPLETED]` (Stage 4D) — the mechanized task-lock and
+   session-registry heartbeat fires automatically as a side effect of this same
+   `update-phase-status.sh` call (see Stage 4D's note; no separate action needed) — then perform
+   post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
    staging — never stage the entire working tree — via `.claude/scripts/git-commit-scoped.sh`,
    the single sanctioned implementation of path-scoped, mutex-serialized committing. See

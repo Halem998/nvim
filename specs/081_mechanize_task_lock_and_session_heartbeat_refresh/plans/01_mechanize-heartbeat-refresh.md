@@ -421,7 +421,7 @@ the grep returns, not only the four named here.
 
 ---
 
-### Phase 5: Retire the never-executed prose at the implementation-agent sites [NOT STARTED]
+### Phase 5: Retire the never-executed prose at the implementation-agent sites [COMPLETED]
 
 **Goal**: Close the two agent-file rows of the research call-site survey (acceptance criterion 5)
 by removing the confirmed-non-firing prose and the brace-placeholder landmine it carries, and
@@ -429,24 +429,24 @@ replacing it with an accurate statement of where the refresh now lives.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/agents/general-implementation-agent.md` Stage 4D, delete
+- [x] In `agent-system/extensions/core/agents/general-implementation-agent.md` Stage 4D, delete
       the two trailing heartbeat paragraphs and their fenced bash blocks (the `task-lock.sh
       heartbeat` and `task-lock.sh session-heartbeat` snippets in brace-placeholder form). These
       are the confirmed-0/8 instructions and the confirmed `printf "%03d" "{task_number}"`
       landmine; leaving them alongside the mechanized path would be a second, competing,
       unreliable call site.
-- [ ] Replace them with a short non-executable note stating that the task-lock and
+- [x] Replace them with a short non-executable note stating that the task-lock and
       session-registry refresh now happens **inside** `update-phase-status.sh` at this exact
       transition, that the `session_id` is derived from `holder.json` so no argument is needed,
       that a no-op leaves a trace in `.agent-logs/heartbeat-trace.log`, and that the agent must
       not re-add a manual heartbeat call. Reference `context/patterns/task-lock.md` for the
       contract. Do not include a bash block.
-- [ ] Add the same note to `agent-system/extensions/core/agents/general-implementation-hard-agent.md`
+- [x] Add the same note to `agent-system/extensions/core/agents/general-implementation-hard-agent.md`
       at its Stage 4D-equivalent `update-phase-status.sh ... COMPLETED` call. This closes the
       absent-caller gap research identified there **without adding prose that must be executed** —
       the hard agent already invokes `update-phase-status.sh`, so it inherits the mechanized
       heartbeat with no behavioral change of its own.
-- [ ] Verify no task-number references are introduced (`.claude/rules/no-task-references-in-deliverables.md`);
+- [x] Verify no task-number references are introduced (`.claude/rules/no-task-references-in-deliverables.md`);
       describe the change by script name and section heading only.
 
 **Timing**: 0.5 hours

@@ -224,6 +224,13 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
 
 **Fallback**: If the script is unavailable, use Edit tool to change `[IN PROGRESS]` to `[COMPLETED]` in the phase heading.
 
+**Task-lock and session-registry heartbeat — mechanized, not manual**: the `update-phase-status.sh`
+call above already refreshes both the task lock and the session-registry entry as a side effect
+— it derives `session_id` from the task's own `.lock/holder.json`, so this agent inherits the
+mechanized heartbeat with zero call sites and zero behavioral change of its own. Do not add a
+separate `task-lock.sh heartbeat` / `session-heartbeat` call here. See
+`.claude/context/patterns/task-lock.md` for the full contract.
+
 **D-ii. Post-Phase Self-Review**: Check for unchecked items, document deviations.
 
 **D-iii. Progressive Handoff Update**: Write phase-end handoff artifact.
