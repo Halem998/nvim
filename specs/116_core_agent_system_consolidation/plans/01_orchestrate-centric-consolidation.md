@@ -629,32 +629,32 @@ plan asserts no count. At implementation time, confirm that the number of record
 
 ---
 
-### Phase 9: Phase C -- revise, abandon, re-topic, and backfill [NOT STARTED]
+### Phase 9: Phase C -- revise, abandon, re-topic, and backfill [COMPLETED]
 
 **Goal**: Apply every REVISE, ABANDON, RETOPIC, and BACKFILL operation the manifest specifies to the
 existing backlog.
 
 **Tasks**:
-- [ ] Apply REVISE operations: replace the description of each RESCOPE task with the revised text
+- [x] Apply REVISE operations: replace the description of each RESCOPE task with the revised text
       the manifest specifies, stating what changed and why within the description itself so a future
       reader of the task alone understands the rescope. One task per `state-write.sh` invocation,
       with the same payload-size guard as Phase 8.
-- [ ] Apply ABANDON operations: transition each MOOT task to `abandoned` with a recorded reason that
+- [x] Apply ABANDON operations: transition each MOOT task to `abandoned` with a recorded reason that
       cites the specific deletion-ledger entry making it moot. Use the sanctioned status-update path
       rather than a hand-rolled status assignment, so TODO.md regeneration and any archival hooks
       stay consistent.
-- [ ] Apply RETOPIC operations: set `topic` to `core-agent-system` for survivors the manifest
+- [x] Apply RETOPIC operations: set `topic` to `core-agent-system` for survivors the manifest
       designates, and return the latex build-guard tasks to `extensions` per Phase 6's confirmed
       verdicts. Confirm each target topic value already exists in `active_topics`; add none that the
       manifest does not authorize.
-- [ ] Apply BACKFILL operations: populate `file_scope` for each EVIDENCE-GAP task from the evidence
+- [x] Apply BACKFILL operations: populate `file_scope` for each EVIDENCE-GAP task from the evidence
       recorded in Phase 1 and Phase 6, and finalize that task's provisional verdict in the verdict
       report, converting it from provisional to final or recording that it remains blocked on
       evidence.
-- [ ] After each write, read the affected record back and confirm the intended field changed and no
+- [x] After each write, read the affected record back and confirm the intended field changed and no
       sibling field was lost. Confirm `.artifacts` arrays on touched tasks are unchanged (this phase
       touches no artifact links).
-- [ ] Commit after each successful green write, staging only `specs/state.json` and the affected
+- [x] Commit after each successful green write, staging only `specs/state.json` and the affected
       report.
 
 **Timing**: 1.5 hours

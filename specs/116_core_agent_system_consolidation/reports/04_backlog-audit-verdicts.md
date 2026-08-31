@@ -115,3 +115,18 @@ assigned: design-coupled cluster **18** (Phase 5) + remainder cluster **15** (th
 (#46's `routing`-half mootness, #115's mootness) names its Phase 4 (report 03) A7 ledger citation
 in its own row above; no roster row was assigned a bare "MOOT" without a ledger citation, and no
 row was left unassigned.
+
+## Phase 9 Closeout
+
+No verdict in this report was recorded as provisional -- Phase 1 (report 02) resolved all three
+null-`file_scope` tasks (#45, #46, #51) to DERIVED-FROM-DESCRIPTION rather than EVIDENCE-GAP, so
+no BACKFILL-then-finalize step was needed for a provisional verdict. The three BACKFILL operations
+applied in Phase 9 (populating `file_scope` for #45, #46, #51 from that same evidence) are
+therefore data-quality completions, not verdict finalizations -- their verdicts (#45 RESCOPE, #46
+RESCOPE, #51 ON-PATH) were already final when written in Phases 5-6.
+
+Applied in Phase 9: REVISE (#45, #46, #72, #73), ABANDON (#64, #115), RETOPIC (#45 -> `neovim`,
+#100 -> `core-agent-system`), BACKFILL (#45, #46, #51 `file_scope`), DEPEND (#48, #90 -> +124;
+#88 -> +127; #72, #73 -> +122). All writes round-tripped intact; `.active_projects` count held at
+59 throughout (abandonment applied in place as a status transition, not a removal, per this
+task's own binding invariant); no touched record lost a field.

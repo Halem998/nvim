@@ -1,0 +1,13 @@
+{
+  "phase": 9,
+  "phase_name": "Phase C -- revise, abandon, re-topic, and backfill",
+  "started_at": "2026-08-31T04:30:00Z",
+  "last_updated": "2026-08-31T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "REVISE #45,#46,#72,#73; ABANDON #64,#115; RETOPIC #45,#100; BACKFILL #45,#46,#51 file_scope; DEPEND #48,#90,#88", "status": "done", "files_touched": ["specs/state.json", "specs/116_core_agent_system_consolidation/reports/04_backlog-audit-verdicts.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
