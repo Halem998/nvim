@@ -368,24 +368,24 @@ exceeds ~150 lines, that is a signal the lit flow is being inlined; re-check bef
 
 ---
 
-### Phase 5: Wire the 7 single-task dispatch sites [NOT STARTED]
+### Phase 5: Wire the 7 single-task dispatch sites [COMPLETED]
 
 **Goal**: Every single-task Agent dispatch in Stage 4 runs Stage 3.5 first and injects its outputs into
 the prompt.
 
 **Tasks**:
 
-- [ ] Re-anchor by grepping for `#### State:` headings and, within Stage 4, for the
+- [x] Re-anchor by grepping for `#### State:` headings and, within Stage 4, for the
       `Invoke the Agent tool:` marker preceding each dispatch table.
-- [ ] For each dispatch site, insert a short pointer line immediately after the existing dispatch-window
+- [x] For each dispatch site, insert a short pointer line immediately after the existing dispatch-window
       bash block and before `Invoke the Agent tool:`, of the form: "Run **Stage 3.5: Dispatch Prep**
       with `phase=research` (see Stage 3.5 above) to produce `memory_context`, `lit_context`, and
       `effort_note`." Use the correct `phase` value per site.
-- [ ] For each dispatch site, extend the `prompt` row of the Agent-tool table so it states that
+- [x] For each dispatch site, extend the `prompt` row of the Agent-tool table so it states that
       `memory_context`, then `lit_context`, then `effort_note` are appended to the prompt string,
       each skipped when empty.
-- [ ] Leave every `context` row unchanged — injection is prompt-side only.
-- [ ] Confirm the `blocked` and `completed` handlers are left untouched (they do not dispatch).
+- [x] Leave every `context` row unchanged — injection is prompt-side only.
+- [x] Confirm the `blocked` and `completed` handlers are left untouched (they do not dispatch).
 
 Per-site `phase` values, keyed on stable `#### State:` anchors:
 

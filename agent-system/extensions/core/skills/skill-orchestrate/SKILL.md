@@ -451,12 +451,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -495,12 +498,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -534,12 +540,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -577,12 +586,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -614,12 +626,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -688,12 +703,15 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -750,12 +768,15 @@ Read plan path:
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 ```
 
+Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
+`memory_context`, `lit_context`, and `effort_note`.
+
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty) |
+| `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
