@@ -54,6 +54,25 @@ Read from delegation context:
   and reserved for later conditional state-machine branches (churn/three-strikes counters, the
   burnout circuit breaker) that read this same boolean rather than re-deriving it.
 
+**Hard-mode state-machine migration — acceptance checklist.** Each behavior below is reproduced
+in this engine behind `$hard_mode`, mapped to the stage that now implements it:
+
+| Behavior | Stage | Notes |
+|----------|-------|-------|
+| Conditional cycle budget (13 vs. 5) | Stage 2 head | `MAX_CYCLES` branch, before `orchestrate-loop-guard-init.sh` |
+| Unified loop-guard JSON schema | Stage 2 | `hard_mode`/`burnout_signals_this_session`/`plan_version` fields, written in both modes |
+| `loop-guard-staleness` detector (3-signal) | Stage 2 | `loop-guard-staleness:begin`/`:end`, hard-mode-gated only (D4) |
+| Churn-state init (`.orchestrator-churn-state.json`) | Stage 2 | after `mint_dispatch_seq()`, hard-mode-gated only |
+| Burnout circuit-breaker gate | Stage 3, sub-step `3b-hard` | between `3b.` and `3c.`, `3c.` left byte-identical (D2) |
+| H1 single-blocking-phase-per-cycle implement dispatch | Stage 4, `#### State: planned or implementing` | whole handler forked on `$hard_mode` (D5); base `else` branch unchanged |
+| H6 per-target churn counters | Stage 5b | after Stage 5's own `phases_completed` assignment (D7) |
+| H5 three-strikes divergence-audit dispatch | Stage 5b | same stage as H6, on `new_target_churn >= 3` |
+| Stage 5a / Stage 5b mutual exclusion | Stage 5a (gate), Stage 5b (heading) | exactly one reachable per `hard_mode` value |
+
+**Not migrated**: the `researched`-state adversarial verification gate (H4) — see the residue
+note immediately below. Everything else in the source engine's state-machine logic (H1/H5/H6/the
+burnout breaker, plus the loop-guard/churn-state plumbing they depend on) is now reproduced here.
+
 **Hard-mode residue not yet migrated**: the `researched`-state adversarial verification gate
 (H4) — the `#### State: researched` handler in the `-hard` engine and its `adversarial_verified`
 state variable, set at three separate sites and driving a verify-then-re-dispatch loop before

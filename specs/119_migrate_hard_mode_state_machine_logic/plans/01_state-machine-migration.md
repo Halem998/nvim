@@ -1,7 +1,7 @@
 # Implementation Plan: Task #119
 
 - **Task**: 119 - Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 churn/three-strikes, burnout breaker) into skill-orchestrate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: Task 117 (completed), Task 118 (completed)
 - **Research Inputs**: specs/119_migrate_hard_mode_state_machine_logic/reports/01_state-machine-migration-design.md
@@ -504,33 +504,33 @@ mode's Stage 5a drift inspection.
 
 ---
 
-### Phase 7: Full verification, deploy sync, and residue documentation [NOT STARTED]
+### Phase 7: Full verification, deploy sync, and residue documentation [COMPLETED]
 
 **Goal**: Prove the migration is complete and non-regressive against the whole suite, confirm the
 source-store/deploy boundary was respected, and leave the acceptance checklist recorded.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and record the result.
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and record the result.
       Every failure must be triaged as caused-by-this-migration (fix here) or pre-existing
-      (record, do not fix).
-- [ ] Explicitly re-run the 7 tests/lints named as downstream-retarget scope
+      (record, do not fix). *(completed: 57 of 57 suites pass on repeated clean runs; one transient run showed 1 failure in a pre-existing, timing-sensitive lean build-guard mutation test (systemd-run/flock timing), unrelated to skill-orchestrate and not reproducible — triaged pre-existing/flaky)*
+- [x] Explicitly re-run the 7 tests/lints named as downstream-retarget scope
       (`test-loop-guard-budget-override.sh`, `test-routing-resolution.sh`,
       `test-handoff-reader-parity.sh`, `test-loop-guard-staleness.sh`,
       `test-handoff-dispatch-identity.sh`, `test-resume-scan-nonconformance.sh`,
       `lint/lint-contract-compliance.sh`) and confirm all pass WITHOUT any test file having been
-      edited by this task (`git status --short` over the test directories must be clean).
-- [ ] Confirm `git diff --stat` shows `skill-orchestrate-hard/SKILL.md` completely unmodified.
-- [ ] Confirm no file under `.claude/**` was hand-edited; if the repo's flow requires a deploy to
-      refresh `.claude/`, run the sanctioned deploy/reload rather than editing in place.
-- [ ] Run the repo-wide task-reference lint (`scripts/check-task-references.sh` or equivalent) and
-      confirm zero task-number references were introduced outside `specs/**`.
-- [ ] Add a short acceptance-checklist note near the top of `skill-orchestrate/SKILL.md`'s
+      edited by this task (`git status --short` over the test directories must be clean). *(completed: all 7 pass; git status --short over scripts/tests/ and scripts/lint/ clean)*
+- [x] Confirm `git diff --stat` shows `skill-orchestrate-hard/SKILL.md` completely unmodified. *(completed: zero diff against the pre-task commit)*
+- [x] Confirm no file under `.claude/**` was hand-edited; if the repo's flow requires a deploy to
+      refresh `.claude/`, run the sanctioned deploy/reload rather than editing in place. *(completed: ran deploy-headless.sh (sanctioned regeneration))*
+- [x] Run the repo-wide task-reference lint (`scripts/check-task-references.sh` or equivalent) and
+      confirm zero task-number references were introduced outside `specs/**`. *(completed: PASS: 0 unexempted occurrences across 4 trees)*
+- [x] Add a short acceptance-checklist note near the top of `skill-orchestrate/SKILL.md`'s
       hard-mode discussion mapping each migrated behavior (cycle budget, per-phase implement
       dispatch, churn counters, three-strikes audit, burnout breaker) to the stage that now
-      implements it, plus the one behavior that is NOT migrated (H4, per Phase 1's note).
-- [ ] Verify a base-mode read-through of the full file is behaviorally unchanged: every added
+      implements it, plus the one behavior that is NOT migrated (H4, per Phase 1's note). *(completed)*
+- [x] Verify a base-mode read-through of the full file is behaviorally unchanged: every added
       region is inside a `$hard_mode` branch, and no unconditional statement was altered except
-      the loop-guard JSON schema additions (D3) and the Stage 5a gate (Phase 6).
+      the loop-guard JSON schema additions (D3) and the Stage 5a gate (Phase 6). *(completed: diffed against pre-task commit: only 26 removed lines total, all accounted for by Phase 2/3/5/6 documented changes)*
 
 **Timing**: 0.75 hours
 
@@ -555,18 +555,20 @@ and report any that are missing or renamed rather than silently skipping them.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/scripts/tests/run-all.sh` passes (or every failure is
-      triaged as pre-existing with evidence).
-- [ ] The 7 downstream-scope tests/lints pass with no test file edited by this task.
-- [ ] `skill-orchestrate-hard/SKILL.md` is byte-identical to its pre-task state.
-- [ ] Base-mode behavior is unchanged: every added region is `$hard_mode`-gated, apart from the
+- [x] `agent-system/extensions/core/scripts/tests/run-all.sh` passes (or every failure is
+      triaged as pre-existing with evidence). *(57/57 on clean runs; a single transient failure
+      in a pre-existing, timing-sensitive lean build-guard mutation test, unrelated to
+      skill-orchestrate, did not reproduce)*
+- [x] The 7 downstream-scope tests/lints pass with no test file edited by this task.
+- [x] `skill-orchestrate-hard/SKILL.md` is byte-identical to its pre-task state.
+- [x] Base-mode behavior is unchanged: every added region is `$hard_mode`-gated, apart from the
       deliberate loop-guard schema unification and the Stage 5a mode gate.
-- [ ] Each of the four WORK-list behaviors is present and traceable to a named stage in
+- [x] Each of the four WORK-list behaviors is present and traceable to a named stage in
       `skill-orchestrate/SKILL.md`.
-- [ ] `phases_completed_before` / `phases_completed_after` each have exactly one assignment site.
-- [ ] No contract reference is injected twice into the hard-mode implement prompt.
-- [ ] No task-number references introduced outside `specs/**`.
-- [ ] No hand-authored file under `.claude/**`.
+- [x] `phases_completed_before` / `phases_completed_after` each have exactly one assignment site.
+- [x] No contract reference is injected twice into the hard-mode implement prompt.
+- [x] No task-number references introduced outside `specs/**`.
+- [x] No hand-authored file under `.claude/**`.
 
 ## Artifacts & Outputs
 

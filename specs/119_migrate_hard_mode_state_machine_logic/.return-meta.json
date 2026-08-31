@@ -1,9 +1,41 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
+      "summary": "Migrated H1/H5/H6 and the burnout circuit breaker from skill-orchestrate-hard into skill-orchestrate as $hard_mode conditional branches; -hard file untouched, full test suite green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Ported the four stateful hard-mode residues (Stage 2 loop-guard/churn-state init with conditional MAX_CYCLES, Stage 3 burnout circuit breaker, Stage 4 H1 per-phase implement dispatch, Stage 5b H5/H6 churn detection and three-strikes audit) from skill-orchestrate-hard/SKILL.md into skill-orchestrate/SKILL.md as $hard_mode conditional branches, defining the previously-unset phases_completed_before/after pair and gating Stage 5a to base-mode-only. The -hard file is byte-identical to its pre-task state and the full test suite (57/57) plus all 7 downstream-scope tests/lints pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    ".gitignore"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When migrating pseudocode-documentation shell logic between two markdown SKILL.md files that share test infrastructure extracting fixed-anchor text regions (e.g. an awk script matching a literal echo string and appending a synthetic 'fi'), any new conditional wrapped directly around the anchor line will leave an extra unclosed `if` at the point the extraction truncates, breaking `bash -n` on the extracted region even though the full file is fine. Fix: keep the anchor line's own echo unconditional/unchanged, and put any new mode-gated behavior in a separate, fully self-closed `if ... fi` block BEFORE it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash -n", "sentinel extraction", "test fixture", "SKILL.md migration", "anchor text"]
+    },
+    {
+      "content": "When porting a 'Increment cycle_count. Loop continues.' style directive from a source engine into a differently-ordered position in a target engine (e.g. moving Stage 4b's churn check to run strictly after Stage 5's own tail-end increment, to fix an ordering defect), do not port the literal increment statement verbatim — check whether the counter is already incremented exactly once elsewhere in the new position's control flow. A second literal increment silently double-charges a budget counter.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/119_migrate_hard_mode_state_machine_logic/summaries/01_state-machine-migration-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["cycle_count", "stage ordering", "double increment", "state machine migration", "D7"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788216532_9ded51",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
