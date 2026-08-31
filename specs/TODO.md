@@ -52,7 +52,7 @@ next_project_number: 128
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-81 [PLANNED] — Task-lock and session-registry heartbeats never fire during a rea
+81 [IMPLEMENTING] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
@@ -1257,7 +1257,7 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 
 ### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1525,6 +1525,21 @@ ACCEPTANCE: a teammate subagent stopping during a team run does not increment th
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+AMENDMENT (recorded during a related task's research/implementation, cross-referenced only --
+no file_scope overlap, this task's own scope is unchanged and agent-system/extensions/core/hooks/**
+was not touched by that other task): the fix's correctness criterion must be shown to correct
+EVENT ATTRIBUTION in specs/events.jsonl, not merely marker selection. Live events.jsonl was
+observed to carry three subagent_stop events attributed to session_id
+sess_1787265639_358e17 (the implementer) that actually carry cc_session_id
+08ebe7c9-f020-45bc-bce1-0eea931247e6 -- a DIFFERENT Claude session's agents. Foreign stops are
+logged under the marker owner's session_id as a direct consequence of the `head -1`
+arbitrary-marker mis-selection this task already owns, so the event record is falsified and
+post-hoc telemetry misattributes work between sessions. ACCEPTANCE (additional criterion): once
+marker selection is corrected, demonstrate that a foreign subagent's stop event in
+specs/events.jsonl is no longer attributed to another session's session_id -- i.e. verify the
+downstream event-attribution consequence is resolved, not only the marker-selection mechanism
+in isolation.
 
 ---
 
