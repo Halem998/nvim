@@ -1,7 +1,55 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 81,
-  "session_id": "sess_1788202255_53c3de",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+      "summary": "Mechanized the task-lock and session-registry heartbeat inside update-phase-status.sh (session_id derived from holder.json, no caller changes needed), added pid liveness to task-lock.sh, a never_heartbeated fingerprint, retired the never-executed prose from both implementation agents, closed the cycle-layer/documentation survey, added a 19-assertion deterministic fixture test, and obtained a full live reproduction on this task's own real lock and session-registry records after deploying."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Mechanized the task-lock and session-registry heartbeat refresh inside update-phase-status.sh (deriving session_id from holder.json), hardened task-lock.sh with pid liveness and a never-heartbeated fingerprint, retired the confirmed-non-firing prose from both implementation agents, closed every remaining call-site-survey row, added a deterministic fixture test (19/19 passing) plus a full live reproduction, and recorded the events.jsonl attribution amendment to project 73.",
+    "roadmap_items": []
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a behavior must happen at a lifecycle transition, do not encode it as a bash snippet in an agent/skill markdown file -- prose instructions compete with, and lose to, the agent's own judgment about what constitutes the actionable step (measured: 0/8 execution across a real successful run, while the script call four lines above it fired 16/16). Mechanize it INSIDE the one script the transition cannot happen without. Corollary: do not thread the required identifier in as a new argument either, since the argument still has to be typed by the same prose proven not to execute -- derive it from state already reachable from the script's own resolved paths (session_id read from the task's .lock/holder.json). Deriving rather than threading closes absent-caller gaps for free: every existing caller inherits the behavior with zero edits. Pair it with a non-blocking recorded trace log -- '2>/dev/null || true' correctly means never-block but wrongly also means never-report.",
+      "category": "PATTERN",
+      "source_artifact": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["mechanization", "agent-prose-reliability", "lifecycle-hook", "derived-identifier", "silent-failure", "observability"]
+    },
+    {
+      "content": "A pid-liveness floor on a timestamp-based staleness check (task-lock.sh's reap and stale-override) should differ in pid-resolution strategy by call path: an ACQUIRE path should freshly resolve the current process's pid, while a HEARTBEAT/refresh path should PRESERVE the pid already on record rather than re-resolving -- a refresh may legitimately fire from a different process than the one that originally acquired the resource (e.g. a heartbeat mechanized into a different script than the original acquirer), and re-resolving there would silently rewrite the resource's recorded identity to the wrong owner.",
+      "category": "PATTERN",
+      "source_artifact": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["pid-liveness", "lock-identity", "heartbeat-vs-acquire", "concurrency"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788202255_53c3de",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

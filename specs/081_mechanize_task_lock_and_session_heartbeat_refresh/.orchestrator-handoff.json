@@ -1,0 +1,23 @@
+{
+  "status": "implemented",
+  "task_number": 81,
+  "session_id": "sess_1788202255_53c3de",
+  "dispatch_seq": 8,
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "summary": "Mechanized the task-lock and session-registry heartbeat refresh inside update-phase-status.sh (deriving session_id from holder.json), hardened task-lock.sh with pid liveness and a never-heartbeated fingerprint, retired the confirmed-non-firing prose from both implementation agents, closed every remaining call-site-survey row, added a deterministic fixture test (19/19 passing) plus a full live reproduction on this task's own real lock and session-registry records, and recorded the events.jsonl attribution amendment to project 73.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/summaries/01_mechanize-heartbeat-refresh-summary.md",
+      "summary": "Mechanized the task-lock and session-registry heartbeat inside update-phase-status.sh (session_id derived from holder.json), pid liveness and a never_heartbeated fingerprint added to task-lock.sh, never-executed prose retired from both implementation agents, cycle-layer/documentation survey closed, a 19-assertion deterministic fixture test added, and a full live reproduction obtained after deploying."
+    },
+    {
+      "type": "plan",
+      "path": "specs/081_mechanize_task_lock_and_session_heartbeat_refresh/plans/01_mechanize-heartbeat-refresh.md",
+      "summary": "All 7 phases marked [COMPLETED]; every checklist item checked off; no deviations."
+    }
+  ],
+  "next_action_hint": "None required -- task 81 is complete. Deploy already landed and was live-verified against this task's own real lock/session-registry records."
+}
