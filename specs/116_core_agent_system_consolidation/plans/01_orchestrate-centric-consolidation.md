@@ -474,31 +474,31 @@ target -- a task is in the cluster if and only if the rule admits it.
 
 ---
 
-### Phase 6: Backlog audit -- remainder cluster [NOT STARTED]
+### Phase 6: Backlog audit -- remainder cluster [COMPLETED]
 
 **Goal**: Assign exactly one verdict, with its citation, to every remaining audit-scope task, closing
 the roster.
 
 **Tasks**:
-- [ ] For each task in the remainder cluster, read its full description and assign exactly one
+- [x] For each task in the remainder cluster, read its full description and assign exactly one
       verdict under the same rules as Phase 5. A task genuinely unaffected by A1-A5 receives
       ON-PATH with a stated reason for its independence, plus a sequencing note relative to the
       refactor -- ON-PATH is a positive finding of independence, not a default for tasks not
       examined closely.
-- [ ] Handle the three latex build-guard tasks explicitly. The task description states the expected
+- [x] Handle the three latex build-guard tasks explicitly. The task description states the expected
       verdict is to return them to the `extensions` topic untouched; confirm or contradict that
       expectation per task, noting that one of the three touches a core agent file and therefore
       may not be purely extension-internal.
-- [ ] Handle the task carrying `topic: null` per Phase 1's recorded disposition: if admitted to the
+- [x] Handle the task carrying `topic: null` per Phase 1's recorded disposition: if admitted to the
       audit scope, assign it a verdict; if excluded, restate the exclusion reason here so the
       roster closes with an explicit accounting for every non-literature task.
-- [ ] Handle the tasks Phase 1 marked EVIDENCE-GAP or DERIVED-FROM-DESCRIPTION: record which
+- [x] Handle the tasks Phase 1 marked EVIDENCE-GAP or DERIVED-FROM-DESCRIPTION: record which
       evidence tier the verdict rests on, and for EVIDENCE-GAP entries record the backfill
       operation Phase 9 must perform.
-- [ ] Note without resolving any topic anomaly observed (a task whose `file_scope` is entirely
+- [x] Note without resolving any topic anomaly observed (a task whose `file_scope` is entirely
       extension-owned while carrying the core topic, or the reverse). These are re-topic inputs for
       Phase 9, not verdicts.
-- [ ] Close the verdict table with a coverage line: total roster size, verdicts assigned, and the
+- [x] Close the verdict table with a coverage line: total roster size, verdicts assigned, and the
       arithmetic showing every roster row has exactly one verdict.
 
 **Timing**: 1.5 hours

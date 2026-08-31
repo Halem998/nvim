@@ -73,3 +73,45 @@ each task's own description names.
   direction finalized as "measure/fix AFTER A1's deletions land" for both, recorded above.
 - **Three latex build-guard tasks (#74-#76), expected verdict "return to `extensions` topic
   untouched"**: deferred to Phase 6 (remainder cluster), per the task description's own scoping.
+
+---
+
+## Remainder Cluster (15 tasks)
+
+A task in this cluster is ON-PATH only on a stated, positive finding of independence from A1-A5 --
+not by default for being unexamined.
+
+| # | Task | Verdict | Reasoning |
+|---|------|---------|-----------|
+| 20 | `fix_todo_metrics_sync_precommit_phantom_paths` | **ON-PATH** | `/todo`'s own metrics-sync/precommit ordering defect, independent of any lifecycle command/skill/agent/routing/team mechanism A1-A5 touch. Sequence: independent, any time. |
+| 22 | `silence_opencode_fragment_validation_spam` | **ON-PATH** | OpenCode `opencode-agents.json` fragment path-reference design question (per-repo-deploy-dependent `{file:}` refs) -- entirely outside the core `.claude/` lifecycle surface A1-A5 collapse. Independent. |
+| 27 | `remove_dead_opencode_command_router` | **ON-PATH** | Deletes a dead, already-unreachable OpenCode router script; unrelated to `/orchestrate`/lifecycle-skill collapse (a different command system entirely). Independent. |
+| 29 | `generate_mcp_json_from_extension_manifests` | **ON-PATH** | Builds an MCP-server manifest-merge mechanism (`merge_targets.mcp`), a DIFFERENT manifest concern from `routing`/`routing_agents`/`hard_contracts` (A3/A4's routing blocks). No overlap with the routing ladder A3 carries forward. Independent. |
+| 30 | `register_obsidian_memory_mcp_server` | **ON-PATH** | Depends on #29's new MCP-registration mechanism; unrelated to the lifecycle collapse. Sequenced after #29 (pre-existing dependency, unaffected by A1-A5). |
+| 31 | `opencode_extensions_sync_mechanism` | **ON-PATH** | OpenCode mirror drift-detection/generation-path question; the `.opencode/` tree is a separate deploy target from `.claude/`'s lifecycle commands. Independent. |
+| 42 | `verify_deploy_context_gates` | **ON-PATH** | Wires `measure-eager-context.sh` into `verify-deploy.sh`'s gate suite with a byte-count threshold -- a deploy-integrity gate orthogonal to A1-A5's routing/dispatch decisions. (Note: A4(iii) separately proposes ONE new `verify-deploy.sh` check of its own -- the `routing_hard` migration warning -- a small, non-conflicting addition to the same script; no territory collision since both are additive gate registrations.) Independent. |
+| 43 | `email_safety_context_loading_decision` | **ON-PATH** | Email-extension safety-context-loading defect; extension-internal per the audit scope's own exclusion of extension internals from this task's authority. Independent. |
+| 45 | `global_update_extension_repo_registry` | **RESCOPE** (topic anomaly) | Phase 1 evidenced its real scope is `lua/neotex/plugins/ai/claude/commands/picker/**` and `lua/neotex/plugins/ai/shared/extensions/**` -- nvim-config Lua UI code, NOT `agent-system/extensions/**` at all, despite carrying the `core-agent-system` topic. Revise: re-topic OFF `core-agent-system` (this task's re-topic authority is for SURVIVORS of the core-agent-system audit; a task never substantively about the core agent system should not have carried this topic). Recommend `neovim` topic in Phase 9's re-topic pass, with a note in the revised description recording the topic correction and its evidence. |
+| 50 | `restore_verification_trust_and_close_hygiene_residue` | **ON-PATH** (already RESCOPEd/split 2026-08-24) | Session-ID and scoped-commit-gate hygiene residue; touches the SAME scoped-commit gate family as #48/#90 but as a gate-coverage fix (the gate only greps `*.sh`, missing `*.md`), not a call-site migration -- complementary to, not overlapping with, #48/#90's call-site propagation. Sequence: independent of A1-A5, but should land in the same general window as #48/#90 since all three touch scoped-commit hygiene (advisory note only, not a hard dependency). |
+| 51 | `move_session_state_files_out_of_specs_root` | **ON-PATH** | Runtime-file location/reaper-coverage/auto-invocation fix (`specs/` root litter). Touches `orchestrator-runtime-files.md` and the reaper script, both orthogonal to A1-A5's lifecycle-collapse decisions -- these files' NAMES and cleanup cadence are unaffected by which command/skill dispatches them. Independent. |
+| 74 | `latex_build_conflict_guard_script` | **ON-PATH -- returned to `extensions` topic** | Confirms the task description's expected verdict for latex build-guard work. Scope is the shared guard script itself (`agent-system/extensions/core/scripts/latex-build-guard.sh`) plus a `core/manifest.json` registration entry -- a new, self-contained utility, not a modification to any lifecycle command/skill/agent/routing block A1-A5 touch. **CONFIRMED** as extension-internal-adjacent (it lands in `core/scripts/` but is a standalone tool with no coupling to the collapse). |
+| 75 | `wire_build_guard_into_latex_lifecycle` | **ON-PATH -- returned to `extensions` topic** | Scope is entirely `agent-system/extensions/latex/**` (manifest, scripts, agents, rules, context) -- purely extension-internal, using the EXISTING `skill_run_extension_hook()` mechanism unchanged. **CONFIRMED** as expected. |
+| 76 | `cover_non_latex_typed_tex_builders` | **ON-PATH -- returned to `extensions` topic, WITH a confirmed caveat** | **CONTRADICTS the "purely extension-internal" framing, exactly as the task description anticipated** ("one of the three touches a core agent file"): its `file_scope` names `general-implementation-agent.md`, `general-implementation-hard-agent.md`, AND `skill-base.sh` directly -- all three are core lifecycle files A1/A4 also touch. This is a genuine file-territory overlap requiring sequencing awareness (both this task and A4's dispatch-prep-stage work edit `general-implementation-agent.md`), but the CONTENT is disjoint (a LaTeX-build-guard call vs. contract-injection text) so it does not change the verdict to design-coupled/RESCOPE -- it remains ON-PATH, returned to `extensions` topic, with an explicit Phase 7 sequencing note: do not run this task concurrently with any A4 successor task that edits the same two agent files. |
+| 89 | `mode_gate_literature_and_distill_skills` | **ON-PATH** | Third mode-gating-family application (alongside #87 convention, #44 and #88's applications), targeting `skill-literature`/`skill-distill` -- outside the orchestrate engine and outside A1-A5's touched files entirely, so classified in the remainder cluster per this report's Method section (refines, does not contradict, the task description's framing of it as part of the "same chain"). Sequenced after #87 lands (pre-existing dependency), independent of A1-A5. |
+
+### `topic: null` task accounting
+
+Task 100 was admitted to the audit scope in Phase 1 (report 02) and assigned its verdict in the
+design-coupled cluster (ON-PATH, re-topic to `core-agent-system`) -- no further action needed here;
+this subsection exists per the plan's own instruction to restate the accounting so the roster
+closes with an explicit disposition for every non-literature task, including the one with no
+topic at all.
+
+### Coverage line
+
+Roster size (Phase 1, report 02): **33** (32 topic-matched + task 100, admitted). Verdicts
+assigned: design-coupled cluster **18** (Phase 5) + remainder cluster **15** (this phase) =
+**33**. **33 = 33 -- every roster row carries exactly one verdict.** Every MOOT-adjacent verdict
+(#46's `routing`-half mootness, #115's mootness) names its Phase 4 (report 03) A7 ledger citation
+in its own row above; no roster row was assigned a bare "MOOT" without a ledger citation, and no
+row was left unassigned.
