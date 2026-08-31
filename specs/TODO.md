@@ -1,45 +1,62 @@
 ---
-next_project_number: 116
+next_project_number: 117
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-08-26. Generated from state.json dependency graph.*
+*Updated 2026-08-31. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113,114 | -- | agent-system, extensions, literature, ... |
-| 2 | 30,64,75,76,88,104,105,109,112,115 | 29,42,74,87,102,108,114 | agent-system, extensions, literature, ... |
-| 3 | 44,107 | 88,104 | literature, essential-refactor |
-| 4 | 89 | 44 | essential-refactor |
-| 5 | 90 | 89 | essential-refactor |
-| 6 | 48 | 90 | essential-refactor |
-| 7 | 50 | 48 | essential-refactor |
-| 8 | 91 | 50 | status-marker-lifecycle |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,72,73,74,81,87,94,100,102,103,106,108,110,111,113,114,116 | -- | core-agent-system, extensions, literature |
+| 2 | 30,64,75,76,88,104,105,109,112,115 | 29,42,74,87,102,108,114 | core-agent-system, extensions, literature |
+| 3 | 44,107 | 88,104 | core-agent-system, literature |
+| 4 | 89 | 44 | core-agent-system |
+| 5 | 90 | 89 | core-agent-system |
+| 6 | 48 | 90 | core-agent-system |
+| 7 | 50 | 48 | core-agent-system |
+| 8 | 91 | 50 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
-### Agent System
+### Core Agent System
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
+22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
 31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
+42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
+43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
+45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
+46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
+68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
+72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
+73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
+81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
+87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+    └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+      └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+        └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+          └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+            └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+              └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
   └─ 115 [NOT STARTED] — Mirror model-flag consumption into skill-orchestrate-hard, and re
+116 [NOT STARTED] — Design the target state for an orchestrate-centric core agent sys
 
 ### Extensions
 
-22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
-45 [NOT STARTED] — Implement <leader>al repo registration and 'Global Update' action
-46 [NOT STARTED] — Fix present extension compound-skill routing so /implement resolv
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -61,44 +78,219 @@ next_project_number: 116
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
-### Orchestration Concurrency
-
-53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-68 [NOT STARTED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
-81 [NOT STARTED] — Task-lock and session-registry heartbeats never fire during a rea
-
-### Status Marker Lifecycle
-
-91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
-
-### Essential Refactor
-
-42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 64 [NOT STARTED] — Decide and implement how --hard behavioral contracts reach agents
-43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-    └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-      └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-        └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-          └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-            └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-
-### Team Mode Lifecycle
-
-72 [NOT STARTED] — Teammate agents spawned by team-mode skills write the skill-level
-73 [NOT STARTED] — The SubagentStop postflight hook picks an arbitrary .postflight-p
-
 ### Uncategorized
 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 
 ## Tasks
 
+### 116. Design the orchestrate-centric core consolidation and rebuild the backlog around it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Design the target state for an orchestrate-centric core agent system, then rebuild the existing backlog around that design -- revising, absorbing, abandoning, and adding tasks as the design requires. This is a META-TASK: its deliverables are a design specification plus a set of applied backlog operations, NOT edits to the running system. No command, skill, or agent file is deleted by this task; it decides what gets deleted and by which successor task.
+
+SOURCE STORE IS THE EDIT TARGET for every successor task it creates: agent-system/extensions/** (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+RUN THIS TASK ALONE. Its file_scope includes specs/TODO.md and specs/state.json, which collide with every other task in the repo. It must never be admitted into a multi-task /orchestrate batch.
+
+=== MOTIVATION: MEASURED SURFACE ===
+
+Core extension inventory, measured 2026-08-31 at agent-system/extensions/core/:
+    commands   18 files     7,707 lines
+    skills     22 dirs     14,981 lines (SKILL.md only)
+    agents     12 files     5,073 lines
+    rules      10 files
+    scripts   145 files    48,204 lines
+    context   137 files    37,959 lines
+    docs       28 files
+
+The dominant redundancy is a materialized 3x3 product: {research, plan, implement} x {standard, hard, team}, duplicated at the command, skill, and agent layer simultaneously.
+
+  Commands: research.md (652) + plan.md (677) + implement.md (506) + revise.md (157) = 1,992 lines
+  that orchestrate.md (750) already sequences internally.
+
+  Skills: 10 of 22 are lifecycle-phase skills --
+    skill-researcher / skill-researcher-hard
+    skill-planner / skill-planner-hard
+    skill-implementer / skill-implementer-hard
+    skill-team-research / skill-team-plan / skill-team-implement
+    skill-reviser
+  Plus two orchestration engines: skill-orchestrate and skill-orchestrate-hard.
+
+  Agents: 8 of 12 are the same matrix --
+    general-research-agent / general-research-hard-agent
+    planner-agent / planner-hard-agent
+    general-implementation-agent / general-implementation-hard-agent
+    reviser-agent, synthesis-agent
+
+  Every extension pays for the duplication too: the routing ladder in
+  scripts/lib/manifest-routing-lib.sh resolves against FOUR manifest blocks per extension --
+  routing, routing_hard, routing_agents, routing_agents_hard.
+
+=== PHASE A: TARGET-STATE DESIGN ===
+
+Produce a written specification (a report artifact) for a single-entry-point core. It must be
+specific enough that a successor task can implement it without re-deriving decisions.
+
+A1. SINGLE ENTRY POINT. /orchestrate becomes the only lifecycle command. Specify precisely what
+happens to /research, /plan, /implement, /revise: deleted outright, or retained as thin aliases
+that forward to /orchestrate with a phase flag. State the decision AND its reasoning. If aliases
+are retained, they must carry no logic of their own -- an alias that duplicates argument parsing
+or gate sequencing has not reduced anything.
+
+A2. PHASE-FORCING FLAGS. Specify the flag surface that lets a user re-run a phase that has
+already produced an artifact -- the motivating example is `/orchestrate NNN --research` running
+an additional research round on a task already marked [RESEARCHED] or beyond. Cover at minimum
+--research, --plan, --implement, and whatever replaces /revise. Decide and record:
+  - Does a forced phase REPLACE the prior artifact, or append a new numbered one (the MM_ naming
+    convention already supports 01_, 02_, 03_ within a task)? Appending is the safer default but
+    grows the artifact directory; state the choice.
+  - What does a forced phase do to task status? Re-running research on a [PLANNED] task must not
+    silently regress the status marker and strand the plan.
+  - Can phase flags compose (`--research --plan`), and if so does that mean "force both" or
+    "stop after plan"?
+  - What is the default with NO phase flag -- resume from the first incomplete phase, which is
+    today's behavior, or something else?
+
+A3. DEFAULTS FROM TASK TYPE AND LOADED EXTENSIONS. Specify how /orchestrate derives its dispatch
+defaults (which agent, which model, which contracts) from the task's task_type plus the set of
+loaded extensions, without the user naming a skill. The existing ladder in
+scripts/lib/manifest-routing-lib.sh and its two consumers (command-route-skill.sh,
+command-route-agent.sh) are the starting point -- state what survives, what changes, and what
+each extension manifest must declare after the collapse. See
+context/guides/manifest-routing-schema.md for the current four-block model.
+
+A4. HARD MODE BECOMES CONTRACT INJECTION (decided; implement, do not re-litigate). The H2-H9
+behavioral contracts are injected into the dispatch prompt rather than routed to a duplicate
+skill/agent tree. This collapses skill-{researcher,planner,implementer}-hard, the three
+*-hard-agent files, and skill-orchestrate-hard, and removes routing_hard / routing_agents_hard
+from every extension manifest. The open work is HOW, not WHETHER:
+  - Where do the contract texts live so that one edit updates every consumer? (A context file
+    referenced by path, an include mechanism, or a script that emits the block.)
+  - How does an EXTENSION add or override a contract for its own task types?
+  - What is the migration path for extensions that currently declare routing_hard blocks --
+    silent ignore, deploy-time warning, or a hard error?
+  - skill-orchestrate-hard/SKILL.md is ~110KB and its multi-task half already delegates to the
+    base skill (its own text says stages MT-1..MT-5 live solely in skill-orchestrate). Measure
+    how much of it is genuinely hard-specific before assuming the collapse is cheap.
+This subsumes the existing standalone task "Decide and implement how --hard behavioral contracts
+reach agents system-wide" (topic essential-refactor), which Phase B should absorb rather than
+leave running in parallel.
+
+A5. TEAM MODE FOLDS INTO THE ENGINE (decided; implement, do not re-litigate). Parallel-teammate
+capability is preserved but expressed as a flag handled inside the single engine, not as three
+separate skills plus a synthesis agent. Specify:
+  - What happens to skill-team-research / skill-team-plan / skill-team-implement and
+    synthesis-agent -- deleted, or reduced to a fan-out helper the engine calls?
+  - Whether --team survives as a user flag or becomes an automatic decision from task shape.
+  - How the teammate contract layer (per-teammate finding files, territory contracts, the
+    SubagentStop postflight correlation) is expressed once instead of three times.
+  - Whether --team-size survives.
+  - The graceful-degradation path when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is unset must be
+    preserved, not dropped as incidental.
+
+A6. PRESERVED ASSETS -- WHAT MUST NOT BE LOST. The reduction is only a win if quality holds.
+Enumerate explicitly the mechanisms that must survive the collapse, and for each, name where it
+lives afterward. At minimum: the GATE IN / GATE OUT checkpoint sequencing; scoped git commits per
+phase; the artifact format validators; task-lock and session-registry concurrency control; the
+batch admission gates (self-modification, file_scope collision, cycle budget); --lit literature
+briefing injection; memory retrieval and --clean suppression; model flags (--haiku/--sonnet/
+--opus/--fable); --fast; the return-metadata handoff contract and the recovery path built on it.
+A deletion that quietly drops one of these is a regression, not a simplification.
+
+A7. DELETION LEDGER AND COST. A table: every file proposed for deletion, its line count, what
+replaces it, and what capability is lost (or "none"). Report the projected before/after totals
+against the measured baseline in the MOTIVATION section above. Do not report an unqualified
+reduction figure without naming what it cost.
+
+=== PHASE B: BACKLOG AUDIT ===
+
+Classify every task listed under AUDIT SCOPE below against the Phase A design. Exactly one
+verdict per task, each citing the specific Phase A decision that produces it:
+
+  ON-PATH   -- survives unchanged; sequence it relative to the refactor.
+  RESCOPE   -- survives with a revised description; state what changes and why.
+  ABSORB    -- merged into a consolidation task; name the target.
+  MOOT      -- abandoned because the file or mechanism it fixes ceases to exist. A MOOT verdict
+               MUST name the deletion in the Phase A ledger that makes it moot. "Probably
+               obsolete" is not a verdict.
+
+A task may also be judged BLOCKING -- it must land BEFORE the collapse because the collapse would
+otherwise inherit or entrench its defect.
+
+Findings already established during the /meta review that produced this task (verify, do not
+re-derive):
+  - The two model-flag threading tasks (wire model-flag support into /orchestrate and the base
+    engine; mirror it into skill-orchestrate-hard) are ON-PATH, and the second is partly MOOT
+    under A4 -- if skill-orchestrate-hard is deleted, mirroring model_flag into it is wasted
+    work. Sequencing matters: settle A4 before dispatching the mirror task.
+  - "Wire the --lit flag through the three team skills" is MOOT-or-RESCOPE depending on how A5
+    lands. If the three team skills are deleted, --lit threading happens once in the engine.
+  - The two team-mode-lifecycle tasks (teammate return-meta write conflict; SubagentStop
+    postflight correlated to the marker-owning session) are RESCOPE-or-MOOT under A5 for the same
+    reason. Note that both describe REAL defects -- if the fold preserves teammates at all, the
+    defects survive the fold and must be re-expressed against the new location.
+  - The mode-gated-section-loading chain (the convention task, and the three application tasks
+    that apply it to skill-orchestrate's multi-task section, to the literature/distill skills, and
+    to commands/task.md) is ON-PATH and reduces the same surface. Check for double-counting: a
+    section deleted by the collapse should not also be counted as saved by mode-gating.
+  - The shared-task-lookup-helper adoption lint and the scoped-commit propagation task both touch
+    call sites across the whole core; their counts change if the collapse lands first. Sequence
+    them deliberately in one direction or the other and say which.
+  - The three latex build-guard tasks are latex-extension internals that carry the `extensions`
+    topic only incidentally. They are in audit scope but the expected verdict is to return them
+    to the `extensions` topic untouched.
+
+=== PHASE C: BACKLOG OPERATIONS ===
+
+Apply the Phase B verdicts:
+  - Revise descriptions for RESCOPE tasks.
+  - Abandon MOOT tasks with a recorded reason citing the Phase A ledger entry.
+  - Create the successor implementation tasks the design requires, each sized to be independently
+    dispatchable and each naming its own file_scope.
+  - Re-topic survivors to `core-agent-system`.
+  - Write the dependency ordering into state.json so the wave generator produces a correct
+    sequence, and regenerate specs/TODO.md.
+
+The successor tasks are where files actually get deleted. Size them so that no single task both
+deletes a lifecycle skill AND rewires its consumers -- those are separable and the rewiring must
+land first, so the system is never in a state where a dispatch resolves to a file that no longer
+exists.
+
+=== AUDIT SCOPE ===
+
+In scope for audit and re-topic authority (32 tasks across six topics):
+  agent-system, essential-refactor, orchestration-concurrency, team-mode-lifecycle,
+  status-marker-lifecycle, extensions.
+
+OUT OF SCOPE: all 15 literature-topic tasks. Extension INTERNALS are out of scope; the
+extensions topic is in audit scope only where routing and manifest surface is shared with the
+core. Boiling down the extensions themselves is deferred work and must not be started here.
+
+=== VERIFICATION BAR ===
+
+  1. The Phase A report states a decision, with reasoning, for every one of A1-A7. An item
+     answered "to be determined" is an incomplete phase, not a completed one.
+  2. Every task in AUDIT SCOPE carries exactly one verdict, and every MOOT verdict names the
+     specific deletion that produces it.
+  3. The deletion ledger's projected line-count reduction is reported against the measured
+     baseline recorded in this description, with the preserved-assets list (A6) accounted for
+     item by item -- each one named, with its post-collapse home.
+  4. After Phase C, `bash .claude/scripts/generate-task-order.sh` (or the equivalent regeneration
+     path) produces a TODO.md whose dependency waves are acyclic and whose Core Agent System
+     section reflects the new ordering.
+  5. No file under agent-system/extensions/** or .claude/** is created, modified, or deleted by
+     this task. Its writes are confined to specs/**.
+
+---
+
 ### 115. Mirror model-flag consumption into skill-orchestrate-hard and reconcile the composability docs
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: Task 114
 
 **Description**: Mirror model-flag consumption into skill-orchestrate-hard, and reconcile the documentation that currently claims /orchestrate --hard composes with model flags when it does not. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -132,7 +324,7 @@ VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode singl
 ### 114. Wire model-flag threading through /orchestrate and the base orchestrate engine
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Wire model-flag support into /orchestrate: thread model_flag from the command through the base skill-orchestrate engine so a model override actually reaches dispatched agents. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Do not hand-author anything under .claude/**.
@@ -703,7 +895,7 @@ source store. Do not mark it verified on a source-store-only check.
 ### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: status-marker-lifecycle
+- **Topic**: core-agent-system
 - **Dependencies**: Task 50
 
 **Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
@@ -746,7 +938,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 ### 90. Adoption lint for shared task lookup helper
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 84, Task 89
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
@@ -764,7 +956,7 @@ ACCEPTANCE: lint rejects a newly introduced inline task-lookup on an executable 
 ### 89. Mode gate literature and distill skills
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 44, Task 87
 
 **Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
@@ -784,7 +976,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ### 88. Mode gate skill orchestrate multi task section
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 87
 
 **Description**: Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.
@@ -804,7 +996,7 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 ### 87. Mode gated section loading convention
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 86
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
@@ -831,7 +1023,7 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 - **Effort**: 3-6 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration-concurrency
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Task-lock and session-registry heartbeats never fire during a real single-task /implement run. Both liveness timestamps stay frozen at their acquire-time value for the entire run, so every staleness-based consumer sees a healthy, actively-working session as long-dead.
@@ -1063,7 +1255,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 - **Effort**: 3h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: team-mode-lifecycle
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: The SubagentStop postflight hook picks an arbitrary .postflight-pending marker with no correlation to the session that owns it. In a team run, teammate stops burn the orchestrator's continuation budget and can delete the orchestrator's marker mid-run, silently removing the premature-termination guard.
@@ -1102,7 +1294,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Effort**: 4h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: team-mode-lifecycle
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Teammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
@@ -1142,7 +1334,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration-concurrency
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Make the multi-task /orchestrate classifier's `blocked` row DISCRIMINATING rather than unconditional, so a task blocked on a predecessor the same batch is going to complete becomes dispatchable instead of being skipped on every cycle until MAX_CYCLES_MT is exhausted.
@@ -1218,7 +1410,7 @@ Edit ONLY `agent-system/extensions/core/**`, NEVER the deployed `.claude/**` tre
 ### 64. Decide and implement how --hard behavioral contracts reach agents system-wide
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 42
 
 **Description**: Decide and implement how --hard behavioral contracts reach agents system-wide. Only core, cslib, and lean declare routing_hard/routing_agents_hard. For every other extension that declares routing, --hard resolves via=hard-miss-standard-fallback and the H2-H5 behavioral contracts never reach the agent, even though CLAUDE.md advertises --hard as composable with extension routing at a 3-5x cost multiplier. In the originating session the H2/H3/H4/H5 contracts had to be hand-injected into the delegation prompt by the orchestrator for --hard to mean anything at all, which is neither reproducible nor something a user should have to do.
@@ -1250,7 +1442,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ### 53. Suppress expected handoff absence defect
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration-concurrency
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
@@ -1310,7 +1502,7 @@ genuine-incident channel stays as loud as it is today.
 ### 51. Move session state files out of specs root
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Stop session-scoped orchestration runtime files from accumulating at the specs/ root, and make the existing reap path actually run. Originally scoped as "move the files into a dot-prefixed directory"; widened after a manual cleanup swept 79 stranded files across 5 repos (oldest dated 2026-07-11), because relocation alone hides the clutter without stopping the growth.
@@ -1334,7 +1526,7 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 ### 50. Restore verification trust and close hygiene residue
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 48
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
@@ -1374,7 +1566,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ### 48. Propagate scoped commit to all call sites
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 90
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
@@ -1403,7 +1595,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ### 46. Fix present extension compound skill routing
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: extensions
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Fix present extension compound-skill routing so /implement resolves to a real skill. The present manifest's routing.implement declares "present:grant" -> "skill-grant:assemble" and "present:slides" -> "skill-slides:assemble", but the shared routing resolver (scripts/lib/manifest-routing-lib.sh, consumed via command-route-skill.sh) returns those values verbatim with no colon splitting, and no skill directories named skill-grant:assemble or skill-slides:assemble exist -- only skill-grant and skill-slides do. Running /implement on a present:grant or present:slides task therefore resolves SKILL_NAME to a nonexistent skill (verified: resolver returned skill-grant:assemble via noncore-exact). skill-grant/SKILL.md documents "assemble" as a workflow_type value, not part of the skill name, so the manifest is encoding skill + workflow_type in one field that no consumer ever splits. Decide whether the fix belongs in the manifest (drop the :suffix and carry workflow_type another way) or in the resolver (split on the first colon and expose the suffix as a workflow_type/sub-mode variable), implement it, and add a lint check so any routing or routing_hard value naming a nonexistent skill fails verify-deploy -- lint-routing-wiring.sh currently validates declared agent names but not skill names. Scope is exactly 2 occurrences, both in agent-system/extensions/present/manifest.json under routing.implement; present declares no routing_hard, and no other extension uses colon-bearing routing values. Found during a deploy-integrity audit of the Logos/Theory repo.
@@ -1413,7 +1605,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ### 45. Global update extension repo registry
 - **Status**: [NOT STARTED]
 - **Task Type**: general
-- **Topic**: extensions
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Implement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
@@ -1424,7 +1616,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Effort**: 2-4 hours
 - **Status**: [PLANNED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: Task 62, Task 88
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
@@ -1437,7 +1629,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Effort**: 1-3 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
@@ -1448,7 +1640,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Effort**: 2-4 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: essential-refactor
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
@@ -1498,7 +1690,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ### 31. Opencode extensions sync mechanism
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
@@ -1523,7 +1715,7 @@ VERIFICATION: the fake tool name no longer appears as usable guidance anywhere i
 ### 30. Register obsidian memory mcp server
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: Task 29
 
 **Description**: Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
@@ -1541,7 +1733,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ### 29. Generate mcp json from extension manifests
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
@@ -1561,7 +1753,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ### 27. Remove the dead .opencode command router and its self-referential test scripts
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: .opencode/scripts/execute-command.sh is a command router that cannot execute anything and is called by nothing but its own tests. Delete it and the three test scripts that exist only to exercise it.
@@ -1606,7 +1798,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ### 22. Silence opencode fragment validation spam
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
-- **Topic**: extensions
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
@@ -1673,7 +1865,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: /todo's repository-metrics sync runs before its git commit, so the health probe measures a tree whose git index still points at pre-move paths. Every archived-away file is counted as a structural failure, inflating build_errors and flipping status to "critical" on a healthy tree.
@@ -1767,7 +1959,7 @@ failure.
 ### 14. Prevent implementation-agent fan-out from returning non-terminal status and stale plan markers
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
@@ -1838,7 +2030,7 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
+- **Topic**: core-agent-system
 - **Dependencies**: None
 
 **Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
