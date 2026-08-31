@@ -75,7 +75,19 @@
 #                                            exclusive create: mkdir fails if the dir
 #                                            already exists, with no TOCTOU race)
 #   specs/{NNN}_{SLUG}/.lock/holder.json <- { session_id, task_number, operation,
-#                                              acquired_at, heartbeat_at, command }
+#                                              acquired_at, heartbeat_at, command,
+#                                              pid, pid_source }
+#
+# pid/pid_source (added alongside the pid-liveness reap/stale-override floor -- see cmd_reap and
+# cmd_acquire's stale-override branch below) mirror the session-registry entry's own pid fields
+# and are resolved the SAME way, via resolve_session_pid(). On every cmd_acquire write_holder
+# call site pid is FRESHLY resolved for the acquiring process; on cmd_heartbeat's write_holder
+# call site the pid already on record is PRESERVED rather than re-resolved, because a heartbeat
+# may fire from a different process than the acquirer (notably from update-phase-status.sh's
+# mechanized per-phase-transition refresh). A holder written before this field existed, or an
+# unresolvable pid, has pid: null -- every consumer (cmd_reap, cmd_acquire's stale-override)
+# treats that identically to "no liveness information available" and falls through to the prior
+# timestamp-only behavior, never a hard failure.
 #
 # Stale threshold: TASK_LOCK_STALE_MIN env var, default 30 (minutes). This is
 # DISTINCT from and much longer than git-snapshot.sh's unrelated 120-SECOND marker
@@ -294,9 +306,25 @@ iso_now() {
 }
 
 # --- write_holder: tmp-file-rename write of holder.json (atomic replace) ---
+# pid/pid_source (args 8-9, both optional) mirror write_session_entry's field set -- see the
+# "Why No pid on the Task Lock, Historically" absence this closes in task-lock.md. A caller on
+# an ACQUIRE path (cmd_acquire's four write_holder call sites) resolves a FRESH pid via
+# resolve_session_pid() before calling here. A caller on a HEARTBEAT refresh (cmd_heartbeat's
+# call site) preserves the pid ALREADY recorded in holder.json instead -- the heartbeat may be
+# invoked from a different process than the acquirer (notably from update-phase-status.sh after
+# this file's own mechanized refresh), so re-resolving there would silently rewrite the lock's
+# identity to the heartbeat caller's own pid. An empty/non-numeric pid writes JSON null,
+# identical in shape to a legacy holder.json that predates this field -- every consumer treats
+# both as "no liveness information available", never as a hard failure.
 write_holder() {
-  local lock_dir="$1" session_id="$2" task_number="$3" operation="$4" acquired_at="$5" heartbeat_at="$6" command="$7"
+  local lock_dir="$1" session_id="$2" task_number="$3" operation="$4" acquired_at="$5" heartbeat_at="$6" command="$7" pid="${8:-}" pid_source="${9:-}"
   local tmp_file="$lock_dir/holder.json.tmp"
+  local pid_json
+  if [[ "$pid" =~ ^[0-9]+$ ]]; then
+    pid_json="$pid"
+  else
+    pid_json="null"
+  fi
 
   # Every caller decided ITS OWN session should hold (or continue holding) this lock before
   # reaching this write -- that decision already happened in cmd_acquire/cmd_heartbeat above and
@@ -318,7 +346,9 @@ write_holder() {
     --arg acquired_at "$acquired_at" \
     --arg heartbeat_at "$heartbeat_at" \
     --arg command "$command" \
-    '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $acquired_at, heartbeat_at: $heartbeat_at, command: $command}' \
+    --argjson pid "$pid_json" \
+    --arg pid_source "$pid_source" \
+    '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $acquired_at, heartbeat_at: $heartbeat_at, command: $command, pid: $pid, pid_source: $pid_source}' \
     > "$tmp_file" || true
 
   if [ ! -s "$tmp_file" ]; then
@@ -617,6 +647,14 @@ cmd_acquire() {
   local task_number="$1" operation="$2" session_id="$3" command="${4:-}"
   local task_dir lock_dir
 
+  # Fresh pid resolution for THIS acquiring process, computed once and reused across every
+  # write_holder call site below (fresh acquire, corrupt-holder recovery, same-session
+  # re-entry, stale override) -- all four are "acquire paths" in the write_holder header
+  # comment's sense, distinct from cmd_heartbeat's own call site which preserves the pid
+  # already on record instead of re-resolving.
+  local acquire_pid acquire_pid_source
+  read -r acquire_pid acquire_pid_source <<< "$(resolve_session_pid)"
+
   task_dir=$(resolve_task_dir "$task_number" "create") || {
     echo "ERROR: could not resolve task directory for task $task_number" >&2
     return 2
@@ -702,7 +740,7 @@ session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null) || t
 
   if mkdir "$lock_dir" 2>/dev/null; then
     # Fresh acquire: directory did not exist a moment ago (POSIX-atomic).
-    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" || return 2
+    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" "$acquire_pid" "$acquire_pid_source" || return 2
     return 0
   fi
 
@@ -711,7 +749,7 @@ session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null) || t
     # Directory exists but holder.json is missing/corrupt (e.g. interrupted acquire).
     # Treat as acquirable: overwrite in place (do not remove the dir, just the write).
     echo "WARN: lock directory for task $task_number exists without holder.json; treating as recoverable and overriding." >&2
-    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" || return 2
+    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" "$acquire_pid" "$acquire_pid_source" || return 2
     return 0
   fi
 
@@ -723,7 +761,7 @@ session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null) || t
     # Same-session re-entry: MUST NOT self-block. Refresh heartbeat only.
     local acquired_at
     acquired_at=$(read_holder_field "$lock_dir" "acquired_at")
-    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "${acquired_at:-$(iso_now)}" "$(iso_now)" "$command" || return 2
+    write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "${acquired_at:-$(iso_now)}" "$(iso_now)" "$command" "$acquire_pid" "$acquire_pid_source" || return 2
     return 0
   fi
 
@@ -736,9 +774,23 @@ session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null) || t
     return 1
   fi
 
+  # Stale-by-timestamp, but pid-liveness floor: refuse to override a lock whose recorded holder
+  # pid is confirmably still alive, mirroring cmd_reap's own refusal above. A live holder pid
+  # under a stale heartbeat most likely means the holder process is wedged (or its heartbeat
+  # mechanism is broken) rather than gone -- an automatic override here would let a second
+  # session silently steal a lock a live process still holds. A legacy holder with no pid field,
+  # or an unresolvable/non-numeric pid, keeps today's override-and-warn behavior unchanged.
+  local holder_pid
+  holder_pid=$(read_holder_field "$lock_dir" "pid")
+  if [[ "$holder_pid" =~ ^[0-9]+$ ]] && kill -0 "$holder_pid" 2>/dev/null; then
+    echo "ABORT: Task $task_number's lock (session $holder_session, heartbeat ${age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min threshold), but its recorded holder pid $holder_pid is still alive; refusing to override automatically." >&2
+    echo "  Investigate the live process before overriding manually: rm -rf \"$lock_dir\"" >&2
+    return 1
+  fi
+
   # Stale lock held by a different session: override-and-warn (never silent, never permanent).
   echo "WARN: Task $task_number's lock (session $holder_session, heartbeat ${age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min threshold); overriding and acquiring for $session_id." >&2
-  write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" || return 2
+  write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" "$acquire_pid" "$acquire_pid_source" || return 2
   return 0
 }
 
@@ -851,11 +903,19 @@ cmd_heartbeat() {
     return 0
   fi
 
-  local operation acquired_at command
+  # Preserve the pid/pid_source already on record rather than re-resolving: a heartbeat may be
+  # invoked from a DIFFERENT process than the one that acquired the lock (notably from
+  # update-phase-status.sh's mechanized refresh) -- re-resolving here would silently rewrite the
+  # lock's recorded identity to the heartbeat caller's own pid. A legacy holder.json with no pid
+  # field reads back empty, which write_holder already treats as "no liveness information",
+  # identical to today's pid-less behavior.
+  local operation acquired_at command holder_pid holder_pid_source
   operation=$(read_holder_field "$lock_dir" "operation")
   acquired_at=$(read_holder_field "$lock_dir" "acquired_at")
   command=$(read_holder_field "$lock_dir" "command")
-  write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$acquired_at" "$(iso_now)" "$command" || return 2
+  holder_pid=$(read_holder_field "$lock_dir" "pid")
+  holder_pid_source=$(read_holder_field "$lock_dir" "pid_source")
+  write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$acquired_at" "$(iso_now)" "$command" "$holder_pid" "$holder_pid_source" || return 2
   return 0
 }
 
@@ -968,12 +1028,13 @@ cmd_reap() {
     [ -n "$lock_dir" ] || continue
     total_count=$(( total_count + 1 ))
 
-    local task_number session_id operation age reason_suffix=""
+    local task_number session_id operation age reason_suffix="" holder_pid=""
     if [ -f "$lock_dir/holder.json" ] && jq -e . "$lock_dir/holder.json" >/dev/null 2>&1; then
       task_number=$(read_holder_field "$lock_dir" "task_number")
       session_id=$(read_holder_field "$lock_dir" "session_id")
       operation=$(read_holder_field "$lock_dir" "operation")
       age=$(age_minutes "$(read_holder_field "$lock_dir" "heartbeat_at")")
+      holder_pid=$(read_holder_field "$lock_dir" "pid")
     else
       # Missing/unparseable holder.json (e.g. an interrupted acquire's mkdir-then-write
       # race window): fall back to the .lock directory's own mtime. Reap only if that
@@ -993,6 +1054,17 @@ cmd_reap() {
     fi
 
     if [ "$age" -gt "$TASK_LOCK_REAP_MIN" ]; then
+      # Pid-liveness floor, mirroring the session-registry side's dead-pid check: a lock whose
+      # recorded holder pid is confirmably still alive is never reaped on timestamp age alone,
+      # in EITHER --dry-run or real mode -- this is a refusal to act on a bad timestamp, not a
+      # cosmetic dry-run distinction. A holder with no pid field (legacy holder.json, or the
+      # missing/unparseable-holder.json fallback branch above, which never populates holder_pid)
+      # or an unresolvable/non-numeric pid falls through unchanged to today's timestamp-only
+      # reap behavior below.
+      if [[ "$holder_pid" =~ ^[0-9]+$ ]] && kill -0 "$holder_pid" 2>/dev/null; then
+        echo "SKIP: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age (holder pid $holder_pid is alive; refusing to reap a live process's lock)"
+        continue
+      fi
       reaped_count=$(( reaped_count + 1 ))
       if [ "$dry_run" = true ]; then
         echo "would reap: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"

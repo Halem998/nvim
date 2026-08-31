@@ -224,7 +224,7 @@ enumeration as a hypothesis, not a fact, and re-run the grep).
 
 ---
 
-### Phase 2: Add pid liveness to holder.json and make reaping fail safe [NOT STARTED]
+### Phase 2: Add pid liveness to holder.json and make reaping fail safe [COMPLETED]
 
 **Goal**: Give the task lock the liveness signal the session registry already has, and make both
 destructive paths (`cmd_reap` and `cmd_acquire`'s stale-override) refuse to act against a live
@@ -233,25 +233,25 @@ root cause, because the reaper acting on a bad timestamp is where the real damag
 
 **Tasks**:
 
-- [ ] Extend `write_holder()` in `agent-system/extensions/core/scripts/task-lock.sh` to persist
+- [x] Extend `write_holder()` in `agent-system/extensions/core/scripts/task-lock.sh` to persist
       `pid` and `pid_source` alongside its existing six fields, mirroring `write_session_entry`'s
       field set. Reuse the existing `resolve_session_pid` bounded-ancestor-walk helper rather
       than writing a second pid resolver.
-- [ ] Update every `write_holder` call site to thread pid/pid_source. On a *heartbeat* refresh,
+- [x] Update every `write_holder` call site to thread pid/pid_source. On a *heartbeat* refresh,
       preserve the pid already recorded in `holder.json` (the heartbeat may be invoked from a
       different process than the acquirer — notably from `update-phase-status.sh` after Phase 1 —
       so re-resolving would silently rewrite the lock's identity); resolve a fresh pid only on
       the acquire paths.
-- [ ] Make `cmd_reap` refuse to reap a lock whose recorded `pid` is alive (`kill -0`), mirroring
+- [x] Make `cmd_reap` refuse to reap a lock whose recorded `pid` is alive (`kill -0`), mirroring
       the session side's dead-pid floor. Emit a `SKIP: ... (holder pid <pid> is alive; refusing
       to reap a live process's lock)` line — visible in both `--dry-run` and real modes, never a
       silent skip. A holder with no `pid` field (legacy) or an unresolvable pid falls through to
       today's timestamp-only behavior unchanged.
-- [ ] Make `cmd_acquire`'s stale-override path refuse to override a stale lock whose recorded
+- [x] Make `cmd_acquire`'s stale-override path refuse to override a stale lock whose recorded
       `pid` is alive: return the same ABORT/exit-1 shape as the fresh-lock-held-by-another-session
       branch, with a distinct message naming the live pid and instructing manual override. A
       legacy holder with no pid keeps today's override-and-warn behavior.
-- [ ] Update the `holder.json` schema comment at the top of `task-lock.sh` (currently documenting
+- [x] Update the `holder.json` schema comment at the top of `task-lock.sh` (currently documenting
       six fields) and the corresponding schema description in
       `agent-system/extensions/core/context/patterns/task-lock.md`.
 

@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Add pid liveness to holder.json and make reaping fail safe",
+  "started_at": "2026-08-31T20:05:00Z",
+  "last_updated": "2026-08-31T20:07:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend write_holder() to persist pid and pid_source, reusing resolve_session_pid", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Update every write_holder call site to thread pid/pid_source (preserve on heartbeat, fresh-resolve on acquire)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "cmd_reap refuses to reap a lock whose recorded pid is alive", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "cmd_acquire's stale-override refuses to override a lock whose recorded pid is alive", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Update holder.json schema comment in task-lock.sh and task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh", "agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "manual_smoke_evidence": [
+    "Fixture acquire writes pid+pid_source (fresh-resolved) into holder.json.",
+    "Fixture heartbeat preserves the pid already on record (424242) rather than re-resolving to the calling process's own pid.",
+    "reap --dry-run SKIPs a stale-by-timestamp lock whose pid is confirmably alive (this process's own pid); reaps a stale lock whose pid is confirmably dead (bogus pid 9999999).",
+    "acquire's stale-override ABORTs (exit 1) against a stale lock with a live pid, naming the pid; succeeds with override-and-warn against a stale lock with a dead pid or no pid field at all (legacy behavior unchanged)."
+  ],
+  "regression_evidence": "bash agent-system/extensions/core/scripts/tests/run-all.sh in source-store mode: 56 passed, 0 failed -- includes test-task-lock-reap.sh, test-four-tier-conflict.sh, test-session-registry.sh, test-conflict-predicate.sh."
+}

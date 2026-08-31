@@ -40,7 +40,9 @@ provides exclusivity:
   "operation": "plan",
   "acquired_at": "2026-07-04T18:07:17Z",
   "heartbeat_at": "2026-07-04T18:12:40Z",
-  "command": "/plan 788"
+  "command": "/plan 788",
+  "pid": 261744,
+  "pid_source": "ancestor-claude"
 }
 ```
 
@@ -52,6 +54,27 @@ provides exclusivity:
 | `acquired_at` | string (ISO8601) | When the lock was first acquired (preserved across heartbeats and same-session re-acquires) |
 | `heartbeat_at` | string (ISO8601) | Last refresh; staleness is computed from this field |
 | `command` | string | The invoking command string, for diagnostics (may be empty) |
+| `pid` | integer \| null | Resolved via `resolve_session_pid()` (same helper the session registry uses). `null` on a legacy holder written before this field existed, or when resolution failed -- treated everywhere as "no liveness information", never a hard failure. |
+| `pid_source` | string | `ancestor-claude` \| `ppid` \| `self` \| `explicit` -- how `pid` was resolved. On `cmd_acquire`'s four write paths (fresh acquire, corrupt-holder recovery, same-session re-entry, stale override) this is FRESHLY resolved for the acquiring process; on `cmd_heartbeat`'s write path the value already on record is PRESERVED rather than re-resolved, because a heartbeat may fire from a different process than the acquirer (notably `update-phase-status.sh`'s mechanized per-phase-transition refresh -- see the "Session-Registry Reader Contract" and Consumers sections below). |
+
+### Pid-Liveness Floor (Reap and Stale-Override)
+
+Both `cmd_reap` and `cmd_acquire`'s stale-override branch refuse to act against a lock whose
+recorded `pid` is confirmably alive (`kill -0 "$pid"` succeeds), even once the lock's
+`heartbeat_at` has exceeded the relevant staleness threshold:
+
+- **`reap`**: a stale-by-timestamp lock with a live holder pid is reported as
+  `SKIP: ... (holder pid <pid> is alive; refusing to reap a live process's lock)` in both
+  `--dry-run` and real modes, and is left in place rather than removed.
+- **`acquire`'s stale-override**: a stale-by-timestamp lock with a live holder pid returns the
+  same ABORT/exit-1 shape as the fresh-lock-held-by-another-session branch, naming the live pid
+  and instructing manual override (`rm -rf`), instead of silently overriding it.
+
+A live pid under a stale heartbeat most likely means the holder process is wedged or its
+heartbeat mechanism is broken, not that it is gone -- automatic reap/override in that case would
+let a second session or sweep silently act against a lock a live process still holds. A holder
+with no `pid` field (legacy `holder.json`) or an unresolvable/non-numeric pid falls through
+unchanged to the prior timestamp-only behavior on both paths.
 
 ## Why `mkdir`, Not `jq -n > file`
 
