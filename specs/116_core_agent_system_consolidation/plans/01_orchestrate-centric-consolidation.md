@@ -212,23 +212,23 @@ reconciled.
 
 ---
 
-### Phase 2: Phase A design -- entry point, phase forcing, and dispatch defaults (A1-A3) [NOT STARTED]
+### Phase 2: Phase A design -- entry point, phase forcing, and dispatch defaults (A1-A3) [COMPLETED]
 
 **Goal**: Decide and record A1, A2, and A3 with reasoning, resolving the dispatch-bypass gap before
 any deletion decision is stated.
 
 **Tasks**:
-- [ ] Create `specs/116_core_agent_system_consolidation/reports/03_target-state-design.md` with a
+- [x] Create `specs/116_core_agent_system_consolidation/reports/03_target-state-design.md` with a
       header, a Scope and Constraints section restating the specs-only write boundary, and section
       stubs for A1-A7.
-- [ ] **A1 -- single entry point.** State precisely what happens to `/research`, `/plan`,
+- [x] **A1 -- single entry point.** State precisely what happens to `/research`, `/plan`,
       `/implement`, and `/revise`: deleted outright, or retained as thin aliases forwarding to
       `/orchestrate` with a phase flag. State the decision and its reasoning. If aliases are
       retained, specify that they carry no argument parsing and no gate sequencing of their own,
       and say what mechanism enforces that. Address `/revise` specifically: its two behaviors
       (reasoned revision with a user-supplied free-text reason, and the description-update fallback
       when no plan exists) have no `/orchestrate` equivalent today and need an explicit home.
-- [ ] **A1 precondition -- the dispatch-bypass gap.** Record as a named design constraint that
+- [x] **A1 precondition -- the dispatch-bypass gap.** Record as a named design constraint that
       memory retrieval (`memory-retrieve.sh`, gated by `clean_flag`) and interactive `--lit`
       resolution (`lit-stage4a-flow.md`) live only in the three lifecycle skills that
       `skill-orchestrate` bypasses, using Phase 1's verified counts as evidence. Name the
@@ -237,7 +237,7 @@ any deletion decision is stated.
       per command). State the ordering constraint explicitly: the rehome lands before any command
       or lifecycle-skill deletion, so the system is never in a state where the capability has no
       home. This constraint is carried forward into A6 and into Phase 7's sequencing.
-- [ ] **A2 -- phase-forcing flags.** Specify the flag surface for re-running a phase that has
+- [x] **A2 -- phase-forcing flags.** Specify the flag surface for re-running a phase that has
       already produced an artifact, covering at minimum `--research`, `--plan`, `--implement`, and
       whatever replaces `/revise`. Record a decision for each of the four sub-questions: (i) does a
       forced phase replace the prior artifact or append a new numbered one, naming the concrete
@@ -249,7 +249,7 @@ any deletion decision is stated.
       "force both" or "stop after the named phase"; (iv) the no-flag default. Also name the two
       consumption points a forcing flag must reach: the command's own argument parsing and the
       engine's state-driven handler selection, which today has no flag-driven override.
-- [ ] **A3 -- defaults from task type and loaded extensions.** Specify how the single engine derives
+- [x] **A3 -- defaults from task type and loaded extensions.** Specify how the single engine derives
       its dispatch defaults (agent, model, contracts) from `task_type` plus loaded extensions,
       without the user naming a skill. Start from the existing shared routing ladder and its two
       consumers. State what survives, what changes, and exactly what each extension manifest must

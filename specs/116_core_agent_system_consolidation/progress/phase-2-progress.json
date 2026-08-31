@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Phase A design -- entry point, phase forcing, and dispatch defaults (A1-A3)",
+  "started_at": "2026-08-31T00:30:00Z",
+  "last_updated": "2026-08-31T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "A1 single entry point + dispatch-bypass precondition", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]},
+    {"id": 2, "description": "A2 phase-forcing flags", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]},
+    {"id": 3, "description": "A3 defaults from task type and loaded extensions", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/03_target-state-design.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
