@@ -53,7 +53,7 @@ next_project_number: 117
               └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
   └─ 115 [NOT STARTED] — Mirror model-flag consumption into skill-orchestrate-hard, and re
-116 [RESEARCHED] — Design the target state for an orchestrate-centric core agent sys
+116 [PLANNED] — Design the target state for an orchestrate-centric core agent sys
 
 ### Extensions
 
@@ -85,11 +85,12 @@ next_project_number: 117
 ## Tasks
 
 ### 116. Design the orchestrate-centric core consolidation and rebuild the backlog around it
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md]
+- **Plan**: [116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md]
 
 **Description**: Design the target state for an orchestrate-centric core agent system, then rebuild the existing backlog around that design -- revising, absorbing, abandoning, and adding tasks as the design requires. This is a META-TASK: its deliverables are a design specification plus a set of applied backlog operations, NOT edits to the running system. No command, skill, or agent file is deleted by this task; it decides what gets deleted and by which successor task.
 

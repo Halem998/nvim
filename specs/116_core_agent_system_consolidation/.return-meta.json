@@ -1,41 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 116,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1788197681_a534a5",
-  "dispatch_seq": 1,
-  "summary": "Research report for the orchestrate-centric core consolidation design. Answers all 7 research questions with file+line evidence: /orchestrate is missing --team, --hard/--fast, model flags, --clean, --force, --roadmap, and any phase-forcing or revision-with-reason mechanism at the command layer; skill-orchestrate dispatches agents directly (bypassing skill-researcher/planner/implementer), which silently drops memory retrieval and --lit resolution from every /orchestrate-driven task; /orchestrate --hard has no dispatch site anywhere (skill-orchestrate-hard is currently unreachable); hard-mode skill/agent pairs are structurally near-identical to base (cheap to collapse); only 3/19 extension manifests declare routing_hard; team mode has one historical use (task 36) and zero for team-plan/team-implement; next_artifact_number auto-increments for research only, not plan/implement; a 32-task Phase B evidence table is included with informal category assignment, file_scope, and BLOCKING-candidate flags for #68 and #81 (beyond the two the task description already named).",
-  "findings_count": 7,
+  "dispatch_seq": 2,
+  "summary": "10-phase, ~15-hour implementation plan for the orchestrate-centric core consolidation. Phase 1 verifies the measured baseline and builds the audit-scope evidence roster; Phases 2-4 produce the Phase A design specification (A1-A7) ending in a completeness gate; Phases 5-6 assign exactly one verdict per audit-scope task across a design-coupled cluster and a remainder, closing with coverage arithmetic; Phase 7 reconciles verdicts, fixes the three sequencing-tension directions, finalizes the BLOCKING set, and emits an ordered backlog operation manifest; Phases 8-10 apply Phase C (create successors, revise/abandon/re-topic/backfill, then dependency ordering plus TODO regeneration and the VERIFICATION BAR closeout). The plan respects the meta-task boundary throughout: every phase's verification includes a git status --porcelain check that no path outside specs/ changed, and Phase 10 closes VERIFICATION BAR item 5 explicitly. The research dispatch-bypass finding was independently re-verified during planning and is carried as a first-class design input with a named post-collapse home and a rehome-before-deletion ordering constraint encoded as a dependency edge.",
+  "phase_count": 10,
+  "estimated_hours": 15,
+  "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10]],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md",
-      "summary": "Phase A/B research input report: entry-point collapse gap analysis, phase-forcing flag mechanics, hard-mode duplication measurement, team-mode fold evidence, extension blast radius count, preserved-assets file+line table (including two confirmed-absent mechanisms: --lit resolution and memory retrieval on the /orchestrate path), and a 32-task Phase B evidence table."
+      "type": "plan",
+      "path": "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
+      "summary": "10-phase plan covering the Phase A target-state design (A1-A7), the Phase B backlog audit, and the Phase C backlog operations; writes confined to specs/**."
     }
   ],
   "memory_candidates": [
     {
-      "content": "skill-orchestrate/SKILL.md dispatches research/plan/implement agents directly via the Agent tool (subagent_type: $RESEARCH_AGENT etc.), never through skill-researcher/skill-planner/skill-implementer. Those three skills are the sole location of Stage 4a (memory-retrieve.sh + clean_flag gating) and the lit-stage4a-flow.md interactive --lit resolution. Consequence: /orchestrate-driven tasks get zero memory-augmented context, and --lit is threaded as a boolean end-to-end but never resolved into an actual briefing -- it silently no-ops. Any future orchestrate-engine consolidation must rebuild these two mechanisms into skill-orchestrate's own dispatch-prep stage, not assume they carry over from the wrapping skills.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["skill-orchestrate", "memory-retrieve", "lit_flag", "clean_flag", "agent-dispatch-bypass"]
-    },
-    {
-      "content": "/orchestrate --hard has no dispatch site anywhere in the codebase: skill-orchestrate-hard/SKILL.md exists, is exercised by 10+ test/lint scripts, and is referenced in docs (hard-mode-routing.md claims it is 'invoked by /orchestrate --hard'), but no command file or script ever invokes it. Grepping commands/ and scripts/ for the skill name turns up only cross-references. This is a currently-dead, fully-built code path -- confirm reachability with a direct invocation-site grep before assuming any --hard command-level flag exists for /orchestrate.",
+      "content": "When planning a consolidation that promotes one component to sole entry point, verify what the promoted component actually does at its dispatch boundary before planning any deletion. In this codebase skill-orchestrate dispatches lifecycle agents via the Agent tool directly (subagent_type), bypassing the wrapping skills where Stage 4a memory retrieval and interactive --lit resolution exclusively live -- so the sole-entry-point collapse would have made a partial, silent capability loss total and permanent. The general pattern: a capability that lives in a wrapper layer rather than in the dispatched worker is invisible at the worker's own file and disappears when the wrapper is bypassed or deleted. Any plan that elevates a bypassing component must (a) enumerate the wrapper-only capabilities, (b) name a post-collapse home for each, and (c) encode a rehome-before-deletion ordering constraint as a real dependency edge, not as prose advice.",
       "category": "PATTERN",
-      "source_artifact": "specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md",
+      "source_artifact": "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-hard", "dead-code", "dispatch-site", "reachability", "hard-mode"]
-    },
-    {
-      "content": "next_artifact_number (specs/state.json per-task counter) is incremented only by research's postflight (orchestrator-postflight.sh, 'research only' comment); plan and implement read it back via a 'prev' mode (next_artifact_number - 1) and never increment it themselves. Any design for forced/repeated plan or implement phases must add new increment logic -- the append-vs-overwrite MM_ numbering behavior is asymmetric today, not uniformly append-safe across phases.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["next_artifact_number", "artifact-numbering", "MM-naming", "state.json"]
+      "suggested_keywords": ["consolidation-planning", "wrapper-only-capability", "dispatch-bypass", "sole-entry-point", "rehome-before-deletion"]
     }
   ],
-  "next_steps": "Run /plan 116 to create the Phase A target-state design and Phase B/C backlog operations plan."
+  "next_steps": "Run /implement 116 to execute the plan"
 }
