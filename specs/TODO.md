@@ -1578,6 +1578,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [068_discriminate_blocked_on_in_batch_predecessor/reports/01_discriminate-blocked-classifier-row.md]
 - **Plan**: [068_discriminate_blocked_on_in_batch_predecessor/plans/01_discriminating-blocked-classifier-row.md]
+- **Summary**: [068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md]
 
 **Description**: Make the multi-task /orchestrate classifier's `blocked` row DISCRIMINATING rather than unconditional, so a task blocked on a predecessor the same batch is going to complete becomes dispatchable instead of being skipped on every cycle until MAX_CYCLES_MT is exhausted.
 

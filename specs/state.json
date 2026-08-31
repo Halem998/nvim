@@ -429,6 +429,11 @@
           "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/plans/01_discriminating-blocked-classifier-row.md",
           "type": "plan",
           "summary": "8-phase plan (4 waves) for the discriminating blocked classifier row: state.json dependency lookup discriminator, atomic-batch mechanism phase, fixture guard against candidate-list-membership implementations, Gate Catalogue and dry-run threading"
+        },
+        {
+          "path": "specs/068_discriminate_blocked_on_in_batch_predecessor/summaries/01_discriminating-blocked-classifier-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: discriminating blocked classifier arm shipped across 8 phases; classifier, its fixtures, dry-run reason threading, both orchestrate skills, the state-machine doc, and the guardrails Gate Catalogue all converged."
         }
       ],
       "last_updated": "2026-08-31T19:13:03Z",
