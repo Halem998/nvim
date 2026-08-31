@@ -523,35 +523,35 @@ the roster.
 
 ---
 
-### Phase 7: Verdict reconciliation, sequencing decisions, and Phase C operation manifest [NOT STARTED]
+### Phase 7: Verdict reconciliation, sequencing decisions, and Phase C operation manifest [COMPLETED]
 
 **Goal**: Turn the verdict table into an unambiguous, ordered list of backlog operations, so that
 Phase C is mechanical application rather than further judgment.
 
 **Tasks**:
-- [ ] Resolve every sequencing tension with a stated direction and reasoning: the two
+- [x] Resolve every sequencing tension with a stated direction and reasoning: the two
       call-site-counting tasks (the shared task-lookup-helper adoption lint and the scoped-commit
       propagation task) relative to A1's command deletions, whose call-site counts change depending
       on order; the model-flag mirror task relative to A4's deletion of its target file; and the
       double-count question between the collapse and the mode-gated-section chain, using Phase 4's
       netting. State a single direction per tension, not a pair of options.
-- [ ] Finalize the BLOCKING set from Phases 5-6 and state, for each member, what specifically the
+- [x] Finalize the BLOCKING set from Phases 5-6 and state, for each member, what specifically the
       collapse would inherit or entrench if it did not land first.
-- [ ] Enumerate the successor implementation tasks the design requires. For each: a working title,
+- [x] Enumerate the successor implementation tasks the design requires. For each: a working title,
       a one-paragraph scope, its `file_scope` (source-store paths under
       `agent-system/extensions/**`, never `.claude/**`), and its dependencies. Apply the sizing
       rule from the task description: no single successor task both deletes a lifecycle skill and
       rewires its consumers; the rewiring task is a declared dependency of the deletion task. The
       rehome of memory retrieval and `--lit` resolution from Phase 2's A1 precondition is one such
       rewiring task and must precede every command or lifecycle-skill deletion.
-- [ ] Produce the operation manifest as a table: one row per backlog operation, columns: operation
+- [x] Produce the operation manifest as a table: one row per backlog operation, columns: operation
       (CREATE / REVISE / ABANDON / RETOPIC / DEPEND / BACKFILL), target task (or NEW-n for a task
       not yet numbered), the exact change, and the verdict or design decision authorizing it.
       Include a `file_scope` backfill row for every EVIDENCE-GAP task.
-- [ ] Order the manifest so that CREATE operations precede the DEPEND operations that reference the
+- [x] Order the manifest so that CREATE operations precede the DEPEND operations that reference the
       new task numbers, and record that new task numbers are allocated at apply time from
       `next_project_number`, not pre-assigned in this manifest.
-- [ ] Write the manifest to
+- [x] Write the manifest to
       `specs/116_core_agent_system_consolidation/reports/05_backlog-operation-manifest.md`.
 
 **Timing**: 1.5 hours
