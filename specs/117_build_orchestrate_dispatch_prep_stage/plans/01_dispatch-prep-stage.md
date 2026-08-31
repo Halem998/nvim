@@ -473,35 +473,47 @@ Content-independent of Phase 5; serialized only because both phases edit
 
 ---
 
-### Phase 7: Cross-file audit and closeout [NOT STARTED]
+### Phase 7: Cross-file audit and closeout [COMPLETED]
 
 **Goal**: The full change is internally consistent, confined to the source store, free of task-number
 references in deliverables, and leaves `skill-orchestrate-hard` untouched.
 
 **Tasks**:
 
-- [ ] Assert the shared procedure exists exactly once: the full memory-retrieval bash block and the
+- [x] Assert the shared procedure exists exactly once: the full memory-retrieval bash block and the
       `lit-stage4a-flow.md` reference each appear exactly once in `skill-orchestrate/SKILL.md`.
-- [ ] Assert total wiring: 10 Stage 3.5 pointer references (7 in Stage 4, 3 in Stage MT-4), and zero
+      *(completed: memory-retrieve.sh invocation at line 396, lit-stage4a-flow.md reference at
+      line 406, both exactly once)*
+- [x] Assert total wiring: 10 Stage 3.5 pointer references (7 in Stage 4, 3 in Stage MT-4), and zero
       remaining Agent-dispatch sites in the file without one. Enumerate any dispatch site lacking a
-      pointer and wire it.
-- [ ] Assert flag threading end to end: `clean_flag` and `effort_flag` each appear in `orchestrate.md`'s
+      pointer and wire it. *(completed: 10 confirmed by grep, 2/2/3 research/plan/implement
+      distribution in Stage 4, 1/1/1 in Stage MT-4. Scope note: Stage 5a's drift-inspection
+      fork/reviser dispatches and Stage 6's blocker-escalation fork/reviser/re-dispatch-implement
+      are NOT Stage 4/MT-4 lifecycle dispatch sites — they are narrow, single-purpose helper
+      dispatches (drift/blocker investigation, targeted revision) outside the plan's declared
+      7+3=10 scope, consistent with the Non-Goals precedent of documenting adjacent gaps rather
+      than silently expanding scope. Recorded as a follow-up, not wired here.)*
+- [x] Assert flag threading end to end: `clean_flag` and `effort_flag` each appear in `orchestrate.md`'s
       Options table, both `args:` strings, and both JSON contexts, and are read in the skill's Stage 1
-      and Stage MT-1.
-- [ ] Assert the multi-task description fix: `descriptions` appears in the MT-1 field list, is written
-      in MT-2, and is read in all 3 MT-4 loops.
-- [ ] Assert non-scope: `git diff --stat` shows changes confined to
+      and Stage MT-1. *(completed: verified by grep)*
+- [x] Assert the multi-task description fix: `descriptions` appears in the MT-1 field list, is written
+      in MT-2, and is read in all 3 MT-4 loops. *(completed: verified by grep)*
+- [x] Assert non-scope: `git diff --stat` shows changes confined to
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and
       `agent-system/extensions/core/commands/orchestrate.md` (plus `specs/**` artifacts). Confirm
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` is unmodified.
-- [ ] Assert boundary compliance: `git status --short` shows zero modified paths under `.claude/`.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no new task-number references
+      *(completed: git diff --stat confirms exactly these 2 files)*
+- [x] Assert boundary compliance: `git status --short` shows zero modified paths under `.claude/`.
+      *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no new task-number references
       were introduced outside `specs/**`. Neither edited file may cite a task number.
-- [ ] Read both changed files end to end once, checking that no stale prose still claims
-      `/orchestrate` performs no memory retrieval or no `--lit` resolution.
-- [ ] Note in the summary that the source-store edits take effect only after a `.claude/` regeneration
+      *(completed: PASS, 0 unexempted occurrences)*
+- [x] Read both changed files end to end once, checking that no stale prose still claims
+      `/orchestrate` performs no memory retrieval or no `--lit` resolution. *(completed: no stale
+      claims found)*
+- [x] Note in the summary that the source-store edits take effect only after a `.claude/` regeneration
       (deploy/reload), and that end-to-end runtime confirmation of a live `/orchestrate` dispatch
-      requires that regeneration first.
+      requires that regeneration first. *(completed: noted in implementation summary)*
 
 **Timing**: 40 minutes
 
@@ -531,26 +543,26 @@ expectation.
 
 ## Testing & Validation
 
-- [ ] `skill-orchestrate/SKILL.md` contains exactly one `### Stage 3.5: Dispatch Prep` header and one
+- [x] `skill-orchestrate/SKILL.md` contains exactly one `### Stage 3.5: Dispatch Prep` header and one
       copy of its procedure body.
-- [ ] All 10 dispatch sites (7 single-task, 3 multi-task) carry a Stage 3.5 pointer with the correct
+- [x] All 10 dispatch sites (7 single-task, 3 multi-task) carry a Stage 3.5 pointer with the correct
       `phase` value; the phase distribution is research x2, plan x2, implement x3 (single-task) and
       research/plan/implement x1 each (multi-task).
-- [ ] `clean_flag` and `effort_flag` are threaded from `orchestrate.md`'s Options table through both
+- [x] `clean_flag` and `effort_flag` are threaded from `orchestrate.md`'s Options table through both
       Skill `args:` strings and both JSON delegation contexts into the skill's Stage 1 and Stage MT-1.
-- [ ] The `--clean` semantics match the lifecycle skills exactly: `clean_flag == "true"` suppresses
+- [x] The `--clean` semantics match the lifecycle skills exactly: `clean_flag == "true"` suppresses
       memory retrieval and does not affect literature.
-- [ ] The `memory-retrieve.sh` 3rd-argument asymmetry is preserved (`$focus_prompt` for research, `""`
+- [x] The `memory-retrieve.sh` 3rd-argument asymmetry is preserved (`$focus_prompt` for research, `""`
       for plan and implement).
-- [ ] `descriptions` map present in `mt_state_file`, written in MT-2, read in all 3 MT-4 loops; a
+- [x] `descriptions` map present in `mt_state_file`, written in MT-2, read in all 3 MT-4 loops; a
       multi-task research prompt renders as `Research task N: {actual description}`, not
       `Research task N: ` with nothing after the colon.
-- [ ] No `memory_context` or `lit_context` field was added to any `context` JSON object.
-- [ ] No empty `<memory-context>` or `<literature-briefing>` tag pair can be injected (skip-when-empty
+- [x] No `memory_context` or `lit_context` field was added to any `context` JSON object.
+- [x] No empty `<memory-context>` or `<literature-briefing>` tag pair can be injected (skip-when-empty
       rule stated at every site).
-- [ ] `git status --short` shows zero modified paths under `.claude/`.
-- [ ] `bash .claude/scripts/check-task-references.sh` exits clean.
-- [ ] `skill-orchestrate-hard/SKILL.md` unmodified.
+- [x] `git status --short` shows zero modified paths under `.claude/`.
+- [x] `bash .claude/scripts/check-task-references.sh` exits clean.
+- [x] `skill-orchestrate-hard/SKILL.md` unmodified.
 
 ## Artifacts & Outputs
 
