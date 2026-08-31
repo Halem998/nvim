@@ -52,17 +52,17 @@ next_project_number: 128
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-68 [RESEARCHED] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
+68 [PLANNING] — Make the multi-task /orchestrate classifier's `blocked` row DISCR
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
-81 [RESEARCHED] — Task-lock and session-registry heartbeats never fire during a rea
+81 [PLANNING] — Task-lock and session-registry heartbeats never fire during a rea
   └─ 124 [NOT STARTED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-117 [RESEARCHED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
+117 [PLANNED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
   └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
     └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
       └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h (see above)
@@ -297,11 +297,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 117. Build orchestrate dispatch prep stage
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md]
+- **Plan**: [117_build_orchestrate_dispatch_prep_stage/plans/01_dispatch-prep-stage.md]
 
 **Description**: Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.
 
@@ -1258,7 +1259,7 @@ ACCEPTANCE: convention documented, lint in place and green, and one pilot applic
 
 ### 81. Mechanize task-lock and session-registry heartbeat refresh: liveness timestamps never advance during a multi-phase /implement run
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1570,7 +1571,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 68. Make the /orchestrate blocked verdict discriminating: dispatch a task blocked on an in-batch predecessor instead of skipping it forever
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

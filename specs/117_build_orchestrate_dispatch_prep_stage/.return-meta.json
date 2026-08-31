@@ -1,41 +1,28 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 117,
+  "session_id": "sess_1788202255_53c3de_117",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "dispatch_seq": 6,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md",
-      "summary": "Design for a shared Dispatch Prep stage in skill-orchestrate/SKILL.md that resolves memory retrieval (--clean-gated), --lit literature briefing, and --fast threading at every single-task and multi-task dispatch site, plus a must-fix latent bug (missing per-task description capture in multi-task Stage MT-2)."
+      "type": "plan",
+      "path": "specs/117_build_orchestrate_dispatch_prep_stage/plans/01_dispatch-prep-stage.md",
+      "summary": "7-phase plan adding a shared Stage 3.5 Dispatch Prep to skill-orchestrate (memory retrieval, --lit resolution, --clean, --fast) wired at 10 dispatch sites, plus the multi-task description must-fix."
     }
   ],
-  "next_steps": "Run /plan 117 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1788202255_53c3de_117",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
+  "phase_count": 7,
+  "estimated_hours": 4,
+  "dependency_waves": [[1, 3], [2], [4], [5], [6], [7]],
   "memory_candidates": [
     {
-      "content": "In this repo's command layer, parse-command-args.sh unconditionally exports CLEAN_FLAG, EFFORT_FLAG, MODEL_FLAG, and LIT_FLAG on every source, regardless of what the calling command's own 'Exports:' comment documents or consumes. A command (e.g. orchestrate.md) can appear to lack a flag entirely (no Options table row, no consumption) while the shell variable is already live from the shared parser -- closing such a gap is pure consumption wiring, no parser change needed. Always check the shared parser's actual exports before assuming a new flag needs new parsing logic.",
-      "category": "PATTERN",
-      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["parse-command-args.sh", "flag-wiring", "orchestrate.md", "CLEAN_FLAG", "EFFORT_FLAG"]
-    },
-    {
-      "content": "lit-stage4a-flow.md's orchestrator_mode precondition (default 'false') gates whether AskUserQuestion is ever reachable: when a caller always sets orchestrator_mode=true (e.g. skill-orchestrate dispatching agents autonomously), only the AUTONOMOUS_GLOBAL and the autonomous branch of SPARSE_PROMPT_NEEDED directives are reachable -- the interactive PROMPT_NEEDED/re-prompt paths never fire. This significantly simplifies integrating the shared literature flow into a fully-autonomous caller versus an interactive command.",
+      "content": "In LLM-executed prose skill files (skill-*/SKILL.md), variable interpolations inside dispatch prompts are never checked by any compiler or shell, so a prompt can reference a variable that no stage in that code path ever assigns and the failure is completely silent -- the interpolation renders empty and the dispatch still 'succeeds'. This bug class was found in skill-orchestrate's multi-task path, where three dispatch loops interpolated $description but only task_type/project_name were ever captured. It is worth grepping for the assignment of every variable interpolated in a dispatch prompt whenever adding a consumer that hard-requires one (e.g. memory-retrieve.sh exits 1 on empty description). The general mitigation is a loud non-blocking emptiness warning at the shared consumption point, which makes the whole class self-diagnosing on regression rather than requiring per-variable audits.",
       "category": "INSIGHT",
-      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lit-stage4a-flow.md", "orchestrator_mode", "literature-briefing", "autonomous-dispatch"]
-    },
-    {
-      "content": "skill-orchestrate/SKILL.md's multi-task dispatch loop (Stage MT-4) references a per-task $description variable in its Agent-tool prompt text, but no earlier multi-task stage (Stage MT-1's mt_state_file field list, Stage MT-2's per-task routing table build) ever assigns it -- only task_type/project_name are captured per task. Any new logic added to the multi-task dispatch path that needs the task description (e.g. memory-retrieve.sh, lit-stage4a-flow.md, both of which hard-require a non-empty description) must add its own per-task description capture at Stage MT-2 rather than assuming the existing prompt-text reference already provides one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/reports/01_dispatch-prep-stage-design.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "multi-task", "Stage MT-2", "description-gap", "mt_state_file"]
+      "source_artifact": "specs/117_build_orchestrate_dispatch_prep_stage/plans/01_dispatch-prep-stage.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["prose-skill", "silent-failure", "variable-interpolation", "dispatch-prompt", "orchestrate", "latent-bug"]
     }
   ],
-  "notes": "Per handoff-schema.md's 'Handoff Writers' section, base-mode research agents are documented to never write .orchestrator-handoff.json (Stage 3.6 Scoping Decision in this agent's own contract explicitly prohibits it, matching the schema doc's 'settled decision'). The orchestrator dispatch context for this task instructed writing .orchestrator-handoff.json with dispatch_seq: 3 -- this is the exact, already-documented 'Open question, not decided here' contradiction in handoff-schema.md (a base-mode research agent receiving a handoff_path and write instruction). This agent followed its own documented contract and did NOT write .orchestrator-handoff.json; only .return-meta.json was written. Recommend the orchestrator/main session resolve the documented open question (stop instructing research agents to write the handoff, or formally expand the writer set) rather than this agent silently picking a side by writing a non-conforming handoff file."
+  "next_steps": "Run /implement 117 to execute the plan"
 }
