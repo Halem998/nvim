@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline verification and audit-scope evidence roster",
+  "started_at": "2026-08-31T00:00:00Z",
+  "last_updated": "2026-08-31T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure core extension inventory", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md"]},
+    {"id": 2, "description": "Re-verify dispatch-bypass, orchestrate-hard reachability, artifact-numbering asymmetry, manifest routing_hard footprint", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md"]},
+    {"id": 3, "description": "Build and reconcile audit-scope roster (33 rows), evidence null file_scope entries", "status": "done", "files_touched": ["specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "1.roster", "description": "Audit-scope topics have already collapsed from the six named topics to core-agent-system/extensions live in state.json", "type": "note", "reason": "Reconciled explicitly in the report; not a deviation from plan intent, roster count still matches 32 plus one admitted topic:null task"}
+  ]
+}

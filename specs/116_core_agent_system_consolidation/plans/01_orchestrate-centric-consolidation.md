@@ -1,7 +1,7 @@
 # Implementation Plan: Task #116
 
 - **Task**: 116 - Design the orchestrate-centric core consolidation and rebuild the backlog around it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 15 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md
@@ -139,46 +139,46 @@ Phase C operation depends on the complete verdict set.
 
 ---
 
-### Phase 1: Baseline verification and audit-scope evidence roster [NOT STARTED]
+### Phase 1: Baseline verification and audit-scope evidence roster [COMPLETED]
 
 **Goal**: Establish the verified factual base that every Phase A decision and every Phase B verdict
 rests on, so that no later phase re-derives a measurement or reasons from an unverified claim.
 
 **Tasks**:
-- [ ] Re-measure the core extension inventory against the MOTIVATION baseline recorded in the task
+- [x] Re-measure the core extension inventory against the MOTIVATION baseline recorded in the task
       description (commands 18 files/7,707 lines; skills 22 dirs/14,981 SKILL.md lines; agents 12
       files/5,073 lines; rules 10 files; scripts 145 files/48,204 lines; context 137 files/37,959
       lines; docs 28 files). Record each measured value and its delta from the baseline. Where a
       delta exists, the measured value becomes authoritative for A7 and the baseline figure is
       retained alongside it for the description's own reporting requirement.
-- [ ] Re-verify the dispatch-bypass finding with reproducible commands and record the exact
+- [x] Re-verify the dispatch-bypass finding with reproducible commands and record the exact
       counts: occurrences of `memory-retrieve`, `clean_flag`, `lit-stage4a`, `literature-briefing`
       and `lit_flag` in `skill-orchestrate/SKILL.md`; the same set in the three dispatched agent
       files; and the enumerated `subagent_type` dispatch sites in `skill-orchestrate/SKILL.md`
       (single-task handlers, reviser sites, and multi-task sites).
-- [ ] Re-verify that no command file or script invokes `skill-orchestrate-hard`, and enumerate the
+- [x] Re-verify that no command file or script invokes `skill-orchestrate-hard`, and enumerate the
       test and lint files that reference it (research reported 10+; confirm the actual set and
       list it by filename).
-- [ ] Re-verify the artifact-numbering asymmetry: locate the research-only increment in
+- [x] Re-verify the artifact-numbering asymmetry: locate the research-only increment in
       `orchestrator-postflight.sh` and the `"prev"` mode read in `skill-base.sh`, and record both
       by script and function/stage name (never by line number).
-- [ ] Re-verify the manifest footprint: count extensions declaring `routing_hard` /
+- [x] Re-verify the manifest footprint: count extensions declaring `routing_hard` /
       `routing_agents_hard` versus `routing` / `routing_agents`, and name the declaring extensions.
-- [ ] Build the audit-scope roster from `specs/state.json`: every task with `topic != "literature"`
+- [x] Build the audit-scope roster from `specs/state.json`: every task with `topic != "literature"`
       excluding 116, capturing `project_number`, `project_name`, `topic`, `status`, `task_type`,
       `file_scope`, `dependencies`, and a one-line scope summary derived from the description.
       Note that the human-readable name field is `project_name` (there is no `title` field);
       a query against `.title` returns null for every task and must not be mistaken for missing data.
-- [ ] Reconcile the roster size against the audit scope's stated count of 32 and record the
+- [x] Reconcile the roster size against the audit scope's stated count of 32 and record the
       reconciliation arithmetic explicitly. In particular, record a disposition for the single task
       carrying `topic: null` (its `file_scope` names core orchestrate-batch-admission and
       multi-task-creation-standard paths): either admit it to the audit scope with a stated reason
       and re-topic it in Phase 9, or exclude it with a stated reason. Do not leave it unaddressed.
-- [ ] For each roster entry with a null or empty `file_scope`, attempt to evidence scope from the
+- [x] For each roster entry with a null or empty `file_scope`, attempt to evidence scope from the
       description prose. Where the prose names concrete files, record the derived scope and mark it
       DERIVED-FROM-DESCRIPTION. Where it does not, mark the entry EVIDENCE-GAP and record what
       evidence is missing. Do not infer a scope that the description does not state.
-- [ ] Write the results to `specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md`
+- [x] Write the results to `specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md`
       with a Measurement section, a Verified Findings section (one subsection per re-verified
       claim, each with the command used and the observed result), and the roster table.
 

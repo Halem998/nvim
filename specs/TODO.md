@@ -53,7 +53,7 @@ next_project_number: 117
               └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
   └─ 115 [NOT STARTED] — Mirror model-flag consumption into skill-orchestrate-hard, and re
-116 [PLANNED] — Design the target state for an orchestrate-centric core agent sys
+116 [IMPLEMENTING] — Design the target state for an orchestrate-centric core agent sys
 
 ### Extensions
 
@@ -85,7 +85,7 @@ next_project_number: 117
 ## Tasks
 
 ### 116. Design the orchestrate-centric core consolidation and rebuild the backlog around it
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

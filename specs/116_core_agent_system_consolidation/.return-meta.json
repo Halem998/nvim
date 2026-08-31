@@ -1,29 +1,8 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 116,
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1788197681_a534a5",
-  "dispatch_seq": 2,
-  "summary": "10-phase, ~15-hour implementation plan for the orchestrate-centric core consolidation. Phase 1 verifies the measured baseline and builds the audit-scope evidence roster; Phases 2-4 produce the Phase A design specification (A1-A7) ending in a completeness gate; Phases 5-6 assign exactly one verdict per audit-scope task across a design-coupled cluster and a remainder, closing with coverage arithmetic; Phase 7 reconciles verdicts, fixes the three sequencing-tension directions, finalizes the BLOCKING set, and emits an ordered backlog operation manifest; Phases 8-10 apply Phase C (create successors, revise/abandon/re-topic/backfill, then dependency ordering plus TODO regeneration and the VERIFICATION BAR closeout). The plan respects the meta-task boundary throughout: every phase's verification includes a git status --porcelain check that no path outside specs/ changed, and Phase 10 closes VERIFICATION BAR item 5 explicitly. The research dispatch-bypass finding was independently re-verified during planning and is carried as a first-class design input with a named post-collapse home and a rehome-before-deletion ordering constraint encoded as a dependency edge.",
-  "phase_count": 10,
-  "estimated_hours": 15,
-  "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8],[9],[10]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
-      "summary": "10-phase plan covering the Phase A target-state design (A1-A7), the Phase B backlog audit, and the Phase C backlog operations; writes confined to specs/**."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When planning a consolidation that promotes one component to sole entry point, verify what the promoted component actually does at its dispatch boundary before planning any deletion. In this codebase skill-orchestrate dispatches lifecycle agents via the Agent tool directly (subagent_type), bypassing the wrapping skills where Stage 4a memory retrieval and interactive --lit resolution exclusively live -- so the sole-entry-point collapse would have made a partial, silent capability loss total and permanent. The general pattern: a capability that lives in a wrapper layer rather than in the dispatched worker is invisible at the worker's own file and disappears when the wrapper is bypassed or deleted. Any plan that elevates a bypassing component must (a) enumerate the wrapper-only capabilities, (b) name a post-collapse home for each, and (c) encode a rehome-before-deletion ordering constraint as a real dependency edge, not as prose advice.",
-      "category": "PATTERN",
-      "source_artifact": "specs/116_core_agent_system_consolidation/plans/01_orchestrate-centric-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["consolidation-planning", "wrapper-only-capability", "dispatch-bypass", "sole-entry-point", "rehome-before-deletion"]
-    }
-  ],
-  "next_steps": "Run /implement 116 to execute the plan"
+  "dispatch_seq": 3
 }
