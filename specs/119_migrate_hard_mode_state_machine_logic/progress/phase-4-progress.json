@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Stage 3 — burnout circuit-breaker gate as sub-step 3b-hard",
+  "started_at": "2026-08-31T23:09:48Z",
+  "last_updated": "2026-08-31T23:09:48Z",
+  "objectives": [
+    {"id": 1, "description": "Insert 3b-hard heading between 3b and 3c, 3c byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Port three MANDATORY self-checks verbatim in substance", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Port counter increment with atomic tmp-mv jq write and [orchestrate] log line", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Preserve no-new-artifact-type note pointing at Stage 5b and Stage 6", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

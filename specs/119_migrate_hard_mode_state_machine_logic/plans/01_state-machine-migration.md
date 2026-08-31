@@ -320,26 +320,26 @@ initialization into Stage 2 as `$hard_mode`-gated regions, positioned so the exi
 
 ---
 
-### Phase 4: Stage 3 — burnout circuit-breaker gate as sub-step `3b-hard` [NOT STARTED]
+### Phase 4: Stage 3 — burnout circuit-breaker gate as sub-step `3b-hard` [COMPLETED]
 
 **Goal**: Add the mandatory per-iteration burnout gate between `3b. Update loop guard` and
 `3c. Dispatch by state` without renumbering either.
 
 **Tasks**:
-- [ ] Insert a new sub-step heading `**3b-hard. Burnout circuit-breaker gate (hard mode only)**`
+- [x] Insert a new sub-step heading `**3b-hard. Burnout circuit-breaker gate (hard mode only)**`
       immediately after the `3b.` code fence and immediately before `**3c. Dispatch by state**`,
-      leaving the `3c.` line byte-identical (D2).
-- [ ] Port the three MANDATORY self-checks verbatim in substance, sourced from
+      leaving the `3c.` line byte-identical (D2). *(completed)*
+- [x] Port the three MANDATORY self-checks verbatim in substance, sourced from
       `context/contracts/orchestrator-discipline.md`: re-read-without-new-information,
       second-consecutive-reasoning-turn, and reverse-a-decision-without-a-fresh-dispatch. State
       explicitly that the gate runs every loop iteration when `hard_mode` is true and is skipped
-      entirely otherwise.
-- [ ] Port the counter increment: bump `burnout_signals_this_session` and write it back with
+      entirely otherwise. *(completed)*
+- [x] Port the counter increment: bump `burnout_signals_this_session` and write it back with
       `last_updated` in a `3b`-style atomic tmp-mv `jq` write against `$loop_guard_file`, with the
-      `[orchestrate]` log line.
-- [ ] Preserve the "no new artifact type" note: the forced dispatch reuses the divergence-audit
+      `[orchestrate]` log line. *(completed)*
+- [x] Preserve the "no new artifact type" note: the forced dispatch reuses the divergence-audit
       dispatch shape (added in Phase 6) and the forced escalation reuses Stage 6 directly. Point at
-      Stage 5b and Stage 6 by name.
+      Stage 5b and Stage 6 by name. *(completed)*
 
 **Timing**: 0.5 hours
 

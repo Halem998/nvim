@@ -506,6 +506,45 @@ bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/
 bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null || true
 ```
 
+**3b-hard. Burnout circuit-breaker gate (hard mode only)**
+
+**MANDATORY when `$hard_mode` is true — runs EVERY loop iteration**, after `current_status` is
+known (3a) and the loop guard is persisted (3b), strictly before any Stage 4 dispatch decision.
+Skipped entirely when `hard_mode` is false. This is not an optional guideline; it is a gate. Per
+`.claude/context/contracts/orchestrator-discipline.md`, check all three self-checks before
+proceeding to Stage 4:
+
+1. **If you are about to Read a path you have already read this session without an
+   intervening `Agent` dispatch having produced new information, STOP and dispatch
+   `$RESEARCH_AGENT` instead** (focus_prompt = a literal restatement of the exact unresolved
+   question) — do not complete the re-read.
+2. **If this is the second or later consecutive orchestrator turn reasoning about task content
+   with no `Agent` tool call in between, STOP reasoning immediately and take response (a) or
+   (b) from the contract now** — do not produce a third such turn.
+3. **If you are about to reverse a phase, target, or escalation decision without a fresh
+   dispatch having just produced the new finding that justifies it, STOP and either dispatch
+   `$RESEARCH_AGENT` to obtain that finding (reasoning-about-what-a-phase-should-do) or jump
+   directly to Stage 6 (deciding-whether-to-keep-escalating) — never reverse on inline
+   reasoning alone.**
+
+No new artifact type is introduced. The forced dispatch reuses Stage 5b's divergence-audit
+dispatch shape, triggered by a burnout signal instead of a churn-count threshold; the forced
+escalation reuses Stage 6 directly.
+
+**On any signal firing**, increment the scalar counter in the same 3b-style jq write that
+already touches `loop_guard_file`:
+
+```bash
+if [ "${hard_mode:-false}" = "true" ]; then
+  burnout_signals_this_session=$((burnout_signals_this_session + 1))
+  jq --argjson count "$burnout_signals_this_session" \
+     --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.burnout_signals_this_session = $count | .last_updated = $updated' \
+    "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  echo "[orchestrate] H-orch: burnout signal detected (session total: $burnout_signals_this_session) — forcing dispatch/escalation, not inline reasoning" >&2
+fi
+```
+
 **3c. Dispatch by state** (see State Handlers in Stage 4)
 
 ---
