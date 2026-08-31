@@ -11,7 +11,7 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,74,81,87,94,100,102,103,106,108,110,111,113,114,116,117 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,68,74,81,87,94,100,102,103,106,108,110,111,113,114,117 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,104,105,109,112,118,122,124,126 | 29,68,74,81,102,108,117 | core-agent-system, extensions, literature |
 | 3 | 72,73,107,119,123,125 | 104,118,122,124 | core-agent-system, literature |
 | 4 | 120 | 119 | core-agent-system |
@@ -59,7 +59,6 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-116 [IMPLEMENTING] — Design the target state for an orchestrate-centric core agent sys
 117 [NOT STARTED] — Build the dispatch-prep stage in skill-orchestrate: memory retrie
   └─ 118 [NOT STARTED] — Build hard_contracts manifest key and contract-text injection at 
     └─ 119 [NOT STARTED] — Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 
@@ -318,7 +317,7 @@ REFERENCE: full design reasoning is specs/116_core_agent_system_consolidation/re
 ---
 
 ### 116. Design the orchestrate-centric core consolidation and rebuild the backlog around it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

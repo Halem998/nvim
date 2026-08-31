@@ -1,7 +1,7 @@
 # Implementation Plan: Task #116
 
 - **Task**: 116 - Design the orchestrate-centric core consolidation and rebuild the backlog around it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 15 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/116_core_agent_system_consolidation/reports/01_orchestrate-centric-consolidation-design-inputs.md
