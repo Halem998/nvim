@@ -575,31 +575,31 @@ Phase C is mechanical application rather than further judgment.
 
 ---
 
-### Phase 8: Phase C -- create successor tasks [NOT STARTED]
+### Phase 8: Phase C -- create successor tasks [COMPLETED]
 
 **Goal**: Create every successor implementation task the manifest specifies, in `specs/state.json`,
 each independently dispatchable with its own `file_scope`.
 
 **Tasks**:
-- [ ] Re-read the operation manifest's CREATE rows. For each, assemble the task record:
+- [x] Re-read the operation manifest's CREATE rows. For each, assemble the task record:
       `project_number` (allocated from `next_project_number`), `project_name` (snake_case slug),
       `status: "not_started"`, `task_type` (`meta` for source-store system changes),
       `topic: "core-agent-system"`, `description`, `created`, `dependencies`, `file_scope`,
       `last_updated`.
-- [ ] Write each task through `state-write.sh` as the single mutex-guarded writer. Apply one CREATE
+- [x] Write each task through `state-write.sh` as the single mutex-guarded writer. Apply one CREATE
       per invocation, appending with `+=` against `.active_projects`; never assign
       `.active_projects = [...]` wholesale, which would discard existing entries.
-- [ ] Guard against the MAX_ARG_STRLEN hazard: successor descriptions are expected to run several
+- [x] Guard against the MAX_ARG_STRLEN hazard: successor descriptions are expected to run several
       kilobytes each and audit-scope descriptions average roughly 5KB. Before each invocation,
       measure the assembled payload; if a single `--argjson` argument would approach the 128KB
       per-argument ceiling, split the description across a staged file read rather than passing it
       inline, or split the operation. Never batch multiple task payloads into one argument.
-- [ ] After each write, re-read the affected record back from `state.json` and confirm it round-trips
+- [x] After each write, re-read the affected record back from `state.json` and confirm it round-trips
       (the description is intact and not truncated, `file_scope` is present and non-empty,
       `dependencies` is present).
-- [ ] Increment `next_project_number` correctly for each allocation, and record the allocated
+- [x] Increment `next_project_number` correctly for each allocation, and record the allocated
       numbers back into the manifest so Phase 9's DEPEND rows can reference them.
-- [ ] Commit after each successful green write, per the commit-per-green-substep mandate, staging
+- [x] Commit after each successful green write, per the commit-per-green-substep mandate, staging
       only `specs/state.json` and the manifest.
 
 **Timing**: 1.5 hours

@@ -81,3 +81,29 @@ required, no manifest row needed beyond the confirmation already recorded in rep
 verdicts with no description/topic/dependency change need no manifest row (their only "operation"
 is remaining in the backlog unchanged); ON-PATH verdicts WITH a new dependency edge (#48, #90,
 #88, #114 implicitly via no new edge) are covered by the DEPEND rows above.
+
+## Phase 8 Closeout -- Allocated Task Numbers
+
+CREATE rows applied via `state-write.sh`, one task per invocation, `next_project_number`
+allocated sequentially from 117 (pre-phase value). All 11 records round-tripped intact
+(description length, `file_scope`, `dependencies` all confirmed non-truncated by direct re-read
+after each write); the pre-phase `.active_projects` set (48 entries) is a strict subset of the
+post-phase set (59 entries, +11).
+
+| Placeholder | Allocated # | project_name |
+|-------------|-------------|---------------|
+| NEW-1 | 117 | `build_orchestrate_dispatch_prep_stage` |
+| NEW-2 | 118 | `build_hard_contracts_injection` |
+| NEW-3 | 119 | `migrate_hard_mode_state_machine_logic` |
+| NEW-4 | 120 | `retarget_hard_mode_tests_to_engine_branch` |
+| NEW-5 | 121 | `delete_hard_mode_lifecycle_files` |
+| NEW-6 | 122 | `build_team_mode_fanout_stage` |
+| NEW-7 | 123 | `delete_team_mode_skills` |
+| NEW-8 | 124 | `delete_lifecycle_commands_and_update_reference` |
+| NEW-9 | 125 | `delete_base_lifecycle_skills` |
+| NEW-10 | 126 | `implement_orchestrate_phase_forcing_flags` |
+| NEW-11 | 127 | `collapse_routing_ladder_to_routing_agents` |
+
+Dependency edges were written directly using these real numbers at creation time (e.g. 124's
+`dependencies: [117, 68, 81]`), so Phase 9's REVISE/DEPEND operations on pre-existing tasks
+(#48, #90, #88, #72, #73) reference these same real numbers, not placeholders.

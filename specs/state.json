@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 117,
+  "next_project_number": 128,
   "active_projects": [
     {
       "project_number": 94,
@@ -947,6 +947,233 @@
         "specs/116_core_agent_system_consolidation/"
       ],
       "session_id": "sess_1788197681_a534a5"
+    },
+    {
+      "project_number": 117,
+      "project_name": "build_orchestrate_dispatch_prep_stage",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Build the dispatch-prep stage in skill-orchestrate: memory retrieval, --lit resolution, --clean, --fast.\n\nCONTEXT (do not re-derive; see the design spec cited below). skill-orchestrate/SKILL.md dispatches every lifecycle phase (research/plan/implement) via the Agent tool directly against general-research-agent/planner-agent/general-implementation-agent, bypassing skill-researcher/skill-planner/skill-implementer entirely -- the sole home today of Stage 4a memory retrieval (memory-retrieve.sh, gated by clean_flag) and interactive --lit resolution (lit-stage4a-flow.md). Verified live: skill-orchestrate/SKILL.md has zero occurrences of memory-retrieve, clean_flag, lit-stage4a, or literature-briefing, against 13 pass-through lit_flag occurrences that are never resolved into a briefing. orchestrate.md's own Options table today has no --clean flag and no --fast flag at all (both present only on the now-superseded research.md/plan.md/implement.md).\n\nWORK. Add a single dispatch-prep stage to skill-orchestrate/SKILL.md, invoked once per dispatch (both the single-task path and each multi-task wave member), immediately before the Agent-tool subagent_type call, that: (1) calls memory-retrieve.sh gated by a newly-added --clean flag on orchestrate.md, injecting a <memory-context> block into the dispatch context in the same shape skill-researcher's Stage 4a already produces; (2) calls the shared lit-stage4a-flow.md flow to resolve lit_flag into a <literature-briefing> block; (3) adds a --fast flag to orchestrate.md's Options table and threads it into dispatch-context construction the same way research.md/plan.md/implement.md already do today.\n\nORDERING (binding, load-bearing for the wider consolidation this task is part of). This task must land and be verified working BEFORE any task that deletes commands/research.md, commands/plan.md, commands/implement.md, or the three lifecycle skills (skill-researcher, skill-planner, skill-implementer) -- the system must never pass through a state where skill-orchestrate dispatches an agent without memory/--lit support while the skills that used to provide it are already gone.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: full design reasoning is specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 precondition, A6).\n",
+      "created": "2026-08-31T18:11:08Z",
+      "last_updated": "2026-08-31T18:11:08Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/scripts/parse-command-args.sh"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 118,
+      "project_name": "build_hard_contracts_injection",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Build hard_contracts manifest key and contract-text injection at dispatch-prep time.\n\nCONTEXT. context/contracts/*.md already exists as a shared contract-text store (one file per H-item: anti-analysis.md=H2, reference-grounding.md=H3, adversarial-verification.md=H4, convergence.md=H6, territory.md=H7, wrap-up.md=H9, plus recovery.md/phase-closure.md/pre-edit-gate.md/orchestrator-discipline.md), already referenced by backtick path from the 7 duplicate -hard files (3 lifecycle -hard skills, 3 -hard agents, skill-orchestrate-hard). The reduction opportunity is consumer-count, not content-authoring: today 7 files independently decide which contracts to reference; this task creates exactly one call site.\n\nWORK. (1) Extend the dispatch-prep stage this task depends on (built by the prerequisite task) so that, when hard_mode is set, it builds and appends the ordered context/contracts/*.md reference block to the dispatch prompt. (2) Add an optional hard_contracts manifest key (shape: {task_type: [path, ...]}) letting an extension add or override a contract for its own task types, resolved by the existing manifest-routing ladder's compound-key (ext:subtype) matching; an entry prefixed \"replace:core-file.md:override-file.md\" substitutes rather than adds. (3) Add a deploy-time warning (not a hard error, not silent ignore) in verify-deploy.sh for any extension still declaring routing_hard/routing_agents_hard after this collapse, naming the extension and pointing at hard_contracts as the migration path.\n\nNOT IN SCOPE. The stateful hard-mode logic (churn/three-strikes counters, burnout circuit breaker, single-phase-per-cycle implement dispatch) is NOT prompt-injectable text and is out of scope for this task -- it is a separate, dependent task (state-machine migration).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i, A4-ii, A4-iii).\n",
+      "created": "2026-08-31T18:11:22Z",
+      "last_updated": "2026-08-31T18:11:22Z",
+      "dependencies": [
+        117
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/context/guides/manifest-routing-schema.md"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 119,
+      "project_name": "migrate_hard_mode_state_machine_logic",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Migrate hard-mode state-machine logic (H1 phase-per-cycle, H5/H6 churn/three-strikes, burnout breaker) into skill-orchestrate.\n\nCONTEXT. skill-orchestrate-hard/SKILL.md's genuinely hard-specific residue (measured by stage-header comparison: Stage 1b agent routing ~50 lines, Stage 1c discipline preamble ~16 lines, Stage 2 loop-guard/churn-state init ~279 lines, Stage 3c burnout circuit-breaker ~38 lines, Stage 4b churn detection ~56 lines, plus an estimated ~200 of Stage 4's 484-line dispatch-construction lines) is NOT reducible to prompt-injected text -- it implements stateful counters and thresholds (three-strikes churn detection, single-blocking-phase-per-implement-cycle dispatch limiting, a burnout circuit breaker) that only function as actual conditional logic in the engine's own state machine.\n\nWORK. Port this residue into skill-orchestrate/SKILL.md as `if $hard_mode` conditional branches: (1) loop-guard/churn-state initialization at the equivalent of today's Stage 2; (2) the burnout circuit-breaker gate; (3) per-target churn-detection counters and the three-strikes audit-dispatch trigger, run after each implement dispatch; (4) the H1 single-blocking-phase-per-cycle limiter on implement dispatch (vs. base mode's whole-plan-per-cycle). This is the SAME file the dispatch-prep and contract-injection prerequisite tasks also edit -- coordinate to avoid overlapping edits within the same dispatch window.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A4-i residue measurement table).\n",
+      "created": "2026-08-31T18:11:23Z",
+      "last_updated": "2026-08-31T18:11:23Z",
+      "dependencies": [
+        117,
+        118
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 120,
+      "project_name": "retarget_hard_mode_tests_to_engine_branch",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.\n\nCONTEXT. Once the hard-mode contract-injection and state-machine logic land inside skill-orchestrate/SKILL.md as hard_mode-gated branches (rather than in the separate skill-orchestrate-hard/SKILL.md file), these 7 files' fixtures/assertions must be retargeted so their coverage is preserved rather than silently dropped when skill-orchestrate-hard is deleted: test-loop-guard-budget-override.sh, test-routing-resolution.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-handoff-dispatch-identity.sh, test-resume-scan-nonconformance.sh, lint-contract-compliance.sh.\n\nWORK. For each file, update fixture paths and assertions to exercise skill-orchestrate/SKILL.md's hard_mode=true branch instead of skill-orchestrate-hard/SKILL.md. Verify each test still exercises the SAME underlying mechanism it did before (loop-guard budget, routing resolution, handoff reader parity, resume-scan nonconformance detection, contract compliance) -- this is a retarget, not a rewrite of intent. Run the full suite after retargeting and confirm no regression in what each test actually catches (a mutation check: temporarily reintroduce the bug each test guards against and confirm the retargeted test still fails).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/tests/**, agent-system/extensions/core/scripts/lint/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md (Finding 2, enumerated file set); reports/03_target-state-design.md (A4-iv).\n",
+      "created": "2026-08-31T18:11:23Z",
+      "last_updated": "2026-08-31T18:11:23Z",
+      "dependencies": [
+        118,
+        119
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+        "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+        "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+        "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+        "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 121,
+      "project_name": "delete_hard_mode_lifecycle_files",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
+      "created": "2026-08-31T18:11:23Z",
+      "last_updated": "2026-08-31T18:11:23Z",
+      "dependencies": [
+        118,
+        119,
+        120
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/",
+        "agent-system/extensions/core/skills/skill-researcher-hard/",
+        "agent-system/extensions/core/skills/skill-planner-hard/",
+        "agent-system/extensions/core/skills/skill-implementer-hard/",
+        "agent-system/extensions/core/agents/general-research-hard-agent.md",
+        "agent-system/extensions/core/agents/planner-hard-agent.md",
+        "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 122,
+      "project_name": "build_team_mode_fanout_stage",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Build the team-mode shared fan-out stage in skill-orchestrate.\n\nCONTEXT. skill-team-research, skill-team-plan, and skill-team-implement each independently declare per-teammate finding-file naming ({NN}_{letter}-findings.md), territory contracts (file-ownership declarations preventing teammate collision), and SubagentStop-postflight-to-owning-session correlation -- triplicated because the only real difference between the three is which lifecycle phase's dispatch context to fan out. synthesis-agent is unaffected by this task (it already runs as a fresh-context, phase-agnostic reader/writer and is not touched).\n\nWORK. Add a phase-parameterized fan-out stage to skill-orchestrate/SKILL.md implementing the finding-file convention, territory contracts, and session-correlation once, taking the lifecycle phase (research/plan/implement) as a parameter rather than being copy-pasted per phase. Add --team and --team-size flags to orchestrate.md (orchestrate.md's own Constraints section currently states \"--team flag not supported\" -- this task removes that constraint), defaulting --team-size to 3 (Primary + Alternatives + Critic), 2 under --fast, 4 under --hard, matching the existing documented cost table. Preserve the CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS-unset graceful-degradation path as an early check in the same stage: when unset, --team is accepted but silently falls through to single-dispatch.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/commands/orchestrate.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5).\n",
+      "created": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-08-31T18:11:33Z",
+      "dependencies": [
+        117
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 123,
+      "project_name": "delete_team_mode_skills",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Delete the three team-mode skills (skill-team-research, skill-team-plan, skill-team-implement).\n\nPRECONDITION (verify before starting). The shared team-mode fan-out stage inside skill-orchestrate must already be landed and verified working -- this task is pure deletion, and synthesis-agent is explicitly NOT touched (it is preserved unchanged; the fan-out logic being deleted here is the per-phase spawn/correlate mechanism, not the cross-teammate synthesis reader).\n\nWORK. Delete skills/skill-team-research/SKILL.md, skills/skill-team-plan/SKILL.md, skills/skill-team-implement/SKILL.md in full (directory removal, not just SKILL.md). Confirm a repo-wide grep for each deleted skill's name (excluding this task's own specs/ artifacts) returns zero hits, and confirm any command-to-skill routing table entry that named one of the three (if any survives from the pre-collapse routing model) is also removed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-team-research/, agent-system/extensions/core/skills/skill-team-plan/, agent-system/extensions/core/skills/skill-team-implement/ (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5-i, A7 ledger).\n",
+      "created": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-08-31T18:11:33Z",
+      "dependencies": [
+        122
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-team-research/",
+        "agent-system/extensions/core/skills/skill-team-plan/",
+        "agent-system/extensions/core/skills/skill-team-implement/"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 124,
+      "project_name": "delete_lifecycle_commands_and_update_reference",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.\n\nWORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).\n",
+      "created": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-08-31T18:11:33Z",
+      "dependencies": [
+        117,
+        68,
+        81
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/commands/research.md",
+        "agent-system/extensions/core/commands/plan.md",
+        "agent-system/extensions/core/commands/implement.md",
+        "agent-system/extensions/core/merge-sources/claudemd.md"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 125,
+      "project_name": "delete_base_lifecycle_skills",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).\n\nPRECONDITION (verify before starting). Both the dispatch-prep rehome and the command deletions must already be landed -- once /research, /plan, /implement are deleted, nothing calls these three skills any longer (skill-orchestrate already bypasses them entirely by dispatching agents directly, per the design report's re-verified dispatch-bypass finding), so this task is pure deletion, not rewiring.\n\nWORK. Delete skills/skill-researcher/SKILL.md (424 lines), skills/skill-planner/SKILL.md (508 lines), skills/skill-implementer/SKILL.md (725 lines), each in full (directory removal). Confirm a repo-wide grep for each skill's name (excluding this task's own specs/ artifacts, and excluding the now-historical CLAUDE.md Skill-to-Agent Mapping table row removal, which this task also performs) returns zero hits. Update the Skill-to-Agent Mapping table in CLAUDE.md / merge-sources/claudemd.md to remove the three rows.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-researcher/, .../skill-planner/, .../skill-implementer/, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 migration note, A7 ledger).\n",
+      "created": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-08-31T18:11:33Z",
+      "dependencies": [
+        117,
+        124
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-researcher/",
+        "agent-system/extensions/core/skills/skill-planner/",
+        "agent-system/extensions/core/skills/skill-implementer/",
+        "agent-system/extensions/core/merge-sources/claudemd.md"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 126,
+      "project_name": "implement_orchestrate_phase_forcing_flags",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.\n\nCONTEXT. /orchestrate has no mechanism today to re-run a lifecycle phase that already produced an artifact (e.g. `/orchestrate NNN --research` to run an additional research round on a task already [PLANNED] or beyond). No increment mechanism exists for a forced re-plan or re-implement either: orchestrator-postflight.sh's Stage 7a next_artifact_number increment fires only on research (\"research only\"), and skill-base.sh's \"prev\" mode read (next_artifact_number - 1) assumes plan/implement always share the round research just opened.\n\nWORK. (1) Add --research/--plan/--implement flags to orchestrate.md's Options table and parse-command-args.sh, threading them into the delegation context as force_phases (e.g. [\"research\",\"plan\"]). (2) Extend skill-orchestrate's Stage 1b/2 phase-resolution logic to check force_phases FIRST: when set, run exactly the composed sequence (composition means \"stop after the last named phase\", not \"force both starting from the first\") instead of the status-derived phase; with no flag, resume-from-first-incomplete-phase (today's behavior) is unchanged. (3) Change orchestrator-postflight.sh's Stage 7a increment condition from \"phase == research\" to \"phase was force-invoked, any phase\" -- a forced phase always opens a new MM_ round (append, never replace), so the round-numbering convention already in use for research works identically for a forced plan or implement. (4) Add a monotonic-max clamp to the forced-phase status write: a forced --research on a task already at [PLANNED] or beyond must never regress status back to [RESEARCHED] -- the status write is skipped (report/artifact link still added) whenever the new value would be a regression.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md, agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/scripts/orchestrator-postflight.sh, agent-system/extensions/core/scripts/skill-base.sh, agent-system/extensions/core/scripts/parse-command-args.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A2, all four sub-questions).\n",
+      "created": "2026-08-31T18:11:43Z",
+      "last_updated": "2026-08-31T18:11:43Z",
+      "dependencies": [
+        117
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/parse-command-args.sh"
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 127,
+      "project_name": "collapse_routing_ladder_to_routing_agents",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "description": "Collapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.\n\nCONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.\n\nWORK. (1) Remove the routing and routing_hard blocks from every extension manifest that declares them, retaining only routing_agents (plus any extension-specific op like present's critique). (2) Retire command-route-skill.sh -- confirm no remaining caller (only the now-deleted /research, /plan, /implement, /revise-adjacent paths called it; /revise itself does not use this resolver and is unaffected). (3) Update context/guides/manifest-routing-schema.md to document the collapsed two-block model (down from four), including the completeness-lint contract re-scoped to check only routing_agents completeness against itself. (4) Re-scope lint-routing-wiring.sh's Checks A/C accordingly.\n\nDEPENDS ON both the command deletions (routing/skill-dispatch has no remaining caller) and the hard-mode file deletions (routing_hard/routing_agents_hard has no remaining caller) having already landed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19), agent-system/extensions/core/scripts/command-route-skill.sh, agent-system/extensions/core/context/guides/manifest-routing-schema.md, agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).\n",
+      "created": "2026-08-31T18:11:43Z",
+      "last_updated": "2026-08-31T18:11:43Z",
+      "dependencies": [
+        124,
+        121
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/command-route-skill.sh",
+        "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+        "agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"
+      ],
+      "artifacts": []
     }
   ],
   "completed_projects": [],
