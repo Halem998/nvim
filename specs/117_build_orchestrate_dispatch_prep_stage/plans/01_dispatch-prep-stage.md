@@ -427,27 +427,27 @@ discrepancy rather than assuming the report's map.
 
 ---
 
-### Phase 6: Wire the 3 multi-task dispatch loops [NOT STARTED]
+### Phase 6: Wire the 3 multi-task dispatch loops [COMPLETED]
 
 **Goal**: Every multi-task Agent dispatch in Stage MT-4 runs the same Stage 3.5 procedure with the
 correct per-phase parameter and injects its outputs.
 
 **Tasks**:
 
-- [ ] Re-anchor on `### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight` and its three
+- [x] Re-anchor on `### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight` and its three
       `For each task in ...` loops.
-- [ ] In the `research_tasks` loop, add a bullet before the `Invoke Agent tool:` bullet: "Run
+- [x] In the `research_tasks` loop, add a bullet before the `Invoke Agent tool:` bullet: "Run
       **Stage 3.5: Dispatch Prep** with `phase=research` for this task (the same single canonical
       procedure defined in Stage 3.5 — do not inline a second copy)."
-- [ ] Do the same in the `plan_tasks` loop with `phase=plan` and the `implement_tasks` loop with
+- [x] Do the same in the `plan_tasks` loop with `phase=plan` and the `implement_tasks` loop with
       `phase=implement`.
-- [ ] In each loop, extend the `prompt = "..."` segment description to state that `memory_context`,
+- [x] In each loop, extend the `prompt = "..."` segment description to state that `memory_context`,
       then `lit_context`, then `effort_note` are appended, each skipped when empty.
-- [ ] Confirm each loop's Stage 3.5 invocation sees the per-task `description` read added in Phase 3,
+- [x] Confirm each loop's Stage 3.5 invocation sees the per-task `description` read added in Phase 3,
       and that per-task `task_type` is in scope from the MT-2 routing table.
-- [ ] Add a one-line note at the head of Stage MT-4 stating that Stage 3.5 is per-task, not per-batch —
+- [x] Add a one-line note at the head of Stage MT-4 stating that Stage 3.5 is per-task, not per-batch —
       it runs once inside each loop iteration, never hoisted above the loop.
-- [ ] Leave every `context = { ... }` object unchanged.
+- [x] Leave every `context = { ... }` object unchanged.
 
 **Timing**: 40 minutes
 

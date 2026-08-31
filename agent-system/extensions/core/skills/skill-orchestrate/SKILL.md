@@ -2135,6 +2135,12 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 
+**Stage 3.5 is per-task, not per-batch**: each of the three dispatch loops below runs
+**Stage 3.5: Dispatch Prep** once INSIDE its own loop body, for each task individually — never
+hoisted above the loop and computed once for the whole batch. Different tasks in the same batch
+can carry different `task_type`/`description` values, so a single hoisted call would silently
+reuse one task's memory/literature context for every sibling in the batch.
+
 > **BATCHING RULE**: ALL Agent tool calls for the current cycle's dispatch batch MUST be issued in a SINGLE orchestrator message with multiple tool-use content blocks. Do NOT issue calls across multiple messages — Claude Code processes all calls in a single message concurrently; multiple messages force sequential execution.
 
 > **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches. Per-task postflight (below) now includes a scoped git commit (step 5.5); these commits serialize naturally in program order because postflight is a sequential loop within this same orchestrator turn, so the `specs/.commit-lock/` mutex is needed only against a concurrently-running separate dispatch, never against this loop's own iterations.
@@ -2289,7 +2295,10 @@ For each task in `research_tasks`:
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Run **Stage 3.5: Dispatch Prep** with `phase=research` for this task (the same single canonical
+  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
+  `lit_context`, and `effort_note`.
+- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description" with `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `plan_tasks`:
 - Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
@@ -2298,7 +2307,10 @@ For each task in `plan_tasks`:
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
 - `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Run **Stage 3.5: Dispatch Prep** with `phase=plan` for this task (the same single canonical
+  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
+  `lit_context`, and `effort_note`.
+- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num" with `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `implement_tasks`:
 - Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
@@ -2312,7 +2324,10 @@ For each task in `implement_tasks`:
   single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
   `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
+- Run **Stage 3.5: Dispatch Prep** with `phase=implement` for this task (the same single canonical
+  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
+  `lit_context`, and `effort_note`.
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan" with `memory_context`, then `lit_context`, then `effort_note` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
