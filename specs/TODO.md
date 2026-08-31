@@ -35,7 +35,7 @@ next_project_number: 128
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
   └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
-31 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
+31 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
     └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
       └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19 
@@ -1175,7 +1175,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 84, Task 89, Task 124
+- **Dependencies**: Task 89, Task 124
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
 
@@ -1233,7 +1233,7 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 86
+- **Dependencies**: None
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
 
@@ -1874,7 +1874,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 62, Task 88
+- **Dependencies**: Task 88
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -1945,7 +1945,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 31. Opencode extensions sync mechanism
-- **Status**: [RESEARCHING]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

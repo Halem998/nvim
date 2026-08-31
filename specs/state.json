@@ -226,9 +226,9 @@
         "agent-system/extensions/core/scripts/lint/"
       ],
       "description": "=== REVISED 2026-08-24 (refactor survey) ===\nNARROWED -- the original scope is a poor trade against all three refactor goals. Confirmed today: 804 git-tracked files under .opencode/extensions/ with no generation mechanism, and the live defect is real (.opencode/extensions/web/agents/web-implementation-agent.md:57 still teaches browser_verify_text_visible as a real tool, while the source at agent-system/extensions/web/agents/web-implementation-agent.md:72 explicitly RETRACTS it). But this task's sibling records that .opencode/ is not currently used, and building a full 804-file generator for an unused mirror buys no token efficiency, no performance, and no uniformity.\nNARROW TO THREE THINGS: (1) fix the one fake-tool line so the mirror cannot teach a retracted tool as real; (2) add a drift-detection gate so the divergence is visible rather than silent -- this is the durable part; (3) document the divergence policy, i.e. whether .opencode/ is maintained, frozen, or slated for removal.\nIf the answer to (3) is 'frozen or removal', say so explicitly and this task shrinks further. Deciding that is worth more than generating the mirror.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nGive the .opencode/extensions/ mirror a real generation path from the source store, so it stops silently drifting, and fix the live defect that drift has already produced.\n\nSCALE -- MEASURE BEFORE PLANNING: .opencode/extensions/ is 804 git-tracked files mirroring 17 extensions (core, epidemiology, filetypes, formal, founder, latex, lean, memory, nix, nvim, present, python, slidev, typst, web, z3). An earlier estimate of '34 files' was wrong by more than an order of magnitude, so size the work against a fresh count, not against that figure. There is currently NO deploy or sync mechanism for this tree at all -- it is maintained by periodic manual 'mirror' commits, which is why the drift is structural rather than incidental.\n\nTHE LIVE DEFECT: .opencode/extensions/web/agents/web-implementation-agent.md (around line 57) still teaches `browser_verify_text_visible` as a real Playwright MCP tool. That tool does not exist. The source store at the corresponding path already retracts it explicitly. Any agent reading the .opencode copy is being taught to call a nonexistent tool. Note carefully: the source store deliberately RETAINS two mentions of that string as corrections that teach the name is fake -- a sync mechanism or cleanup pass must not mistake those for defects and 'fix' them into nonsense.\n\nWORK: decide and implement how this tree is generated or verified. At minimum produce a drift-detection check that fails loudly when .opencode/extensions/ diverges from agent-system/extensions/**; a full generator is preferable if the two trees are genuinely meant to be identical. FIRST establish whether they ARE meant to be identical -- the trees use a different @-reference convention, so a naive byte-for-byte generator may be wrong. If a full sync is not appropriate, a drift-detection gate plus documented divergence rules is an acceptable and honest outcome; say which was chosen and why.\n\nSCOPE BOUNDARY: another task already owns .opencode/scripts/* (dead command-router removal). Stay out of that subtree to avoid a conflicting edit.\n\nVERIFICATION: the fake tool name no longer appears as usable guidance anywhere in .opencode/extensions/; the drift check runs clean, or reports exactly the divergences the chosen policy permits; the check is wired somewhere it will actually run rather than existing as an uninvoked script. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
-      "status": "researching",
+      "status": "not_started",
       "created": "2026-08-11T07:55:00Z",
-      "last_updated": "2026-08-31T00:00:00Z",
+      "last_updated": "2026-08-31T22:39:46Z",
       "session_id": "sess_1786459614_0c9ada_31"
     },
     {
@@ -312,7 +312,6 @@
       "topic": "core-agent-system",
       "effort": "2-4 hours",
       "dependencies": [
-        62,
         88
       ],
       "file_scope": [
@@ -609,9 +608,7 @@
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
-      "dependencies": [
-        86
-      ],
+      "dependencies": [],
       "description": "Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:\n\n| File | Dead-branch section | Bytes | Share | Fires when |\n| skill-orchestrate/SKILL.md | ## Multi-Task Mode | 103,462 | 55% | multi_task_mode=true only |\n| skill-distill/SKILL.md | ## Auto Distill Complete | 43,254 | 46% | --auto only |\n| skill-literature/SKILL.md | 7x ## Mode: sections | ~65,772 | 78% | exactly one fires |\n| commands/task.md | 5 non-default modes | 25,883 | 66% | one mode per invocation |\n\nVerified in skill-orchestrate Stage 0: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' The branches are explicitly exclusive, so every single-task /orchestrate N loads ~26k tokens it will never execute. Measured /orchestrate budget today is ~83.5k tokens before any work begins.\n\nThis is ONE architectural defect, not four. This work defines the convention ONLY; the per-file applications are separate tasks so each stays bounded to one agent run. The commands/task.md instance is already owned by the slim-task-command work.\n\nSCOPE: decide the mechanism (a referenced context/ file read on demand when the branch is taken is the established pattern -- moving procedural bash to scripts/ removes it from context entirely, while moving prose to context/ saves only on invocations that do not need it); define the section-marker convention; document it in context/patterns/; and add a lint that flags a runtime-loaded .md carrying a mutually-exclusive branch section above a byte threshold. Without the lint this regresses, exactly as every other extracted-then-readopted class in this repo has.\n\nDO NOT pursue twin-dedup between skill-orchestrate and skill-orchestrate-hard as part of this: the 2026-08-11 review's '>=28,421 B byte-identical' figure did not reproduce. Contiguous identical runs of >=8 lines total only 8,168 B. It is a weak lever and a distraction.\n\nACCEPTANCE: convention documented, lint in place and green, and one pilot application landed demonstrating the measured saving.",
       "file_scope": [
         "agent-system/extensions/core/context/patterns/",
@@ -667,7 +664,6 @@
       "topic": "core-agent-system",
       "priority": "medium",
       "dependencies": [
-        84,
         89,
         124
       ],
