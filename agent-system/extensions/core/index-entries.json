@@ -2718,7 +2718,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Hard-mode routing resolution precedence used by command-route-skill.sh for --hard",
-      "line_count": 171,
+      "line_count": 173,
       "keywords": [
         "hard-mode",
         "routing",
@@ -2739,7 +2739,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Consolidated routing model: the four manifest blocks, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 184,
+      "line_count": 231,
       "keywords": [
         "routing",
         "manifest",
