@@ -290,34 +290,34 @@ another arm, the file list is still one file but note the shared surface in the 
 
 ---
 
-### Phase 3: Rewrite the blocked fixtures and their instruction comment [NOT STARTED]
+### Phase 3: Rewrite the blocked fixtures and their instruction comment [COMPLETED]
 
 **Goal**: Replace the two `fixture_blocked` assertions and the "DOCUMENTED DIVERGENCE ... do NOT
 'fix' this" comment block with fixtures covering all five discriminated sub-cases across both
 engines, each demonstrated RED against the pre-fix classifier.
 
 **Tasks**:
-- [ ] Delete the current `check_fixture "single" 111 ... needs_human` / `check_fixture "mt" 111
+- [x] Delete the current `check_fixture "single" 111 ... needs_human` / `check_fixture "mt" 111
       ... skip` pair and the three-line comment above them that instructs the reader not to fix
       the divergence. The comment must be rewritten with the fixtures — leaving it would preserve
       a claim the code no longer makes.
-- [ ] Add a new state fixture block with the entries needed for the five sub-cases: a discharged
+- [x] Add a new state fixture block with the entries needed for the five sub-cases: a discharged
       candidate (non-empty `dependencies[]`, dependency present with `status: "completed"`,
       `previous_status` set, no handoff file); a discharged candidate WITH a handoff carrying
       non-empty `blockers[]`; a non-discharged candidate whose dependency is still in-progress; a
       candidate whose dependency is `abandoned`; and a candidate with empty `dependencies[]`.
       Include a discharged candidate whose `previous_status` is absent if the sixth branch is to
       be covered.
-- [ ] Construct the discharged fixture so the dependency's task number is NOT passed as a
+- [x] Construct the discharged fixture so the dependency's task number is NOT passed as a
       classifier argument — this is the fixture that distinguishes the correct state.json-lookup
       mechanism from the incorrect candidate-list-membership mechanism, and it must fail if the
       wrong one was implemented.
-- [ ] Assert both `group` AND `handoff_state` for every new case (the existing `check_fixture`
+- [x] Assert both `group` AND `handoff_state` for every new case (the existing `check_fixture`
       helper already takes both), so the widened `handoff_state` domain for `blocked` is locked in
       rather than left untested.
-- [ ] Rewrite the suite's header comment where it enumerates which rows the suite covers, so it
+- [x] Rewrite the suite's header comment where it enumerates which rows the suite covers, so it
       names the discriminated `blocked` sub-cases instead of the retired single divergent row.
-- [ ] Record the Phase 1 RED evidence in this phase's commit body, per
+- [x] Record the Phase 1 RED evidence in this phase's commit body, per
       `context/standards/shell-script-testing.md`.
 
 **Timing**: 1.5 hours
@@ -329,7 +329,10 @@ engines, each demonstrated RED against the pre-fix classifier.
 **Scope Hypothesis**: This phase asserts ten new fixture assertions (five sub-cases x two engines).
 Confirm by counting `check_fixture` invocations added in the diff; if a sub-case turns out to be
 engine-identical and one assertion suffices, record the reduced count and its reason rather than
-padding to ten.
+padding to ten. *(deviation: actual count is 12 assertions across SIX sub-cases, not five/ten --
+the Testing & Validation section explicitly requires a sixth "discharged but previous_status
+missing" sub-case beyond this Scope Hypothesis's five-sub-case estimate; recorded here rather
+than silently padding or dropping the required case)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` - fixture state

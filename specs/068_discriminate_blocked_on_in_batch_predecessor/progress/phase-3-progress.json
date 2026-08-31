@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Rewrite the blocked fixtures and their instruction comment",
+  "started_at": "2026-08-31T00:50:00Z",
+  "last_updated": "2026-08-31T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete old fixture_blocked pair + instruction comment; add six discriminated sub-case fixtures (12 assertions) with group + handoff_state assertions; rewrite suite header comment; record RED evidence",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.scope-hypothesis",
+      "description": "Scope Hypothesis estimated ten new fixture assertions (five sub-cases x two engines)",
+      "type": "altered",
+      "reason": "Testing & Validation section explicitly requires a sixth sub-case (discharged but previous_status missing) beyond the five named in the plan's Goals bullet and this phase's Scope Hypothesis; implemented as six sub-cases x two engines = 12 assertions",
+      "annotation": "*(deviation: actual count is 12 assertions across SIX sub-cases, not five/ten -- the Testing & Validation section explicitly requires a sixth case; recorded here rather than silently padding or dropping the required case)*"
+    }
+  ]
+}

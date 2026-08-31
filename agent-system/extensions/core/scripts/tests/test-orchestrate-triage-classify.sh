@@ -6,7 +6,11 @@
 # for both engines, covering every row of the classifier's header table except
 # `researching`/`planning` (those two rows' mutation-check fixtures belong to, and are written and
 # run against the pre-fix classifier by, the change that adds them — see that change's own commit
-# body for the required RED evidence).
+# body for the required RED evidence), and FURTHER EXTENDED (see "Discriminated blocked sub-cases"
+# further down) to cover the six discriminated `blocked`-row sub-cases (discharged / discharged
+# with handoff blockers / dependency outstanding / dependency abandoned or expanded / empty
+# dependencies[] / discharged but missing previous_status) in place of the single, no-longer-
+# accurate `fixture_blocked` divergence pair this suite originally carried.
 #
 # THE DEFECT UNDER TEST (original scope): the sole active .orchestrator-handoff.json writer (H9
 # hard-mode wrap-up) emits a FLAT top-level `continuation_path` string. Before the fix, the
@@ -215,8 +219,7 @@ cat > "$WORKDIR/specs/state.json" <<'EOF'
     {"project_number": 107, "project_name": "fixture_planned", "status": "planned"},
     {"project_number": 108, "project_name": "fixture_implementing", "status": "implementing"},
     {"project_number": 109, "project_name": "fixture_terminal", "status": "completed"},
-    {"project_number": 110, "project_name": "fixture_garbage_status", "status": "not_a_real_status"},
-    {"project_number": 111, "project_name": "fixture_blocked", "status": "blocked"}
+    {"project_number": 110, "project_name": "fixture_garbage_status", "status": "not_a_real_status"}
   ]
 }
 EOF
@@ -255,14 +258,83 @@ check_fixture "single" 110 "not_applicable" "skip" \
 check_fixture "mt" 110 "not_applicable" "skip" \
   "unrecognized status string -> skip cross-engine agreement"
 
-# --- blocked: the ONE documented, intentional engine-divergent row. Do NOT "fix" this to agree
-# across engines -- see this file's header comment and orchestrate-triage-classify.sh's own
-# header table for the full discriminator (a solo invocation has no sibling to make progress on
-# and escalates to a human; a batch invocation skips the blocked task so its siblings proceed). ---
-check_fixture "single" 111 "not_applicable" "needs_human" \
-  "blocked -> needs_human (single engine; DOCUMENTED DIVERGENCE from mt, not a bug)"
-check_fixture "mt" 111 "not_applicable" "skip" \
-  "blocked -> skip (mt engine; DOCUMENTED DIVERGENCE from single, not a bug)"
+# =====================================================================
+# Discriminated blocked sub-cases (REPLACES the old single fixture_blocked divergence pair --
+# `blocked` is no longer unconditional; see orchestrate-triage-classify.sh's own header table and
+# justification paragraph for the full discriminator). All six sub-cases below share one
+# state.json so cross-referenced dependency lookups resolve within a single classifier
+# invocation. Per-candidate check_fixture calls below pass exactly ONE task number each -- the
+# discharged fixture (120)'s dependency (121) is present in state.json but is NEVER itself passed
+# as a classifier argument, which is exactly what distinguishes the correct state.json-lookup
+# mechanism from an incorrect candidate-list-membership mechanism (a membership-based
+# implementation would read dependency 121 as absent from the argument list and fail this case).
+# =====================================================================
+
+mkdir -p "$WORKDIR/specs/122_fixture_discharged_blockers"
+
+cat > "$WORKDIR/specs/state.json" <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 120, "project_name": "fixture_discharged", "status": "blocked", "previous_status": "planned", "dependencies": [121]},
+    {"project_number": 121, "project_name": "fixture_dep_completed", "status": "completed"},
+    {"project_number": 122, "project_name": "fixture_discharged_blockers", "status": "blocked", "previous_status": "planned", "dependencies": [121]},
+    {"project_number": 123, "project_name": "fixture_dep_outstanding", "status": "blocked", "previous_status": "planned", "dependencies": [124]},
+    {"project_number": 124, "project_name": "fixture_dep_researching", "status": "researching"},
+    {"project_number": 125, "project_name": "fixture_dep_abandoned", "status": "blocked", "previous_status": "planned", "dependencies": [126]},
+    {"project_number": 126, "project_name": "fixture_dep_abandoned_target", "status": "abandoned"},
+    {"project_number": 127, "project_name": "fixture_empty_deps", "status": "blocked", "previous_status": "planned", "dependencies": []},
+    {"project_number": 128, "project_name": "fixture_missing_prev_status", "status": "blocked", "dependencies": [121]}
+  ]
+}
+EOF
+
+# Sub-case (b) needs a handoff carrying non-empty blockers -- directory name must match this
+# candidate's OWN project_name (122_fixture_discharged_blockers), not its dependency's.
+cat > "$WORKDIR/specs/122_fixture_discharged_blockers/.orchestrator-handoff.json" <<'EOF'
+{"continuation_context": null, "continuation_path": null, "blockers": ["some unresolved blocker"]}
+EOF
+
+# --- (a) discharged: sole dependency completed, previous_status set, no handoff -- routes via
+# previous_status to the group it names, for BOTH engines. Dependency 121 is NOT passed as a
+# classifier argument below -- see this block's header comment. ---
+check_fixture "single" 120 "absent" "implement" \
+  "blocked, discharged (dependency completed, previous_status=planned) -> implement"
+check_fixture "mt" 120 "absent" "implement" \
+  "blocked, discharged (dependency completed, previous_status=planned) -> implement cross-engine agreement"
+
+# --- (b) discharged but handoff blockers present -- needs_human overrides discharge, BOTH engines ---
+check_fixture "single" 122 "blockers" "needs_human" \
+  "blocked, discharged but handoff blockers present -> needs_human"
+check_fixture "mt" 122 "blockers" "needs_human" \
+  "blocked, discharged but handoff blockers present -> needs_human cross-engine agreement"
+
+# --- (c) dependency still outstanding (researching, not completed) -- unchanged divergent shape:
+# skip (mt) / needs_human (single) ---
+check_fixture "single" 123 "absent" "needs_human" \
+  "blocked, dependency outstanding (researching) -> needs_human (single)"
+check_fixture "mt" 123 "absent" "skip" \
+  "blocked, dependency outstanding (researching) -> skip (mt)"
+
+# --- (d) dependency reached a non-completed terminal status (abandoned) -- needs_human, BOTH
+# engines, since this precondition can never be met (never the broader is_terminal discharge) ---
+check_fixture "single" 125 "absent" "needs_human" \
+  "blocked, dependency abandoned -> needs_human"
+check_fixture "mt" 125 "absent" "needs_human" \
+  "blocked, dependency abandoned -> needs_human cross-engine agreement"
+
+# --- (e) empty dependencies[] -- must never vacuously discharge; unchanged divergent shape:
+# skip (mt) / needs_human (single) ---
+check_fixture "single" 127 "absent" "needs_human" \
+  "blocked, empty dependencies[] -> needs_human (single, never vacuous discharge)"
+check_fixture "mt" 127 "absent" "skip" \
+  "blocked, empty dependencies[] -> skip (mt, never vacuous discharge)"
+
+# --- (f) discharged (dependency completed) but previous_status missing -- needs_human, BOTH
+# engines, never guesses the discharge target phase ---
+check_fixture "single" 128 "absent" "needs_human" \
+  "blocked, discharged but previous_status missing -> needs_human (never guesses)"
+check_fixture "mt" 128 "absent" "needs_human" \
+  "blocked, discharged but previous_status missing -> needs_human cross-engine agreement"
 
 # =====================================================================
 # Mutation-check fixtures (per context/standards/shell-script-testing.md): researching -> research
