@@ -1,5 +1,5 @@
 ---
-next_project_number: 128
+next_project_number: 131
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,74,87,94,100,102,103,106,108,110,111,113,114,123,126 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,104,105,109,112,120,124 | 29,31,74,102,108,126 | core-agent-system, extensions, literature |
-| 3 | 107,121,125 | 104,120,124 | core-agent-system, literature |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130 | -- | core-agent-system, literature, neovim |
+| 2 | 30,74,104,105,109,112,120,124,129 | 29,31,102,108,126,128,130 | core-agent-system, extensions, literature |
+| 3 | 75,76,107,121,125 | 74,104,120,124,128 | core-agent-system, extensions, literature |
 | 4 | 127 | 121,124 | core-agent-system |
 | 5 | 88 | 87,127 | core-agent-system |
 | 6 | 44 | 88 | core-agent-system |
@@ -61,6 +61,10 @@ next_project_number: 128
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+128 [NOT STARTED] — Repair the hard-mode H4 adversarial-verification gate, which curr
+  └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
+  └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
 
 ### Extensions
 
@@ -90,6 +94,148 @@ next_project_number: 128
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
 
 ## Tasks
+
+### 130. Stop lake-build-guard.sh reporting passes for builds it did not run
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Make lake-build-guard.sh's success signal trustworthy. The script currently reports a pass in two independent situations where no such build happened, which defeats the standing verification gate that every hard-mode implementation phase depends on. Observed live during a successful /orchestrate --hard run; recorded as evt_1788246598349_q1AwUZ and evt_1788260467365_9bSvdb.
+
+PATH CORRECTION (recorded so a future reader is not sent to a nonexistent path). Both defect records attribute this to agent-system/extensions/lean/scripts/lake-build-guard.sh. That path does not exist. The script's only copy is agent-system/extensions/core/scripts/lake-build-guard.sh, with its harness at agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh. The misattribution is in the event records, not in the tree.
+
+WHY THIS IS HIGH SEVERITY. A phase can be declared green on a build that never compiled the relevant modules. In the observed run this was caught only because implementation agents independently noticed the job count looked wrong and re-ran with --no-share. That is luck, not a control. Neither the exit code nor the "Build completed successfully" string distinguishes a genuine build from either failure mode below.
+
+DEFECT A -- UNVALIDATED SUBCOMMAND PASSTHROUGH. The script takes the full lake subcommand after `--`, i.e. `-- build TARGET`. Invoked as `-- TARGET` it printed `error: unknown command '<target>'` and STILL EXITED 0. Mechanism, by inspection of the build-mode argument loop: the `--)` branch performs `shift; lake_args+=("$@"); break` with no validation whatsoever of the first post-`--` token, and the collected vector is handed to cmd_build unchecked. A caller trusting the exit code reads a failed build as a pass. Fix direction: validate the post-`--` subcommand against the set lake actually accepts and exit in the reserved usage band (77) on an unknown one, rather than letting the mistake reach lake and be silently absorbed.
+
+DEFECT B -- RESULT SHARING IGNORES BUILD SCOPE. A "full" lake build issued immediately after a scoped one returned the SCOPED result. Observed concretely: the full build reported 1364 jobs with output byte-identical to the immediately preceding scoped build of a single module namespace, while the genuine full build, forced with --no-share, reported 2506 jobs.
+
+ROOT CAUSE, ESTABLISHED BY INSPECTION -- THIS IS MECHANISM, NOT HYPOTHESIS. decide_sharing() replays a prior result when the stored post_fingerprint equals the waiter's current fingerprint (plus state==complete, a live-holder check, an age bound, and --no-share not set). compute_fingerprint() hashes exactly what collect_fingerprint_files() emits, which is: every *.lean file under the project root excluding .lake/, plus lakefile.lean, lakefile.toml, lake-manifest.json, and lean-toolchain. THE LAKE ARGUMENT VECTOR IS ABSENT FROM THE FINGERPRINT ENTIRELY. A scoped build and a full build over an unchanged tree therefore hash identically, and the sharing decision cannot tell them apart. The staleness policy documented in the script's own header is a policy about SOURCE CHANGE only; it never claimed to be a policy about build SCOPE, and the gap is exactly there.
+
+Fix direction: incorporate a normalized form of the lake argument vector into the recorded fingerprint (or into a separate recorded scope key compared alongside it) so a result is only ever replayed for an equivalently-scoped build. Independently, make replay AUDIBLE rather than silent -- the header's silent-when-no-conflict convention is right for the no-conflict path but wrong for a replay, because a caller currently has no way to distinguish a replayed result from a fresh one. Something on the order of a one-line stderr notice naming the replay and the job count, and a documented way for a caller to assert that a genuine full build actually ran.
+
+DEFECT C -- BROKEN WAIT IDIOM, DOCUMENTATION ONLY. The natural-looking poll `until ! pgrep -f "lake-build-guard.sh build"` SELF-MATCHES the polling shell's own argv and never exits. Waiting on the build PID with `kill -0` works. No occurrence of the broken idiom exists anywhere in the source store, so this is purely a gap in the script's own usage text, not a code defect: callers are left to invent the idiom and the obvious invention is wrong. Document the working form in the header or usage output.
+
+WHY ONE TASK AND NOT THREE. All three land in one script plus its single test harness; A and B both require the same new harness scaffolding (an invocation-count probe distinguishing genuine builds from replays); and splitting would serialize three tasks against one file for no gain.
+
+RELATIONSHIP TO THE LATEX BUILD-CONFLICT GUARD -- PREDECESSOR, NOT SIBLING. The two share no files: the latex guard script does not yet exist and its task creates it. They are related by CONVENTION. This script's header declares, verbatim, "FAMILY CONVENTIONS (for a future latex-build-guard.sh or similar sibling)", enumerating the subcommand shape, the exit-code shape, silent-when-no-conflict, and degrade-audibly. Defect A changes the exit-code contract and Defect B's replay notice qualifies silent-when-no-conflict. The conventions must therefore settle BEFORE the sibling instantiates them, which is why the latex guard task now depends on this one rather than the reverse.
+
+RECORDER CLASS GAP (observation, not in scope to fix). Both events were filed as OFF_SCHEMA_STATUS, which is an imperfect fit: none of the recorder's thirteen permitted classes covers "a tool reports success for work it did not do". Separately, HOOK_REGEX_BOUNDARY_DEFECT is documented in the discrimination pattern as "not currently computed anywhere", so the class used for the companion gate defect is itself only ever recorded by hand. Both facts are recorded here for whoever next revises the class taxonomy; neither is a deliverable of this task.
+
+ACCEPTANCE (extend the existing thirteen-case plus mutation harness, do not replace it):
+  - `-- TARGET` with no subcommand exits non-zero rather than 0.
+  - `-- build TARGET` continues to pass the wrapped command's own exit code through untouched.
+  - A scoped build followed by an unchanged-tree full build runs a REAL full build rather than replaying the scoped result, demonstrated by invocation count and not by output inspection alone.
+  - A full build followed by an identical full build over an unchanged tree still replays, so the sharing optimization is preserved rather than disabled.
+  - A replay is distinguishable by a caller without passing --no-share.
+  - The working wait idiom appears in the usage text.
+  - Mutation coverage: reverting each fix reintroduces exactly the corresponding failure.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 129. Empirically audit \b word-boundary grep patterns for compositional failure under the deployed grep
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 128
+
+**Description**: Audit every `\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.
+
+THE DEFECT IS COMPOSITIONAL, NOT A MISSING FEATURE. State this precisely; the imprecise version of this finding is what would sink the audit itself. The deployed grep is ugrep 7.8.4 (built with PCRE2 available: `-P:pcre2jit`). Its POSIX/DFA `-E` engine does NOT simply ignore `\b`. Every fragment of the failing pattern matches in isolation against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |`:
+
+  PATTERN                                                          RESULT
+  \bclaim\b                                                        MATCH
+  claim                                                            MATCH
+  \|[^|]*\bclaim\b[^|]*\|                                          MATCH
+  [^|]*\bclaim\b                                                   MATCH
+  \bclaim\b[^|]*                                                   MATCH
+  \bsource\b[^|]*\bcounterexample\b                                MATCH
+  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b                           MATCH
+
+The full composed pattern nevertheless fails, and bisection localizes it:
+
+  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|   NOMATCH   (production form)
+  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b          NOMATCH
+  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*counterexample              MATCH     (dropped \b around counterexample)
+  \|[^|]*\bclaim\b[^|]*\|[^|]*source[^|]*\bcounterexample\b              NOMATCH   (dropped \b around source)
+  \|[^|]*claim[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b              NOMATCH   (dropped \b around claim)
+
+and the unmodified production pattern under `-P` (PCRE2) returns MATCH.
+
+So the engine mis-evaluates a `\b` that appears DOWNSTREAM of an earlier `\b`-anchored subexpression separated by a `[^|]*` run. Whether a given `\b` works depends on what else is in the pattern.
+
+BINDING CONSTRAINT ON HOW THIS AUDIT IS PERFORMED. Because the failure is compositional, spot-testing a fragment in isolation does NOT prove the production pattern works in situ. Every site must be executed as its full, unmodified production pattern against a real positive input under the deployed grep, and the observed result recorded. Reasoning about whether a construct "should" work, testing a simplified stand-in, or generalizing from one site's result to another's are all forbidden -- they are precisely the trap this defect sets.
+
+FOR THE SAME REASON, THIS IS NOT A MECHANICAL FIND-AND-REPLACE. A blanket `\b` removal would be wrong: `\b` carries real semantics, and several high-stakes sites were spot-verified as CURRENTLY WORKING under the deployed grep -- guard-destructive-git.sh's `--hard\b` and `(drop|clear)\b` both match (that guard is live, not silently dead), the sorry census's `\bsorry\b` matches, and literature-audit.sh's `\b(Definition|Lemma|Theorem|Proposition|Corollary|Remark|Example)\s+[0-9]+(\.[0-9]+)*\b` matches. Rewriting working patterns risks introducing false positives in a destructive-git guard, which is a worse outcome than the defect being audited.
+
+SCOPE. Roughly 26 grep-adjacent `\b` sites across the source store, spanning literature scripts, lean scripts, core scripts, lint scripts, test harnesses, and hooks. For each: run the production pattern against a real positive input under the deployed grep; classify as WORKING or BROKEN on the evidence; repair only the broken ones, choosing per-site between dropping `\b` where surrounding delimiters already provide the boundary and switching that invocation to `-P`; and leave working sites alone with a one-line note recording that they were tested rather than assumed.
+
+DELIVERABLE BEYOND THE REPAIRS. A short portability guidance note under the core standards context directory covering: that the deployed grep may be ugrep rather than GNU grep; that `\b` under `-E` is compositionally unreliable there while `-P` is reliable; that delimiter-anchored alternatives are preferred where the surrounding pattern already bounds the token; and that any new `\b` pattern must be executed against a real input before being committed. Without this note the class recurs the next time someone writes a plausible-looking boundary pattern.
+
+SEQUENCING. Depends on the adversarial-gate fix purely to avoid a file-footprint collision: skill-orchestrate/SKILL.md is itself one of the sites, and that task owns the gate's pattern. This task covers every other site and must not touch the gate.
+
+ACCEPTANCE: every site is accompanied by a recorded empirical result under the deployed grep; no working pattern is rewritten; each repaired pattern is demonstrated to match a real positive input AND to reject a real negative input; and the guidance note exists.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 128. Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 119
+
+**Description**: Repair the hard-mode H4 adversarial-verification gate, which currently burns a full extra research dispatch on every hard-mode run by failing against reports that genuinely conform. Observed live on a successful /orchestrate --hard run in a consumer repo; recorded as evt_1788245094839_eybEyC, class HOOK_REGEX_BOUNDARY_DEFECT.
+
+THE GATE AND ITS TWO INDEPENDENT FAILURES (verified, do not re-derive). The gate lives in the `#### State: researched` handler and skips re-dispatch only if BOTH of the following succeed against the research report:
+  grep -q "## Adversarial Self-Verification" "$research_path"
+  grep -qiE '\|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|' "$research_path"
+Both failed against a report containing a substantive eleven-row claim-verification table.
+
+FAILURE ONE -- SECTION NUMBERING. The report's heading was `## 7. Adversarial Self-Verification`. The literal-string match does not tolerate numbering, and numbered report sections are routine rather than exceptional. The heading match must accept an optional `N.` or `N.N` prefix.
+
+FAILURE TWO -- COMPOSED WORD BOUNDARIES UNDER THE DEPLOYED GREP. Independent of the heading, the table pattern fails even against a perfectly canonical unnumbered header line. This is NOT the simple claim that the deployed grep ignores `\b`; see the companion word-boundary portability audit, which owns the general characterization and carries the bisection evidence. What matters here is only the consequence: the exact production pattern above returns NOMATCH against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |`, while the same pattern with `\b` removed returns MATCH, and the unmodified pattern under `-P` returns MATCH.
+
+DIRECTION OF THE FAILURE. This is a FALSE-NEGATIVE gate. It never wrongly passes unverified research; it wrongly re-dispatches already-verified research. The cost is a wasted dispatch cycle per hard-mode run, not a correctness hole in verification itself. Any fix must preserve that asymmetry: a report with no adversarial section and no claim table must still trip the gate and still trigger re-dispatch.
+
+ROUTING -- THE GATE IS ORPHANED, AND THIS TASK OWNS THE MIGRATION. Do not fix this in the `-hard` engine alone; that file is slated for deletion. The hard-mode state-machine consolidation completed WITHOUT carrying this gate over, and skill-orchestrate/SKILL.md records the omission in its own text, verbatim:
+
+  "**Not migrated**: the `researched`-state adversarial verification gate (H4) -- see the residue
+  note immediately below. Everything else in the source engine's state-machine logic (H1/H5/H6/the
+  burnout breaker, plus the loop-guard/churn-state plumbing they depend on) is now reproduced here."
+
+  "**Hard-mode residue not yet migrated**: the `researched`-state adversarial verification gate
+  (H4) -- the `#### State: researched` handler in the `-hard` engine and its `adversarial_verified`
+  state variable, set at three separate sites and driving a verify-then-re-dispatch loop before
+  planning -- has NOT been ported into this engine's `researched` handler below. This is a
+  deliberate, recorded scope decision, not an oversight: it is a structurally independent residue
+  (its own state variable, its own re-dispatch loop, a different handler than the four behaviors
+  this engine does reproduce) and remains the one still-unmigrated piece of hard-mode
+  state-machine logic. A future removal of the `-hard` engine must account for this gate
+  separately; its absence here is not evidence it was folded in elsewhere in this file."
+
+The orphaning was therefore documented but UNOWNED: the note asks that a future deletion "account for this gate separately", and no task did. The deletion task now depends on this one so the engine cannot be removed while its last unmigrated gate still lives only there.
+
+SCOPE. Port the `#### State: researched` handler and its `adversarial_verified` state variable (set at three separate sites, driving a verify-then-re-dispatch loop before planning) into skill-orchestrate/SKILL.md's own `researched` handler, gated on `hard_mode` in the same style as the already-migrated H1/H5/H6 behaviors, and land the CORRECTED matcher there rather than transcribing the broken one. Treat the `-hard` engine as read-only reference.
+
+CO-MAINTENANCE ASYMMETRY -- DECIDE AND RECORD, DO NOT DUAL-EDIT. The two engines carry an explicit co-maintenance contract and a one-sided change normally reproduces a named recurring defect class. That contract's own escape clause permits recording the asymmetry instead of mirroring it. Take that route here: leave the `-hard` copy untouched because it is scheduled for deletion, and record the deliberate asymmetry in both files so a reader of either one is not misled. Mirroring a fix into a file about to be deleted is wasted work and creates a second site to keep in sync for no benefit.
+
+ACCEPTANCE (both directions required -- a gate that can only ever stay silent is not a fix):
+  - POSITIVE: a report whose heading is `## 7. Adversarial Self-Verification` and whose table header is `| Claim | Source / counterexample | Verification method | Confidence |` passes the gate, under the grep actually deployed on the machine, and does not trigger re-dispatch.
+  - POSITIVE: the same report with an unnumbered `## Adversarial Self-Verification` heading also passes.
+  - NEGATIVE: a report with no adversarial section, and a report with the section but no claim/source/counterexample table, each still fail the gate and still trigger re-dispatch.
+  - The corrected pattern is exercised against a real file by the deployed grep, never merely reasoned about.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 127. Collapse routing ladder to routing agents
 - **Status**: [NOT STARTED]
@@ -215,7 +361,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 118, Task 119, Task 120
+- **Dependencies**: Task 118, Task 119, Task 120, Task 128
 
 **Description**: Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.
 
@@ -1459,7 +1605,7 @@ ACCEPTANCE: a latex preflight hook exists, is executable, is declared in the man
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 130
 
 **Description**: Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
 
@@ -1755,6 +1901,51 @@ observation be folded in as evidence. Add this one too, pulling in the opposite 
 run above was NOT clean, and the single recorded defect event was the only signal distinguishing
 a predecessor clobber from a normal report. A bar of "zero defect events" is sound only if the
 genuine-incident channel stays as loud as it is today.
+
+=== EVIDENCE ADDED 2026-09-01 (live-predecessor late write, via git restore rather than late completion) ===
+CONFIRMING, NOT CONTRADICTING. A SECOND live instance of the hazard that candidate direction (b)
+is cautioned against, observed on a hard-mode /orchestrate run in a separate consumer repo and
+recorded as evt_1788246742189_Fodegl. It differs from the 2026-08-24 instance in MECHANISM and
+therefore widens, rather than merely repeats, the constraint on any fix.
+
+OBSERVED MECHANISM (verified, do not re-derive). Phase 1's implementation agent finished, wrote
+its handoff carrying dispatch_seq=3, and its dispatch closed cleanly. The orchestrator consumed
+and DELETED both .orchestrator-handoff.json and .return-meta.json, then dispatched Phase 2 with a
+freshly minted dispatch_seq=4 at dispatch_start_ts 1788246604. The Phase 1 agent then WOKE UP --
+it was re-prompted about an unrelated question -- and RESTORED both JSON files from its own commit
+b642bca4c, re-writing them at mtime 1788246672. That mtime falls INSIDE Phase 2's dispatch window
+and is NEWER than its start, so THE MTIME FRESHNESS GATE WOULD HAVE PASSED a completed
+predecessor's report (phases_completed: 1) as Phase 2's outcome. Only the dispatch_seq comparison
+(3 against the minted 4) exposed it. Both files then had to be cleared MANUALLY before Phase 2
+could proceed safely.
+
+WHAT IS NEW HERE, BEYOND THE 2026-08-24 CASE. Three things.
+
+(1) THE PREDECESSOR WAS NOT MERELY LATE -- IT RESURRECTED DELETED FILES FROM GIT. The 2026-08-24
+instance was a still-running dispatch completing late. This one is a dispatch that had already
+closed, whose files had already been consumed and deleted, and which then restored them from a
+commit. Any resolution built on "clear or rotate the handoff at dispatch start" (direction (b))
+is defeated outright by this shape: clearing at dispatch start happened, and the file came back
+afterwards anyway. Direction (b) is therefore not merely insufficient, as this task already
+suspected -- it is inert against this mechanism. Only an identity check on the file's CONTENT,
+which is what dispatch_seq provides, survives it.
+
+(2) THE RECOVERY FALLBACK SHARES THE EXPOSURE, AND IT IS NOT GUARDED. This task's file_scope has
+until now treated the handoff freshness gates as the surface at risk. The observed incident shows
+orchestrate-recover-outcome.sh is exposed too: its .return-meta.json fallback is windowed on MTIME
+ONLY, with no dispatch_seq equivalent. Had Phase 2 gone partial, that fallback would have
+recovered the restored predecessor's .return-meta.json and reported Phase 1's outcome as Phase 2's
+-- the manual clearing is the only reason it did not. Whatever is decided about the recording
+order, the recovery path needs the same identity discipline as the gate, or it becomes the
+unguarded way in. agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh is added to
+this task's file_scope accordingly.
+
+(3) THE dispatch_seq GATE EARNED ITS KEEP A SECOND TIME, ON A DIFFERENT MECHANISM. This
+strengthens rather than qualifies this task's binding constraint that the gates "are right and
+must not be weakened". Two independent live incidents, with different causes, both passed the
+mtime gate and were caught only by dispatch_seq. Any suppression or reordering of the recording
+MUST still surface both shapes, and the acceptance bar should demonstrate the git-restore shape
+specifically, since it is the one that defeats clearing.
 
 ---
 
