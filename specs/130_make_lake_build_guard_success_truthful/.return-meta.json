@@ -1,0 +1,38 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md",
+      "summary": "Line-level fix points for Defect A (unvalidated post-`--` lake subcommand), Defect B (fingerprint blind to build scope, no audible replay signal), and Defect C (undocumented wait idiom), plus a mapping of acceptance criteria onto the existing 13-case-plus-mutation test harness's reusable scaffolding (FAKE_LAKE_COUNTER, exit-passthrough pattern, grep-based regression cases, scratch-copy sed mutation pattern)."
+    }
+  ],
+  "next_steps": "Run /plan 130 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_team_task130",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["team-lead", "research", "general-research-agent"]
+  },
+  "findings_count": 3,
+  "memory_candidates": [
+    {
+      "content": "In lake-build-guard.sh's arg parser, lake_args (the post-subcommand vector eventually handed to `lake`) is populated by TWO independent branches of the same while-loop: the explicit `--)` branch (shift; lake_args+=(\"$@\"); break) and the bare catch-all `*)` branch for args with no leading `--`. A validation fix targeting only one branch silently misses invocations shaped like the other. The single point where both paths have already converged is right after the parsing while-loop exits, before dispatch -- that is the correct place for any lake_args[0] validation, not inside either branch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "arg-parsing", "lake-build-guard", "getopts-style-loop", "validation-placement"]
+    },
+    {
+      "content": "lake-build-guard.sh's result record is a flat grep-readable key=value file (never sourced, deliberately, so record content is never executed as shell) written by write_inflight_record()/finalize_record() and read via a single get_record_field() helper. Extending this record's schema with a new concern-specific field (e.g. a build-scope key alongside the existing pre_fingerprint/post_fingerprint tree-staleness fields) is a low-risk, same-shape extension -- prefer this over folding a new concern into an existing field's hash, since one named field per concern keeps each comparison independently debuggable.",
+      "category": "PATTERN",
+      "source_artifact": "specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["flat-record-format", "grep-readable-state", "key-value-record", "shell-script-design", "lake-build-guard"]
+    }
+  ],
+  "modified_files": [
+    "specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md"
+  ],
+  "errors": []
+}
