@@ -92,3 +92,60 @@ status_vocabulary_todo_marker() {
   printf '%s\n' "${STATUS_VOCABULARY_TODO_MARKER_MAP[$candidate]}"
   return 0
 }
+
+# ─── STATUS_VOCABULARY_LIFECYCLE_RANK ──────────────────────────────────────────────────────────
+# Linear-progress subset of the closed enum above, ranked in the order the valid-transition
+# diagram in context/standards/status-markers.md documents. `blocked`, `partial`, `abandoned`,
+# and `expanded` are deliberately OMITTED: per rules/state-management.md's permissive model these
+# are non-terminal exception states or terminal states that live outside the linear axis, and the
+# monotonic-max clamp below concerns only ordinary lifecycle-progress regression. `pr_ready` is
+# included at rank 6 -- it sits on the linear axis between `implementing` and `completed` -- even
+# though the status-markers.md transition diagram's research-cited ordering text stopped at
+# `completed`.
+declare -A STATUS_VOCABULARY_LIFECYCLE_RANK=(
+  ["not_started"]=0
+  ["researching"]=1
+  ["researched"]=2
+  ["planning"]=3
+  ["planned"]=4
+  ["implementing"]=5
+  ["pr_ready"]=6
+  ["completed"]=7
+)
+
+# ─── status_vocabulary_rank <status> ───────────────────────────────────────────────────────────
+# Prints the lifecycle rank for <status> on stdout when it is a member of the ranked subset
+# above; prints nothing (empty string) when <status> is unranked (including when it is not a
+# member of the closed enum at all). Always returns 0 -- callers test the printed value, not the
+# return code, matching status_vocabulary_todo_marker's convention would invert this, but an
+# empty-vs-nonempty check is simpler for the boolean predicate below to build on.
+status_vocabulary_rank() {
+  local candidate="$1"
+  if [[ -n "${STATUS_VOCABULARY_LIFECYCLE_RANK[$candidate]+set}" ]]; then
+    printf '%s\n' "${STATUS_VOCABULARY_LIFECYCLE_RANK[$candidate]}"
+  fi
+  return 0
+}
+
+# ─── status_vocabulary_would_regress <current> <target> ───────────────────────────────────────
+# Returns 0 (yes, this transition would regress the task's lifecycle position) only when BOTH
+# <current> and <target> are ranked AND rank(target) <= rank(current) -- equal rank counts as a
+# regression for monotonic-max purposes (re-writing the same resting state is not forward
+# progress). Returns 1 (no, does not regress / clamp does not apply) in every other case,
+# including when either side is unranked (blocked/partial/abandoned/expanded, or any value
+# outside the closed enum). This "unranked means the clamp does not apply" rule is the
+# deliberate, minimal choice: a forced phase on a `partial` or `blocked` task writes its status
+# exactly as it does today.
+status_vocabulary_would_regress() {
+  local current="$1" target="$2"
+  local current_rank target_rank
+  current_rank=$(status_vocabulary_rank "$current")
+  target_rank=$(status_vocabulary_rank "$target")
+  if [[ -z "$current_rank" || -z "$target_rank" ]]; then
+    return 1
+  fi
+  if [[ "$target_rank" -le "$current_rank" ]]; then
+    return 0
+  fi
+  return 1
+}
