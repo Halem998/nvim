@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Wire model_flag into Stage 3.5 Dispatch Prep",
+  "started_at": "2026-09-01T00:15:00Z",
+  "last_updated": "2026-09-01T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Inputs table model_flag row", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Model-override resolution subsection", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Outputs and injection contract paragraph extension", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

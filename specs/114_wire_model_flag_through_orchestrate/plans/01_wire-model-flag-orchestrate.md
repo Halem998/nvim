@@ -298,7 +298,7 @@ multi-task entry stages, with the correct `""` default.
 
 ---
 
-### Phase 3: Wire `model_flag` into Stage 3.5 Dispatch Prep [NOT STARTED]
+### Phase 3: Wire `model_flag` into Stage 3.5 Dispatch Prep [COMPLETED]
 
 **Goal**: Stage 3.5 accepts `model_flag` as an input and produces a `model` output, with an
 injection contract that makes explicit that `model` is a sibling Agent-tool parameter — never

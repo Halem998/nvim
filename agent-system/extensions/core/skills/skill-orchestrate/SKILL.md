@@ -617,6 +617,7 @@ dispatch site.**
 | `focus_prompt` | `focus_prompt` from the delegation context |
 | `clean_flag` | Stage 1 / Stage MT-1 (this invocation's `--clean` state) |
 | `effort_flag` | Stage 1 / Stage MT-1 (this invocation's `--fast` state) |
+| `model_flag` | Stage 1 / Stage MT-1 (this invocation's `--haiku`/`--sonnet`/`--opus`/`--fable` state) |
 | `lit_flag` | Stage 1 / Stage MT-1 |
 | `orchestrator_mode` | always `true` for every `/orchestrate` dispatch |
 | `hard_mode` | Stage 1 / Stage MT-1 (derived from `effort_flag == "hard"`) |
@@ -685,6 +686,15 @@ appended to the dispatch prompt as reasoning-depth guidance, mirroring `commands
 existing "pass it as prompt context to the skill/agent for reasoning depth guidance" instruction.
 An empty `effort_flag` produces no note (`effort_note` stays empty).
 
+**Model-override resolution**: when `model_flag` is non-empty, set the `model` output to it
+unchanged (`haiku`/`sonnet`/`opus`/`fable` pass through verbatim — this stage does not translate
+or validate the value). When `model_flag` is empty, `model` stays empty and no `model` parameter
+is emitted at any call site, so the agent's frontmatter default applies. The emptiness test is on
+the **empty string**, never on the literal `null`. Only dispatch sites that call this stage
+receive the override: the six auxiliary/diagnostic dispatches (Stage 5a Drift Inspection, Stage
+5b churn/divergence audit, Stage 6 Blocker Escalation) do not call Stage 3.5 and therefore keep
+their frontmatter defaults, by design and with no exemption list to write or maintain.
+
 **Hard-mode contract injection (gated on `hard_mode == "true"`)**: when `hard_mode` is `"false"`
 (the default path), `hard_contracts_block` stays empty and this whole subsection is skipped — no
 `<hard-mode-contracts>` tag pair is ever emitted. When `hard_mode` is `"true"`:
@@ -751,6 +761,10 @@ order, to the END of its own prompt string — `memory_context` first, then `lit
 `effort_note`, then `hard_contracts_block` — skipping any of the four that is empty. Never
 inject an empty `<memory-context>`, `<literature-briefing>`, or `<hard-mode-contracts>` tag pair.
 None of the four outputs is ever added to the dispatch's `context` JSON object.
+This stage also produces a fifth output, `model`, of a different kind than the four above: it is
+passed as the Agent tool's `model` parameter at each call site, exactly like `subagent_type`, and
+is **never** appended to the prompt string and **never** added to the dispatch's `context` JSON
+object.
 Unlike the three lifecycle skills, `skill-orchestrate` injects no format specification
 (`report-format.md`/`plan-format.md`) into its dispatch prompts today (a real, separate,
 pre-existing gap — see Non-Goals in this task's plan) — so these blocks are simply the first
