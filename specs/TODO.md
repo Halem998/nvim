@@ -188,6 +188,7 @@ NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do no
 - **Dependencies**: None
 - **Research**: [130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md]
 - **Plan**: [130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md]
+- **Summary**: [130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md]
 
 **Description**: Make lake-build-guard.sh's success signal trustworthy. The script currently reports a pass in two independent situations where no such build happened, which defeats the standing verification gate that every hard-mode implementation phase depends on. Observed live during a successful /orchestrate --hard run; recorded as evt_1788246598349_q1AwUZ and evt_1788260467365_9bSvdb.
 

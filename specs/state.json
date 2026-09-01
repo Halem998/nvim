@@ -1519,6 +1519,11 @@
           "path": "specs/130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md",
           "type": "plan",
           "summary": "Six-phase plan fixing lake-build-guard.sh's two false-pass defects (unvalidated subcommand passthrough, scope-blind result sharing) plus the missing wait-idiom documentation, and rewriting the header's FAMILY CONVENTIONS block for the dependent sibling guard."
+        },
+        {
+          "path": "specs/130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md",
+          "type": "summary",
+          "summary": ""
         }
       ]
     },

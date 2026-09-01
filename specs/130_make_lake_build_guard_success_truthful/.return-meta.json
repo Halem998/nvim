@@ -1,18 +1,42 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "task_number": 130,
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md",
-      "summary": "Six-phase plan fixing lake-build-guard.sh's two false-pass defects (unvalidated subcommand passthrough, scope-blind result sharing) plus the missing wait-idiom documentation, and rewriting the header's FAMILY CONVENTIONS block for the dependent sibling guard."
+      "type": "summary",
+      "path": "specs/130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md",
+      "summary": "Six-phase implementation making lake-build-guard.sh's success signal truthful: subcommand validation before dispatch, scope-keyed result sharing, an audible REPLAY marker, the kill -0 wait idiom, a rewritten FAMILY CONVENTIONS block, and 8 new harness cases plus 3 new mutations (27/27 green)."
     }
   ],
-  "phase_count": 6,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 130 to execute the plan"
+  "completion_data": {
+    "completion_summary": "Fixed lake-build-guard.sh's two false-pass defects (unvalidated lake subcommand passthrough; scope-blind result sharing) and its missing wait-idiom documentation, rewrote the FAMILY CONVENTIONS header block for the dependent sibling guard, and extended the regression suite from 13 to 21 acceptance-mapped cases plus 5 mutations, all passing."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "specs/130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md",
+    "specs/130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a bash guard/wrapper script's regression suite, when a defect record asserts a specific exit code for an external tool's error path (e.g. 'lake TARGET exits 0 on unknown command'), verify that assertion against the REAL binary on the target machine before building a test on it. If the real binary's actual behavior differs (version drift, environment difference), build a dedicated deterministic fake reproducing the DOCUMENTED defect shape instead -- never test against the real binary when its live behavior has already been shown to diverge from the recorded defect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash", "testing", "fixture", "regression", "defect-record", "real-binary-drift"]
+    },
+    {
+      "content": "When a result-sharing/caching mechanism keys its replay decision on tree/input staleness alone, that is insufficient if the same unchanged tree can legitimately produce different SCOPES of work (e.g. a scoped build vs. a full build). The fix pattern: hash the invocation's own argument vector (NUL-separated join, never space-joined, to avoid boundary ambiguity) into a scope_key alongside the staleness fingerprint, and treat a missing/empty recorded scope_key as NOT shareable (fail closed) so pre-existing records without the new field never silently over-share.",
+      "category": "PATTERN",
+      "source_artifact": "specs/130_make_lake_build_guard_success_truthful/summaries/01_lake-build-guard-truthful-success-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["caching", "result-sharing", "scope-key", "fail-closed", "fingerprint"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788270248_6d4bb9",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
