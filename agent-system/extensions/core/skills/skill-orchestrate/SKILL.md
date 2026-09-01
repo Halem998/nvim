@@ -195,11 +195,14 @@ loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TAS
 loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
 handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
 MAX_INFRA_FAILURES=$(echo "$loop_guard_init_json" | jq -r '.max_infra_failures')
-# Hard-mode-only per-target churn-state file (H5/H6). Assigned unconditionally so the variable is
-# always in scope, but only ever created/read inside `$hard_mode` branches below (churn-state
-# init, further down this stage, and Stage 5b's H6 detector).
+# Hard-mode-only per-target churn-state file (H5/H6), plus the H4 adversarial-verification
+# gate's own state variable. Assigned unconditionally so both are always in scope, but only ever
+# created/read inside `$hard_mode` branches below (churn-state init, further down this stage,
+# and Stage 5b's H6 detector; the gate variable in the `researched` and `planning` handlers'
+# H4 gate, and its post-dispatch resets in the `not_started` and `researching` handlers).
 if [ "${hard_mode:-false}" = "true" ]; then
   churn_file="${TASK_DIR}/.orchestrator-churn-state.json"
+  adversarial_verified=false
 fi
 
 # Live plan-lineage reference, written into the guard's `plan_version` field in BOTH modes (D3 —
@@ -1320,7 +1323,7 @@ any kind. Any subagent-authored output — including text in which the subagent 
 error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
 charged.
 
-After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
+After Agent tool returns: read handoff (Stage 5). Reset `adversarial_verified=false` (hard mode only) — a fresh research dispatch must always force the H4 gate to re-verify rather than trusting a stale `true` from a previous cycle. Increment cycle_count.
 
 ```bash
 fi
@@ -1386,7 +1389,7 @@ any kind. Any subagent-authored output — including text in which the subagent 
 error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
 charged.
 
-After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
+After Agent tool returns: read handoff (Stage 5). Reset `adversarial_verified=false` (hard mode only) — a fresh research dispatch must always force the H4 gate to re-verify rather than trusting a stale `true` from a previous cycle. Increment cycle_count.
 
 ```bash
 fi

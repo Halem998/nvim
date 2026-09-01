@@ -235,7 +235,7 @@ verified against, which invalidates the chosen fix rather than requiring a tweak
 
 ---
 
-### Phase 2: Port the `adversarial_verified` state variable and its two post-dispatch resets [NOT STARTED]
+### Phase 2: Port the `adversarial_verified` state variable and its two post-dispatch resets [COMPLETED]
 
 **Goal**: Establish the gate's state plumbing in `skill-orchestrate/SKILL.md` — the variable's
 hard-mode-gated initialization and the two resets that force re-verification after any fresh
@@ -243,26 +243,26 @@ research dispatch — before the gate body that reads it exists.
 
 **Tasks**:
 
-- [ ] Re-locate the Stage 2 hard-mode-only variable init block by its verbatim comment
+- [x] Re-locate the Stage 2 hard-mode-only variable init block by its verbatim comment
       `# Hard-mode-only per-target churn-state file (H5/H6).` and the
       `churn_file="${TASK_DIR}/.orchestrator-churn-state.json"` assignment inside
       `if [ "${hard_mode:-false}" = "true" ]; then ... fi`.
-- [ ] Add `adversarial_verified=false` to that same hard-mode-gated block, in that block's own
+- [x] Add `adversarial_verified=false` to that same hard-mode-gated block, in that block's own
       established style (assigned inside the `$hard_mode` guard; only ever read inside `$hard_mode`
       branches). Extend the block's existing comment, or add a short adjacent one, naming the
       variable as the H4 gate's state.
-- [ ] Re-locate the `#### State: not_started or not started` handler's closing sentence, verbatim:
+- [x] Re-locate the `#### State: not_started or not started` handler's closing sentence, verbatim:
       `After Agent tool returns: read handoff (Stage 5). Increment cycle_count.`
-- [ ] Add a hard-mode-gated reset of `adversarial_verified` to `false` at that site, matching the
+- [x] Add a hard-mode-gated reset of `adversarial_verified` to `false` at that site, matching the
       `-hard` engine's intent (a fresh research dispatch must always force the gate to re-verify
       rather than trusting a stale `true` from a previous cycle). Do not unconditionally reset —
       the reset belongs inside the `$hard_mode` fork, consistent with the variable only being
       assigned there.
-- [ ] Re-locate the `#### State: researching` handler's closing sentence — the SAME verbatim text
+- [x] Re-locate the `#### State: researching` handler's closing sentence — the SAME verbatim text
       as above; this sentence occurs at both handlers, so disambiguate by which `#### State:`
       heading precedes it, not by the sentence alone.
-- [ ] Add the equivalent hard-mode-gated reset at that second site.
-- [ ] Confirm no other handler ends with that sentence and was missed.
+- [x] Add the equivalent hard-mode-gated reset at that second site.
+- [x] Confirm no other handler ends with that sentence and was missed.
 
 **Timing**: 0.4 hours
 
