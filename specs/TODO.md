@@ -33,10 +33,10 @@ next_project_number: 139
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-124 [RESEARCHED] — Delete /research, /plan, /implement commands and update the CLAUD
+124 [PLANNING] — Delete /research, /plan, /implement commands and update the CLAUD
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
     └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
@@ -598,7 +598,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 124. Delete lifecycle commands and update reference
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 68, Task 81, Task 114, Task 117, Task 126
@@ -665,10 +665,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 121. Delete hard mode lifecycle files
-- **Status**: [NOT STARTED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 120, Task 128
+- **Research**: [121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md]
 
 **Description**: Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.
 

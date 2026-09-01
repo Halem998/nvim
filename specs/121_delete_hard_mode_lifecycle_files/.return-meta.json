@@ -1,0 +1,34 @@
+{
+  "status": "blocked",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md",
+      "summary": "Verifies task 121's stated precondition against the live source store; finds test/lint retargeting incomplete and the live /research|/plan|/implement --hard command surface still dependent on the files this task would delete."
+    }
+  ],
+  "next_steps": "Do not proceed to planning/implementation. Either reorder the backlog so Task 124 (delete lifecycle commands) lands before this task, or split this task's scope: fix lint-contract-compliance.sh Checks A/C/E and lint-agent-contracts.sh's in-scope path list now (independently needed regardless of sequencing), and defer file/agent deletion plus manifest routing_hard removal until Task 124 has landed.",
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f_121",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "Before trusting a task-status label of [COMPLETED] for a retargeting/migration task, verify the actual file content against the specific claims in its own completion summary -- task 120 (\"Retarget hard mode tests to engine branch\") claimed lint-contract-compliance.sh was fully retargeted, but git-show of its own cited commit (f3fb615bb) shows only Check D and Check C's trailing sub-block were touched; Checks A, C's main loop, and E still hard-require the files a sibling deletion task targets. A completion summary describing intent is not proof of the diff's actual scope -- read the commit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task-verification", "completion-summary", "git-show", "retargeting", "precondition-check"]
+    },
+    {
+      "content": "In this repo's core-agent-system consolidation backlog, a task's stated `Dependencies` list in TODO.md is not a complete safety net for a deletion task's precondition -- task 121 (delete hard-mode lifecycle files) lists dependencies 118/119/120/128 only, omitting task 124 (delete /research /plan /implement commands), even though those commands' live --hard flag still routes to the exact files task 121 deletes via command-route-skill.sh and each manifest's routing_hard block. Always trace actual live callers (grep for the skill/agent name across commands/, scripts/, manifests) rather than trusting the dependency list alone when verifying a deletion task's stated precondition.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["dependency-graph", "deletion-task", "routing_hard", "command-route-skill", "precondition-verification"]
+    }
+  ]
+}

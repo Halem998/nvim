@@ -1214,12 +1214,12 @@
     {
       "project_number": 121,
       "project_name": "delete_hard_mode_lifecycle_files",
-      "status": "not_started",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-01T11:24:42Z",
+      "last_updated": "2026-09-01T23:27:10Z",
       "dependencies": [
         118,
         119,
@@ -1238,7 +1238,14 @@
         "agent-system/extensions/cslib/manifest.json",
         "agent-system/extensions/lean/manifest.json"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md",
+          "type": "report",
+          "summary": "Verifies the stated precondition against the live source store; finds test/lint retargeting incomplete and the live --hard command surface still dependent on the files this task would delete."
+        }
+      ],
+      "session_id": "sess_1788304786_edca9f_121"
     },
     {
       "project_number": 122,
@@ -1336,12 +1343,12 @@
     {
       "project_number": 124,
       "project_name": "delete_lifecycle_commands_and_update_reference",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.\n\nWORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-09-01T22:39:43Z",
+      "last_updated": "2026-09-01T23:20:50Z",
       "dependencies": [
         68,
         81,
@@ -1363,7 +1370,7 @@
           "created": "2026-08-31T21:37:18Z"
         }
       ],
-      "session_id": "sess_1788302383_8f27a5"
+      "session_id": "sess_1788304786_edca9f_124"
     },
     {
       "project_number": 125,
