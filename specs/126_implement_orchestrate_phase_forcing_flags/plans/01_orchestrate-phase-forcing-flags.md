@@ -366,29 +366,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Command-layer flag threading [NOT STARTED]
+### Phase 3: Command-layer flag threading [COMPLETED]
 
 - **Goal:** `FORCE_PHASES_FLAG` reaches `skill-orchestrate` as `force_phases` through all eight
   sites, in the shape the shared-file contract fixes.
 
 - **Tasks:**
-  - [ ] (a) `argument-hint` in the frontmatter — extend to signal the new optional flags in the same
-        terse style already used.
-  - [ ] (b) Add one `## Options` table row per flag (three rows), each describing that flag's forced
+  - [x] (a) `argument-hint` in the frontmatter — extend to signal the new optional flags in the same
+        terse style already used. *(completed)*
+  - [x] (b) Add one `## Options` table row per flag (three rows), each describing that flag's forced
         phase, stating that they are composable, that the composed sequence STOPS after the last
         named phase, that ordering is canonical lifecycle order regardless of token order, and that
         they are single-task only (accepted and ignored in multi-task mode). Match the density and
-        voice of the existing `--continue-budget` row.
-  - [ ] (c) Add `FORCE_PHASES_FLAG` to STAGE 0's `# Exports:` comment list.
-  - [ ] (d) Add a STAGE 0 prose paragraph threading `force_phases`, written on the same terms as the
+        voice of the existing `--continue-budget` row. *(completed)*
+  - [x] (c) Add `FORCE_PHASES_FLAG` to STAGE 0's `# Exports:` comment list. *(completed)*
+  - [x] (d) Add a STAGE 0 prose paragraph threading `force_phases`, written on the same terms as the
         existing `CONTINUE_BUDGET_FLAG` paragraph: default `""`, consumer-side-only, read by
-        `skill-orchestrate`'s own Stage 2b, never forwarded to any admission-gate script.
-  - [ ] (e) Add `force_phases={FORCE_PHASES_FLAG}` to the MULTI-TASK DISPATCH `args:` string.
-  - [ ] (f) Add `"force_phases": "{FORCE_PHASES_FLAG}"` to the multi-task JSON delegation context.
-  - [ ] (g) Add `force_phases={FORCE_PHASES_FLAG}` to the STAGE 2: DELEGATE `args:` string.
-  - [ ] (h) Add `"force_phases": "{FORCE_PHASES_FLAG}"` to the single-task JSON delegation context.
-  - [ ] Add one sentence to the `## Constraints` list recording that the three phase-forcing flags
-        are single-task only, alongside the existing `--team` constraint sentence they mirror.
+        `skill-orchestrate`'s own Stage 2b, never forwarded to any admission-gate script. *(completed)*
+  - [x] (e) Add `force_phases={FORCE_PHASES_FLAG}` to the MULTI-TASK DISPATCH `args:` string. *(completed)*
+  - [x] (f) Add `"force_phases": "{FORCE_PHASES_FLAG}"` to the multi-task JSON delegation context. *(completed)*
+  - [x] (g) Add `force_phases={FORCE_PHASES_FLAG}` to the STAGE 2: DELEGATE `args:` string. *(completed)*
+  - [x] (h) Add `"force_phases": "{FORCE_PHASES_FLAG}"` to the single-task JSON delegation context. *(completed)*
+  - [x] Add one sentence to the `## Constraints` list recording that the three phase-forcing flags
+        are single-task only, alongside the existing `--team` constraint sentence they mirror. *(completed)*
 
 - **Timing:** 1.25 hours
 

@@ -1,7 +1,7 @@
 ---
 description: Execute a task autonomously through its full lifecycle (research -> plan -> implement -> complete) without user confirmation between phases
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read
-argument-hint: TASK_NUMBERS [PROMPT] [--haiku|--sonnet|--opus|--fable]
+argument-hint: TASK_NUMBERS [PROMPT] [--haiku|--sonnet|--opus|--fable] [--research] [--plan] [--implement]
 model: opus
 ---
 
@@ -24,6 +24,9 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 - Multi-task mode uses dependency-aware wave dispatch. `--team` is single-task only: in
   multi-task mode it is accepted and ignored, with a loud notice, rather than compounding
   per-task concurrency with per-task teammate fan-out.
+- `--research`/`--plan`/`--implement` (phase-forcing flags) are single-task only: in multi-task
+  mode they are accepted and ignored, with a loud notice, rather than partially wiring
+  per-task phase forcing into wave dispatch.
 - No confirmation gates between lifecycle phases
 - Terminates automatically on success, MAX_CYCLES exceeded, MAX_INFRA_FAILURES exceeded (repeated Agent-tool transport/API failures — a distinct connectivity-vs-work-budget diagnosis), or unrecoverable blocker
 - In multi-task mode, failure in one task does not block other tasks in the same wave, but DOES block dependent tasks in later waves
@@ -45,6 +48,9 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--fable` | Use Fable model (claude-fable-5) | false |
 | `--team` | Team mode: fan out research/plan/implement dispatch across parallel teammates via `skill-orchestrate`'s Stage 3.6 (single-task mode only — see Constraints). Silently degrades to single-agent dispatch when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is unset | false |
 | `--team-size` | Explicit teammate count for `--team` (clamped 2-4). When omitted, the effective size is effort-aware: `3` baseline, `2` under `--fast`, `4` under `--hard` | `3` baseline / `2` under `--fast` / `4` under `--hard` |
+| `--research` | Force a research round to run even if the task has already progressed past it (e.g. re-research a `[PLANNED]` task). Composable with `--plan`/`--implement`; the composed sequence is ordered by canonical lifecycle order (research, plan, implement) regardless of the order the flags are typed, and STOPS after the last named phase rather than continuing to status-derived dispatch. Opens a new `MM_` artifact round and never regresses the task's status. Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
+| `--plan` | Force a plan round to run even if the task has already progressed past it. Composable with `--research`/`--implement` on the same terms as `--research` above (canonical ordering, stop-after-last-named-phase, new artifact round, no status regression). Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
+| `--implement` | Force an implement round to run even if the task has already progressed past it. Composable with `--research`/`--plan` on the same terms as `--research` above (canonical ordering, stop-after-last-named-phase, new artifact round, no status regression). Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
 
 ## Anti-Bypass Constraint
 
@@ -60,7 +66,8 @@ command.
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 # Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG,
 #          ALLOW_SELF_MODIFYING_FLAG, ALLOW_SCOPE_COLLISION_FLAG, CONTINUE_BUDGET_FLAG,
-#          CLEAN_FLAG, EFFORT_FLAG, MODEL_FLAG, TEAM_MODE, TEAM_SIZE, TEAM_SIZE_EXPLICIT
+#          CLEAN_FLAG, EFFORT_FLAG, MODEL_FLAG, TEAM_MODE, TEAM_SIZE, TEAM_SIZE_EXPLICIT,
+#          FORCE_PHASES_FLAG
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
 
@@ -89,6 +96,14 @@ terms `skill-researcher`/`skill-planner`/`skill-implementer` already consume the
 the Skill delegation context below as `model_flag`, selecting the model family for every
 lifecycle dispatch `skill-orchestrate` makes, on the same terms `clean_flag`/`effort_flag` are
 threaded.
+
+`FORCE_PHASES_FLAG` (default `""`) is read here from the sourced parser and passed into the
+Skill delegation context below as `force_phases` (the composable `--research`/`--plan`/
+`--implement` phase-forcing flag surface — A2), on the same consumer-side-only terms
+`continue_budget` is threaded: never forwarded to any admission-gate script, read only by
+`skill-orchestrate`'s own Stage 2b (single-task mode). In multi-task mode it is threaded for
+diagnostics only, on the same terms `team_mode`/`team_size`/`team_size_explicit` are above —
+Stage MT-1 emits an accepted-and-ignored notice and never fans it into per-task dispatch.
 
 **Dry-run short-circuit** (checked immediately after `parse-command-args.sh` is sourced, and
 **before** the `len(TASK_NUMBERS)` branch below): `SESSION_ID` may be unset at this point — the
@@ -453,7 +468,7 @@ Invoke a single `skill-orchestrate` instance with all task context:
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
+  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT} force_phases={FORCE_PHASES_FLAG}"
 ```
 
 The delegation context passed to the skill must include:
@@ -474,13 +489,17 @@ The delegation context passed to the skill must include:
   "model_flag": "{MODEL_FLAG}",
   "team_mode": "{TEAM_MODE}",
   "team_size": "{TEAM_SIZE}",
-  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"
+  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}",
+  "force_phases": "{FORCE_PHASES_FLAG}"
 }
 ```
 
 `team_mode`/`team_size`/`team_size_explicit` are carried here for diagnostics only: multi-task
 mode does not fan out per task (see Constraints above) — `skill-orchestrate` Stage MT-1 reads
 them solely to emit the accepted-and-ignored notice, never to spawn per-task teammate waves.
+`force_phases` is carried here on the identical terms — single-task only (see Constraints
+above), diagnostics-only in multi-task mode, read by Stage MT-1 solely to emit its own
+accepted-and-ignored notice, never consumed by Stage MT-4 dispatch.
 
 The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state-${batch_session_id}.json`.
 
@@ -659,7 +678,7 @@ Invoke `skill-orchestrate` via the Skill tool:
 
 ```
 skill: "skill-orchestrate"
-args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
+args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT} force_phases={FORCE_PHASES_FLAG}"
 ```
 
 The delegation context passed to the skill must include:
@@ -683,7 +702,8 @@ The delegation context passed to the skill must include:
   "model_flag": "{MODEL_FLAG}",
   "team_mode": "{TEAM_MODE}",
   "team_size": "{TEAM_SIZE}",
-  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"
+  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}",
+  "force_phases": "{FORCE_PHASES_FLAG}"
 }
 ```
 
