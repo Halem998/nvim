@@ -11,17 +11,10 @@ next_project_number: 134
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130,132 | -- | core-agent-system, literature, neovim |
-| 2 | 30,74,104,105,109,112,120,124,129,133 | 29,31,102,108,126,128,130,132 | core-agent-system, extensions, literature |
-| 3 | 75,76,107,121,125 | 74,104,120,124,128 | core-agent-system, extensions, literature |
-| 4 | 127 | 121,124 | core-agent-system |
-| 5 | 88 | 87,127 | core-agent-system |
-| 6 | 44 | 88 | core-agent-system |
-| 7 | 89 | 44 | core-agent-system |
-| 8 | 90 | 89 | core-agent-system |
-| 9 | 48 | 90 | core-agent-system |
-| 10 | 50 | 48 | core-agent-system |
-| 11 | 91 | 50 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,87,91,100,102,103,106,108,110,111,113,114,120,123,126,128,130,133 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,74,89,104,105,109,112,121,124,129 | 29,87,102,108,114,120,126,128,130 | core-agent-system, extensions, literature |
+| 3 | 48,75,76,90,107,125,127 | 74,104,121,124 | core-agent-system, extensions, literature |
+| 4 | 50,88 | 48,87,127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -30,46 +23,41 @@ next_project_number: 134
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
-22 [RESEARCHING] — === REVISED 2026-08-24 (refactor survey) ===
-27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
-29 [NOT STARTED] — Build the deploy-engine mechanism that lets an extension declare 
-  └─ 30 [NOT STARTED] — Register the obsidian-memory MCP server through the new manifest-
-31 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
-    └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
-      └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19 
-        └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-          └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-            └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-              └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-                └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-                  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-                    └─ 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-43 [NOT STARTED] — LIVE DEFECT, not an efficiency item: the email extension's five '
-46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
-72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
-73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
+53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
+72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+  └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
-126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+114 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
+    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+      └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+    └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+120 [NOT STARTED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
+  └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
+123 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
+126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+  └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 128 [NOT STARTED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
-132 [NOT STARTED] — Register a new --defect-class in the system-defect vocabulary so 
-  └─ 133 [NOT STARTED] — Fix a substantive reporting defect: under /orchestrate, the deplo
+133 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
 
 ### Extensions
 
+29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+  └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -77,7 +65,6 @@ next_project_number: 134
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-94 [NOT STARTED] — Wire the --lit flag through the three team skills so literature m
 102 [NOT STARTED] — Characterize when the PyMuPDF column-clustering fallback tier act
   └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
     └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
@@ -95,15 +82,27 @@ next_project_number: 134
 
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
 
+### Opencode
+
+22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
+27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
+
 ## Tasks
 
-### 133. Fix the /orchestrate deploy-pending annotation: bind TASK_DIR explicitly instead of ambiently
+### 133. Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 132
+- **Dependencies**: None
 
-**Description**: Fix a substantive reporting defect: under /orchestrate, the deploy-pending annotation that `skill_postflight_update` is documented to record never lands, because the annotation block is guarded on an ambient environment variable the orchestrate caller never sets.
+**Description**: === REVISED 2026-09-01 (backlog streamline: absorbs the defect-class registration task) ===
+COMBINED SCOPE. This task now also carries the full scope of the abandoned sibling registration task as PART 1; the TASK_DIR binding fix below is PART 2. The two were split for phase sizing but are small, same-area pieces of one incident; the dependency on the sibling is removed.
+
+PART 1 -- REGISTER THE DEFECT CLASS. Register a new --defect-class in the system-defect vocabulary so a documented observation marker that silently fails to land -- because of a caller/callee variable-binding mismatch -- can be recorded to specs/events.jsonl at all. Today it cannot: the recorder correctly rejects any unsanctioned class name, and none of the thirteen existing classes covers this shape. Edit agent-system/extensions/core/scripts/system-defect-record.sh and agent-system/extensions/core/context/patterns/system-defect-discrimination.md. The closed enum is hard-coded in a case statement at system-defect-record.sh:161-170; the discrimination doc's class table occupies lines 79-91; the literal count word "thirteen" appears in prose that must be updated in step (at minimum the usage comment at :16, the error message at :167, and the doc's header/prose around the table). The class MUST be registered in BOTH the doc table AND the recorder validator in the same change -- registering in only one place reproduces the silent-rejection failure this work exists to close. Candidate name (weigh, do not rubber-stamp): AMBIENT_BINDING_MISMATCH -- confirm it names the MECHANISM rather than the motivating instance, reads correctly alongside the existing thirteen, and does not overlap an existing class; an alternative framing centered on the unreached observability marker is a legitimate competing option; record the judgment either way. Precedent: additive registration without a detector is an accepted state (several classes are marked "not currently computed anywhere"). NON-GOALS for Part 1: no automated detector; no restructuring or renumbering of the existing classes.
+
+ORDERING WITHIN THE TASK: land Part 1 first, then Part 2, then record the motivating incident to specs/events.jsonl under the new class -- the recording that originally failed (exit 1, "invalid --defect-class") is the natural end-to-end verification that both parts work.
+=== ORIGINAL DESCRIPTION (PART 2) FOLLOWS ===
+Fix a substantive reporting defect: under /orchestrate, the deploy-pending annotation that `skill_postflight_update` is documented to record never lands, because the annotation block is guarded on an ambient environment variable the orchestrate caller never sets.
 
 CANONICAL SOURCE. Edit `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`, `agent-system/extensions/core/scripts/skill-base.sh`, and `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.
 
@@ -127,7 +126,7 @@ NON-GOALS. Do not change the completion-deploy gate's refusal logic or its exit-
 ---
 
 ### 132. Register a defect class for ambient-binding marker failures in the recorder and discrimination doc
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -332,7 +331,10 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124, Task 121
 
-**Description**: Collapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.
+**Description**: === REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===
+ADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block ("present:grant" -> "skill-grant:assemble" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Collapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.
 
 CONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.
 
@@ -389,7 +391,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 68, Task 81, Task 117, Task 126
+- **Dependencies**: Task 68, Task 81, Task 114, Task 117, Task 126
 - **Research**: [124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md]
 
 **Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
@@ -411,7 +413,10 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122
 
-**Description**: Delete the three team-mode skills (skill-team-research, skill-team-plan, skill-team-implement).
+**Description**: === REVISED 2026-09-01 (backlog streamline: carries residue of the abandoned team-lit task) ===
+ADDITIONAL ACCEPTANCE CRITERION: before deleting, confirm the replacement path actually carries --lit -- skill-orchestrate's Stage 3.6 Team Fan-Out receives lit_flag among its inputs, and every teammate dispatch must include the resolved <literature-briefing> block (resolved ONCE by the dispatch-prep stage and injected into each teammate prompt; the interactive resolution directives must not fire once per teammate). This is the surviving obligation of an abandoned task that would have wired --lit through the three team skills being deleted here; deleting them without this check would silently re-open that defect on the new surface.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Delete the three team-mode skills (skill-team-research, skill-team-plan, skill-team-implement).
 
 PRECONDITION (verify before starting). The shared team-mode fan-out stage inside skill-orchestrate must already be landed and verified working -- this task is pure deletion, and synthesis-agent is explicitly NOT touched (it is preserved unchanged; the fan-out logic being deleted here is the per-phase spawn/correlate mechanism, not the cross-teammate synthesis reader).
 
@@ -469,7 +474,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 31, Task 118, Task 119
+- **Dependencies**: Task 118, Task 119
 
 **Description**: Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.
 
@@ -799,7 +804,13 @@ VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode singl
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: Wire model-flag support into /orchestrate: thread model_flag from the command through the base skill-orchestrate engine so a model override actually reaches dispatched agents. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Do not hand-author anything under .claude/**.
+**Description**: === REVISED 2026-09-01 (backlog streamline: retargeted at the consolidated engine) ===
+STALE ANCHORS: the verified-defect line numbers and dispatch-site inventory below predate the landed consolidation work (dispatch-prep stage, hard-contracts injection, hard-mode state-machine migration, team fan-out): skill-orchestrate/SKILL.md has since grown from 188,284 to ~268,000 bytes and gained a dispatch-prep stage invoked once per dispatch. Re-measure; do not trust the line numbers.
+NEW HOME FOR THE FIX: implement model_flag as part of the dispatch-prep stage -- it is a per-dispatch context concern exactly like --clean/--fast/--lit, which that stage already owns -- rather than wiring each dispatch site independently. The design decisions to settle (uniform vs lifecycle-only; multi-task threading) are unchanged and must still be recorded.
+DROPPED: every reference below to skill-orchestrate-hard and the abandoned mirror-into-hard task -- that file is slated for deletion and hard mode is now a hard_mode branch inside the single engine, so the hard-mode question reduces to: the dispatch-prep change must apply on the hard_mode branch too.
+SEQUENCING (load-bearing): this task must land BEFORE the lifecycle-command deletion task, which now depends on it -- the reference pattern named below lives in commands/research.md (its :450-556 region), one of the files that deletion removes. Land this while the reference still exists.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Wire model-flag support into /orchestrate: thread model_flag from the command through the base skill-orchestrate engine so a model override actually reaches dispatched agents. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Do not hand-author anything under .claude/**.
 
 MOTIVATING CASE vs ACTUAL SCOPE. The user reported "--fable does not work with /orchestrate". --fable is NOT broken in isolation: ALL FOUR model flags (--haiku, --sonnet, --opus, --fable) are equally unwired on /orchestrate, through one single gap. The work is therefore "wire model-flag support into /orchestrate", with --fable as the motivating case. This widening was surfaced to the user and confirmed at task-creation time; it is not a silent scope expansion.
 
@@ -1324,7 +1335,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 94. Wire lit flag through team skills
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1369,7 +1380,7 @@ source store. Do not mark it verified on a source-store-only check.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 50
+- **Dependencies**: None
 
 **Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
 
@@ -1412,7 +1423,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 89, Task 124
+- **Dependencies**: Task 124
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
 
@@ -1430,7 +1441,7 @@ ACCEPTANCE: lint rejects a newly introduced inline task-lookup on an executable 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 44, Task 87
+- **Dependencies**: Task 87
 
 **Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
 
@@ -1729,7 +1740,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 
 ### 73. Correlate subagent postflight hook to marker owning session
 - **Effort**: 3h
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122
@@ -1781,14 +1792,25 @@ in isolation.
 
 ---
 
-### 72. Fix teammate return-meta write conflict in team mode
+### 72. Fix fan-out teammate metadata ownership and SubagentStop session correlation
 - **Effort**: 4h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122
 
-**Description**: RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fold (specs/116_core_agent_system_consolidation/reports/03_target-state-design.md A5) preserves teammate capability but collapses skill-team-research/skill-team-plan/skill-team-implement into a single shared fan-out stage inside skill-orchestrate/SKILL.md, built by task 122 (build_team_mode_fanout_stage). This defect survives the fold unchanged and must be fixed against that NEW shared stage, not against the three separate team-skill files named below -- retarget the fix location accordingly once task 122 lands. Original description follows.\n\nTeammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
+**Description**: === REVISED 2026-09-01 (backlog streamline: combined with the SubagentStop-correlation task) ===
+COMBINED SCOPE. This task now absorbs the sibling SubagentStop marker-correlation task (that entry is abandoned with a pointer here): both defects are teammate-lifecycle metadata problems that must be fixed against the SAME new surface -- the shared Stage 3.6 Team Fan-Out stage in skill-orchestrate/SKILL.md (landed) -- and their file scopes fully overlap, which is why the originals instructed sequencing rather than parallel dispatch. Fixed together they settle one coherent design: who owns which metadata file during a fan-out, and how a stopping subagent is correlated to the marker/session it belongs to.
+
+PART A (this task's original defect, full text below): teammate agents write the skill-level .return-meta.json, clobbering the record the fan-out stage owns.
+
+PART B (absorbed defect, essentials reproduced here; full text in the abandoned sibling entry): hooks/subagent-postflight.sh's find_marker() picks the FIRST .postflight-pending marker found under specs/ (`head -1`) with no correlation to the stopping subagent's session. In a team run, teammate stops burn the orchestrator's continuation budget (MAX_CONTINUATIONS=3) and on cap the hook DELETES the orchestrator's marker mid-run, silently removing the premature-termination guard. The marker JSON already carries session_id (written by skill_create_postflight_marker in skill-base.sh); the hook never reads it. The `head -1` arbitrary-selection defect is NOT confined to team mode -- concurrent single-task sessions hit it too -- so the correlation fix must hold for multiple markers from unrelated concurrent tasks, not only teammates. AMENDMENT carried over: the fix must be shown to correct EVENT ATTRIBUTION in specs/events.jsonl, not merely marker selection -- live events.jsonl carried subagent_stop events attributed to a session_id whose cc_session_id belonged to a DIFFERENT Claude session, a direct consequence of the arbitrary marker pick.
+
+RETARGETING (applies to both parts): the three skill-team-* files named below are slated for deletion; fix against skill-orchestrate/SKILL.md's Stage 3.6 fan-out stage and hooks/subagent-postflight.sh (plus skill-base.sh's marker writer if the chosen direction needs a richer marker schema). The uniformity requirement survives: whatever ownership/correlation contract is chosen must hold for ANY agent type spawned as a teammate.
+
+COMBINED ACCEPTANCE: (1) a team run ends with exactly one skill-owned .return-meta.json carrying the team_execution block, no teammate having overwritten it, and no stray per-teammate metadata file unless deliberately defined and read by a consumer; (2) a teammate stop neither increments the orchestrator's loop-guard nor can delete a marker it does not own; (3) with multiple concurrent tasks' markers present, the hook acts only on the marker correlated to the stopping session; (4) a foreign subagent's stop event in specs/events.jsonl is no longer attributed to another session's session_id; (5) a genuine cap-reached deletion is distinguishable from a normal skill_cleanup removal.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fold (specs/116_core_agent_system_consolidation/reports/03_target-state-design.md A5) preserves teammate capability but collapses skill-team-research/skill-team-plan/skill-team-implement into a single shared fan-out stage inside skill-orchestrate/SKILL.md, built by task 122 (build_team_mode_fanout_stage). This defect survives the fold unchanged and must be fixed against that NEW shared stage, not against the three separate team-skill files named below -- retarget the fix location accordingly once task 122 lands. Original description follows.\n\nTeammate agents spawned by team-mode skills write the skill-level .return-meta.json, clobbering the record the team skill is supposed to own. The surviving record is an arbitrary teammate's, is the wrong shape for a skill-level return, and can publish a terminal status while the operation is still running.
 
 VERIFIED MECHANISM (do not re-derive):
 skill-team-research/SKILL.md Stage 11 specifies that THE SKILL writes a single specs/{NNN}_{SLUG}/.return-meta.json for the whole team run, carrying the team_execution block (teammates_spawned/completed/failed), teammate_results, and synthesis conflict counts. A teammate's only deliverable is reports/{RR}_teammate-{letter}-findings.md, which the skill collects by glob. Teammates have no postflight step and are not supposed to write .return-meta.json at all.
@@ -1939,7 +1961,10 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
+**Description**: === REVISED 2026-09-01 (backlog streamline: co-maintenance clause updated) ===
+The CO-MAINTENANCE paragraph below requires dual-editing skill-orchestrate-hard/SKILL.md. That file is slated for deletion (hard-mode collapse), and the H4 gate-migration task has already established the sanctioned alternative under the co-maintenance contract's own escape clause: leave the -hard copy untouched and RECORD THE DELIBERATE ASYMMETRY in both files so neither misleads a reader. Take that route here -- do not mirror the fix into a file scheduled for deletion. If the hard-mode deletion task has already landed when this is dispatched, the clause is moot entirely. All other constraints, both live-predecessor evidence blocks, and the recover-outcome dispatch_seq requirement stand unchanged.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect when a contractual non-writer leaves no fresh handoff. Observed live on a clean, fully-successful base-mode /orchestrate run (recorded as evt_1786550950625_o2KoSv; the class already has 3 occurrences in specs/events.jsonl).
 
 OBSERVED MECHANISM (verified, do not re-derive). In a base-mode /orchestrate run of a task that entered at [RESEARCHED], the plan dispatch wrote .orchestrator-handoff.json carrying dispatch_seq=1. The implement dispatch that followed wrote no handoff, correctly: docs/architecture/handoff-schema.md's "Handoff Writers" table settles that .orchestrator-handoff.json is hard-mode-implement-only, and general-implementation-agent.md states "base-mode implement is a non-writer by design". Nothing clears the prior cycle's handoff, so the planner's file was still sitting at the path when Stage 5 ran. Both freshness gates fired on it exactly as designed -- mtime predated the dispatch window, and dispatch_seq=1 did not match the minted dispatch_seq=2 -- and the dispatch_seq gate recorded a HANDOFF_STALE_OR_ABSENT system defect. The run then proceeded correctly: orchestrate-recover-outcome.sh recovered status=implemented, 7/7 phases, from .return-meta.json, and the task completed.
 
@@ -2098,7 +2123,8 @@ NEGATIVE FINDINGS -- DO NOT RE-INVESTIGATE THESE. A caller analysis across all 1
 THIS TASK IS A BUNDLE AND IS A REASONABLE CANDIDATE FOR EXPANSION -- items 1-3 are verification trustworthiness, items 4-6 are hygiene. If driven as one unit, commit them as separate phases.
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.=== ADDENDUM 2026-09-01 (backlog streamline) ===
+ROADMAP RESOLUTION DECIDED: delete specs/ROADMAP.md rather than rewriting it. It has described nothing in flight since 2026-07-12, and a roadmap that describes nothing is worse than none; if a roadmap is wanted later it can be recreated from the live task graph. Check whether /review's roadmap-integration step hard-requires the file and adjust that step's expectation if so.
 
 ---
 
@@ -2106,7 +2132,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 90, Task 124
+- **Dependencies**: Task 124
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
@@ -2132,7 +2158,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 46. Fix present extension compound skill routing
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2156,7 +2182,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 88
+- **Dependencies**: Task 87
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -2168,10 +2194,10 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Effort**: 1-3 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: extensions
 - **Dependencies**: None
 
-**Description**: LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
+**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
 
 ---
 
@@ -2227,7 +2253,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 31. Opencode extensions sync mechanism
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2254,10 +2280,10 @@ VERIFICATION: the fake tool name no longer appears as usable guidance anywhere i
 ### 30. Register obsidian memory mcp server
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: extensions
 - **Dependencies**: Task 29
 
-**Description**: Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
+**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
 
 CURRENT STATE: memory/settings-fragment.json carries a dead `mcpServers` block declaring obsidian-memory (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest, with env OBSIDIAN_WS_PORT). It registers nothing, because settings files are not a registration surface. The memory extension IS loaded in this repository, so unlike the five retired servers this one is wanted and should be made to work.
 
@@ -2272,10 +2298,10 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ### 29. Generate mcp json from extension manifests
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: extensions
 - **Dependencies**: None
 
-**Description**: Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
+**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 
 WHY THIS IS NEEDED: extensions currently express server declarations as `mcpServers` keys inside settings-fragment.json, which register nothing -- settings files are not a registration surface. Project-scoped .mcp.json IS a real registration surface, and it IS reachable by dispatched subagents (verified by direct experiment; the earlier belief to the contrary rested on a session-start snapshot confound). So the fix is to route declarations to a surface that works, not to abandon the idea of extensions declaring servers.
 
@@ -2292,7 +2318,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ### 27. Remove the dead .opencode command router and its self-referential test scripts
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: opencode
 - **Dependencies**: None
 
 **Description**: .opencode/scripts/execute-command.sh is a command router that cannot execute anything and is called by nothing but its own tests. Delete it and the three test scripts that exist only to exercise it.
@@ -2331,16 +2357,27 @@ DOWNSTREAM PROPAGATION (in scope to decide, not necessarily to perform): four ot
 ACCEPTANCE: after the change, a repo-wide grep for `execute-command.sh` outside specs/** returns zero hits (or only hits inside a deliberately-retained note from item 3, accounted for individually). `bash -n` passes across every remaining .opencode/scripts/*.sh -- it already does for all thirteen non-router scripts, so this must not regress. assess-repo-health.sh reports build_errors unchanged or lower, and specifically not higher, than its pre-change value; report both numbers rather than asserting improvement.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+=== ADDENDUM 2026-09-01 (.opencode declared FROZEN) ===
+.opencode/ is now recorded as a frozen, unmaintained mirror (see the fragment-validation task, which owns the policy documentation). This deletion is grandfathered under the freeze: removing a dead-by-construction router and its self-referential tests is removing broken machinery, not maintaining the mirror, and it improves assess-repo-health.sh's build_errors signal. The DOWNSTREAM PROPAGATION item narrows accordingly: with the tree frozen there is no reload-driven propagation to verify; record the four downstream copies as out of scope and leave them.
 
 ---
 
-### 22. Silence opencode fragment validation spam
+### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
 - **Status**: [RESEARCHING]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: opencode
 - **Dependencies**: None
 
-**Description**: === REVISED 2026-08-24 (refactor survey) ===
+**Description**: === REVISED 2026-09-01 (backlog streamline: .opencode declared FROZEN) ===
+POLICY SETTLED BY USER DECISION: .opencode/ is FROZEN -- not maintained, not generated, not deleted. No sync mechanism will be built (the sibling sync-mechanism task is abandoned with a pointer here); the tree is preserved intact for possible future refactoring, exactly as this task's binding constraint already required. This settles the reframed design question below ("SHOULD opencode-agents.json fragments reference a per-project deploy tree at all?"): under a frozen mirror, no path corrections are owed and defect class (1) breakage is expected and tolerated -- the fix is to stop the noise and record the policy, not to repair paths that will drift again.
+
+REVISED SCOPE, absorbing the narrowed remainder of the abandoned sync-mechanism task:
+1. SILENCE THE SPAM (original core): gate or suppress the ~60-notification validation spam on <leader>al reload (emitter: M.generate_opencode_json / validate_opencode_fragment in lua/neotex/plugins/ai/shared/extensions/merge.lua). Under the frozen policy, missing {file:} deploy targets are an EXPECTED state; the validator must not shout about them on every reload. Prefer gating generation/validation behind the frozen policy (skip, or a single-line summary) over deleting the mechanism -- the binding constraint that no opencode fragment, validator function, or .opencode/ file is deleted still holds.
+2. FIX THE ONE FAKE-TOOL LINE (from the absorbed task): .opencode/extensions/web/agents/web-implementation-agent.md still teaches browser_verify_text_visible as a real tool; the source store explicitly retracts it. A frozen mirror may drift, but it must not actively teach a nonexistent tool. One-line fix, editing .opencode/** directly (it has no source-store counterpart; the source-store/deploy-boundary rule does not apply to this tree).
+3. RECORD THE POLICY where the next person will look (e.g. a note in .opencode/ and/or the extensions docs): the tree is frozen, unmaintained, drift-expected, and preserved for future refactoring.
+ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker produces no validation-failure spam; the fake tool name no longer appears as usable guidance in .opencode/; the frozen policy is written down; nothing under .opencode/ is deleted.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+=== REVISED 2026-08-24 (refactor survey) ===
 SUBSTANTIALLY OVERTAKEN, and the remaining half got worse. Re-verified today:
 - Defect class (3) is FIXED. merge.lua:1002-1041 now degrades per-agent-key, reports every missing key rather than only the first, and no longer discards a whole fragment. Close it out; do not re-fix.
 - Defect class (2) MOVED rather than got fixed. The archived path-fix work changed the lean fragment to reference .claude/agents/lean-research-agent.md instead of .claude/extensions/lean/agents/... -- but that path does not exist either.
