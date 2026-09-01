@@ -433,35 +433,46 @@ candidate to substitute.
 
 ---
 
-### Phase 5: De-reference user-facing docs, reference tables, and agent files [NOT STARTED]
+### Phase 5: De-reference user-facing docs, reference tables, and agent files [COMPLETED]
 
 **Goal**: Rewrite every user-facing or agent-facing statement that names a deleted skill so it
 describes the replacement path truthfully.
 
 **Tasks**:
-- [ ] `merge-sources/claudemd.md`:
-  - [ ] Skill-to-Agent Mapping table: remove the four `skill-team-*` rows, including the
+- [x] `merge-sources/claudemd.md`:
+  - [x] Skill-to-Agent Mapping table: remove the four `skill-team-*` rows, including the
         `skill-team-research (internal) | synthesis-agent` row. Add a row mapping the synthesis
         dispatch to `skill-orchestrate` so synthesis-agent does not become an orphan in that table.
-  - [ ] "Team Mode Skills" `--team` table: replace the three-row skill table with a statement that
+  - [x] "Team Mode Skills" `--team` table: replace the three-row skill table with a statement that
         `--team` is an `/orchestrate` flag served by `skill-orchestrate`'s team fan-out stage, and
         correct any surrounding prose that says `--team` applies to the lifecycle commands (Phase 2
-        removes that capability).
-- [ ] `context/reference/skill-agent-mapping.md`: same `--team` table, same treatment. Keep the two
-      files' wording consistent with each other.
-- [ ] `context/formats/team-metadata-extension.md`: the example JSON's
+        removes that capability). *(also corrected the Command Reference usage-string table and
+        the multi-task-syntax note, and one "team skills inject" phrase in the Hard Mode
+        Composability section, for the same truthfulness reason, though not literally
+        enumerated by this task)*
+- [x] `context/reference/skill-agent-mapping.md`: same `--team` table, same treatment. Keep the two
+      files' wording consistent with each other. *(also updated the stale Routing Decision Flow
+      ASCII diagram, which still showed a --team branch on the per-command routing path)*
+- [x] `context/formats/team-metadata-extension.md`: the example JSON's
       `"agent_type": "skill-team-research"` — replace with a value that reflects how the metadata is
       actually produced under the fan-out stage. Confirm the correct value by reading how Stage 3.6
-      records teammate returns rather than guessing.
-- [ ] `docs/fork-patterns.md`: rewrite the sentence naming the three skills as spawners so it names
+      records teammate returns rather than guessing. *(completed: grepped skill-orchestrate/SKILL.md
+      for team_execution/teammates_spawned/etc. and found NO producer — the whole rich aggregate
+      schema this doc describes is not written by any current skill, only Stage 3.6's much
+      simpler internal teammate_results map. Set the example to "skill-orchestrate" and added a
+      provenance note stating the schema is a retained design reference, not a description of
+      what any current skill writes.)*
+- [x] `docs/fork-patterns.md`: rewrite the sentence naming the three skills as spawners so it names
       `skill-orchestrate`'s fan-out stage.
-- [ ] `agents/general-implementation-agent.md`: in the exclusive-explorer NOTE, reduce
+- [x] `agents/general-implementation-agent.md`: in the exclusive-explorer NOTE, reduce
       "(skill-implementer or skill-team-implement)" to name the surviving lead skills. Confirm which
-      leads actually dispatch this agent before writing the replacement.
-- [ ] `agents/synthesis-agent.md` (Decision 2): rewrite **only** the line-14 sentence so it names
+      leads actually dispatch this agent before writing the replacement. *(confirmed via grep:
+      both skill-implementer and skill-orchestrate resolve $IMPLEMENT_AGENT to
+      general-implementation-agent for general/meta/markdown task types)*
+- [x] `agents/synthesis-agent.md` (Decision 2): rewrite **only** the line-14 sentence so it names
       `skill-orchestrate`'s Stage 3.6a as the dispatcher. Do not touch frontmatter, Context
       References, or any Execution Flow stage. The resulting diff for this file must be exactly one
-      changed line.
+      changed line. *(confirmed: git diff --stat shows 1 insertion, 1 deletion)*
 
 **Timing**: 1 hour
 

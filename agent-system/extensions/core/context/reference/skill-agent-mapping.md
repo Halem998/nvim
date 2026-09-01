@@ -43,15 +43,13 @@ These skills cannot be invoked by agents:
 |-------|---------|
 | skill-tag | Semantic version tagging for deployment |
 
-## Team Mode Skills
+## Team Mode
 
-When `--team` flag is passed to commands, routing overrides to team skills which spawn multiple parallel teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable.
-
-| Flag | Team Skill | Teammates | Purpose |
-|------|------------|-----------|---------|
-| `--team` | skill-team-research | 2-4 | Parallel investigation with synthesis |
-| `--team` | skill-team-plan | 2-3 | Parallel plan generation with trade-offs |
-| `--team` | skill-team-implement | 2-4 | Parallel phase execution with debugger |
+`--team` is exclusively an `/orchestrate` flag, served by `skill-orchestrate`'s Stage 3.6/3.6a
+team fan-out — it spawns multiple parallel teammates for a research or plan phase (and parallel
+phase execution for implement) and synthesizes their output via `synthesis-agent`. `/research`,
+`/plan`, and `/implement` no longer accept `--team`; each is single-agent only. Requires
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable.
 
 **Graceful Degradation**: If team mode unavailable, falls back to single-agent mode.
 
@@ -117,27 +115,22 @@ Command invoked with task N
 └────────┬────────┘
          │
          ▼
-┌─────────────────┐
-│ Check --team    │
-│ flag present?   │
-└────────┬────────┘
-    ┌────┴────┐
-   yes       no
-    │         │
-    ▼         ▼
-┌───────┐ ┌───────────┐
-│ Team  │ │ Extension │
-│ skill │ │ loaded?   │
-└───────┘ └─────┬─────┘
-          ┌─────┴─────┐
-         yes         no
-          │           │
-          ▼           ▼
-    ┌───────────┐ ┌────────────┐
-    │ Extension │ │ Core skill │
-    │ skill     │ │ by language│
-    └───────────┘ └────────────┘
+┌───────────┐
+│ Extension │
+│ loaded?   │
+└─────┬─────┘
+┌─────┴─────┐
+yes         no
+ │           │
+ ▼           ▼
+┌───────────┐ ┌────────────┐
+│ Extension │ │ Core skill │
+│ skill     │ │ by language│
+└───────────┘ └────────────┘
 ```
+
+Parallel multi-agent execution (`--team`) is a separate routing path on `/orchestrate` only,
+served by `skill-orchestrate`'s Stage 3.6/3.6a team fan-out — see the "Team Mode" section above.
 
 ## Extension Skill Loading
 

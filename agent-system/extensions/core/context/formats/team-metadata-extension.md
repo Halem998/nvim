@@ -6,6 +6,14 @@ Schema for team execution metadata in return-meta.json files.
 
 When team mode is enabled, the return metadata includes additional fields tracking team execution details.
 
+**Provenance note**: this schema was written by the now-retired per-mode team skills that used to
+implement `--team` on the individual lifecycle commands. `skill-orchestrate`'s Stage 3.6/3.6a team
+fan-out, which now exclusively serves `--team`, tracks a simpler internal
+`teammate_results: {label -> {output_path, status}}` map for its own caller and does not
+currently persist this richer aggregate (`team_execution`/`teammate_results`/`synthesis`) shape
+to any `.return-meta.json` file. The schema below is retained as a design reference, not as a
+description of a shape any current skill writes.
+
 ## Schema
 
 ```json
@@ -43,7 +51,7 @@ When team mode is enabled, the return metadata includes additional fields tracki
   },
   "metadata": {
     "session_id": "sess_...",
-    "agent_type": "skill-team-research"
+    "agent_type": "skill-orchestrate"
   }
 }
 ```

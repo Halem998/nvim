@@ -152,9 +152,9 @@ Prompt: simple task instructions (no structured context JSON required)
 
 ## Team-Mode Optimization Opportunity (Future Work)
 
-Team-mode skills (skill-team-research, skill-team-plan, skill-team-implement) spawn multiple
-teammates via Agent tool calls without specifying `subagent_type`. This means they ARE eligible
-for `CLAUDE_CODE_FORK_SUBAGENT=1` cache sharing.
+`skill-orchestrate`'s Stage 3.6/3.6a team fan-out spawns multiple teammates via Agent tool calls
+without specifying `subagent_type`. This means they ARE eligible for
+`CLAUDE_CODE_FORK_SUBAGENT=1` cache sharing.
 
 **Potential impact**: With `FORK_SUBAGENT=1`, teammates 2-N could inherit the parent's prompt
 cache, reducing per-teammate input token cost by ~90%. For a 3-teammate team, total input cost

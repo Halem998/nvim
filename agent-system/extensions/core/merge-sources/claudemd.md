@@ -96,9 +96,9 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
-| `/research` | `/research N[,N-N] [focus] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Research task(s), route by task type |
-| `/plan` | `/plan N[,N-N] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Create implementation plan(s) |
-| `/implement` | `/implement N[,N-N] [--team] [--force] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Execute plan(s), resume from incomplete phase |
+| `/research` | `/research N[,N-N] [focus] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Research task(s), route by task type |
+| `/plan` | `/plan N[,N-N] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Create implementation plan(s) |
+| `/implement` | `/implement N[,N-N] [--force] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
 | `/review` | `/review` | Analyze codebase |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
@@ -112,7 +112,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 
-**Multi-task syntax**: `/research`, `/plan`, and `/implement` accept multiple task numbers using commas and ranges (e.g., `/research 7, 22-24, 59`). Each task is processed by a separate agent in parallel. Flags like `--team` and `--force` apply to all tasks. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
+**Multi-task syntax**: `/research`, `/plan`, and `/implement` accept multiple task numbers using commas and ranges (e.g., `/research 7, 22-24, 59`). Each task is processed by a separate agent in parallel. Flags like `--force` apply to all tasks. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
 
 ### Utility Scripts
 
@@ -153,10 +153,7 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-refresh | (direct execution) |
 | skill-todo | (direct execution) |
 | skill-tag | (user-only) |
-| skill-team-research | (team orchestration) |
-| skill-team-research (internal) | synthesis-agent |
-| skill-team-plan | (team orchestration) |
-| skill-team-implement | (team orchestration) |
+| skill-orchestrate (internal, Stage 3.6a synthesis step) | synthesis-agent |
 | skill-reviser | reviser-agent |
 | skill-spawn | spawn-agent |
 | skill-orchestrate | (direct execution) |
@@ -175,13 +172,12 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 
 **Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-{domain}-research -> {domain}-research-agent). Extension task types use bare values (e.g., `python`) or compound values (e.g., `present:grant`) for sub-routing.
 
-**Team Mode Skills**: When `--team` flag is passed to `/research`, `/plan`, or `/implement`, routing overrides to team skills which spawn multiple parallel teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to single-agent if unavailable.
-
-| Flag | Team Skill | Teammates | Purpose |
-|------|------------|-----------|---------|
-| `--team` | skill-team-research | 2-4 | Parallel investigation with synthesis |
-| `--team` | skill-team-plan | 2-3 | Parallel plan generation with trade-offs |
-| `--team` | skill-team-implement | 2-4 | Parallel phase execution with debugger |
+**Team Mode**: `--team` is exclusively an `/orchestrate` flag, served by `skill-orchestrate`'s
+Stage 3.6/3.6a team fan-out — it spawns multiple parallel teammates for a research or plan phase
+(and parallel phase execution for implement) and synthesizes their output. `/research`, `/plan`,
+and `/implement` no longer accept `--team`; each is single-agent only. Requires
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to single-agent
+if unavailable.
 
 **Note**: Team mode uses ~5x tokens compared to single-agent. Default team_size=3 (Primary + Alternatives + Critic). Use `--fast` for 2 or `--hard` for 4.
 
@@ -223,7 +219,7 @@ Use `--hard` when one or more of the following apply:
 
 ### Composability
 
-- `--hard` works with `--team`: team skills inject hard-mode contracts into each teammate
+- `--hard` works with `--team`: `skill-orchestrate`'s team fan-out injects hard-mode contracts into each teammate
 - `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
   composable with `--fable`, e.g. `--hard --fable`)
 - `--hard` works with extension routing: extensions declare `routing_hard` in their manifest

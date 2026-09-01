@@ -1,0 +1,58 @@
+{
+  "phase": 5,
+  "phase_name": "De-reference user-facing docs, reference tables, and agent files",
+  "started_at": "2026-09-01T01:15:00Z",
+  "last_updated": "2026-09-01T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "merge-sources/claudemd.md: two tables plus adjacent truthfulness fixes",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]
+    },
+    {
+      "id": 2,
+      "description": "context/reference/skill-agent-mapping.md: --team table plus stale routing diagram",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/reference/skill-agent-mapping.md"]
+    },
+    {
+      "id": 3,
+      "description": "context/formats/team-metadata-extension.md: example value plus provenance note",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/team-metadata-extension.md"],
+      "note": "Discovered the whole aggregate schema (team_execution/teammate_results/synthesis) has no current producer in skill-orchestrate -- Stage 3.6 uses a much simpler internal teammate_results map, never persisted to .return-meta.json in this shape. Added a provenance note rather than silently implying the schema is actively written."
+    },
+    {
+      "id": 4,
+      "description": "docs/fork-patterns.md: one sentence",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/fork-patterns.md"]
+    },
+    {
+      "id": 5,
+      "description": "agents/general-implementation-agent.md: one parenthetical",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
+    },
+    {
+      "id": 6,
+      "description": "agents/synthesis-agent.md: exactly one line (Decision 2)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/synthesis-agent.md"],
+      "note": "git diff --stat confirms 1 insertion, 1 deletion, no more."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "follow_up_findings": [
+    {
+      "finding": "agent-system/extensions/core/context/reference/team-wave-helpers.md (400 lines) is referenced ONLY by the three deleted team skills (grep -rln team-wave-helpers) plus its own index-entries.json entry. It contains one 'skill-team-*' glob reference (not one of the three literal names, so it does not trip the Phase 8 zero-hits grep or appear in the file_scope inventory). After this task's deletion, it becomes an orphaned reference-pattern document with no consumer.",
+      "in_scope": false,
+      "reason_out_of_scope": "Not in the plan's 19-file inventory (missed because it uses a glob pattern, not the three literal skill names, and the plan's grep for scope-confirmation used the literal names only), not in the broadened file_scope, and not required by the literal zero-hits acceptance criterion. Deleting or rewriting it would exceed this task's carefully-scoped file_scope and risk an unreviewed edit outside the batch's admission-gate serialization guarantee.",
+      "recommendation": "A small follow-up task should either delete team-wave-helpers.md or repurpose it as general (non-team-specific) wave-coordination reference material, and remove its index-entries.json entry if deleted."
+    }
+  ]
+}

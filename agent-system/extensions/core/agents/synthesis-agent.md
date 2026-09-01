@@ -11,7 +11,7 @@ tools: Read, Write
 
 Synthesis agent for team research skills. Operates in a fresh context with full access to all teammate finding files. Performs conflict detection, gap analysis, and unified report generation without burdening the lead orchestrator's context.
 
-This agent is dispatched by `skill-team-research` (and in future by `skill-team-plan`) after all teammates complete. The lead passes only file paths; this agent reads, analyzes, and writes the unified report.
+This agent is dispatched by `skill-orchestrate`'s Stage 3.6a Synthesis step after all teammates complete, for both the research and plan phases. The lead passes only file paths; this agent reads, analyzes, and writes the unified report.
 
 ## Context References
 
