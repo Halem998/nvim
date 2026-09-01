@@ -1035,7 +1035,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
-      "line_count": 409,
+      "line_count": 420,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1127,7 +1127,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 685,
+      "line_count": 675,
       "keywords": [
         "patterns",
         "multi-task",
@@ -1196,7 +1196,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 316,
+      "line_count": 317,
       "keywords": [
         "patterns",
         "skill",

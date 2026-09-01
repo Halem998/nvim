@@ -431,25 +431,32 @@ belonging to neither must be triaged and its disposition recorded, not silently 
 
 ---
 
-### Phase 6: Restore `index-entries.json` internal consistency [NOT STARTED]
+### Phase 6: Restore `index-entries.json` internal consistency [COMPLETED]
 
 **Goal**: Bring every `line_count` row back into agreement with the filesystem, including the
 rows this sweep changed and the one pre-existing drift folded in by decision.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
-  capture the full list of drifting entries.
-- [ ] Reconcile the list against expectations: rows for `patterns/skill-lifecycle.md` and
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
+  capture the full list of drifting entries. *(completed: 3 mismatches, all in core)*
+- [x] Reconcile the list against expectations: rows for `patterns/skill-lifecycle.md` and
   `patterns/multi-task-operations.md` should drift because Phases 2 and 5 edited them;
   `patterns/system-defect-discrimination.md` should drift because of the pre-existing defect
   folded in here; `reference/team-wave-helpers.md` should be absent entirely because Phase 4
   removed it. Any *other* drifting row is unexpected — investigate and record before writing.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
-- [ ] Review `git diff agent-system/extensions/core/index-entries.json` and confirm **only**
+  *(completed: exactly the 3 expected rows drifted — skill-lifecycle.md 316->317,
+  multi-task-operations.md 685->675, system-defect-discrimination.md 409->420 — matching the
+  Scope Hypothesis exactly; team-wave-helpers.md correctly absent from the check output since
+  its row no longer exists)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+  *(completed: 3 changed)*
+- [x] Review `git diff agent-system/extensions/core/index-entries.json` and confirm **only**
   `line_count` values changed — the tool performs a surgical line-oriented substitution
   specifically to keep this diff reviewable, so any array reformatting in the diff indicates
-  something went wrong.
-- [ ] Re-run `--check` and confirm it exits clean.
+  something went wrong. *(completed: diff shows exactly 3 one-line line_count substitutions, no
+  array reformatting)*
+- [x] Re-run `--check` and confirm it exits clean. *(completed: exit 0, "CHECK PASSED: all
+  line_count values are exact")*
 
 **Timing**: 0.4 hours
 
