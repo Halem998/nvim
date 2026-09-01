@@ -1171,12 +1171,12 @@
     {
       "project_number": 120,
       "project_name": "retarget_hard_mode_tests_to_engine_branch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.\n\nCONTEXT. Once the hard-mode contract-injection and state-machine logic land inside skill-orchestrate/SKILL.md as hard_mode-gated branches (rather than in the separate skill-orchestrate-hard/SKILL.md file), these 7 files' fixtures/assertions must be retargeted so their coverage is preserved rather than silently dropped when skill-orchestrate-hard is deleted: test-loop-guard-budget-override.sh, test-routing-resolution.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-handoff-dispatch-identity.sh, test-resume-scan-nonconformance.sh, lint-contract-compliance.sh.\n\nWORK. For each file, update fixture paths and assertions to exercise skill-orchestrate/SKILL.md's hard_mode=true branch instead of skill-orchestrate-hard/SKILL.md. Verify each test still exercises the SAME underlying mechanism it did before (loop-guard budget, routing resolution, handoff reader parity, resume-scan nonconformance detection, contract compliance) -- this is a retarget, not a rewrite of intent. Run the full suite after retargeting and confirm no regression in what each test actually catches (a mutation check: temporarily reintroduce the bug each test guards against and confirm the retargeted test still fails).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/tests/**, agent-system/extensions/core/scripts/lint/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md (Finding 2, enumerated file set); reports/03_target-state-design.md (A4-iv).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-01T18:29:36Z",
+      "last_updated": "2026-09-01T19:23:53Z",
       "dependencies": [
         118,
         119,
@@ -1208,7 +1208,8 @@
           "summary": "All 8 phases completed: retargeted seven hard-mode test/lint files to skill-orchestrate/SKILL.md's hard_mode branches, with mutation checks and a before/after-deletion acceptance gate."
         }
       ],
-      "session_id": "sess_1788287299_e65079_120"
+      "session_id": "sess_1788287299_e65079_120",
+      "completion_summary": "Retargeted all seven hard-mode test/lint files to the merged skill-orchestrate/SKILL.md engine across 8 phases. Fixed the pre-identified Case 4 guard_session_id correctness bug, rewrote the two comparison-premise files (test-routing-resolution.sh Assert 3, test-handoff-reader-parity.sh) as single-engine presence/correctness checks, and closed two additional real gaps discovered during Phase 8's mandated mutation and before/after-deletion acceptance testing: a silent stub-by-name mutation-detection gap in test-handoff-dispatch-identity.sh, and a sibling-suite coupling that broke test-loop-guard-budget-override.sh's pass/fail status once skill-orchestrate-hard/SKILL.md is removed. All seven files, plus lint-contract-compliance.sh, pass individually, via the full test suite, and both before and after simulated removal of skill-orchestrate-hard/SKILL.md — the actual acceptance condition for the dependent deletion task."
     },
     {
       "project_number": 121,

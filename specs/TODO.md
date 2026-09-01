@@ -11,10 +11,9 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,120,124,129,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,48,75,76,89,90,104,105,109,112,121,125,135,136 | 29,74,87,91,102,108,120,124,133 | core-agent-system, extensions, literature |
-| 3 | 50,107,127 | 48,104,121,124 | core-agent-system, literature |
-| 4 | 88 | 87,127 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,124,129,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,48,75,76,89,90,104,105,109,112,125,127,135,136 | 29,74,87,91,102,108,121,124,133 | core-agent-system, extensions, literature |
+| 3 | 50,88,107 | 48,87,104,127 | core-agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -34,11 +33,9 @@ next_project_number: 139
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-120 [IMPLEMENTING] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
-  └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
-    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
+121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
     └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -47,7 +44,7 @@ next_project_number: 139
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 133 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
-  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
+  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 
@@ -686,7 +683,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 120. Retarget hard mode tests to engine branch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 128

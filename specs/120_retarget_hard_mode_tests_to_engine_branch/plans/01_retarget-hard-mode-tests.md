@@ -1,7 +1,7 @@
 # Implementation Plan: Retarget Hard-Mode Tests to the Merged Engine's hard_mode Branch
 
 - **Task**: 120 - Retarget hard mode tests to engine branch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 118, 119 (both `[COMPLETED]`); plus the H4-gate-port task (batch Contract 5 — must land before Phase 1 runs; see "Ordering Contract" below)
 - **Research Inputs**: specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md
