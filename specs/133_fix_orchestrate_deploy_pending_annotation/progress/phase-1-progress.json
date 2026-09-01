@@ -1,0 +1,32 @@
+{
+  "phase": 1,
+  "phase_name": "Register AMBIENT_BINDING_MISMATCH in both vocabulary sites",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add AMBIENT_BINDING_MISMATCH to system-defect-record.sh case arm, usage listing, and thirteen->fourteen count words",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add AMBIENT_BINDING_MISMATCH table row and narrating paragraph to system-defect-discrimination.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "Plan's verification bullet asserts `system-defect-record.sh --help` exits 0",
+      "type": "note",
+      "reason": "usage() unconditionally calls `exit 1` for both --help and argument errors; this is pre-existing behavior predating this task and out of this task's edit scope (Non-Goals do not authorize changing exit-code semantics). Verified instead via: (a) grep hits in both files, (b) case-arm registration confirmed by an unknown-class invocation still failing correctly with the updated 'fourteen' wording, (c) zero 'thirteen' occurrences remain in the script.",
+      "annotation": null
+    }
+  ]
+}

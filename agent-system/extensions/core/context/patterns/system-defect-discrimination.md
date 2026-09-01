@@ -89,6 +89,7 @@ decision, not silently done by a detection site):
 | `SESSION_LOCK_CONTENTION` — a task-lock acquire/release call keyed to a session-id string that does not match the session-id used to register the same unit of work elsewhere (e.g. batch admission), so exact-match self-exclusion logic spuriously contends against the caller's own registration | **not currently computed anywhere** |
 | `HOOK_REGEX_BOUNDARY_DEFECT` — a validation hook's regex or path-depth pattern encodes an unstated boundary assumption (e.g. a fixed digit-count quantifier) that silently breaks once real inputs cross that boundary, wrongly rejecting (or wrongly accepting) otherwise-valid inputs | **not currently computed anywhere** |
 | `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no corresponding source-store owner, surviving indefinitely because the deploy/merge routine is purely additive with no stale-entry pruning step | **not currently computed anywhere** |
+| `AMBIENT_BINDING_MISMATCH` — a downstream guard keyed to an ambient/global shell variable that only some callers populate, so the guard's condition silently evaluates false instead of erroring, and the guarded behavior is skipped without any signal | **not currently computed anywhere** |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
 it defines what counts as a violation of this kind, not what currently fires. Building a detector
@@ -157,6 +158,16 @@ covers. The row itself is not reworded or reinterpreted here, and no count in th
 touched — whether the row's site-class wording ("a validation hook's regex or path-depth
 pattern") should be widened to cover this site class is left to separate, dedicated defect-class
 vocabulary work.
+
+A fourteenth instance, `AMBIENT_BINDING_MISMATCH`, was added deliberately, to name one further
+concrete recorded defect shape: a downstream guard reading an ambient shell variable that its
+caller never bound, so the guard's condition silently evaluates false instead of erroring and the
+guarded behavior — an annotation, a cleanup step, a lock release, anything gated the same way —
+is skipped without any signal reaching the caller. `skill_postflight_update`'s exit-6
+deploy-pending annotation block, guarded on an ambient `TASK_DIR` that the `/orchestrate` caller
+never set, is the concrete instance that motivated naming this shape. None of the thirteen
+pre-existing instances was reworded or reinterpreted to cover it; this paragraph is where this
+document first names it.
 
 ### Signal B — attribution
 

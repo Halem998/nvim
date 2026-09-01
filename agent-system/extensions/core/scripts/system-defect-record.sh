@@ -13,7 +13,7 @@
 #     [--cwd PATH] [--cc-session-id VALUE] [--extra-detail-json '{...}']
 #
 # Required:
-#   --defect-class CLASS   One of the thirteen Signal A instances (see the discrimination document's
+#   --defect-class CLASS   One of the fourteen Signal A instances (see the discrimination document's
 #                           Signal A table) -- validated against a closed enum, failing loudly on
 #                           an unknown value.
 #   --detecting-site SITE  Free-text identifying the call site (e.g.
@@ -93,7 +93,8 @@ Required:
                            HANDOFF_STALE_OR_ABSENT|SOURCE_STORE_BOUNDARY_VIOLATION|
                            TASK_REFERENCE_IN_DELIVERABLE|ARTIFACT_FORMAT_VIOLATION|
                            STATE_SYNC_DIVERGENCE|SESSION_LOCK_CONTENTION|
-                           HOOK_REGEX_BOUNDARY_DEFECT|DEPLOY_ORPHAN_DRIFT
+                           HOOK_REGEX_BOUNDARY_DEFECT|DEPLOY_ORPHAN_DRIFT|
+                           AMBIENT_BINDING_MISMATCH
   --detecting-site SITE   Free-text identifying the call site
   --message "..."         Short human-readable one-line summary
   --attributed-path PATH / --dispatched-agent NAME
@@ -157,14 +158,15 @@ if [ -z "$attributed_path_arg" ] && [ -z "$dispatched_agent_arg" ]; then
   usage
 fi
 
-# --- Validate --defect-class against the closed, thirteen-value enum (fail loudly, write nothing) ---
+# --- Validate --defect-class against the closed, fourteen-value enum (fail loudly, write nothing) ---
 case "$defect_class" in
   OFF_SCHEMA_STATUS|ARTIFACTS_SHAPE_MISMATCH|HANDOFF_MISLOCATED|META_MISSING_AFTER_NARRATION|\
   ARTIFACTS_MISSING_ON_SUCCESS|HANDOFF_STALE_OR_ABSENT|SOURCE_STORE_BOUNDARY_VIOLATION|\
   TASK_REFERENCE_IN_DELIVERABLE|ARTIFACT_FORMAT_VIOLATION|STATE_SYNC_DIVERGENCE|\
-  SESSION_LOCK_CONTENTION|HOOK_REGEX_BOUNDARY_DEFECT|DEPLOY_ORPHAN_DRIFT) ;;
+  SESSION_LOCK_CONTENTION|HOOK_REGEX_BOUNDARY_DEFECT|DEPLOY_ORPHAN_DRIFT|\
+  AMBIENT_BINDING_MISMATCH) ;;
   *)
-    echo "error: invalid --defect-class '$defect_class' (must be one of the thirteen Signal A instances -- see context/patterns/system-defect-discrimination.md)" >&2
+    echo "error: invalid --defect-class '$defect_class' (must be one of the fourteen Signal A instances -- see context/patterns/system-defect-discrimination.md)" >&2
     exit 1
     ;;
 esac

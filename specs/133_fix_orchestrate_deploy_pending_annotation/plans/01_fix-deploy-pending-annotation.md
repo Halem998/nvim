@@ -1,7 +1,7 @@
 # Implementation Plan: Register the ambient-binding defect class and fix the deploy-pending annotation
 
 - **Task**: 133 - Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md
@@ -167,42 +167,42 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Register `AMBIENT_BINDING_MISMATCH` in both vocabulary sites [NOT STARTED]
+### Phase 1: Register `AMBIENT_BINDING_MISMATCH` in both vocabulary sites [COMPLETED]
 
 - **Goal:** Add the new defect class to the recorder's closed enum and the discrimination doc's
   instance table in a single atomic change, so `system-defect-record.sh --defect-class
   AMBIENT_BINDING_MISMATCH` stops exiting 1.
 
 - **Tasks:**
-  - [ ] Re-verify the current enum by reading the `case "$defect_class" in ... esac` block in
+  - [x] Re-verify the current enum by reading the `case "$defect_class" in ... esac` block in *(completed)*
         `agent-system/extensions/core/scripts/system-defect-record.sh` (currently the block whose
         preceding comment reads `--- Validate --defect-class against the closed, thirteen-value
         enum (fail loudly, write nothing) ---`). Confirm it lists exactly 13 values ending in
         `DEPLOY_ORPHAN_DRIFT`.
-  - [ ] Add `AMBIENT_BINDING_MISMATCH` to that `case` arm's alternation, after
+  - [x] Add `AMBIENT_BINDING_MISMATCH` to that `case` arm's alternation, after *(completed)*
         `DEPLOY_ORPHAN_DRIFT`, preserving the existing line-continuation formatting.
-  - [ ] Add `AMBIENT_BINDING_MISMATCH` to the `--defect-class CLASS   One of: ...` usage listing
+  - [x] Add `AMBIENT_BINDING_MISMATCH` to the `--defect-class CLASS   One of: ...` usage listing *(completed)*
         in the same file (the multi-line `One of:` block ending `HOOK_REGEX_BOUNDARY_DEFECT|DEPLOY_ORPHAN_DRIFT`).
-  - [ ] Update both literal "thirteen" occurrences in this file to "fourteen": the header usage
+  - [x] Update both literal "thirteen" occurrences in this file to "fourteen": the header usage *(completed)*
         comment (`One of the thirteen Signal A instances`) and the `*)` arm's error message
         (`must be one of the thirteen Signal A instances`). Also update the validator block's own
         preceding comment (`closed, thirteen-value enum`) to `fourteen-value`.
-  - [ ] Confirm by grep that no "thirteen" remains in
+  - [x] Confirm by grep that no "thirteen" remains in *(completed)*
         `agent-system/extensions/core/scripts/system-defect-record.sh`.
-  - [ ] In `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`, add
+  - [x] In `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`, add *(completed)*
         one new row to the Signal A instance table (the table whose rows currently run
         `OFF_SCHEMA_STATUS` through `DEPLOY_ORPHAN_DRIFT`), immediately after the
         `DEPLOY_ORPHAN_DRIFT` row. Name the **mechanism**, matching every existing row's voice:
         a downstream guard keyed to an ambient/global shell variable that only some callers
         populate, so the guard's condition silently evaluates false instead of erroring.
         Detection column: `**not currently computed anywhere**`.
-  - [ ] Add one new short paragraph to the doc **after** the existing "A further three instances
+  - [x] Add one new short paragraph to the doc **after** the existing "A further three instances *(completed)*
         (`SESSION_LOCK_CONTENTION`, `HOOK_REGEX_BOUNDARY_DEFECT`, ...)" paragraph, in that
         paragraph's established voice, narrating the single new instance and stating that none of
         the thirteen pre-existing instances was reworded or reinterpreted to cover it. Do **not**
         search for an existing "thirteen" in this file to edit — there is none; this paragraph is
         where the word first appears here.
-  - [ ] Verify registration end-to-end at the recorder level:
+  - [x] Verify registration end-to-end at the recorder level: *(completed)*
         `bash agent-system/extensions/core/scripts/system-defect-record.sh --help` still exits 0
         and lists the new class; an invalid class name still exits 1.
 
