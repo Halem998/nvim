@@ -547,7 +547,7 @@ task.
 
 ---
 
-### Phase 7: End-to-end verification against the landed patterns [NOT STARTED]
+### Phase 7: End-to-end verification against the landed patterns [COMPLETED]
 
 **Goal**: Confirm the gate as it actually exists in the engine file behaves correctly in both
 directions, under the deployed grep, against real files — closing the loop the research explicitly
@@ -555,31 +555,31 @@ asked for (verify the landed patterns, do not re-derive them).
 
 **Tasks**:
 
-- [ ] EXTRACT the two `grep` pattern strings from
+- [x] EXTRACT the two `grep` pattern strings from
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` as they landed — read them
       out of the file, do not retype them from this plan.
-- [ ] Re-run the full Phase 1 fixture matrix using the EXTRACTED patterns, as the literal combined
+- [x] Re-run the full Phase 1 fixture matrix using the EXTRACTED patterns, as the literal combined
       shell conditional, against real files, under the deployed grep.
-- [ ] Confirm the positive direction: the `## 7.` numbered heading + canonical table header passes;
+- [x] Confirm the positive direction: the `## 7.` numbered heading + canonical table header passes;
       the `## 7.2.` form passes; the unnumbered form passes; the alternate
       `| # | Claim under attack | Source / counterexample | Outcome |` header still passes.
-- [ ] Confirm the NEGATIVE direction explicitly — this is the acceptance criterion the task
+- [x] Confirm the NEGATIVE direction explicitly — this is the acceptance criterion the task
       description calls out as non-optional ("a gate that can only ever stay silent is not a fix"):
       a report with no adversarial section FAILS the gate; a report with the section but no
       claim/source/counterexample table FAILS the gate. Both must still trigger re-dispatch.
-- [ ] Confirm the false-positive probe (prose with loose substrings, no `|`) still returns NOMATCH.
-- [ ] Confirm base-mode reachability: with `hard_mode=false`, the `researched` and `planning`
+- [x] Confirm the false-positive probe (prose with loose substrings, no `|`) still returns NOMATCH.
+- [x] Confirm base-mode reachability: with `hard_mode=false`, the `researched` and `planning`
       handlers reach `skill_preflight_update` without evaluating the gate — verify by reading the
       fork structure in the file, and confirm `adversarial_verified` is never read outside a
       `$hard_mode` guard.
-- [ ] Run the repository's artifact/contract gates over the changed files: `bash
+- [x] Run the repository's artifact/contract gates over the changed files: `bash
       .claude/scripts/validate-artifact.sh` on this plan, `bash
       .claude/scripts/lint/lint-contract-compliance.sh`, and
       `bash .claude/scripts/check-task-references.sh` (or the current equivalents) to confirm no
       task-number reference leaked into a non-`specs/**` deliverable.
-- [ ] Confirm the source-store boundary held: `git status` shows no modified file under
+- [x] Confirm the source-store boundary held: `git status` shows no modified file under
       `.claude/**`.
-- [ ] Confirm territory discipline: `git diff --stat` lists exactly the three intended files
+- [x] Confirm territory discipline: `git diff --stat` lists exactly the three intended files
       (`skill-orchestrate/SKILL.md`, `skill-orchestrate-hard/SKILL.md`,
       `system-defect-discrimination.md`) and nothing else.
 
@@ -610,28 +610,28 @@ including it.
 
 ## Testing & Validation
 
-- [ ] `grep --version` confirms the deployed engine matches the one the patterns were verified
+- [x] `grep --version` confirms the deployed engine matches the one the patterns were verified
       against.
-- [ ] Positive: `## 7. Adversarial Self-Verification` + `| Claim | Source / counterexample |
+- [x] Positive: `## 7. Adversarial Self-Verification` + `| Claim | Source / counterexample |
       Verification method | Confidence |` passes the gate; no re-dispatch.
-- [ ] Positive: the `## 7.2.` (`N.N`) heading form passes.
-- [ ] Positive: the unnumbered `## Adversarial Self-Verification` heading passes.
-- [ ] Regression: the alternate `| # | Claim under attack | Source / counterexample | Outcome |`
+- [x] Positive: the `## 7.2.` (`N.N`) heading form passes.
+- [x] Positive: the unnumbered `## Adversarial Self-Verification` heading passes.
+- [x] Regression: the alternate `| # | Claim under attack | Source / counterexample | Outcome |`
       header still passes.
-- [ ] Negative: a report with no adversarial section fails the gate and triggers re-dispatch.
-- [ ] Negative: a report with the section but no claim/source/counterexample table fails the gate
+- [x] Negative: a report with no adversarial section fails the gate and triggers re-dispatch.
+- [x] Negative: a report with the section but no claim/source/counterexample table fails the gate
       and triggers re-dispatch.
-- [ ] Negative: prose containing loose substrings of all three keywords, with no `|`, returns
+- [x] Negative: prose containing loose substrings of all three keywords, with no `|`, returns
       NOMATCH.
-- [ ] Every check above is run against a real file by the deployed grep, using the patterns
+- [x] Every check above is run against a real file by the deployed grep, using the patterns
       extracted from the engine file — never reasoned about.
-- [ ] `adversarial_verified` occurs exactly three times in the base engine, each inside a
+- [x] `adversarial_verified` occurs exactly three times in the base engine, each inside a
       `$hard_mode` guard, plus its reads inside the two ported gate bodies.
-- [ ] Base mode (`hard_mode=false`) reaches `skill_preflight_update` in both handlers unchanged.
-- [ ] `skill-orchestrate-hard/SKILL.md`'s gate logic and patterns are byte-identical to their
+- [x] Base mode (`hard_mode=false`) reaches `skill_preflight_update` in both handlers unchanged.
+- [x] `skill-orchestrate-hard/SKILL.md`'s gate logic and patterns are byte-identical to their
       pre-task form; only the asymmetry note was added.
-- [ ] Contract lint, artifact validation, and the task-reference lint all pass.
-- [ ] No file under `.claude/**` was modified.
+- [x] Contract lint, artifact validation, and the task-reference lint all pass.
+- [x] No file under `.claude/**` was modified.
 
 ## Artifacts & Outputs
 
