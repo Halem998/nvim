@@ -23,7 +23,18 @@
 #     <dispatch_status> <phases_completed> <phases_total> <plan_markers_verified> \
 #     <handoff_artifact_path> <handoff_artifact_type> <handoff_artifact_summary> \
 #     <notice_prefix> <tier_c_detecting_site> <skill_attributed_path> <command_suffix> \
-#     <dispatch_start_ts> <handoff_file> <loop_guard_file> <cycle_count>
+#     <dispatch_start_ts> <handoff_file> <loop_guard_file> <cycle_count> [force_invoked]
+#
+# <force_invoked> (positional 20, OPTIONAL, default "false"): A2's phase-forcing signal, threaded
+# from skill-orchestrate/SKILL.md Stage 3's 3c ("true" only on a cycle that popped the forced-
+# phase queue). Drives two behaviors below: (1) the monotonic-max status clamp is passed through
+# to skill_postflight_update on a forced researched/planned/implemented dispatch, so a forced
+# earlier phase never regresses the task's status; (2) the artifact-round advance (new block
+# below, after artifact linking) fires unconditionally on `researched` (P1 -- closing the
+# pre-existing "/orchestrate never increments next_artifact_number" gap) and additionally on a
+# FORCED `planned`/`implemented` dispatch (P2 -- the A2 requirement proper). Omitting this
+# argument preserves the pre-A2 behavior exactly: no clamp, and no artifact-round advance for a
+# non-research dispatch.
 #
 # where <tier_c_detecting_site> is the FULL, already-divergent literal detecting-site string for
 # the Tier C (off-schema) defect record — `skill-orchestrate/SKILL.md:stage-5-tier-c` for base,
@@ -68,6 +79,16 @@ dispatch_start_ts="${16:-9999999999}"
 handoff_file="${17:-}"
 loop_guard_file="${18:-}"
 cycle_count="${19:-0}"
+force_invoked="${20:-false}"
+
+# <clamp> is "monotonic-max" only when this dispatch was forced (A2); empty otherwise, so an
+# unforced cycle passes an empty 7th argument to skill_postflight_update and takes the unchanged
+# (pre-A2) path.
+if [ "$force_invoked" = "true" ]; then
+  clamp_mode="monotonic-max"
+else
+  clamp_mode=""
+fi
 
 if [ "$#" -lt 18 ]; then
   echo "ERROR: orchestrate-stage5-postflight.sh: usage: orchestrate-stage5-postflight.sh <task_number> <session_id> <task_type> <task_dir> <dispatch_status> <phases_completed> <phases_total> <plan_markers_verified> <handoff_artifact_path> <handoff_artifact_type> <handoff_artifact_summary> <notice_prefix> <tier_c_detecting_site> <skill_attributed_path> <command_suffix> <dispatch_start_ts> <handoff_file> <loop_guard_file> [cycle_count]" >&2
@@ -108,10 +129,16 @@ inferred_phase=""
 # correctly routed to the off-schema arm below.
 case "$dispatch_status" in
   researched)
-    skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status"
+    # Positions 5/6 are explicit empty placeholders -- behaviorally identical to omitting them
+    # (phase_check_mode="${5:-}" and its -n guard both yield the no-flag path either way) -- but
+    # required to reach position 7 (status_clamp_mode) at all. Research is never itself a
+    # "forced" dispatch target that could regress status (it is always at or ahead of the
+    # task's current position), so clamp_mode here is effectively a no-op today; passed through
+    # uniformly for symmetry with the planned/implemented arms below.
+    skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "" "$clamp_mode"
     ;;
   planned)
-    skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
+    skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "" "$clamp_mode"
     ;;
   implemented)
     # Completion-claim verification gate: a dispatch reporting "implemented" must not flip the
@@ -124,7 +151,7 @@ case "$dispatch_status" in
       # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
       # phase headings — structurally different evidence — so it is a valuable SECOND OPINION
       # here, not a veto over a decision this state machine made deliberately and loggedly.
-      skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
+      skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "" "$clamp_mode"
 
       # Populate completion_summary/roadmap_items via the single shared propagation path,
       # skill_orchestrate_propagate_completion (scripts/skill-base.sh). No precomputed JSON is
@@ -206,6 +233,43 @@ if [ -n "$handoff_artifact_path" ] && [ "$handoff_artifact_path" != "null" ]; th
   skill_link_artifacts "$task_number" "$handoff_artifact_path" "$handoff_artifact_type" \
     "$handoff_artifact_summary" "$field_name" "$next_field"
   artifact_linked=true
+fi
+
+# ── Artifact-round advance (A2 P1/P2) ────────────────────────────────────────────────────────
+# WHY THIS SITE, not skill_postflight_update: skill-researcher/SKILL.md already performs its own
+# inline next_artifact_number increment AND also calls skill_postflight_update -- folding the
+# advance into skill_postflight_update itself would double-increment /research's own round. This
+# matches the convention context/patterns/skill-postflight-flow.md already documents ("An
+# importing skill that needs this increment keeps that one state-write.sh call inline"). This
+# script is /orchestrate-only, so it is the correct, single site for /orchestrate's own advance.
+#
+# WHY NOT scripts/orchestrator-postflight.sh: that script's Stage 7a already performs the
+# identical increment, but it has ZERO call sites in skill-orchestrate/SKILL.md -- it belongs to
+# the plain /implement command's postflight instead (skill-implementer/SKILL.md,
+# skill-git-workflow/SKILL.md), not /orchestrate. Editing it would be inert for this command. See
+# this task's plan for the full correction record; do not re-derive this from scratch.
+#
+# Gate: fires on `researched` UNCONDITIONALLY (P1 -- closing the pre-existing "/orchestrate never
+# increments next_artifact_number" gap, which a forced round could not otherwise extend) OR on a
+# FORCED `planned`/`implemented` dispatch (P2 -- the A2 requirement proper: a forced phase always
+# opens a new MM_ round). An unforced planned/implemented dispatch does NOT advance -- it shares
+# the round its preceding research already opened, exactly as skill_read_artifact_number's
+# "prev" mode already assumes. Non-blocking on failure, matching the warning style of the
+# orchestrator-postflight.sh Stage 7a original this transform is proven against.
+do_artifact_round_advance=false
+if [ "$dispatch_status" = "researched" ]; then
+  do_artifact_round_advance=true
+elif [ "$force_invoked" = "true" ] && { [ "$dispatch_status" = "planned" ] || [ "$dispatch_status" = "implemented" ]; }; then
+  do_artifact_round_advance=true
+fi
+if [ "$do_artifact_round_advance" = "true" ]; then
+  echo "${notice_prefix} Advancing next_artifact_number (dispatch_status=${dispatch_status}, force_invoked=${force_invoked})..."
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
+      ((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    || echo "${notice_prefix} WARNING: Failed to advance next_artifact_number (non-blocking)" >&2
 fi
 
 # ── Off-schema halt decision (never applied here — see file header) ─────────────────────────
