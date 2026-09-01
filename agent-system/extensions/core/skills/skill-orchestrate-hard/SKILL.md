@@ -648,6 +648,16 @@ Increment cycle_count.
 
 #### State: `researched` — WITH Adversarial Verification Gate (H4)
 
+**Asymmetry decision (recorded, "recorded not acted on" style, mirroring the base engine's own
+note at this gate)**: this gate has been ported to the consolidated base engine
+(`skill-orchestrate/SKILL.md`'s `researched` and `planning` handlers) WITH a corrected matcher.
+The copy below retains the original patterns — known false-negatives against genuinely
+conforming research reports — deliberately unfixed, because this engine is scheduled for
+deletion by a separate, downstream engine-deletion task, and mirroring the fix here would create
+a second site to maintain for a file about to be removed, with no correctness benefit. The base
+engine's ported copy is the live one; treat the `grep` lines immediately below as historical
+reference only, not as correct logic to copy elsewhere.
+
 **HARD MODE DIFFERS FROM BASE**: Before dispatching planning, verify the research report.
 
 ```bash

@@ -457,21 +457,21 @@ is unmigrated, fix it too and note the widening.
 
 ---
 
-### Phase 5: Record the mirror asymmetry note in the `-hard` engine [NOT STARTED]
+### Phase 5: Record the mirror asymmetry note in the `-hard` engine [COMPLETED]
 
 **Goal**: Ensure a reader of `skill-orchestrate-hard/SKILL.md` understands its gate's broken
 matcher was deliberately left unfixed, rather than reading it as live, correct reference logic.
 
 **Tasks**:
 
-- [ ] Re-locate the `#### State: \`researched\` — WITH Adversarial Verification Gate (H4)` heading
+- [x] Re-locate the `#### State: \`researched\` — WITH Adversarial Verification Gate (H4)` heading
       in `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`.
-- [ ] Add a brief `**Asymmetry decision (recorded, ...)**` note adjacent to that gate, in the same
+- [x] Add a brief `**Asymmetry decision (recorded, ...)**` note adjacent to that gate, in the same
       convention used in the base engine. Content: this gate has been ported to the consolidated
       base engine WITH a corrected matcher; the copy here retains the original, known-false-negative
       patterns deliberately, because this engine is scheduled for deletion and mirroring the fix
       would be wasted work. Point the reader at the base engine's ported copy as the live one.
-- [ ] Change NOTHING else in this file. In particular, do not fix, reword, or reformat the two
+- [x] Change NOTHING else in this file. In particular, do not fix, reword, or reformat the two
       broken `grep` lines, the gate body, or any `adversarial_verified` site.
 
 **Timing**: 0.15 hours
