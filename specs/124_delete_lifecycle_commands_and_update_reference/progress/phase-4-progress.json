@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Delete the three command files and de-register them",
+  "started_at": "2026-09-01T23:37:00Z",
+  "last_updated": "2026-09-01T23:42:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete the three command files and remove manifest entries (atomic-batch)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/research.md", "agent-system/extensions/core/commands/plan.md", "agent-system/extensions/core/commands/implement.md", "agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "1766 lines deleted (615+645+506, matching plan hypothesis exactly). Manifest de-registration and file deletions landed together for atomic-batch commit. revise.md and orchestrate.md confirmed untouched and still listed. commands/README.md confirmed to need no change (verified: it describes the directory's deploy contract generically, does not enumerate individual commands). check-extension-docs.sh shows the same 3 pre-existing unrelated FAILs as the Phase 1 baseline -- no new 'manifest entry missing on disk' failure. IMPORTANT FINDING (deviation from plan's stated expectation): Rule K (deployed command orphan detection) is structurally incapable of firing for .claude/commands/*, because .claude/ is entirely gitignored (verified: .gitignore line 6 is '/.claude/') and check_flat_category_orphans()'s _git_deployed_files() helper enumerates via `git -C \"$REPO_ROOT\" ls-files\", which returns nothing for any gitignored path. The plan's Risk table and Phase 4/6 verification text both expected a Rule K FAIL to appear here and be cleared by Phase 6 -- that expectation does not hold; no Rule K failure appeared, and none ever will while .claude/ stays gitignored, regardless of whether the stale deployed copies are removed. This does not block progress (Phase 6 will still remove the stale deployed files on their own correctness merits -- deployed tree should match source regardless of whether a lint catches drift), but it means Phase 6's own verification text ('the orphan failures cleared') needs the same honest correction rather than being force-matched."
+}

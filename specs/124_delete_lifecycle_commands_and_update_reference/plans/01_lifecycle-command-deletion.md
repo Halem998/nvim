@@ -322,25 +322,25 @@ empty-array test to it rather than treating the list above as closed.
 
 ---
 
-### Phase 4: Delete the three command files and de-register them [NOT STARTED]
+### Phase 4: Delete the three command files and de-register them [COMPLETED]
 
 **Goal**: Remove the 1,766 lines of duplicated lifecycle-command surface in a single change that
 never leaves the manifest pointing at a missing file.
 
 **Tasks**:
 
-- [ ] Delete `agent-system/extensions/core/commands/research.md`.
-- [ ] Delete `agent-system/extensions/core/commands/plan.md`.
-- [ ] Delete `agent-system/extensions/core/commands/implement.md`.
-- [ ] Remove the `"implement.md"`, `"plan.md"`, and `"research.md"` entries from
+- [x] Delete `agent-system/extensions/core/commands/research.md`. *(completed: 615 lines)*
+- [x] Delete `agent-system/extensions/core/commands/plan.md`. *(completed: 645 lines)*
+- [x] Delete `agent-system/extensions/core/commands/implement.md`. *(completed: 506 lines)*
+- [x] Remove the `"implement.md"`, `"plan.md"`, and `"research.md"` entries from
       `provides.commands` in `agent-system/extensions/core/manifest.json`, preserving the array's
-      existing ordering and JSON formatting for the surviving entries.
-- [ ] Confirm `agent-system/extensions/core/commands/revise.md` is untouched and still listed in
-      the manifest.
-- [ ] Confirm `agent-system/extensions/core/commands/README.md` needs no change — it describes
+      existing ordering and JSON formatting for the surviving entries. *(completed)*
+- [x] Confirm `agent-system/extensions/core/commands/revise.md` is untouched and still listed in
+      the manifest. *(completed)*
+- [x] Confirm `agent-system/extensions/core/commands/README.md` needs no change — it describes
       the directory's deploy contract and does not enumerate individual commands (verified at
-      plan time). If that has changed, update it.
-- [ ] Commit all four file changes together as one commit.
+      plan time). If that has changed, update it. *(completed: no change needed, confirmed)*
+- [x] Commit all four file changes together as one commit. *(completed)*
 
 **Timing**: 0.75 hours
 

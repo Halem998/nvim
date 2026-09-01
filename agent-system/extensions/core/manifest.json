@@ -37,13 +37,10 @@
     "commands": [
       "errors.md",
       "fix-it.md",
-      "implement.md",
       "merge.md",
       "meta.md",
       "orchestrate.md",
-      "plan.md",
       "refresh.md",
-      "research.md",
       "review.md",
       "revise.md",
       "spawn.md",
