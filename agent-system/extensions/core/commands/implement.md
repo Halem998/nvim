@@ -1,7 +1,7 @@
 ---
 description: Execute implementation with resume support
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, Edit, Glob
-argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
+argument-hint: TASK_NUMBERS [--force] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -18,8 +18,6 @@ Execute implementation plan with automatic resume support by delegating to the a
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--team` | Enable parallel phase execution with multiple teammates | false |
-| `--team-size N` | Number of implementation teammates to spawn (2-4) | 2 |
 | `--force` | Override status validation (allow re-implementation of completed tasks) | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
 | `--hard` | High-effort mode: deeper reasoning, more thorough analysis | false |
@@ -30,9 +28,12 @@ Execute implementation plan with automatic resume support by delegating to the a
 | `--clean` | Skip automatic memory retrieval | false |
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based implementation | false |
 
+For parallel phase execution, use `/orchestrate`'s team fan-out mode, which routes through
+`skill-orchestrate`'s Stage 3.6/3.6a.
+
 ## Anti-Bypass Constraint
 
-**PROHIBITION**: You MUST NOT write implementation summary artifacts directly using Write or Edit tools. All summary files MUST be created by invoking the appropriate skill (skill-implementer or skill-team-implement) via the Skill tool.
+**PROHIBITION**: You MUST NOT write implementation summary artifacts directly using Write or Edit tools. All summary files MUST be created by invoking the appropriate skill (skill-implementer) via the Skill tool.
 
 **Required**: Always delegate to the Skill tool. Never write to `specs/*/summaries/*.md` directly from this command.
 
@@ -175,7 +176,6 @@ For each validated task, invoke the appropriate implementation skill using paral
   the derived `session_id` matches both records without this dispatch needing to thread it as a
   separate argument. Any per-task-unique identifier needed downstream (`.return-meta.json`
   provenance, commit trailers) must be a separate field, never this one.
-- If `--team`: use `skill-team-implement`; invoke all skills in a single message (parallel execution)
 - Pass `--force` to each skill when `FORCE_FLAG == "true"`
 - Collect results; read `.return-meta.json` for structured data
 - **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "$batch_session_id"` — unconditional, run regardless of outcome.
@@ -383,9 +383,7 @@ If no plan: ABORT "No implementation plan found. Run /plan {N} first."
 
 **EXECUTE NOW**: After CHECKPOINT 1 completes, immediately invoke the Skill tool.
 
-**Team Mode Routing** (when `--team` flag present): Route to `skill-team-implement`.
-
-**Extension Routing** (when `--team` flag NOT present):
+**Extension Routing**:
 
 ```bash
 source .claude/scripts/command-route-skill.sh "implement" "$TASK_TYPE" "skill-implementer" "$EFFORT_FLAG"
@@ -404,10 +402,6 @@ skill_name="$SKILL_NAME"
 
 **Invoke the Skill tool NOW** with:
 ```
-# For team mode:
-skill: "skill-team-implement"
-args: "task_number={N} plan_path={path} resume_phase={phase} team_size={TEAM_SIZE} session_id={SESSION_ID} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} clean_flag={CLEAN_FLAG} lit_flag={LIT_FLAG} orchestrator_mode=false"
-
 # For single-agent mode:
 skill: "{skill_name}"
 args: "task_number={N} plan_path={path} resume_phase={phase} session_id={SESSION_ID} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} clean_flag={CLEAN_FLAG} lit_flag={LIT_FLAG} orchestrator_mode=false"
