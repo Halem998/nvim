@@ -607,9 +607,90 @@ else
   fail "mutation B: disabling flock still produced exactly 1 invocation -- inconclusive (unexpected timing), recorded rather than silently skipped"
 fi
 
+# --- Mutation C (Defect A): disable validate_build_subcommand() entirely (same
+# always-return-0-and-shadow-the-original trick as mutation B's have_flock() mutant) -> both the
+# `--`-path and bare-catch-all unrecognized-subcommand cases (14 and 15) must go RED, since the
+# unknown subcommand now reaches the fake `lake`, which exits 0, and the guard reports a pass.
+MUTANT_NOVALIDATE="$MUTANT_DIR/no-validate.sh"
+sed 's/^validate_build_subcommand() {/validate_build_subcommand() { return 0; } ; _disabled_validate_build_subcommand() {/' "$GUARD" > "$MUTANT_NOVALIDATE"
+chmod +x "$MUTANT_NOVALIDATE"
+
+MUTANTC_ROOT="$WORKDIR/mutant_novalidate_fixture"
+build_fixture_unknown_cmd "$MUTANTC_ROOT"
+MUTANTC_COUNTER="$WORKDIR/mutantc_counter"
+: > "$MUTANTC_COUNTER"
+MUTANTC_RC=0
+FAKE_LAKE_COUNTER="$MUTANTC_COUNTER" \
+  PATH="$MUTANTC_ROOT/bin:$PATH" "$MUTANT_NOVALIDATE" build --dir "$MUTANTC_ROOT" -- garbagecmd TARGET \
+  > /dev/null 2>&1 || MUTANTC_RC=$?
+MUTANTC_INVOCATIONS="$(wc -l < "$MUTANTC_COUNTER" | tr -d ' ')"
+
+if [ "$MUTANTC_RC" = "0" ] && [ "$MUTANTC_INVOCATIONS" = "1" ]; then
+  pass "mutation C: disabling subcommand validation reintroduces Defect A -- an unrecognized subcommand now reaches the fake lake (which exits 0) and the guard reports a false pass, breaking cases 14/15 -- confirms they are not vacuously green"
+else
+  fail "mutation C: disabling subcommand validation did not produce the expected false pass -- inconclusive (rc=$MUTANTC_RC invocations=$MUTANTC_INVOCATIONS), recorded rather than silently skipped"
+fi
+
+# --- Mutation D (Defect B): remove the scope_key comparison from decide_sharing() (force it
+# always-true) -> case 18's "scoped build then full build produces 2 invocations" assertion must
+# go RED (invocation count stays at 1, since the differently-scoped result is wrongly shared),
+# while case 19's "identical full build still shares" stays green (proving the fix is
+# load-bearing AND that it did not simply disable sharing outright).
+MUTANT_NOSCOPE="$MUTANT_DIR/no-scope.sh"
+sed 's/\[ -n "\$record_scope_key" \] && \[ "\$record_scope_key" = "\$waiter_scope_key" \] || return 1/true/' "$GUARD" > "$MUTANT_NOSCOPE"
+chmod +x "$MUTANT_NOSCOPE"
+
+MUTANTD_ROOT="$WORKDIR/mutant_noscope_fixture"
+build_fixture "$MUTANTD_ROOT"
+MUTANTD_COUNTER="$WORKDIR/mutantd_counter"
+: > "$MUTANTD_COUNTER"
+FAKE_LAKE_COUNTER="$MUTANTD_COUNTER" \
+  PATH="$MUTANTD_ROOT/bin:$PATH" "$MUTANT_NOSCOPE" build --dir "$MUTANTD_ROOT" build Foo.Bar \
+  > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$MUTANTD_COUNTER" \
+  PATH="$MUTANTD_ROOT/bin:$PATH" "$MUTANT_NOSCOPE" build --dir "$MUTANTD_ROOT" build \
+  > /dev/null 2>&1
+MUTANTD_INVOCATIONS="$(wc -l < "$MUTANTD_COUNTER" | tr -d ' ')"
+
+MUTANTD2_ROOT="$WORKDIR/mutant_noscope_fixture2"
+build_fixture "$MUTANTD2_ROOT"
+MUTANTD2_COUNTER="$WORKDIR/mutantd2_counter"
+: > "$MUTANTD2_COUNTER"
+FAKE_LAKE_COUNTER="$MUTANTD2_COUNTER" \
+  PATH="$MUTANTD2_ROOT/bin:$PATH" "$MUTANT_NOSCOPE" build --dir "$MUTANTD2_ROOT" build \
+  > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$MUTANTD2_COUNTER" \
+  PATH="$MUTANTD2_ROOT/bin:$PATH" "$MUTANT_NOSCOPE" build --dir "$MUTANTD2_ROOT" build \
+  > /dev/null 2>&1
+MUTANTD2_INVOCATIONS="$(wc -l < "$MUTANTD2_COUNTER" | tr -d ' ')"
+
+if [ "$MUTANTD_INVOCATIONS" = "1" ] && [ "$MUTANTD2_INVOCATIONS" = "1" ]; then
+  pass "mutation D: disabling the scope_key comparison reintroduces Defect B -- a scoped-then-full sequence now wrongly shares (1 invocation instead of 2, breaking case 18), while the identical-full-build sequence still shares (1 invocation, case 19 unaffected) -- confirms case 18 is load-bearing and did not simply disable sharing"
+else
+  fail "mutation D: unexpected invocation counts -- scoped-then-full=$MUTANTD_INVOCATIONS (want 1, i.e. wrongly shared) full-then-full=$MUTANTD2_INVOCATIONS (want 1) -- inconclusive, recorded rather than silently skipped"
+fi
+
+# --- Mutation E (replay notice): remove the REPLAY: stderr line from cmd_build()'s replay branch
+# -> case 20's "replay emits the marker" assertion must go RED (the marker never appears, even on
+# a genuine replay).
+MUTANT_NOREPLAY="$MUTANT_DIR/no-replay.sh"
+sed '/^    echo "lake-build-guard: REPLAY: sharing result from holder pid/d' "$GUARD" > "$MUTANT_NOREPLAY"
+chmod +x "$MUTANT_NOREPLAY"
+
+MUTANTE_ROOT="$WORKDIR/mutant_noreplay_fixture"
+build_fixture "$MUTANTE_ROOT"
+PATH="$MUTANTE_ROOT/bin:$PATH" "$MUTANT_NOREPLAY" build --dir "$MUTANTE_ROOT" build > /dev/null 2>&1
+MUTANTE_REPLAY_ERR="$(PATH="$MUTANTE_ROOT/bin:$PATH" "$MUTANT_NOREPLAY" build --dir "$MUTANTE_ROOT" build 2>&1 1>/dev/null)"
+
+if ! printf '%s' "$MUTANTE_REPLAY_ERR" | grep -q 'lake-build-guard: REPLAY:'; then
+  pass "mutation E: removing the REPLAY: stderr line silences a genuine replay -- confirms case 20's marker assertion is load-bearing, not vacuous"
+else
+  fail "mutation E: the REPLAY: marker still appeared after removing its emission line -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+fi
+
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not
 # separately scripted, per the plan's "state briefly how it fails" instruction): ---
-info "mutation reasoning (cases 2,3,5,6,7,8,9,11,12,13 -- by inspection, not separately scripted):"
+info "mutation reasoning (cases 2,3,5,6,7,8,9,11,12,13,16,21 -- by inspection, not separately scripted):"
 info "  case 2: removing 'return \"\$rc\"' from run_lake_foreground (hardcoding 'return 0' instead) breaks the exit-7 assertion directly."
 info "  case 3: any code path that echoes guard-emitted text to stdout/stderr on the clean path breaks the byte-equality assertion."
 info "  case 5: removing the post_fp/current_fp comparison in decide_sharing() (always returning 0) breaks case 5 by sharing a stale result -- invocation count would stay at 1."
@@ -619,6 +700,8 @@ info "  case 8/9: reintroducing any pgrep-lean or pgrep -f 'lake build' style sc
 info "  case 11: removing the '[ -r ... ]' guard before reading LAKE_BUILD_GUARD_PSI_PATH breaks case 11 with a crash/nonzero exit instead of a graceful fallback."
 info "  case 12: hardcoding a byte figure (e.g. MemoryHigh=6G) or an absolute path breaks the grep-based assertions directly."
 info "  case 13: assigning or exporting LEAN_NUM_THREADS anywhere breaks case 13's comment-only invariant directly."
+info "  case 16: removing the empty-lake_args check from validate_build_subcommand() (returning 0 unconditionally for a zero-length vector) breaks case 16 -- a zero-arg 'build' would reach lake instead of exiting 77."
+info "  case 21: deleting the 'kill -0'/'pgrep' WAITING subsection from print_help()'s heredoc breaks case 21's grep-based assertion directly."
 
 # =====================================================================================
 # Summary

@@ -1,7 +1,7 @@
 # Implementation Plan: Make lake-build-guard.sh's success signal trustworthy
 
 - **Task**: 130 - Stop lake-build-guard.sh reporting passes for builds it did not run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md`
@@ -423,27 +423,27 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 6: Mutation coverage, full-suite green, and the taxonomy observation [IN PROGRESS]
+### Phase 6: Mutation coverage, full-suite green, and the taxonomy observation [COMPLETED]
 
 - **Goal:** Each new case is proven non-vacuous by a targeted mutation, the whole suite is green,
   and the recorder-class observation is recorded without expanding scope.
 - **Tasks:**
-  - [ ] Mutation C (Defect A): on a scratch copy, `sed` the validation step out (or force its
+  - [x] Mutation C (Defect A): on a scratch copy, `sed` the validation step out (or force its *(completed)*
         condition always-true) and confirm the `-- TARGET` and bare-`TARGET` cases go RED — the
         unknown subcommand reaches the fake `lake`, which exits 0, and the guard reports a pass.
         Follow mutations A/B's scratch-copy pattern exactly.
-  - [ ] Mutation D (Defect B): on a scratch copy, `sed` the `scope_key` comparison out of
+  - [x] Mutation D (Defect B): on a scratch copy, `sed` the `scope_key` comparison out of *(completed)*
         `decide_sharing()` and confirm the scoped-then-full case goes RED (invocation count stays
         at 1 instead of reaching 2), while the identical-full-build case stays green — proving the
         fix is load-bearing *and* that it did not simply disable sharing.
-  - [ ] Mutation E (replay notice): on a scratch copy, remove the `REPLAY:` stderr line and confirm
+  - [x] Mutation E (replay notice): on a scratch copy, remove the `REPLAY:` stderr line and confirm *(completed)*
         the marker case goes RED.
-  - [ ] Extend the by-inspection non-vacuousness `info` block with one line per remaining new case
+  - [x] Extend the by-inspection non-vacuousness `info` block with one line per remaining new case *(completed)*
         (the empty-args case and the `--help` idiom case), stating briefly how each fails — matching
         the existing block's format.
-  - [ ] Run the complete suite; require zero failures. Investigate any mutation reported as
+  - [x] Run the complete suite; require zero failures. Investigate any mutation reported as *(completed)*
         "inconclusive" rather than accepting it.
-  - [ ] Record the recorder-class taxonomy observation for whoever next revises the taxonomy: both
+  - [x] Record the recorder-class taxonomy observation for whoever next revises the taxonomy: both *(completed)*
         originating events were filed as `OFF_SCHEMA_STATUS`, which does not fit "a tool reports
         success for work it did not do". Record it in this task's implementation summary under
         `specs/`, and nowhere else — a sibling task owns the registration mechanism, and adding a
@@ -467,21 +467,21 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` exits 0,
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` exits 0,
       `Failed: 0`, with all thirteen original cases plus the new ones passing.
-- [ ] `bash -n` passes on `lake-build-guard.sh` and `test-lake-build-guard.sh`.
-- [ ] `-- TARGET` exits non-zero (77), and so does bare `TARGET` — both argument paths.
-- [ ] `build` with no lake arguments exits 77.
-- [ ] `-- build TARGET` with `FAKE_LAKE_EXIT=7` exits 7.
-- [ ] Scoped-then-full over an unchanged tree: 2 fake-`lake` invocations.
-- [ ] Full-then-identical-full over an unchanged tree: 1 fake-`lake` invocation.
-- [ ] `lake-build-guard: REPLAY:` appears on stderr for a replay without `--no-share`, and is
+- [x] `bash -n` passes on `lake-build-guard.sh` and `test-lake-build-guard.sh`.
+- [x] `-- TARGET` exits non-zero (77), and so does bare `TARGET` — both argument paths.
+- [x] `build` with no lake arguments exits 77.
+- [x] `-- build TARGET` with `FAKE_LAKE_EXIT=7` exits 7.
+- [x] Scoped-then-full over an unchanged tree: 2 fake-`lake` invocations.
+- [x] Full-then-identical-full over an unchanged tree: 1 fake-`lake` invocation.
+- [x] `lake-build-guard: REPLAY:` appears on stderr for a replay without `--no-share`, and is
       absent for a fresh build.
-- [ ] `--help` output contains the `kill -0` idiom and the `pgrep` self-match warning.
-- [ ] Each of mutations C, D, E turns the corresponding case RED.
-- [ ] No file under `.claude/**` was created or modified.
-- [ ] No task-number reference appears in either modified file (both live outside `specs/**`).
-- [ ] The FAMILY CONVENTIONS block states the revised exit-code and replay-audibility conventions
+- [x] `--help` output contains the `kill -0` idiom and the `pgrep` self-match warning.
+- [x] Each of mutations C, D, E turns the corresponding case RED.
+- [x] No file under `.claude/**` was created or modified.
+- [x] No task-number reference appears in either modified file (both live outside `specs/**`).
+- [x] The FAMILY CONVENTIONS block states the revised exit-code and replay-audibility conventions
       and the new scope-keyed-sharing convention.
 
 ## Artifacts & Outputs
