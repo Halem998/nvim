@@ -11,14 +11,10 @@ All four tasks completed: `fix_h4_adversarial_gate_matcher`,
 
 ## Open follow-ups carried out of this batch
 
-1. **Deployed-tree orphan (verified, actionable).**
-   `.claude/context/reference/team-wave-helpers.md` still exists in the deployed tree although its
-   source under `agent-system/extensions/core/` was deleted. A non-destructive
-   `deploy-headless.sh` resync never deletes removed files, so it persists. This is the sole cause
-   of two standing `verify-deploy.sh` gate13 findings (`ghost index row` + `orphan file`).
-   Fix: `bash .claude/scripts/deploy-headless.sh --wipe` (destructive: snapshot -> rm -rf
-   .claude -> regenerate -> restore `.syncprotect` paths). Deliberately NOT run automatically —
-   `context/patterns/regeneration-is-manual-only.md` requires `--wipe` be invoked explicitly.
+1. ~~Deployed-tree orphan~~ **RESOLVED.** `.claude/context/reference/team-wave-helpers.md`
+   persisted in the deployed tree after its source was deleted (a non-destructive resync never
+   removes deleted files). Cleared by `deploy-headless.sh --wipe`; both `gate13` findings are
+   gone and that gate now passes.
 
 2. **`test-force-phases.sh` hygiene**, deferred by the orphan sweep's own plan-time Decisions
    table: undeclared in `manifest.json` `provides.scripts`, plus 4
@@ -30,18 +26,33 @@ All four tasks completed: `fix_h4_adversarial_gate_matcher`,
    that single-task `/orchestrate --team` is sanctioned. Sits inside the byte-identity-preserved
    range the sweep protected, so it was recorded rather than edited.
 
-4. **Consumer repos are stale.** `deploy-headless.sh` never redeploys into a consumer. Each needs
-   its own run: `Logos/Theory` (core, 82 artifacts), `Philosophy/Papers/PossibleWorlds`
-   (core 129, filetypes 1, latex 2, lean 10, literature 27, present 1, typst 4). `cslib`,
-   `Logos/Hardware`, and `PersonalWebsite` reported CANNOTVERIFY.
+4. **Consumer repos are stale.** `deploy-headless.sh` never redeploys into a consumer. Run
+   `bash .claude/scripts/deploy-headless.sh` from inside each. Counts are artifacts behind, as of
+   the post-wipe run:
+   - `~/Philosophy/Papers/PossibleWorlds` — core 135, literature 27, lean 10, typst 4, latex 2,
+     filetypes 1, present 1
+   - `~/Projects/Logos/Theory` — core 88
+   - `~/Projects/ModelChecker` — core 88
+   - Reported CANNOTVERIFY (check directly): `~/.dotfiles` (core, memory, nix, nvim, python),
+     `~/Projects/cslib`, `~/Projects/Logos/Hardware`, `~/Projects/PersonalWebsite`
 
 ## Standing verify-deploy baseline
 
-12 findings, all pre-existing and unrelated to this batch. Two redeploys ran during it
-(30 -> 11, then 17 -> 12); **zero new findings introduced** by either. Residual set: two
-`gate10` unknown-entry-field rows (`abandon_reason`, `blocks_note` on unrelated tasks), the four
-`gate12` violations from item 2, the two `gate13` rows from item 1, `gate16` core still declaring
-`routing_hard`/`routing_agents_hard`, and three `gate3` undeclared scripts.
+**10 findings, 3 of 26 checks failing**, all pre-existing and unrelated to the batch. Measured
+after `deploy-headless.sh --wipe`. Three redeploys ran across the session (30 -> 11, 17 -> 12,
+12 -> 10); **zero new findings introduced** by any of them. The residual set is exactly:
+
+- 2x `gate10` unknown entry fields in `specs/state.json` (`abandon_reason` on 7 tasks,
+  `blocks_note` on 3) — surfaces as the `validate-state.sh --deep` check
+- 4x `gate12` hand-rolled state.json writes in `test-force-phases.sh` (item 2 above)
+- 3x `gate3` scripts on disk not declared in `provides.scripts`
+  (`test-state-write-large-payload.sh`, `tests/test-force-phases.sh`,
+  `tests/test-roadmap-argv-ceiling.sh`)
+- 1x `gate16` WARN: core still declares `routing_hard`/`routing_agents_hard` — this is precisely
+  what `collapse_routing_ladder_to_routing_agents` retires, so it clears with that task
+
+A doc-lint failure also shows in the check summary but emits no FINDING line; re-run
+`bash .claude/scripts/check-extension-docs.sh` for detail.
 
 ## Recommended next orchestration
 
