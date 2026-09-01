@@ -1485,7 +1485,7 @@
     {
       "project_number": 128,
       "project_name": "fix_h4_adversarial_gate_matcher",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1500,8 +1500,8 @@
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-01T13:32:56Z",
-      "session_id": "sess_1788267679_adbb09_128",
+      "last_updated": "2026-09-01T17:05:46Z",
+      "session_id": "sess_1788279674_73e3df_128",
       "artifacts": [
         {
           "path": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
@@ -1512,6 +1512,11 @@
           "path": "specs/128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md",
           "type": "plan",
           "summary": "Seven-phase plan porting the H4 adversarial-verification gate into skill-orchestrate/SKILL.md with the corrected matcher, closing the base engine's residue notes, and recording the deliberate co-maintenance asymmetry in both engine files."
+        },
+        {
+          "path": "specs/128_fix_h4_adversarial_gate_matcher/summaries/01_fix-h4-adversarial-gate-matcher-summary.md",
+          "type": "summary",
+          "summary": "H4 adversarial-verification gate migration"
         }
       ]
     },

@@ -1,9 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/128_fix_h4_adversarial_gate_matcher/summaries/01_fix-h4-adversarial-gate-matcher-summary.md",
+      "summary": "Ports the H4 adversarial-verification gate into skill-orchestrate/SKILL.md with corrected matcher patterns, closes the base engine's residue notes, and records the asymmetry decision in both engine files. All seven fixture-matrix rows verified against the deployed grep, both before and after landing."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Ported the H4 adversarial-verification gate into the consolidated skill-orchestrate/SKILL.md base engine with two empirically corrected grep matcher patterns, wired it into the researched and planning handlers behind the existing $hard_mode fork, closed out the base engine's stale 'Not migrated'/residue documentation, and recorded the deliberate co-maintenance asymmetry in both engine files plus a concrete defect-shape instance in system-defect-discrimination.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When porting a source engine's sequential two-if-block gate (verify-or-redispatch, then act-on-success) into a consolidated engine that must ALSO preserve unconditional prior behavior for a disabled mode, combine the mode flag into both conditions rather than nesting: gate 1 becomes `if [ mode=true ] && [ state=false ]; then ...`, and gate 2 (wrapping everything downstream that must not run on re-dispatch) becomes `if [ mode!=true ] || [ state=true ]; then ... fi`. The second condition's OR short-circuits in the disabled mode, so the state variable is never actually read there, preserving the guarantee that it's 'only ever read inside the mode guard' even though the wrapping if itself isn't nested inside a separate mode check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/128_fix_h4_adversarial_gate_matcher/summaries/01_fix-h4-adversarial-gate-matcher-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash", "if-fi wrapping", "hard_mode fork", "gate porting", "orchestrate engine"]
+    },
+    {
+      "content": "When a plan requires 'the patterns/text as they landed in the file, not re-derived from the plan', extract them from the file with `grep -oP` (or equivalent) into shell variables and re-run the same fixture matrix against those extracted values, rather than re-typing the pattern from the plan text. This catches transcription errors (a missed backslash, a copy-paste of the WRONG source engine's version) that a purely visual diff review would miss.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/128_fix_h4_adversarial_gate_matcher/summaries/01_fix-h4-adversarial-gate-matcher-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verification", "grep extraction", "regression testing", "as-landed verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788279674_73e3df",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

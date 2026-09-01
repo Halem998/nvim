@@ -42,7 +42,7 @@ next_project_number: 139
   └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
+128 [IMPLEMENTING] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
     └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
       └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
@@ -481,12 +481,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 128. Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 119
 - **Research**: [128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md]
 - **Plan**: [128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md]
+- **Summary**: [128_fix_h4_adversarial_gate_matcher/summaries/01_fix-h4-adversarial-gate-matcher-summary.md]
 
 **Description**: Repair the hard-mode H4 adversarial-verification gate, which currently burns a full extra research dispatch on every hard-mode run by failing against reports that genuinely conform. Observed live on a successful /orchestrate --hard run in a consumer repo; recorded as evt_1788245094839_eybEyC, class HOOK_REGEX_BOUNDARY_DEFECT.
 
