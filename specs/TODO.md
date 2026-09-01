@@ -1,5 +1,5 @@
 ---
-next_project_number: 134
+next_project_number: 135
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 134
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,120,126,128,133 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,120,126,128,133,134 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,75,76,89,104,105,109,112,121,124,129 | 29,74,87,102,108,120,126,128 | core-agent-system, extensions, literature |
 | 3 | 48,90,107,125,127 | 104,121,124 | core-agent-system, literature |
 | 4 | 50,88 | 48,87,127 | core-agent-system |
@@ -48,6 +48,7 @@ next_project_number: 134
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
+134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 
 ### Extensions
 
@@ -84,6 +85,52 @@ next_project_number: 134
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
 ## Tasks
+
+### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Close the third and last uncovered gate in the /tag release preflight: a tag created from a branch with unpushed commits points at a commit absent from origin/<branch>, so a consuming repo's release.yml preflight rejects it -- AFTER the tag has already been pushed, requiring a delete-and-re-push to recover.
+
+CANONICAL SOURCE. Edit `agent-system/extensions/core/skills/skill-tag/SKILL.md` and, if the user-facing contract changes, `agent-system/extensions/core/commands/tag.md`. Do NOT edit any repo's deployed `.claude/skills/skill-tag/SKILL.md` -- it is a disposable artifact regenerated from this source store (see `.claude/rules/source-store-deploy-boundary.md`).
+
+THE DEFECT, observed live during a real v1.3.9 release in a consuming repo:
+- Step 2 ("Validate Git State") fetches `origin/$current_branch`, then computes ONLY `behind=$(git rev-list --count "HEAD..origin/$current_branch")` and errors solely when `behind > 0`. It never computes or acts on the symmetric `ahead`.
+- Step 6 runs `git push origin "$new_version"` alone, with no corresponding branch push.
+- The release only succeeded because the operator manually pushed the branch before tagging. Following the skill literally, from a branch 36 commits ahead, would have produced a pushed tag pointing at a commit absent from the remote.
+
+PRIOR ART -- BUILD ON, DO NOT RE-DERIVE. This is the follow-up that the completed annotated-tag/changelog work explicitly filed rather than folded in. Read both before starting:
+- `specs/131_tag_annotated_and_changelog_preflight/reports/01_tag-annotated-and-changelog-preflight.md` -- see its "Decisions" section, finding (4).
+- `specs/131_tag_annotated_and_changelog_preflight/summaries/01_tag-annotated-changelog-preflight-summary.md` -- see its "Follow-ups" section, which quotes finding (4) verbatim precisely so this task need not rediscover it.
+
+Quoting that recorded finding: "the fix is cheap and reuses data Step 2 already fetches. Step 2 already does `git fetch origin \"$current_branch\"` and computes `behind=$(git rev-list --count \"HEAD..origin/$current_branch\")`; the symmetric 'ahead' check is `git rev-list --count \"origin/$current_branch..HEAD\"` -- if nonzero, local `HEAD` has commits not yet on the remote, which is exactly the condition that will make a tag created against it unreachable from `origin/<branch>` and fail the reference preflight's third assertion. A follow-up task should point directly at `SKILL.md`'s Step 2 (not Step 3.5/3.6) and can almost certainly reuse the `remote_sha`/`behind` variables already computed there."
+
+REFERENCE GATE, to verify the fix against a real assertion rather than an imagined one. The reference preflight (ModelChecker `.github/workflows/release.yml`) asserts, after fetching the tag ref:
+    TAG_TYPE=$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")     # already satisfied
+    git merge-base --is-ancestor "${GITHUB_REF_NAME}" origin/master  # NOT satisfied
+The first half is closed by the annotated-tag work. The second half -- ancestry of the TAGGED COMMIT from `origin/<branch>` -- is what this task closes.
+
+DESIGN QUESTIONS TO RESOLVE DELIBERATELY, NOT BY REFLEX. Each must be decided and the judgment recorded in the research report, in the same way the annotated-tag message source and the `-a` vs `-s` choice were recorded rather than defaulted into:
+
+1. REFUSE vs. AUTO-PUSH. Either refuse when the branch is not fully pushed, with actionable resolution text ("Push the branch with `git push origin $current_branch` before tagging"), or push the branch automatically ahead of the tag push in Step 6. Default to REFUSE unless auto-push is affirmatively justified: pushing a branch is an outward-facing action with materially different risk than pushing a tag, and /tag is user-only precisely because deployment timing is a human decision. An auto-push silently publishes work the operator may not have intended to publish yet. If auto-push is chosen anyway, it must be explicit, previewed by --dry-run, and confirmed in the Step 5 interactive prompt -- never a silent side effect.
+
+2. PLACEMENT. Step 2 ("Validate Git State", which already holds the `behind` check and the fetch this needs) versus a new step adjacent to Step 3.6. Step 2 is the natural home per the recorded finding above, but note the ordering consequence: the tag ref does not exist yet at Step 2, so a Step 2-placed check can only test HEAD, not the tag. Reconcile that against design question 3 before deciding.
+
+3. EXACT PREDICATE, not a proxy. `ahead == 0` on HEAD is a PROXY for the CI gate; the CI gate's actual predicate is that the TAGGED COMMIT is an ancestor of `origin/<branch>`. These diverge whenever the tag is not created at HEAD. Determine whether /tag can ever tag a non-HEAD commit as currently written (Step 4 reports `git rev-parse HEAD` and Step 6 tags with no commit-ish argument, i.e. HEAD) and decide whether to mirror the CI predicate exactly via `git merge-base --is-ancestor` against the fetched remote ref, or to accept the `ahead` proxy with the equivalence explicitly recorded as a documented assumption. Do not leave the divergence unexamined.
+
+4. --dry-run TRUTHFULNESS. The annotated-tag work established that the --dry-run preview must not misrepresent what a real run does (the preview line and the real command were required to change in step). Apply the same standard here: the new check must run before Step 5's `--dry-run` early exit (as Steps 3.5 and 3.6 already do), and if auto-push is chosen, the dry-run "Would execute:" block must list the branch push alongside the tag push.
+
+5. OVERRIDE FLAG. Decide whether an escape hatch is warranted at all. If yes, follow the established `--skip-version-check` / `--skip-changelog-check` convention exactly: the flag suppresses the BLOCK, not the DISCLOSURE -- print the full failure detail first, then the override warning, so the transcript records what was overridden. If no flag is warranted, record why (this gate, unlike a version or changelog mismatch, has a trivially safe remedy: push the branch).
+
+ALSO UPDATE. `agent-system/extensions/core/commands/tag.md` documents the flag table, workflow, and Requirements; keep it in sync with whatever is decided, or the command doc silently contradicts the skill. Also update the "Behind Remote" entry in SKILL.md's own Error Handling section neighborhood with the corresponding not-fully-pushed example output.
+
+NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do not add a check for the reference workflow's fourth assertion (tagged release.yml matching origin's copy) -- it is workflow-file-content-specific and out of scope for a repo-agnostic skill, as already recorded. Do not couple the skill to any single repository's branch name; `origin/master` appears in the reference gate but the skill must use `$current_branch`.
+
+VERIFICATION. At minimum: `bash -n` on extracted blocks; a behavioral smoke test covering (a) branch fully pushed, (b) branch ahead, (c) branch behind, (d) --dry-run under each; and a literal check that the resulting tag satisfies `git merge-base --is-ancestor "$new_version" "origin/$current_branch"`.
+
+---
 
 ### 133. Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
 - **Status**: [PLANNED]
