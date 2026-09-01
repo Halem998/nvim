@@ -1171,12 +1171,12 @@
     {
       "project_number": 120,
       "project_name": "retarget_hard_mode_tests_to_engine_branch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.\n\nCONTEXT. Once the hard-mode contract-injection and state-machine logic land inside skill-orchestrate/SKILL.md as hard_mode-gated branches (rather than in the separate skill-orchestrate-hard/SKILL.md file), these 7 files' fixtures/assertions must be retargeted so their coverage is preserved rather than silently dropped when skill-orchestrate-hard is deleted: test-loop-guard-budget-override.sh, test-routing-resolution.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-handoff-dispatch-identity.sh, test-resume-scan-nonconformance.sh, lint-contract-compliance.sh.\n\nWORK. For each file, update fixture paths and assertions to exercise skill-orchestrate/SKILL.md's hard_mode=true branch instead of skill-orchestrate-hard/SKILL.md. Verify each test still exercises the SAME underlying mechanism it did before (loop-guard budget, routing resolution, handoff reader parity, resume-scan nonconformance detection, contract compliance) -- this is a retarget, not a rewrite of intent. Run the full suite after retargeting and confirm no regression in what each test actually catches (a mutation check: temporarily reintroduce the bug each test guards against and confirm the retargeted test still fails).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/tests/**, agent-system/extensions/core/scripts/lint/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md (Finding 2, enumerated file set); reports/03_target-state-design.md (A4-iv).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-01T13:33:07Z",
+      "last_updated": "2026-09-01T18:29:36Z",
       "dependencies": [
         118,
         119,
@@ -1201,9 +1201,14 @@
           "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md",
           "type": "plan",
           "summary": "8-phase plan retargeting all 7 hard-mode test/lint files from skill-orchestrate-hard/SKILL.md to skill-orchestrate/SKILL.md's hard_mode branches, including the Case 4 correctness fix, two comparison-premise rewrites, four planning-discovered defects, and a per-file mutation-check gate."
+        },
+        {
+          "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+          "type": "summary",
+          "summary": "All 8 phases completed: retargeted seven hard-mode test/lint files to skill-orchestrate/SKILL.md's hard_mode branches, with mutation checks and a before/after-deletion acceptance gate."
         }
       ],
-      "session_id": "sess_1788267679_adbb09_120"
+      "session_id": "sess_1788287299_e65079_120"
     },
     {
       "project_number": 121,
@@ -1485,7 +1490,7 @@
     {
       "project_number": 128,
       "project_name": "fix_h4_adversarial_gate_matcher",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1500,8 +1505,8 @@
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-01T17:05:46Z",
-      "session_id": "sess_1788279674_73e3df_128",
+      "last_updated": "2026-09-01T18:28:51Z",
+      "session_id": "sess_1788287299_e65079",
       "artifacts": [
         {
           "path": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
@@ -1603,7 +1608,7 @@
     {
       "project_number": 133,
       "project_name": "fix_orchestrate_deploy_pending_annotation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation",
       "description": "=== REVISED 2026-09-01 (backlog streamline: absorbs the defect-class registration task) ===\nCOMBINED SCOPE. This task now also carries the full scope of the abandoned sibling registration task as PART 1; the TASK_DIR binding fix below is PART 2. The two were split for phase sizing but are small, same-area pieces of one incident; the dependency on the sibling is removed.\n\nPART 1 -- REGISTER THE DEFECT CLASS. Register a new --defect-class in the system-defect vocabulary so a documented observation marker that silently fails to land -- because of a caller/callee variable-binding mismatch -- can be recorded to specs/events.jsonl at all. Today it cannot: the recorder correctly rejects any unsanctioned class name, and none of the thirteen existing classes covers this shape. Edit agent-system/extensions/core/scripts/system-defect-record.sh and agent-system/extensions/core/context/patterns/system-defect-discrimination.md. The closed enum is hard-coded in a case statement at system-defect-record.sh:161-170; the discrimination doc's class table occupies lines 79-91; the literal count word \"thirteen\" appears in prose that must be updated in step (at minimum the usage comment at :16, the error message at :167, and the doc's header/prose around the table). The class MUST be registered in BOTH the doc table AND the recorder validator in the same change -- registering in only one place reproduces the silent-rejection failure this work exists to close. Candidate name (weigh, do not rubber-stamp): AMBIENT_BINDING_MISMATCH -- confirm it names the MECHANISM rather than the motivating instance, reads correctly alongside the existing thirteen, and does not overlap an existing class; an alternative framing centered on the unreached observability marker is a legitimate competing option; record the judgment either way. Precedent: additive registration without a detector is an accepted state (several classes are marked \"not currently computed anywhere\"). NON-GOALS for Part 1: no automated detector; no restructuring or renumbering of the existing classes.\n\nORDERING WITHIN THE TASK: land Part 1 first, then Part 2, then record the motivating incident to specs/events.jsonl under the new class -- the recording that originally failed (exit 1, \"invalid --defect-class\") is the natural end-to-end verification that both parts work.\n=== ORIGINAL DESCRIPTION (PART 2) FOLLOWS ===\nFix a substantive reporting defect: under /orchestrate, the deploy-pending annotation that `skill_postflight_update` is documented to record never lands, because the annotation block is guarded on an ambient environment variable the orchestrate caller never sets.\n\nCANONICAL SOURCE. Edit `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`, `agent-system/extensions/core/scripts/skill-base.sh`, and `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.\n\nVERIFIED CURRENT STATE (confirmed by direct inspection; the research phase should not need to re-derive this).\n- `skill-base.sh:199` sets `TASK_DIR=\"specs/${PADDED_NUM}_${PROJECT_NAME}\"`, but only inside the skill task-context loader.\n- `orchestrate-stage5-postflight.sh:55` binds the task directory ONLY as a lowercase positional, `task_dir=\"${4:-}\"`, and never sets or exports `TASK_DIR`.\n- That script calls `skill_postflight_update` at lines 111, 114, and 127.\n- The exit-6 annotation block inside `skill_postflight_update` is guarded at `skill-base.sh:536` on `[[ -n \"${TASK_DIR:-}\" && -f \"${TASK_DIR}/.return-meta.json\" ]]`.\n- Consequence: under /orchestrate that guard is ALWAYS false, so `deploy_pending` and `deploy_pending_reason` silently stay null on every deploy-pending refusal, while the `[deploy-check] deploy-pending: ...` line still prints. Observed directly on a real run; the deferral had to be diagnosed by hand.\n\nCONTRACT THIS DEFEATS. `context/patterns/regeneration-is-manual-only.md`, in its \"Automated Exception: The Postflight Completion-Deploy Gate\" section, states that a task refused under /orchestrate \"defers loudly (via the `deploy_pending` marker `skill_postflight_update` records into its `.return-meta.json`)\". skill-base.sh's own comment above the block calls it the \"D6 residual mitigation\" for exactly the /orchestrate reporting surface it fails to reach. The documentation describes behavior that does not occur.\n\nRECOMMENDATION FOR THE PLAN PHASE TO WEIGH, NOT A SETTLED DECISION. Two fixes are available: (a) export `TASK_DIR` at the orchestrate caller, or (b) thread the task directory into `skill_postflight_update` as an explicit parameter. Option (b) is recommended, because it removes the ambient env-var coupling rather than satisfying it -- the ambient coupling is the underlying fragility, and (a) leaves the same trap set for the next non-skill caller. The plan phase should weigh (b)'s cost: `skill_postflight_update` already takes an optional 5th argument (`phase_check_mode`), so a new parameter must not disturb that positional contract or the existing callers' byte-for-byte behavior. Record the judgment either way.\n\nCALLER AUDIT RESULT (already performed). The other `skill_postflight_update` callers are skill files -- `skill-web-implementation`, `skill-web-research`, `skill-epi-implement`, `skill-epi-research` -- which run inside the skill context where `skill-base.sh:199` has already set `TASK_DIR`. They are SAFE TODAY. `orchestrate-stage5-postflight.sh` is the current outlier, but the coupling remains latent for any future non-skill caller, which is the argument for option (b). Re-confirm this audit against the tree at implementation time rather than trusting it blindly.\n\nVERIFICATION REQUIREMENT. Add a regression test to `scripts/tests/test-skill-base-lifecycle.sh` asserting that on an exit-6 refusal, `deploy_pending` is true and `deploy_pending_reason` is non-null in the task's `.return-meta.json`. Note the existing test file's own comment (around line 25) recording that these lifecycle functions hardcode a bare relative path -- that constraint shapes how the test must set up its fixture.\n\nNON-GOALS. Do not change the completion-deploy gate's refusal logic or its exit-6 semantics. Do not alter what `update-task-status.sh` returns. Do not weaken the block's best-effort, non-blocking character: a failure to annotate `.return-meta.json` must still never escalate past a warning, since the authoritative outcome remains update-task-status.sh's own rc.",
@@ -1617,8 +1622,8 @@
         "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
       ],
       "created": "2026-09-01T12:21:17Z",
-      "last_updated": "2026-09-01T13:33:41Z",
-      "session_id": "sess_1788267679_adbb09_133",
+      "last_updated": "2026-09-01T18:29:30Z",
+      "session_id": "sess_1788287299_e65079_133",
       "artifacts": [
         {
           "path": "specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md",
@@ -1629,6 +1634,11 @@
           "path": "specs/133_fix_orchestrate_deploy_pending_annotation/plans/01_fix-deploy-pending-annotation.md",
           "type": "plan",
           "summary": "Five-phase plan registering the AMBIENT_BINDING_MISMATCH defect class in both vocabulary sites, then threading the task directory into skill_postflight_update as an optional 6th positional to fix the /orchestrate deploy-pending annotation, with a regression test and an end-to-end events.jsonl recording."
+        },
+        {
+          "path": "specs/133_fix_orchestrate_deploy_pending_annotation/summaries/01_fix-deploy-pending-annotation-summary.md",
+          "type": "summary",
+          "summary": "Phases 1-4 complete (class registration, task_dir_override parameter, call-site updates, regression test); Phase 5 blocked by deploy-root-guard.sh, left partial with a documented follow-up."
         }
       ]
     },
