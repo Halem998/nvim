@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Remove context/reference/team-wave-helpers.md and its index row",
+  "started_at": "2026-09-01T20:21:00Z",
+  "last_updated": "2026-09-01T20:28:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete team-wave-helpers.md and its index-entries.json entry as one atomic change",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/reference/team-wave-helpers.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "check-extension-docs.sh now shows deployed-vs-source drift findings for files this sweep edited (skill-lifecycle.md line_count, artifact-formats.md content) -- these are expected, self-resolving upon a future redeploy per source-store-deploy-boundary.md, not defects introduced by this sweep. Documented for Phase 8's diff."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

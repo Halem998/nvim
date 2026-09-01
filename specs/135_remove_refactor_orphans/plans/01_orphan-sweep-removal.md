@@ -288,28 +288,29 @@ before editing; the expected post-edit state is one hit in each file, both scope
 
 ---
 
-### Phase 4: Remove `context/reference/team-wave-helpers.md` and its index row [NOT STARTED]
+### Phase 4: Remove `context/reference/team-wave-helpers.md` and its index row [COMPLETED]
 
 **Goal**: Delete the one confirmed dead file together with its `index-entries.json` entry, as a
 single atomic change.
 
 **Tasks**:
-- [ ] Re-confirm the removal reason before deleting, and record it in the commit body: the file
+- [x] Re-confirm the removal reason before deleting, and record it in the commit body: the file
   documents dispatch mechanics belonging to three skills that no longer exist — this is
   "nothing points here because the thing it documents is gone", not "nothing points here yet".
   Two independent confirmations: its own closing line globs
   `` .claude/skills/skill-team-*/SKILL.md `` against a pattern with zero matches, and it is the
-  sole remaining `skill-team` hit anywhere in the tree.
-- [ ] Confirm `agent-system/extensions/core/agents/synthesis-agent.md` does not cite the file in
+  sole remaining `skill-team` hit anywhere in the tree. *(completed: both confirmed)*
+- [x] Confirm `agent-system/extensions/core/agents/synthesis-agent.md` does not cite the file in
   its Context References section (`grep -n "team-wave-helpers"` over `agents/`) — the
   `load_when.agents: ["synthesis-agent"]` binding makes the file mechanically injected but never
-  designedly consumed, and this distinction is what justifies the removal.
-- [ ] Delete `agent-system/extensions/core/context/reference/team-wave-helpers.md`.
-- [ ] Delete the corresponding entry object from
+  designedly consumed, and this distinction is what justifies the removal. *(completed: 0 hits)*
+- [x] Delete `agent-system/extensions/core/context/reference/team-wave-helpers.md`. *(completed)*
+- [x] Delete the corresponding entry object from
   `agent-system/extensions/core/index-entries.json` (hypothesised around line 1433-1455, keyed on
   `"path": "reference/team-wave-helpers.md"`), preserving surrounding JSON comma structure and
-  the file's existing array-formatting conventions.
-- [ ] Confirm no other extension's `index-entries.json` declares the same path.
+  the file's existing array-formatting conventions. *(completed: confirmed at lines 1433-1455)*
+- [x] Confirm no other extension's `index-entries.json` declares the same path. *(completed: core
+  only)*
 
 **Timing**: 0.4 hours
 

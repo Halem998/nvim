@@ -1035,7 +1035,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
-      "line_count": 397,
+      "line_count": 409,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1428,29 +1428,6 @@
           "/task",
           "/todo"
         ]
-      }
-    },
-    {
-      "path": "reference/team-wave-helpers.md",
-      "domain": "core",
-      "subdomain": "reference",
-      "summary": "Helper patterns for team wave-based parallel execution",
-      "line_count": 400,
-      "keywords": [
-        "reference",
-        "team",
-        "wave",
-        "helpers"
-      ],
-      "topics": [
-        "orchestration"
-      ],
-      "load_when": {
-        "agents": [
-          "synthesis-agent"
-        ],
-        "commands": [],
-        "task_types": []
       }
     },
     {
@@ -2922,7 +2899,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 7/7a/8/8a/9 postflight status update, memory-candidate propagation, artifact linking, TTS notify, and cleanup block imported by lifecycle skills",
-      "line_count": 177,
+      "line_count": 192,
       "keywords": [
         "postflight",
         "memory_candidates",
