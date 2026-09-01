@@ -1383,12 +1383,12 @@
     {
       "project_number": 126,
       "project_name": "implement_orchestrate_phase_forcing_flags",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.\n\nCONTEXT. /orchestrate has no mechanism today to re-run a lifecycle phase that already produced an artifact (e.g. `/orchestrate NNN --research` to run an additional research round on a task already [PLANNED] or beyond). No increment mechanism exists for a forced re-plan or re-implement either: orchestrator-postflight.sh's Stage 7a next_artifact_number increment fires only on research (\"research only\"), and skill-base.sh's \"prev\" mode read (next_artifact_number - 1) assumes plan/implement always share the round research just opened.\n\nWORK. (1) Add --research/--plan/--implement flags to orchestrate.md's Options table and parse-command-args.sh, threading them into the delegation context as force_phases (e.g. [\"research\",\"plan\"]). (2) Extend skill-orchestrate's Stage 1b/2 phase-resolution logic to check force_phases FIRST: when set, run exactly the composed sequence (composition means \"stop after the last named phase\", not \"force both starting from the first\") instead of the status-derived phase; with no flag, resume-from-first-incomplete-phase (today's behavior) is unchanged. (3) Change orchestrator-postflight.sh's Stage 7a increment condition from \"phase == research\" to \"phase was force-invoked, any phase\" -- a forced phase always opens a new MM_ round (append, never replace), so the round-numbering convention already in use for research works identically for a forced plan or implement. (4) Add a monotonic-max clamp to the forced-phase status write: a forced --research on a task already at [PLANNED] or beyond must never regress status back to [RESEARCHED] -- the status write is skipped (report/artifact link still added) whenever the new value would be a regression.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md, agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/scripts/orchestrator-postflight.sh, agent-system/extensions/core/scripts/skill-base.sh, agent-system/extensions/core/scripts/parse-command-args.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A2, all four sub-questions).\n",
       "created": "2026-08-31T18:11:43Z",
-      "last_updated": "2026-09-01T16:22:07Z",
+      "last_updated": "2026-09-01T17:05:05Z",
       "dependencies": [
         117,
         122

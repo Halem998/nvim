@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "summary": "Implemented all 7 phases of A2 phase-forcing flags on /orchestrate: parser flag surface (FORCE_PHASES_FLAG), status-rank clamp helpers, 8-site command threading, a new Stage 2b forced-phase queue with Stage 3c dispatch rewrite, monotonic-max status clamp plus artifact-round advance in postflight scripts, a 19-case regression suite, and doc sync. Filed task 138 for the deferred multi-task consumption gap. Task-level status transition to completed is blocked by the completion-deploy gate (edits are source-store-only and .claude/ is stale) -- a manual deploy/regeneration is required before state.json can transition; task currently rests at implementing with deploy_pending recorded in .return-meta.json.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/126_implement_orchestrate_phase_forcing_flags/summaries/01_orchestrate-phase-forcing-flags-summary.md", "summary": "All 7 phases landed; task 138 filed for deferred multi-task gap."}
+  ],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "next_action_hint": "deploy_pending: run manual [Reload All]/Regenerate (or deploy-headless.sh), then re-run postflight status update to land the completed transition",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/scripts/lib/status-vocabulary.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md"
+  ],
+  "decisions_made": [
+    "orchestrator-postflight.sh confirmed dead code for /orchestrate; left unmodified per plan correction",
+    "Artifact-numbering gap (a) folded in, bounded to single-task mode; MT deferred to task 138"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true,
+  "dispatch_seq": 1
+}

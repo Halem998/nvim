@@ -11,10 +11,10 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,126,128,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,104,105,109,112,120,124,129,136 | 29,74,87,91,102,108,126,128 | core-agent-system, extensions, literature |
-| 3 | 48,90,107,121,125,135 | 104,120,124,126,133 | core-agent-system, literature |
-| 4 | 50,127 | 48,121,124 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,124,128,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,48,75,76,89,90,104,105,109,112,120,125,129,136 | 29,74,87,91,102,108,124,128 | core-agent-system, extensions, literature |
+| 3 | 50,107,121,135 | 48,104,120,133 | core-agent-system, literature |
+| 4 | 127 | 121,124 | core-agent-system |
 | 5 | 88 | 87,127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -35,20 +35,18 @@ next_project_number: 139
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-126 [IMPLEMENTING] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-  └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
-    └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-      └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-    └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-    └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
+124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
+  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+    └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+  └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
     └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
       └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
-    └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
+    └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
   └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
@@ -561,7 +559,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 126. Implement orchestrate phase forcing flags
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 122
