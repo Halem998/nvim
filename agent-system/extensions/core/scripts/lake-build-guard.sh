@@ -24,12 +24,24 @@
 #   - subcommand shape: `status` (detect only) / `preflight` (resource check only) / `build`
 #     (the guarded wrapper) -- three separable modes so a caller can adopt detection before
 #     committing to the wrapper.
-#   - exit-code shape: `build` mode passes the wrapped command's own exit code through untouched
-#     in the normal case; guard-specific failures live in a small reserved band (75-79 here).
-#   - silent-when-no-conflict: the guard emits zero bytes of its own output on the clean/
-#     no-conflict path in every mode, so it composes safely inside a `$(... 2>&1)` call site.
+#   - exit-code shape (REVISED): the guard validates the wrapped command's own argument vector
+#     BEFORE dispatch and refuses an unrecognized or empty one in the reserved usage band (77
+#     here -- see the LAKE_SUBCOMMAND ALLOWLIST section below). The "passes the wrapped command's
+#     exit code through untouched" guarantee therefore applies only to a command vector the guard
+#     actually recognized: passthrough WITHOUT prior validation is exactly what produces a false
+#     pass -- dispatching an unrecognized vector to the wrapped tool and reporting whatever it
+#     happens to exit, even when no corresponding work ran.
+#   - silent-when-no-conflict (QUALIFIED): silence is correct for the clean/no-conflict path in
+#     every mode. A REPLAYED result is NOT a no-conflict path: it MUST announce itself with a
+#     stable, documented stderr marker prefix (see REPLAY below), because a caller otherwise
+#     cannot distinguish a replay from a fresh run without passing --no-share.
 #   - degrade audibly, never silently: a missing optional dependency (flock, systemd-run, PSI)
 #     produces a visible stderr notice and a fallback behavior, never a crash and never silence.
+#     The REPLAY marker follows this same fixed `lake-build-guard:`-prefixed stderr house style.
+#   - result sharing keys on scope, not staleness alone (NEW): a guard that shares a completed
+#     result MUST key that decision on a normalized form of the wrapped command's own argument
+#     vector, in addition to input staleness. Inputs unchanged does not imply the requested work
+#     is the same requested work -- see scope_key below.
 #
 # RECORDED DEAD ENDS (do not re-attempt these as a "quick fix" for build concurrency):
 #   - Lake 5.0.0 exposes no `-j`/`--jobs` flag (confirmed against a live `lake build --help`).
@@ -43,6 +55,20 @@
 #     LEAN_NUM_THREADS as a concurrency lever -- every other appearance of the string in this
 #     file is documentation of that fact, never an assignment.
 #
+# LAKE SUBCOMMAND ALLOWLIST (build mode; see LAKE_SUBCOMMANDS below):
+#   build mode validates lake_args[0] against a hardcoded allowlist before dispatch, rather than
+#   probing `lake --help` dynamically. A dynamic probe would acquire lake's help-format stability
+#   as a new dependency and, worse, would validate nothing at all against the fake `lake` this
+#   script's own test harness substitutes on PATH (which ignores its arguments and always echoes
+#   fixed markers) -- every build-mode case would then fail validation.
+#   PROVENANCE: enumerated from a live `lake --help`, Lake 5.0.0-src+2fcce72 / Lean 4.27.0-rc1.
+#   RE-VERIFY AND UPDATE THIS LIST after any Lake upgrade that adds or renames subcommands.
+#   ESCAPE HATCH: LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS (space-separated, see TEST SEAMS below) lets
+#   a caller accept a newly-added Lake subcommand immediately, without waiting on a source-store
+#   update to this allowlist. A flag-shaped first token (e.g. `--version`) is never a subcommand
+#   and is always rejected, allowlist or no: `lake --version` runs no build, yet completing it
+#   would finalize a shareable `state=complete` record for work that never happened.
+#
 # USAGE:
 #   lake-build-guard.sh status    [--dir DIR] [--verbose]
 #   lake-build-guard.sh preflight [--dir DIR] [--memory-high VAL] [--memory-max VAL] [--verbose]
@@ -51,12 +77,24 @@
 #                                 [--no-share] [--verbose] [--] [LAKE ARGS...]
 #   lake-build-guard.sh --help
 #
+# WAITING ON AN IN-FLIGHT GUARDED BUILD: read `holder_pid` from the result record (or from
+#   `status --verbose`, see cmd_status() below), then poll that PID directly:
+#     while kill -0 "$holder_pid" 2>/dev/null; do sleep 1; done
+#   Do NOT use `pgrep -f "lake-build-guard.sh build"` (or any `pgrep -f` variant naming this
+#   script) to wait -- a polling shell whose own argv happens to contain that same string
+#   self-matches its own `pgrep -f` and the loop never terminates. This is the same self-match
+#   pitfall cmd_status() itself avoids by never scanning the process table (see the comment
+#   immediately above cmd_status() below); `kill -0` on the recorded holder PID is the only
+#   idiom that does not carry it.
+#
 # EXIT CODES:
-#   build mode:     0 and any code the underlying `lake` returns are passed through untouched.
-#                   Guard-specific failures use the reserved band 75-79:
+#   build mode:     0 and any code the underlying `lake` returns are passed through untouched, for
+#                   a recognized lake subcommand (see LAKE SUBCOMMAND ALLOWLIST above). Guard-
+#                   specific failures use the reserved band 75-79:
 #                     75  lock-wait timeout (no build launched, no result shared)
 #                     76  deferred on memory pressure with --defer-on-pressure (build not launched)
-#                     77  usage error (bad flags/subcommand)
+#                     77  usage error (bad flags/subcommand, INCLUDING an unrecognized or missing
+#                         lake subcommand in build mode -- no build is attempted in that case)
 #                     78  no Lean project found (no lakefile.lean/lakefile.toml above --dir)
 #                     79  a required capability was missing (e.g. no `lake` on PATH)
 #                   NOTE (reserved-band collision, documented honestly): `lake` itself could in
@@ -68,8 +106,11 @@
 #   preflight mode: 0   no memory pressure detected (no output)
 #                   11  memory pressure detected (report on stderr)
 #
-# STALENESS POLICY (result sharing -- see compute_fingerprint()/decide_sharing() below for the
-# implementation; this is the authoritative statement of the policy itself):
+# STALENESS POLICY (result sharing -- see compute_fingerprint()/compute_scope_key()/
+# decide_sharing() below for the implementation; this is the authoritative statement of the
+# policy itself). REVISED: the policy now governs both source-tree change AND build scope -- the
+# prior text below governed source change alone and never claimed to cover scope; scope_key
+# (condition 5) closes that gap.
 #   A session that acquires the build lock -- whether immediately (no contention) or after
 #   waiting on a concurrent holder -- may REPLAY a prior build's result (stdout, stderr, exit
 #   status) instead of running its own, but only when ALL of the following hold -- failing ANY
@@ -81,8 +122,16 @@
 #     2. The record's POST-build fingerprint equals the WAITER's CURRENT fingerprint -- i.e. the
 #        tree has not moved since that build finished. This is the "result predates the waiter's
 #        own edits" guard.
-#     3. The record is younger than a configurable max age (default 900s / 15 minutes).
-#     4. --no-share was not passed.
+#     3. The record's scope_key equals the WAITER's OWN scope key -- a hash of the invocation's
+#        lake argument vector (see compute_scope_key() below). A scoped build (e.g. `build
+#        Foo.Bar`) and a full build (`build`) over an identical, unchanged tree are DIFFERENT
+#        requested work and must never share a result; a missing or empty recorded scope_key
+#        (e.g. a hand-written or pre-scope-key record) is treated as NOT shareable (fail closed).
+#     4. The record is younger than a configurable max age (default 900s / 15 minutes).
+#     5. --no-share was not passed.
+#   A replayed result announces itself: cmd_build() emits one `lake-build-guard: REPLAY:` line on
+#   stderr, naming the holder pid, the result's age, and the recorded exit status, immediately
+#   before replaying -- see the FAMILY CONVENTIONS silent-when-no-conflict qualification above.
 #   Fingerprint asymmetry is deliberate and conservative in only one direction: the check must
 #   NEVER report "unchanged" when content actually changed (a real content write always moves
 #   mtime, so default `stat` mode never misses a real change except the narrow edge noted below);
@@ -107,6 +156,12 @@
 #   LAKE_BUILD_GUARD_MEMINFO_PATH - path to the meminfo file. Default: /proc/meminfo
 #   LAKE_BUILD_GUARD_FINGERPRINT  - fingerprint mode, "stat" (default) or "hash".
 #   LAKE_BUILD_GUARD_MEMORY_BOUND - "1" is equivalent to passing --memory-bound.
+#   LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS - space-separated list of additional lake subcommands to
+#                                   accept in build mode, beyond the LAKE_SUBCOMMANDS allowlist
+#                                   (see LAKE SUBCOMMAND ALLOWLIST above). Default: empty. Unlike
+#                                   the other seams above, this one is also a production escape
+#                                   hatch, not test-only: it unblocks a caller hitting a
+#                                   newly-added Lake subcommand without a source-store update.
 #
 set -euo pipefail
 
@@ -116,6 +171,7 @@ LAKE_BUILD_GUARD_PSI_PATH="${LAKE_BUILD_GUARD_PSI_PATH:-/proc/pressure/memory}"
 LAKE_BUILD_GUARD_MEMINFO_PATH="${LAKE_BUILD_GUARD_MEMINFO_PATH:-/proc/meminfo}"
 LAKE_BUILD_GUARD_FINGERPRINT="${LAKE_BUILD_GUARD_FINGERPRINT:-stat}"
 LAKE_BUILD_GUARD_MEMORY_BOUND="${LAKE_BUILD_GUARD_MEMORY_BOUND:-0}"
+LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS="${LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS:-}"
 
 # --- Internal defaults (never hardcoded byte/GB constants -- ratios and percentages only) ---
 DEFAULT_LOCK_TIMEOUT=600      # seconds a waiter blocks before giving up (exit 75)
@@ -126,6 +182,12 @@ PSI_SOME_AVG10_THRESHOLD="10.0"
 PSI_FULL_AVG10_THRESHOLD="5.0"
 MEM_AVAILABLE_RATIO_THRESHOLD=10   # percent of MemTotal; below this is "pressure"
 SWAP_USED_RATIO_THRESHOLD=50       # percent of SwapTotal in use; above this is "pressure"
+
+# LAKE_SUBCOMMANDS: hardcoded allowlist for build-mode subcommand validation (see LAKE SUBCOMMAND
+# ALLOWLIST in the header above for the full rationale, provenance, and the
+# LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS escape hatch). Enumerated from a live `lake --help` against
+# Lake 5.0.0-src+2fcce72 / Lean 4.27.0-rc1. RE-VERIFY AND UPDATE after a Lake upgrade.
+LAKE_SUBCOMMANDS="new init build query exe check-build test check-test lint check-lint clean env lean update pack unpack upload cache script scripts run translate-config serve"
 
 print_help() {
   cat <<'EOF'
@@ -153,9 +215,30 @@ Global options:
   --verbose              Emit diagnostic detail on stderr.
   --help, -h             Show this message.
 
+Build-mode subcommand validation:
+  build mode requires a recognized lake subcommand as LAKE ARGS[0] (e.g. `build`, `test`,
+  `check-build`, ...); an unrecognized, flag-shaped, or missing subcommand exits 77 before any
+  build is attempted. Set LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS (space-separated) to accept
+  additional subcommands without a source-store update to the built-in allowlist.
+
+Result sharing and the REPLAY marker:
+  A completed result is replayed only for an equivalently-scoped build (an identical lake
+  argument vector) over an unchanged tree. A replayed run announces itself on stderr with the
+  stable, documented prefix `lake-build-guard: REPLAY:`, naming the holder pid, the result's age,
+  and its recorded exit status. To assert that a genuine build ran rather than a replay: grep
+  stderr for the absence of that marker, or pass --no-share to force a real build.
+
+Waiting on an in-flight guarded build:
+  Read `holder_pid` from the result record (or from `status --verbose`), then poll it directly:
+    while kill -0 "$holder_pid" 2>/dev/null; do sleep 1; done
+  Do NOT use `pgrep -f "lake-build-guard.sh build"` to wait -- a polling shell whose own argv
+  contains that same string self-matches its own `pgrep -f` and the loop never terminates.
+
 Exit codes:
-  build mode:     0 / lake's own code on success; 75 lock-wait timeout; 76 deferred on pressure;
-                   77 usage error; 78 no Lean project found; 79 required capability missing.
+  build mode:     0 / lake's own code (for a recognized subcommand) on success; 75 lock-wait
+                   timeout; 76 deferred on pressure; 77 usage error (including an unrecognized,
+                   flag-shaped, or missing lake subcommand); 78 no Lean project found; 79 required
+                   capability missing.
   status mode:    0 no in-flight build (no output); 10 in-flight build detected (report on stdout).
   preflight mode: 0 no pressure (no output); 11 pressure detected (report on stderr).
 
@@ -254,6 +337,18 @@ compute_fingerprint() {
   )
 }
 
+# Compute a scope key: a hash of the invocation's own lake argument vector (Defect B fix -- see
+# "result sharing keys on scope, not staleness alone" in FAMILY CONVENTIONS above). Hashes a
+# NUL-separated join, NEVER a space-joined string, so argument boundaries stay unambiguous (e.g.
+# `build A B` and `build "A B"` must not collide). `printf '%s\0' "$@"` on a zero-length "$@"
+# still produces well-defined input to sha256sum (the hash of the empty byte stream).
+compute_scope_key() {
+  (
+    set +o pipefail
+    printf '%s\0' "$@" | sha256sum | awk '{print $1}'
+  )
+}
+
 # --- Result record I/O ---------------------------------------------------------------------------
 # Flat key=value record, one key per line. Read via grep (never sourced), so record content is
 # never executed as shell.
@@ -265,7 +360,7 @@ get_record_field() {
 }
 
 write_inflight_record() {
-  local pre_fp="$1"
+  local pre_fp="$1" scope_key="$2"
   {
     echo "state=in_flight"
     echo "holder_pid=$$"
@@ -273,6 +368,7 @@ write_inflight_record() {
     echo "end_epoch="
     echo "pre_fingerprint=$pre_fp"
     echo "post_fingerprint="
+    echo "scope_key=$scope_key"
     echo "lake_bin=$LAKE_BIN"
     echo "exit_status="
     echo "log_path=$LOG_PATH"
@@ -281,9 +377,10 @@ write_inflight_record() {
 
 finalize_record() {
   local exit_status="$1" post_fp="$2"
-  local start_epoch pre_fp
+  local start_epoch pre_fp scope_key
   start_epoch="$(get_record_field start_epoch "$RESULT_PATH" || true)"
   pre_fp="$(get_record_field pre_fingerprint "$RESULT_PATH" || true)"
+  scope_key="$(get_record_field scope_key "$RESULT_PATH" || true)"
   {
     echo "state=complete"
     echo "holder_pid=$$"
@@ -291,6 +388,7 @@ finalize_record() {
     echo "end_epoch=$(date +%s)"
     echo "pre_fingerprint=$pre_fp"
     echo "post_fingerprint=$post_fp"
+    echo "scope_key=$scope_key"
     echo "lake_bin=$LAKE_BIN"
     echo "exit_status=$exit_status"
     echo "log_path=$LOG_PATH"
@@ -298,10 +396,10 @@ finalize_record() {
 }
 
 # --- Sharing decision (waiter path) --------------------------------------------------------------
-# Every one of the four conditions in the header's staleness policy must pass, or this falls
+# Every one of the five conditions in the header's staleness policy must pass, or this falls
 # through to a real build -- see the header comment for the full rationale.
 decide_sharing() {
-  local waiter_fp="$1"
+  local waiter_fp="$1" waiter_scope_key="$2"
   local max_age="${LAKE_BUILD_GUARD_SHARE_MAX_AGE:-$DEFAULT_SHARE_MAX_AGE}"
 
   [ -f "$RESULT_PATH" ] || return 1
@@ -313,6 +411,12 @@ decide_sharing() {
   local post_fp
   post_fp="$(get_record_field post_fingerprint "$RESULT_PATH" || true)"
   [ -n "$post_fp" ] && [ "$post_fp" = "$waiter_fp" ] || return 1
+
+  # Scope condition (Defect B): a missing or empty recorded scope_key is treated as NOT
+  # shareable -- fail closed, per the header's staleness policy condition 3.
+  local record_scope_key
+  record_scope_key="$(get_record_field scope_key "$RESULT_PATH" || true)"
+  [ -n "$record_scope_key" ] && [ "$record_scope_key" = "$waiter_scope_key" ] || return 1
 
   local end_epoch
   end_epoch="$(get_record_field end_epoch "$RESULT_PATH" || true)"
@@ -407,6 +511,11 @@ check_memory_pressure() {
 # here is anchored purely on lock-holder state (not on scanning ambient processes at all), a
 # caller's own argv mentioning "lake build", or an ambient `lean`-comm LSP worker, can never
 # cause a false positive -- there is no process table scan on this path at all.
+#
+# This is also why a CALLER waiting on an in-flight guarded build must not invent its own
+# `pgrep -f` scan either: see "WAITING ON AN IN-FLIGHT GUARDED BUILD" in the header above for the
+# `kill -0 "$holder_pid"` idiom and the self-match pitfall it avoids -- the same self-match class
+# this function's own design sidesteps by never scanning the process table.
 
 cmd_status() {
   if ! have_flock; then
@@ -550,9 +659,10 @@ run_lake_foreground() {
 }
 
 run_as_holder() {
-  local pre_fp
+  local pre_fp scope_key
   pre_fp="$(compute_fingerprint "$ROOT")"
-  write_inflight_record "$pre_fp"
+  scope_key="$(compute_scope_key "$@")"
+  write_inflight_record "$pre_fp" "$scope_key"
 
   set +e
   run_lake_foreground "$@"
@@ -601,9 +711,11 @@ cmd_build() {
 
   # Compute our own fingerprint BEFORE attempting/waiting on the lock, so it reflects the tree
   # state at the moment we asked to build -- not whatever it drifts to while we wait, and not
-  # whatever a competing holder's own build changes underneath us.
-  local current_fp
+  # whatever a competing holder's own build changes underneath us. Same reasoning applies to the
+  # scope key: it is derived purely from our own argument vector (args), so it needs no lock.
+  local current_fp current_scope_key
   current_fp="$(compute_fingerprint "$ROOT")"
+  current_scope_key="$(compute_scope_key "${args[@]+"${args[@]}"}")"
 
   local lock_fd
   exec {lock_fd}<>"$LOCK_PATH"
@@ -624,7 +736,22 @@ cmd_build() {
   # changes nothing about convoy-avoidance semantics for genuinely concurrent sessions, since a
   # freshly-started record with no prior complete build still correctly falls through to a real
   # build on the immediate-acquire path (decide_sharing requires state=complete).
-  if [ "${NO_SHARE:-false}" != "true" ] && decide_sharing "$current_fp"; then
+  if [ "${NO_SHARE:-false}" != "true" ] && decide_sharing "$current_fp" "$current_scope_key"; then
+    # Defect B (reporting): a replay is NOT a no-conflict path (see the FAMILY CONVENTIONS
+    # silent-when-no-conflict qualification above) -- announce it on stderr, with the stable
+    # `lake-build-guard: REPLAY:` marker prefix, BEFORE replaying. replay_shared_result() itself
+    # stays untouched so the replayed stdout/stderr bytes remain byte-identical to the original
+    # build's (cases 1/3 assert byte-equality on the fresh-build path only; this line never
+    # appears there). No job count: see the plan's Decision 3 -- it is a property of `lake`'s own
+    # output text, not of anything this guard records, and parsing it would couple the guard to a
+    # format it deliberately passes through untouched. The caller reads it from the replayed
+    # stdout instead, which is byte-identical to the original build's.
+    local replay_holder_pid replay_end_epoch replay_exit_status replay_age
+    replay_holder_pid="$(get_record_field holder_pid "$RESULT_PATH" 2>/dev/null || true)"
+    replay_end_epoch="$(get_record_field end_epoch "$RESULT_PATH" 2>/dev/null || true)"
+    replay_exit_status="$(get_record_field exit_status "$RESULT_PATH" 2>/dev/null || true)"
+    replay_age=$(( $(date +%s) - ${replay_end_epoch:-0} ))
+    echo "lake-build-guard: REPLAY: sharing result from holder pid ${replay_holder_pid:-unknown}, age ${replay_age}s, recorded exit status ${replay_exit_status:-unknown}" >&2
     replay_shared_result
     local shared_rc
     shared_rc="$(get_record_field exit_status "$RESULT_PATH" 2>/dev/null || true)"
@@ -636,6 +763,32 @@ cmd_build() {
   local rc=$?
   set -e
   exit "$rc"
+}
+
+# --- Build-mode subcommand validation (Defect A) ------------------------------------------------
+# Reject an unrecognized, flag-shaped, or absent lake subcommand in build mode BEFORE dispatch --
+# see LAKE SUBCOMMAND ALLOWLIST in the header for the full rationale. Exit 77 (the existing usage-
+# error code), matching the no-args/unknown-top-level-subcommand/unknown-option sites already
+# using it.
+validate_build_subcommand() {
+  local -a vec=("$@")
+  if [ "${#vec[@]}" -eq 0 ]; then
+    echo "lake-build-guard: build mode requires a lake subcommand (e.g. 'build', 'test'); none was given" >&2
+    print_help >&2
+    exit 77
+  fi
+
+  local candidate="${vec[0]}"
+  local allowed="$LAKE_SUBCOMMANDS $LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS"
+  local sc
+  for sc in $allowed; do
+    if [ "$candidate" = "$sc" ]; then
+      return 0
+    fi
+  done
+
+  echo "lake-build-guard: unrecognized lake subcommand: '$candidate' (build mode requires a recognized lake subcommand as the first lake argument; see --help, or set LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS)" >&2
+  exit 77
 }
 
 # --- Argument parsing / dispatch --------------------------------------------------------------------
@@ -713,6 +866,15 @@ main() {
         ;;
     esac
   done
+
+  # Defect A fix: validate the collected lake_args vector immediately after the parse loop
+  # converges -- BOTH the `--)` branch and the bare catch-all `*)` branch above append to
+  # lake_args, and this is the single point after both have had their chance to run. Placed
+  # BEFORE resolve_project_root so a usage error surfaces as 77, not masked by a 78 "no Lean
+  # project found" from a --dir that happens to be invalid too.
+  if [ "$mode" = "build" ]; then
+    validate_build_subcommand "${lake_args[@]+"${lake_args[@]}"}"
+  fi
 
   if ! ROOT="$(resolve_project_root "$dir")"; then
     echo "lake-build-guard: no lakefile.lean or lakefile.toml found above '$dir'" >&2

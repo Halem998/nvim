@@ -1,7 +1,7 @@
 # Implementation Plan: Make lake-build-guard.sh's success signal trustworthy
 
 - **Task**: 130 - Stop lake-build-guard.sh reporting passes for builds it did not run
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md`
@@ -210,27 +210,27 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 1: Validate the lake subcommand vector before dispatch (Defect A) [NOT STARTED]
+### Phase 1: Validate the lake subcommand vector before dispatch (Defect A) [COMPLETED]
 
 - **Goal:** No build-mode invocation reaches `lake` with an unrecognized or empty subcommand
   vector; both argument-collection paths are covered by one check.
 - **Tasks:**
-  - [ ] Add a `LAKE_SUBCOMMANDS` allowlist constant alongside the existing `DEFAULT_*`/threshold
+  - [x] Add a `LAKE_SUBCOMMANDS` allowlist constant alongside the existing `DEFAULT_*`/threshold *(completed)*
         constants, holding the 22 subcommands enumerated in Decision 1, with an adjacent comment
         recording its provenance (`lake --help`, Lake 5.0.0-src+2fcce72 / Lean 4.27.0-rc1) and the
         obligation to re-verify after a Lake upgrade, in the style of the existing
         "RECORDED DEAD ENDS" discipline.
-  - [ ] Add the `LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS` escape hatch, `:-`-defaulted to empty
+  - [x] Add the `LAKE_BUILD_GUARD_EXTRA_SUBCOMMANDS` escape hatch, `:-`-defaulted to empty *(completed)*
         alongside the other `LAKE_BUILD_GUARD_*` seam variables, and unioned with the allowlist at
         validation time.
-  - [ ] In `main()`, immediately after the `while [ $# -gt 0 ]` parsing loop exits and **before**
+  - [x] In `main()`, immediately after the `while [ $# -gt 0 ]` parsing loop exits and **before** *(completed)*
         `ROOT="$(resolve_project_root "$dir")"`, add a validation step gated on `[ "$mode" = "build" ]`
         that exits 77 with a `lake-build-guard:`-prefixed stderr message when `lake_args` is empty,
         and when `lake_args[0]` is not in the unioned allowlist (flag-shaped tokens included; see
         Decision 1).
-  - [ ] Place the check before project-root resolution so an argument-validity error is reported
+  - [x] Place the check before project-root resolution so an argument-validity error is reported *(completed)*
         as 77 rather than being masked by a 78 "no Lean project found".
-  - [ ] Update the `EXIT CODES` header block and `print_help()`'s exit-code lines so 77's
+  - [x] Update the `EXIT CODES` header block and `print_help()`'s exit-code lines so 77's *(completed)*
         description covers "bad flags/subcommand, including an unknown or missing lake subcommand
         in build mode".
 - **Timing:** 45 minutes
@@ -256,26 +256,26 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 2: Key result sharing on build scope (Defect B, mechanism) [NOT STARTED]
+### Phase 2: Key result sharing on build scope (Defect B, mechanism) [COMPLETED]
 
 - **Goal:** A completed result is replayed only for an equivalently-scoped invocation; tree
   staleness and build scope remain two separately named, separately comparable record fields.
 - **Tasks:**
-  - [ ] Add a `compute_scope_key()` helper next to the fingerprinting functions that hashes a
+  - [x] Add a `compute_scope_key()` helper next to the fingerprinting functions that hashes a *(completed)*
         NUL-separated join of the invocation's lake argument vector
         (`printf '%s\0' "$@" | sha256sum | awk '{print $1}'`), never a space-joined string.
-  - [ ] Add a `scope_key=` line to both `write_inflight_record()` and `finalize_record()`,
+  - [x] Add a `scope_key=` line to both `write_inflight_record()` and `finalize_record()`, *(completed)*
         following the existing flat `key=value` shape exactly; keep `get_record_field()`'s
         grep-based, never-sourced read path unchanged.
-  - [ ] Thread the scope key from `run_as_holder()` (which already receives `"$@"`) into both
+  - [x] Thread the scope key from `run_as_holder()` (which already receives `"$@"`) into both *(completed)*
         record writers; preserve `finalize_record()`'s existing pattern of re-reading carried-over
         fields from the in-flight record.
-  - [ ] Give `decide_sharing()` a second parameter (the waiter's own scope key) and add a fifth
+  - [x] Give `decide_sharing()` a second parameter (the waiter's own scope key) and add a fifth *(completed)*
         condition comparing it to the record's `scope_key`. Treat a missing or empty recorded
         `scope_key` as NOT shareable (fail closed).
-  - [ ] Update the call site in `cmd_build()` to compute its own scope key from the args already
+  - [x] Update the call site in `cmd_build()` to compute its own scope key from the args already *(completed)*
         in scope and pass it to `decide_sharing()`.
-  - [ ] Update the header's STALENESS POLICY block: it currently enumerates four conditions and
+  - [x] Update the header's STALENESS POLICY block: it currently enumerates four conditions and *(completed)*
         states them as authoritative. Add the scope condition as a fifth, and state plainly that
         the policy now governs both source change *and* build scope — the prior text was a policy
         about source change alone and never claimed otherwise.
@@ -296,18 +296,18 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 3: Make replay audible and give callers a documented assertion (Defect B, reporting) [NOT STARTED]
+### Phase 3: Make replay audible and give callers a documented assertion (Defect B, reporting) [COMPLETED]
 
 - **Goal:** A caller can tell a replayed result from a fresh build without passing `--no-share`,
   via a stable documented marker.
 - **Tasks:**
-  - [ ] In `cmd_build()`, on the replay branch only, emit one stderr line immediately before
+  - [x] In `cmd_build()`, on the replay branch only, emit one stderr line immediately before *(completed)*
         `replay_shared_result()` with the fixed prefix `lake-build-guard: REPLAY:` naming the
         recorded holder pid, the result's age in seconds, and the recorded exit status (see
         Decision 3 — no job count).
-  - [ ] Leave `replay_shared_result()` itself untouched, so the replayed stdout/stderr bytes stay
+  - [x] Leave `replay_shared_result()` itself untouched, so the replayed stdout/stderr bytes stay *(completed)*
         byte-identical to the original build's.
-  - [ ] Document the marker prefix in the header and in `print_help()` as a **stable contract** a
+  - [x] Document the marker prefix in the header and in `print_help()` as a **stable contract** a *(completed)*
         caller may grep, and state the two ways to assert a genuine build ran: grep stderr for the
         absence of the marker, or pass `--no-share` to force one.
 - **Timing:** 30 minutes
@@ -325,21 +325,21 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 4: Document the wait idiom and rewrite the family conventions (Defect C + convention deliverable) [NOT STARTED]
+### Phase 4: Document the wait idiom and rewrite the family conventions (Defect C + convention deliverable) [COMPLETED]
 
 - **Goal:** The correct wait idiom is in the usage text, and the FAMILY CONVENTIONS block
   describes the revised contract rather than the superseded one.
 - **Tasks:**
-  - [ ] Add a "WAITING ON AN IN-FLIGHT GUARDED BUILD" subsection to the header USAGE block **and**
+  - [x] Add a "WAITING ON AN IN-FLIGHT GUARDED BUILD" subsection to the header USAGE block **and** *(completed)*
         to `print_help()`'s output, giving the working idiom (read `holder_pid` from the result
         record or from `status --verbose`, then
         `while kill -0 "$holder_pid" 2>/dev/null; do sleep 1; done`) and naming the `pgrep -f`
         self-match pitfall explicitly — a poll on the guard's own command line matches the polling
         shell's own argv and never terminates. Place it adjacent to `cmd_status()`'s existing
         explanation of why `status` avoids process scans, so the two reinforce each other.
-  - [ ] Ensure the idiom is present in `print_help()`'s **output**, not only in a source comment:
+  - [x] Ensure the idiom is present in `print_help()`'s **output**, not only in a source comment: *(completed)*
         the acceptance bullet is about the usage text, and Phase 5's case greps the rendered help.
-  - [ ] Rewrite the FAMILY CONVENTIONS block to state the revised conventions explicitly. The
+  - [x] Rewrite the FAMILY CONVENTIONS block to state the revised conventions explicitly. The *(completed)*
         sibling guard copies this block, so leaving it describing the old contract would propagate
         the defects. Specifically:
     - **exit-code shape**: state that the guard validates the wrapped command's own argument
@@ -376,7 +376,7 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 5: Extend the harness with the acceptance cases [NOT STARTED]
+### Phase 5: Extend the harness with the acceptance cases [IN PROGRESS]
 
 - **Goal:** Every acceptance bullet is covered by a new case in the existing suite, using the
   suite's own established patterns.
