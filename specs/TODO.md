@@ -11,10 +11,10 @@ next_project_number: 128
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,74,87,94,100,102,103,106,108,110,111,113,114,122 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,72,73,75,76,104,105,109,112,120,123,126 | 29,31,74,102,108,122 | core-agent-system, extensions, literature |
-| 3 | 107,121,124 | 104,120,126 | core-agent-system, literature |
-| 4 | 125,127 | 121,124 | core-agent-system |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,74,87,94,100,102,103,106,108,110,111,113,114,123,126 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,104,105,109,112,120,124 | 29,31,74,102,108,126 | core-agent-system, extensions, literature |
+| 3 | 107,121,125 | 104,120,124 | core-agent-system, literature |
+| 4 | 127 | 121,124 | core-agent-system |
 | 5 | 88 | 87,127 | core-agent-system |
 | 6 | 44 | 88 | core-agent-system |
 | 7 | 89 | 44 | core-agent-system |
@@ -50,18 +50,17 @@ next_project_number: 128
 46 [NOT STARTED] — RESCOPE + BACKFILL NOTE (task-116 audit). Per specs/116_core_agen
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — Stop recording a spurious HANDOFF_STALE_OR_ABSENT system defect w
+72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
+73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-122 [IMPLEMENTING] — Build the team-mode shared fan-out stage in skill-orchestrate.
-  └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
-  └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
-  └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
-  └─ 126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-    └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
-      └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-      └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
+123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
+126 [NOT STARTED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+  └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
+    └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+    └─ 127 [NOT STARTED] — Collapse the routing ladder to routing_agents-only across all 19  (see above)
 
 ### Extensions
 
@@ -191,12 +190,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 122. Build team mode fanout stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 119
 - **Research**: [122_build_team_mode_fanout_stage/reports/01_team-fanout-stage-research.md]
 - **Plan**: [122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md]
+- **Summary**: [122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md]
 
 **Description**: Build the team-mode shared fan-out stage in skill-orchestrate.
 

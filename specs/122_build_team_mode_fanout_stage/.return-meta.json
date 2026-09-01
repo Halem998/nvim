@@ -28,22 +28,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["bash-in-markdown", "skill-file-verification", "if-else-fi-fork", "syntax-check", "skill-orchestrate"]
+      "suggested_keywords": [
+        "bash-in-markdown",
+        "skill-file-verification",
+        "if-else-fi-fork",
+        "syntax-check",
+        "skill-orchestrate"
+      ]
     },
     {
       "content": "When a plan's Decision Record narrows a task's file_scope to an exact small set of files, verify the untouched-file guarantee at the end with `git diff <pre-task-sha>..HEAD --stat -- <broad-parent-dir>` rather than only `git status --short` on the specific excluded paths — the diff-stat form catches any file outside the declared scope that got modified, not just the specific files you remembered to check.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["file-scope", "untouched-file-guarantee", "git-diff-stat", "verification"]
+      "suggested_keywords": [
+        "file-scope",
+        "untouched-file-guarantee",
+        "git-diff-stat",
+        "verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788220921_6485b3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
-    "phases_total": 8
+    "phases_total": 8,
+    "cycles_used": 3,
+    "final_state": "completed",
+    "detected_defects": []
   }
 }

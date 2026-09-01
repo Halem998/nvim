@@ -1175,12 +1175,12 @@
     {
       "project_number": 122,
       "project_name": "build_team_mode_fanout_stage",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Build the team-mode shared fan-out stage in skill-orchestrate.\n\nCONTEXT. skill-team-research, skill-team-plan, and skill-team-implement each independently declare per-teammate finding-file naming ({NN}_{letter}-findings.md), territory contracts (file-ownership declarations preventing teammate collision), and SubagentStop-postflight-to-owning-session correlation -- triplicated because the only real difference between the three is which lifecycle phase's dispatch context to fan out. synthesis-agent is unaffected by this task (it already runs as a fresh-context, phase-agnostic reader/writer and is not touched).\n\nWORK. Add a phase-parameterized fan-out stage to skill-orchestrate/SKILL.md implementing the finding-file convention, territory contracts, and session-correlation once, taking the lifecycle phase (research/plan/implement) as a parameter rather than being copy-pasted per phase. Add --team and --team-size flags to orchestrate.md (orchestrate.md's own Constraints section currently states \"--team flag not supported\" -- this task removes that constraint), defaulting --team-size to 3 (Primary + Alternatives + Critic), 2 under --fast, 4 under --hard, matching the existing documented cost table. Preserve the CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS-unset graceful-degradation path as an early check in the same stage: when unset, --team is accepted but silently falls through to single-dispatch.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/commands/orchestrate.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-09-01T00:17:45Z",
+      "last_updated": "2026-09-01T00:49:28Z",
       "dependencies": [
         117,
         119
@@ -1200,9 +1200,15 @@
           "path": "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
           "type": "plan",
           "summary": "8-phase plan for the shared team-mode fan-out stage (Stage 3.6 skeleton + Stage 3.6a per-phase teammate-plan builder) in skill-orchestrate, plus --team/--team-size on orchestrate.md."
+        },
+        {
+          "path": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: shared team-mode fan-out stage (Stage 3.6 skeleton + Stage 3.6a per-phase builders), --team/--team-size flags, live synthesis dispatch."
         }
       ],
-      "session_id": "sess_1788220921_6485b3"
+      "session_id": "sess_1788220921_6485b3",
+      "completion_summary": "Added a shared, phase-parameterized team-mode fan-out stage (Stage 3.6) and per-phase teammate-plan builder (Stage 3.6a) to skill-orchestrate/SKILL.md, wired into all five single-task dispatch sites plus Stage MT-1 diagnostics, with --team/--team-size flags on orchestrate.md and a strictly additive TEAM_SIZE_EXPLICIT export from parse-command-args.sh."
     },
     {
       "project_number": 123,
