@@ -294,39 +294,48 @@ resolve the effective team size there.
 
 ---
 
-### Phase 3: Stage 3.6 skeleton, part A — inputs, degradation, spawn, wait [NOT STARTED]
+### Phase 3: Stage 3.6 skeleton, part A — inputs, degradation, spawn, wait [COMPLETED]
 
 **Goal**: Author the first half of the shared fan-out stage: its inputs contract, the early
 availability check and graceful-degradation fallthrough, the teammate spawn loop, and wave waiting.
 
 **Tasks**:
-- [ ] Insert a new `### Stage 3.6: Team Fan-Out (shared, invoked from every dispatch site when
+- [x] Insert a new `### Stage 3.6: Team Fan-Out (shared, invoked from every dispatch site when
       team_mode is true)` immediately after Stage 3.5 and before `### Stage 4: State Handlers`.
-- [ ] Open with the same single-canonical-copy discipline Stage 3.5 states about itself: every
+      *(completed)*
+- [x] Open with the same single-canonical-copy discipline Stage 3.5 states about itself: every
       dispatch site references this stage by pointer line; **never duplicate this body at a
-      dispatch site**.
-- [ ] Inputs table (mirroring Stage 3.5's own table shape): `phase`, `description`, `task_type`,
+      dispatch site**. *(completed)*
+- [x] Inputs table (mirroring Stage 3.5's own table shape): `phase`, `description`, `task_type`,
       `focus_prompt`, `clean_flag`, `effort_flag`, `lit_flag`, `hard_mode`, `team_size_eff`,
       `artifact_number`, `plan_path` (implement only), `session_id`, `task_dir`, `handoff_path`.
-- [ ] **Early availability check** (first executable step, before any builder call or spawn): if
+      *(completed)*
+- [x] **Early availability check** (first executable step, before any builder call or spawn): if
       `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS != "1"`, emit one stderr warning line and RETURN a
       `fanout_degraded=true` signal so the calling dispatch site proceeds with its existing
       single-agent Agent dispatch unchanged. `--team` is accepted, never rejected. Note explicitly
       that this stage MUST NOT re-invoke a whole lifecycle skill on the degraded path (double
       preflight/postflight) — the caller's own existing single dispatch is the fallback.
-- [ ] Call **Stage 3.6a** (Phase 5/6) to obtain `teammate_plan`: an ordered array of
+      *(completed)*
+- [x] Call **Stage 3.6a** (Phase 5/6) to obtain `teammate_plan`: an ordered array of
       `{label, prompt, subagent_type, output_path, delegation_extras, territory}` tuples.
-- [ ] Spawn loop: for each tuple, run **Stage 3.5 Dispatch Prep** with the same `phase` and with
+      *(completed)*
+- [x] Spawn loop: for each tuple, run **Stage 3.5 Dispatch Prep** with the same `phase` and with
       `hard_mode`/`clean_flag`/`lit_flag` passed through unchanged (this is what makes
       `--hard --team` inject hard contracts per teammate for free), mint a per-teammate
       `dispatch_seq`, and invoke the Agent tool with the tuple's `subagent_type`, its prompt plus
       the four Stage 3.5 outputs appended in the documented order, and a context object carrying
       `task_number`, `task_type`, `session_id`, `orchestrator_mode: true`, `lit_flag`, `task_dir`,
       `handoff_path`, `dispatch_seq`, `postflight_obligation: false`, plus the tuple's
-      `delegation_extras`.
-- [ ] Wave wait: launch a wave's teammates in one message so they run concurrently; wait for all to
+      `delegation_extras`. *(completed)*
+- [x] Wave wait: launch a wave's teammates in one message so they run concurrently; wait for all to
       return or hit a 30-minute wave timeout; on timeout record the missing labels and continue with
-      whatever returned rather than failing the cycle.
+      whatever returned rather than failing the cycle. *(completed)*
+
+**Deviation note**: Phases 3-6 were authored as one contiguous Stage 3.6/Stage 3.6a text region in
+a single editing pass (the shared-file-region nature of these four phases made splitting the
+actual edits impractical), then verified against all four phases' verification criteria together.
+Each phase is still checked off, heading-marked, and committed individually below, in plan order.
 
 **Timing**: 1.5 hours
 
@@ -350,15 +359,15 @@ some phase, record the discrepancy in the stage text rather than silently droppi
 
 ---
 
-### Phase 4: Stage 3.6 skeleton, part B — collection, session correlation, staging, cleanup [NOT STARTED]
+### Phase 4: Stage 3.6 skeleton, part B — collection, session correlation, staging, cleanup [COMPLETED]
 
 **Goal**: Complete the shared skeleton with result collection, the D3 session-correlation
 mechanism, commit staging, cleanup, and the stage's output contract.
 
 **Tasks**:
-- [ ] **Collection**: read each returned teammate's declared `output_path`; record present/missing
+- [x] **Collection**: read each returned teammate's declared `output_path`; record present/missing
       per label; never abort on a missing file.
-- [ ] **Session correlation (D3)**, authored as its own clearly delimited sub-block:
+- [x] **Session correlation (D3)**, authored as its own clearly delimited sub-block:
       - Before the spawn loop (cross-reference back into Phase 3's text), capture
         `marker_path="${TASK_DIR}/.postflight-pending"` and the `session_id` it carries.
       - State the teammate non-obligation rule: teammates receive `postflight_obligation: false`
@@ -371,13 +380,13 @@ mechanism, commit staging, cleanup, and the stage's output contract.
       - Name the correlation key (the marker's own `session_id` field) and cross-reference
         `hooks/subagent-postflight.sh`'s `find_marker()` by path and function name as the site where
         the complementary read-side predicate belongs. **No task-number citation.**
-- [ ] **Staging**: state that teammate artifacts are staged under the existing task-directory scope
+- [x] **Staging**: state that teammate artifacts are staged under the existing task-directory scope
       via `git-commit-scoped.sh` (the command's CHECKPOINT 3 already owns the commit); this stage
       performs no commit of its own and never uses `git add -A`.
-- [ ] **Cleanup**: remove any per-wave scratch state this stage created; explicitly do NOT remove
+- [x] **Cleanup**: remove any per-wave scratch state this stage created; explicitly do NOT remove
       the postflight marker or the orchestrator loop-guard file (termination-only cleanup belongs to
       Stage 8).
-- [ ] **Outputs contract**: the stage produces `fanout_degraded`, `teammate_results` (label ->
+- [x] **Outputs contract**: the stage produces `fanout_degraded`, `teammate_results` (label ->
       path/status), and `synthesis_path` (empty for implement). State exactly what the calling
       dispatch site does with each.
 
@@ -398,35 +407,35 @@ mechanism, commit staging, cleanup, and the stage's output contract.
 
 ---
 
-### Phase 5: Stage 3.6a builders for research and plan, with live synthesis dispatch [NOT STARTED]
+### Phase 5: Stage 3.6a builders for research and plan, with live synthesis dispatch [COMPLETED]
 
 **Goal**: Author the per-phase teammate-plan builder for the two fixed-role phases, and wire
 `synthesis-agent` live per D4.
 
 **Tasks**:
-- [ ] Insert `### Stage 3.6a: Teammate-Plan Builder (per-phase)` immediately after Stage 3.6, opening
+- [x] Insert `### Stage 3.6a: Teammate-Plan Builder (per-phase)` immediately after Stage 3.6, opening
       with the `case "$phase" in research|plan|implement) ... esac` dispatch shape and a one-paragraph
       statement of why the three phases genuinely differ (fixed roles vs. dynamic plan-phase set).
-- [ ] `research` branch: fixed roles gated by `team_size_eff` — a=Primary, b=Alternatives,
+- [x] `research` branch: fixed roles gated by `team_size_eff` — a=Primary, b=Alternatives,
       c=Critic (present from size 3), d=Horizons (present at size 4). Each tuple's
       `subagent_type` is `$RESEARCH_AGENT`; `delegation_extras` carries `artifact_number` and
       `teammate_letter`, which the research agent contracts already declare and from which they
       derive `reports/{NN}_teammate-{letter}-findings.md` themselves. `territory` is empty (no
       source files touched; artifact paths are disjoint by construction).
-- [ ] `plan` branch: fixed roles gated by `team_size_eff` — a=Primary/Incremental,
+- [x] `plan` branch: fixed roles gated by `team_size_eff` — a=Primary/Incremental,
       b=Alternative-Boundaries, c=Risk-and-Dependency (present from size 3).
       `subagent_type` is `$PLANNER_AGENT`; `delegation_extras` carries `artifact_number`,
       `teammate_letter`, and `research_path`; the planner contract derives
       `plans/{NN}_candidate-{letter}.md` itself. `territory` empty.
-- [ ] **Synthesis step (D4)**, authored once and shared by both branches: after collection,
+- [x] **Synthesis step (D4)**, authored once and shared by both branches: after collection,
       dispatch `synthesis-agent` via the Agent tool with the teammate finding paths, task
       description, focus prompt, the unified output path
       (`reports/{NN}_team-research.md` for research, `plans/{NN}_{slug}.md` for plan),
       `specs/ROADMAP.md`, and `specs/TODO.md` — the exact Stage 1 inputs that agent's own contract
       declares. State explicitly that `agents/synthesis-agent.md` is NOT edited by this work.
-- [ ] Synthesis fallback: if the dispatch returns without producing the output file, fall back to
+- [x] Synthesis fallback: if the dispatch returns without producing the output file, fall back to
       lead-inline synthesis with a loud warning; never fail the cycle on synthesis alone.
-- [ ] Set `synthesis_path` in the stage outputs so the calling dispatch site can link the artifact.
+- [x] Set `synthesis_path` in the stage outputs so the calling dispatch site can link the artifact.
 
 **Timing**: 1.5 hours
 
@@ -452,23 +461,23 @@ agent families already accept `teammate_letter`/`artifact_number`. Confirm again
 
 ---
 
-### Phase 6: Stage 3.6a implement builder — dynamic waves, territory, debugger [NOT STARTED]
+### Phase 6: Stage 3.6a implement builder — dynamic waves, territory, debugger [COMPLETED]
 
 **Goal**: Author the implement branch of the builder, which is structurally different from the other
 two: teammates are keyed to plan phases, own real source files, and can trigger an ad-hoc debugger.
 
 **Tasks**:
-- [ ] `implement` branch: derive the teammate set from the plan's own `**Dependency Analysis**` wave
+- [x] `implement` branch: derive the teammate set from the plan's own `**Dependency Analysis**` wave
       table when present, falling back to per-phase `**Depends on**:` fields, using the phase-heading
       grammar via `scripts/lib/phase-heading-patterns.sh` (source the shared anchor; do not
       re-derive a regex). Teammate count per wave = `min(len(wave.phases), team_size_eff)`.
       `subagent_type` is `$IMPLEMENT_AGENT`; `delegation_extras` carries `plan_path`,
       `phase_number`, and `roadmap_path`.
-- [ ] State the whole-file conformance obligation before any filtered heading scan: call
+- [x] State the whole-file conformance obligation before any filtered heading scan: call
       `has_nonconforming_phase_headings` on the plan first, and on a hit refuse to build a teammate
       plan (route to the stage's degraded single-dispatch return) rather than silently selecting the
       next conforming heading.
-- [ ] `territory` per implement teammate: build the
+- [x] `territory` per implement teammate: build the
       `owned_files`/`read_only_files`/`forbidden_files` object defined in
       `context/contracts/territory.md` — referenced by path, with no territory prose re-authored —
       pointing the agent at its own phase's "Files to modify" list, and include the contract's
@@ -476,12 +485,12 @@ two: teammates are keyed to plan phases, own real source files, and can trigger 
       Emit this as the stage's own `<territory>` block appended to the teammate prompt,
       **independently of `hard_mode`**, so base-mode team-implement teammates are covered without
       re-gating Stage 3.5's hard-contract block.
-- [ ] Multi-wave execution: waves run in dependency order; a later wave is built only after the
+- [x] Multi-wave execution: waves run in dependency order; a later wave is built only after the
       previous wave's teammates return.
-- [ ] Debugger role: on a teammate-reported phase error, spawn one additional teammate with the
+- [x] Debugger role: on a teammate-reported phase error, spawn one additional teammate with the
       failing phase's context and the error text, outside the wave headcount; state its territory is
       the failing phase's own files.
-- [ ] **D5 hard-mode interaction**: state at the head of this branch that when `hard_mode` is
+- [x] **D5 hard-mode interaction**: state at the head of this branch that when `hard_mode` is
       `"true"`, the implement builder returns an empty teammate plan and one loud stderr line, so the
       caller falls through to the existing H1 single-phase dispatch. H1's one-blocking-phase-per-cycle
       contract takes precedence over fan-out.
