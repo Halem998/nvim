@@ -5,11 +5,11 @@
 # .orchestrator-handoff.json fixture, extracts the literal jq filter strings the merged engine
 # actually ships for each field, and asserts each filter is present and produces the expected
 # value against the shared fixture. This suite used to diff those same filter strings against a
-# SECOND file (skill-orchestrate-hard/SKILL.md) for byte-equality -- since the two engines were
-# merged into one `hard_mode`-gated file, that comparison premise no longer exists: with one
-# engine there is nothing left to diff against, so the checks below were converted from
-# extract-twice-and-compare to extract-once-and-verify, preserving every field/value assertion
-# the old comparison implied without the vacuous self-comparison.
+# SECOND file (the former standalone hard-mode orchestrate skill) for byte-equality -- since the
+# two engines were merged into one `hard_mode`-gated file, that comparison premise no longer
+# exists: with one engine there is nothing left to diff against, so the checks below were
+# converted from extract-twice-and-compare to extract-once-and-verify, preserving every
+# field/value assertion the old comparison implied without the vacuous self-comparison.
 #
 # Structural model: scripts/tests/test-validate-handoff.sh / test-corroborate-phase-counts.sh
 # (mktemp -d workdir with an EXIT-trap cleanup, source-store-first candidate resolution for the

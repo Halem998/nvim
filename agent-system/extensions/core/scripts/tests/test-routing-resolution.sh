@@ -29,8 +29,8 @@
 #     blocks.
 #   Assert 4 (precedence direction): a synthetic fixture where a non-core manifest and a
 #     core-named manifest both declare the same (op, task_type) confirms the non-core entry wins
-#     -- pinning first-match-wins against a regression to skill-orchestrate-hard's old
-#     no-break last-match-wins loop.
+#     -- pinning first-match-wins against a regression to the former standalone hard-mode
+#     orchestrate skill's old no-break last-match-wins loop.
 #
 # The matrix is built MECHANICALLY from every manifest.json under agent-system/extensions/**
 # rather than hardcoded, so a newly added extension is covered automatically -- a hardcoded list

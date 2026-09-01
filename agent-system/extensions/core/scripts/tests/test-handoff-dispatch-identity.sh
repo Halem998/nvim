@@ -223,6 +223,18 @@ run_case() {
       fail "${name} (${engine_label}): stderr does not match expected pattern '${expect_grep}': $(cat "$err")"
     fi
   fi
+  # Stub-by-name load-bearing check: a bash "command not found" on stderr means the region called
+  # a function name the stub above does not define -- e.g. append_detected_defect was renamed in
+  # the source engine without a matching rename here. Verified during authoring that this check is
+  # actually load-bearing (not just structurally present): renaming append_detected_defect in the
+  # merged engine did NOT fail any of the pattern-matching assertions above on its own (they only
+  # check for their own expected substring's presence, not for the ABSENCE of unrelated stderr
+  # noise), so without this explicit negative check a rename regression would pass silently.
+  if grep -qi 'command not found' "$err"; then
+    fail "${name} (${engine_label}): stderr contains a bash \"command not found\" error -- the stub-by-name mechanism is broken (a function the extracted region calls has no matching stub): $(cat "$err")"
+  else
+    pass "${name} (${engine_label}): stderr contains no \"command not found\" error (stub-by-name mechanism intact)"
+  fi
 }
 
 # Single fixture run against the merged engine (see the hard_mode read check above: the region

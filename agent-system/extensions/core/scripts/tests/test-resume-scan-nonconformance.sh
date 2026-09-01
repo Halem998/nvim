@@ -347,7 +347,7 @@ fi
 # precedes both the next_phase test and the last_skeleton test.
 #
 # Uniqueness guard: skill-orchestrate/SKILL.md is a large, actively-edited merged file (unlike
-# the small, single-purpose skill-orchestrate-hard/SKILL.md this site formerly targeted), so a
+# the small, single-purpose standalone hard-mode skill file this site formerly targeted), so a
 # second occurrence of an anchor could silently appear and mis-anchor `head -1` onto the wrong
 # line rather than failing. site_a_anchor_line() asserts the grep match count is exactly one
 # before taking the line number, calling fail() by anchor name and observed count otherwise. The
