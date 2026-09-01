@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Retarget test-resume-scan-nonconformance.sh Site A",
+  "started_at": "2026-09-01T19:07:00Z",
+  "last_updated": "2026-09-01T19:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Retarget SITE_A_FILE, leave B/C/D untouched", "status": "done", "note": "SITE_A_FILE now skill-orchestrate/SKILL.md; B/C/D unchanged", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"]},
+    {"id": 2, "description": "Update label strings to Site A (skill-orchestrate)", "status": "done", "note": "Updated header comment, extract_region label, and SITE_LABEL associative array", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"]},
+    {"id": 3, "description": "Add per-anchor uniqueness guards for the three Site A branch-order anchors", "status": "done", "note": "Added site_a_anchor_line() helper with nameref out-param. Initial implementation used $(...) capture which lost fail() calls to a subshell -- caught during mutation testing and fixed to use a nameref out-parameter instead, so fail() runs directly in the caller's shell.", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"]},
+    {"id": 4, "description": "Confirm library-sourcing note accuracy at new site", "status": "done", "note": "Confirmed: . .claude/scripts/lib/phase-heading-patterns.sh at line 1717 immediately precedes # --- resume-scan-conformance-gate:begin --- at line 1718 in the merged file. Note unchanged, still accurate.", "files_touched": []},
+    {"id": 5, "description": "Confirm cross-site consistency assertions pass", "status": "done", "note": "Full suite: 39 passed, 0 failed, including all three fixtures (A/B/C) across Sites A/B/C and the branch-order/structural assertions.", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "site_a_anchor_line() returning value via $(...) command substitution with fail() called inside the function on the non-unique branch", "result": "failed", "reason": "$(...) runs the function in a subshell; the in-function fail() call's echo to stdout got captured into the return value instead of updating the shared PASSED/FAILED counters, corrupting the line-number variable with failure-message text and producing a bash arithmetic-syntax error downstream. Caught by the phase's own mutation test (duplicating an anchor in a scratch copy)."}
+  ],
+  "handoff_count": 0
+}

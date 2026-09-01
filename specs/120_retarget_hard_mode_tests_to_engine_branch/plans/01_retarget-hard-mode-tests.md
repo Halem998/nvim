@@ -266,24 +266,29 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 4: Retarget `test-resume-scan-nonconformance.sh` Site A [NOT STARTED]
+### Phase 4: Retarget `test-resume-scan-nonconformance.sh` Site A [COMPLETED]
 
 - **Goal:** Move Site A to the merged engine, relabel it, and convert its silent `head -1`
   mis-anchoring hazard into a loud failure.
 - **Tasks:**
-  - [ ] Change `SITE_A_FILE` to `skill-orchestrate/SKILL.md`. Leave `SITE_B_FILE`,
-    `SITE_C_FILE`, and `SITE_D_FILE` untouched.
-  - [ ] Update the label strings to "Site A (skill-orchestrate)" in both the extraction-failure
-    message and the `SITE_LABEL` associative array, and in the file's header comment.
-  - [ ] For each of the three Site A branch-order anchors, assert the grep matches exactly one line
+  - [x] Change `SITE_A_FILE` to `skill-orchestrate/SKILL.md`. Leave `SITE_B_FILE`,
+    `SITE_C_FILE`, and `SITE_D_FILE` untouched. *(completed)*
+  - [x] Update the label strings to "Site A (skill-orchestrate)" in both the extraction-failure
+    message and the `SITE_LABEL` associative array, and in the file's header comment. *(completed)*
+  - [x] For each of the three Site A branch-order anchors, assert the grep matches exactly one line
     before taking `head -1`; fail with the anchor name and the observed count if not. This is the
     guard against a second occurrence appearing in the merged file and silently shifting the
-    ordering assertion onto the wrong branch.
-  - [ ] Confirm the `phase-heading-patterns.sh` library source line still sits immediately before
+    ordering assertion onto the wrong branch. *(completed: `site_a_anchor_line()` helper with a
+    nameref out-parameter, so its own `fail()` calls run in the caller's shell rather than being
+    lost inside a `$(...)` subshell -- a defect caught and fixed during this phase's own mutation
+    testing)*
+  - [x] Confirm the `phase-heading-patterns.sh` library source line still sits immediately before
     the `resume-scan-conformance-gate:begin` marker at the new site, so the header comment's
     "library sourcing is deliberately outside the extracted region" note stays accurate. Correct
-    the note if it does not.
-  - [ ] Confirm the cross-site consistency assertions between Sites A, B, and C still pass.
+    the note if it does not. *(completed: confirmed at lines 1717-1718 of the merged file; note
+    remains accurate, no change needed)*
+  - [x] Confirm the cross-site consistency assertions between Sites A, B, and C still pass.
+    *(completed: all 39 assertions pass, including Fixtures A/B/C across all three sites)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1
 - **Verification Tier:** local

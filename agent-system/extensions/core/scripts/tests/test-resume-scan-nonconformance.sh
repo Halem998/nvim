@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # test-resume-scan-nonconformance.sh - Fixture-driven regression suite for the resume-scan
 # conformance gate wired into the hard-mode per-phase dispatch sites (skill-implementer-hard,
-# skill-orchestrate-hard, skill-lean-implementation-hard). Exercises the ordering contract
+# skill-orchestrate's hard_mode-gated per-phase-dispatch (H1) branch,
+# skill-lean-implementation-hard). Exercises the ordering contract
 # directly: PHASE_HEADING_ERE-filtered scans MUST run has_nonconforming_phase_headings over the
 # whole plan file first, or a non-conforming heading is silently invisible to the scan rather
 # than merely unmatched by it -- see scripts/lib/phase-heading-patterns.sh's "Ordering contract
@@ -64,7 +65,7 @@ if [[ -z "$LIB" ]]; then
 fi
 
 SITE_B_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
-SITE_A_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+SITE_A_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 SITE_C_FILE="$REPO_ROOT/agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
 SITE_D_FILE="$REPO_ROOT/agent-system/extensions/core/scripts/update-task-status.sh"
 
@@ -117,7 +118,7 @@ extract_region() {
 # correct regardless of deploy-tree vs. source-store checkout since $LIB was already resolved
 # above.
 region_b="$(extract_region "$SITE_B_FILE" "Site B (skill-implementer-hard)")" || exit 2
-region_a="$(extract_region "$SITE_A_FILE" "Site A (skill-orchestrate-hard)")" || exit 2
+region_a="$(extract_region "$SITE_A_FILE" "Site A (skill-orchestrate)")" || exit 2
 region_c="$(extract_region "$SITE_C_FILE" "Site C (skill-lean-implementation-hard)")" || exit 2
 
 # =====================================================================
@@ -191,7 +192,7 @@ info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
 declare -A SITE_REGION=( [B]="$region_b" [A]="$region_a" [C]="$region_c" )
 declare -A SITE_BINDVAR=( [B]="plan_path" [A]="plan_path" [C]="plan_file" )
 declare -A SITE_RESULTVAR=( [B]="next_phase" [A]="next_phase" [C]="phase_number" )
-declare -A SITE_LABEL=( [B]="Site B (skill-implementer-hard)" [A]="Site A (skill-orchestrate-hard)" [C]="Site C (skill-lean-implementation-hard)" )
+declare -A SITE_LABEL=( [B]="Site B (skill-implementer-hard)" [A]="Site A (skill-orchestrate)" [C]="Site C (skill-lean-implementation-hard)" )
 
 for site in B A C; do
   region="${SITE_REGION[$site]}"
@@ -344,9 +345,32 @@ fi
 
 # Site A: EXIT (partial branch guarded by phase_scan_inconclusive, is the FIRST branch --
 # precedes both the next_phase test and the last_skeleton test.
-site_a_guard_line=$(grep -n 'phase_scan_inconclusive" = "true"' "$SITE_A_FILE" | head -1 | cut -d: -f1)
-site_a_nextphase_line=$(grep -n 'elif \[ -n "\$next_phase" \]' "$SITE_A_FILE" | head -1 | cut -d: -f1)
-site_a_skeleton_line=$(grep -n 'elif \[ "\$last_skeleton" = "true" \]' "$SITE_A_FILE" | head -1 | cut -d: -f1)
+#
+# Uniqueness guard: skill-orchestrate/SKILL.md is a large, actively-edited merged file (unlike
+# the small, single-purpose skill-orchestrate-hard/SKILL.md this site formerly targeted), so a
+# second occurrence of an anchor could silently appear and mis-anchor `head -1` onto the wrong
+# line rather than failing. site_a_anchor_line() asserts the grep match count is exactly one
+# before taking the line number, calling fail() by anchor name and observed count otherwise. The
+# result is assigned via a nameref out-parameter, NOT a `$(...)` command substitution -- a
+# substitution runs the function in a subshell, and this function's own fail()/pass() calls (via
+# the shared PASSED/FAILED counters) must be visible to the parent shell, not lost when the
+# subshell exits.
+site_a_anchor_line() {
+  local pattern="$1" anchor_name="$2"
+  local -n out_var="$3"
+  local matches count
+  matches="$(grep -n "$pattern" "$SITE_A_FILE")"
+  count=$(printf '%s\n' "$matches" | grep -c . || true)
+  if [[ "$count" -ne 1 ]]; then
+    fail "Site A: anchor '${anchor_name}' expected exactly 1 match in $(basename "$SITE_A_FILE"), found ${count}"
+    out_var=""
+    return
+  fi
+  out_var="$(printf '%s\n' "$matches" | cut -d: -f1)"
+}
+site_a_anchor_line 'phase_scan_inconclusive" = "true"' 'phase_scan_inconclusive guard' site_a_guard_line
+site_a_anchor_line 'elif \[ -n "\$next_phase" \]' 'next_phase elif' site_a_nextphase_line
+site_a_anchor_line 'elif \[ "\$last_skeleton" = "true" \]' 'last_skeleton elif' site_a_skeleton_line
 if [[ -n "$site_a_guard_line" && -n "$site_a_nextphase_line" && -n "$site_a_skeleton_line" \
       && "$site_a_guard_line" -lt "$site_a_nextphase_line" \
       && "$site_a_nextphase_line" -lt "$site_a_skeleton_line" ]]; then
