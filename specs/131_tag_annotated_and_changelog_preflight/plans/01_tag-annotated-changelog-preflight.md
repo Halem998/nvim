@@ -349,7 +349,7 @@ sites is not 2, stop and reconcile against the file rather than editing the two 
 
 ---
 
-### Phase 4: SKILL.md Error Handling subsections [NOT STARTED]
+### Phase 4: SKILL.md Error Handling subsections [COMPLETED]
 
 **Goal**: Document the three new changelog outcomes in `SKILL.md`'s `## Error Handling` section,
 mirroring the existing Version Mismatch / No Declared Version Found / Version Check Skipped by
@@ -357,19 +357,23 @@ Flag trio one-for-one.
 
 **Tasks**:
 
-- [ ] Add `### Changelog Entry Missing or Empty` — the fatal-by-default outcome. Show both
+- [x] Add `### Changelog Entry Missing or Empty` — the fatal-by-default outcome. Show both
       variants (heading absent; heading present but section empty) as transcript examples, using
-      the exact strings Phase 2 emits.
-- [ ] Add `### No Changelog Found` — explicitly labelled an **informational** outcome, not a
+      the exact strings Phase 2 emits. *(completed)*
+- [x] Add `### No Changelog Found` — explicitly labelled an **informational** outcome, not a
       failure, with the sentence pattern the existing "No Declared Version Found" subsection uses:
       `/tag` proceeds normally after printing it, in every invocation mode including `--dry-run`.
-- [ ] Add `### Changelog Check Skipped by Flag` — carrying the same "suppresses the *block*, not
+      *(completed)*
+- [x] Add `### Changelog Check Skipped by Flag` — carrying the same "suppresses the *block*, not
       the *disclosure*" sentence the `--skip-version-check` subsection uses, with a transcript
-      showing the full failure detail printed *before* the WARNING line.
-- [ ] Place the three subsections immediately after the existing `### Version Check Skipped by
+      showing the full failure detail printed *before* the WARNING line. *(completed)*
+- [x] Place the three subsections immediately after the existing `### Version Check Skipped by
       Flag` subsection so the version trio and the changelog trio read as parallel groups.
-- [ ] Cross-check every transcript line against the literal `echo` strings written in Phase 2.
+      *(completed)*
+- [x] Cross-check every transcript line against the literal `echo` strings written in Phase 2.
       A documented transcript that does not match the code is worse than no transcript.
+      *(completed: verified every transcript line grep-matches Step 3.6's echo statements
+      verbatim)*
 
 **Timing**: 0.3 hours
 

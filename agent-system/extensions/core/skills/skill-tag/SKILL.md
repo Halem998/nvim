@@ -650,6 +650,68 @@ WARNING: --skip-version-check is set. Proceeding despite the mismatch above.
 Computed tag: v1.3.1. The declared version(s) listed above diverge from it.
 ```
 
+### Changelog Entry Missing or Empty
+
+This is the fatal-by-default outcome. There are two variants: the version heading is absent from
+the discovered CHANGELOG, or the heading is present but its section is empty.
+
+Heading absent:
+
+```
+=== Validating Changelog Entry ===
+
+Error: Changelog entry missing or empty for 1.3.1.
+
+Changelog file: code/CHANGELOG.md
+No '## [1.3.1]' heading found.
+
+Resolution: Add a non-empty '## [1.3.1]' section to code/CHANGELOG.md, commit, then re-run /tag.
+Or pass --skip-changelog-check to proceed anyway (not recommended).
+```
+
+Heading present, section empty:
+
+```
+=== Validating Changelog Entry ===
+
+Error: Changelog entry missing or empty for 1.3.1.
+
+Changelog file: code/CHANGELOG.md
+The '## [1.3.1]' heading exists but its section is empty.
+
+Resolution: Add a non-empty '## [1.3.1]' section to code/CHANGELOG.md, commit, then re-run /tag.
+Or pass --skip-changelog-check to proceed anyway (not recommended).
+```
+
+### No Changelog Found
+
+This is an **informational** outcome, not a failure. `/tag` proceeds normally after printing it,
+in every invocation mode including `--dry-run`:
+
+```
+=== Validating Changelog Entry ===
+
+No CHANGELOG.md found near repo root (bounded-depth search, vendor/build dirs excluded).
+Skipping changelog check.
+```
+
+### Changelog Check Skipped by Flag
+
+`--skip-changelog-check` suppresses the *block*, not the *disclosure*: the failure detail is
+still printed in full before the override warning, so the transcript records exactly what was
+overridden.
+
+```
+=== Validating Changelog Entry ===
+
+Error: Changelog entry missing or empty for 1.3.1.
+
+Changelog file: code/CHANGELOG.md
+No '## [1.3.1]' heading found.
+
+WARNING: --skip-changelog-check is set. Proceeding despite the above.
+```
+
 ---
 
 ## Agent Restrictions
