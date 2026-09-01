@@ -229,25 +229,30 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 3: Retarget `test-loop-guard-staleness.sh` [NOT STARTED]
+### Phase 3: Retarget `test-loop-guard-staleness.sh` [COMPLETED]
 
 - **Goal:** Point the single-engine staleness test at the merged file, make its `hard_mode=true`
   fixture requirement explicit, and fix the marker-count assertion that a bare path swap would
   break.
 - **Tasks:**
-  - [ ] Change `SKILL_FILE` to `skill-orchestrate/SKILL.md`.
-  - [ ] Change the `begin_count`/`end_count` assertions to count the full sentinel comment form
+  - [x] Change `SKILL_FILE` to `skill-orchestrate/SKILL.md`. *(completed)*
+  - [x] Change the `begin_count`/`end_count` assertions to count the full sentinel comment form
     (`# --- loop-guard-staleness:begin ---` / `# --- loop-guard-staleness:end ---`) with a fixed-
     string grep, so a prose mention of the sentinel name elsewhere in the merged file cannot
-    inflate the count. Keep the "exactly one" expectation.
-  - [ ] Leave `BEGIN_MARKER`/`END_MARKER` as-is for `extract_region`'s awk range if the bare form
+    inflate the count. Keep the "exactly one" expectation. *(completed)*
+  - [x] Leave `BEGIN_MARKER`/`END_MARKER` as-is for `extract_region`'s awk range if the bare form
     still selects the correct region; if the prose mention precedes the real sentinel and would
-    start the range early, switch `extract_region` to the full comment form too.
-  - [ ] Set `hard_mode=true` explicitly in the fixture environment that runs the extracted region.
-    This was previously implicit because the whole target file was the hard engine.
-  - [ ] Add an assertion that the fixture's `hard_mode` is `true`, so a future edit that drops the
-    export fails loudly instead of silently skipping the whole gated detector region.
-  - [ ] Update the file's header comment to name Stage 2 of the merged engine.
+    start the range early, switch `extract_region` to the full comment form too. *(completed:
+    verified the prose mention at line 94 precedes the real sentinel at line 224, so
+    `extract_region` was switched to the full comment form via `index($0, b/e)`)*
+  - [x] Set `hard_mode=true` explicitly in the fixture environment that runs the extracted region.
+    This was previously implicit because the whole target file was the hard engine. *(completed:
+    `run_region()` now binds `hard_mode="true"` in its subshell)*
+  - [x] Add an assertion that the fixture's `hard_mode` is `true`, so a future edit that drops the
+    export fails loudly instead of silently skipping the whole gated detector region. *(completed:
+    new assertion after Case 1 checks `result_hard_mode`; mutation-verified to fail loudly when
+    the binding is removed)*
+  - [x] Update the file's header comment to name Stage 2 of the merged engine. *(completed)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1
 - **Verification Tier:** local

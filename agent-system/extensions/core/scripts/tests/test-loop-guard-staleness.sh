@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # test-loop-guard-staleness.sh - Fixture-driven regression suite for the hard-mode loop-guard
-# operational-staleness detector wired into skill-orchestrate-hard/SKILL.md Stage 2, immediately
-# before the pre-existing `if [ -f "$loop_guard_file" ] && jq empty ...` resume branch. Exercises
+# operational-staleness detector wired into skill-orchestrate/SKILL.md Stage 2, immediately
+# before the pre-existing `if [ -f "$loop_guard_file" ] && jq empty ...` resume branch. The
+# detector region is itself wrapped in `if [ "${hard_mode:-false}" = "true" ]; then ... fi`, so
+# the fixture harness below sets `hard_mode=true` explicitly when running the extracted region --
+# this was previously implicit because the whole target file was the hard-only engine. Exercises
 # the three OR-combined signals (max_cycles drift, plan_version drift, mtime-age backstop),
 # the archive-aside-never-delete behavior, and the explicit negative case that the rejected
 # session_id-equality gate is genuinely absent -- see
@@ -43,7 +46,7 @@ if [[ -z "$REPO_ROOT" ]]; then
 fi
 
 # Resolved from the source store, matching how the sibling suite resolves its sites.
-SKILL_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+SKILL_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 
 if [[ ! -f "$SKILL_FILE" ]]; then
   echo "ERROR: required file not found: $SKILL_FILE" >&2
@@ -61,33 +64,41 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-BEGIN_MARKER='loop-guard-staleness:begin'
-END_MARKER='loop-guard-staleness:end'
+# Full sentinel comment form, not the bare `loop-guard-staleness:begin`/`:end` substring: the
+# merged SKILL.md's own design-decision table (a row documenting this same sentinel in prose)
+# precedes the real sentinel comment, so a bare-substring match would start `extract_region`'s
+# awk range at the prose row instead of the real region, and would inflate the "exactly one
+# marker" count to two. The full comment form is verified unique (begin=1, end=1) in the merged
+# file.
+BEGIN_MARKER='# --- loop-guard-staleness:begin ---'
+END_MARKER='# --- loop-guard-staleness:end ---'
 
 # ─── Region extraction ─────────────────────────────────────────────────────────────────────────
 # Fails loudly (not a silent skip) if a marker pair is missing.
 extract_region() {
   local file="$1"
-  if ! grep -q "$BEGIN_MARKER" "$file"; then
+  if ! grep -qF "$BEGIN_MARKER" "$file"; then
     echo "ERROR: ${BEGIN_MARKER} not found in ${file}" >&2
     return 1
   fi
-  if ! grep -q "$END_MARKER" "$file"; then
+  if ! grep -qF "$END_MARKER" "$file"; then
     echo "ERROR: ${END_MARKER} not found in ${file}" >&2
     return 1
   fi
   awk -v b="$BEGIN_MARKER" -v e="$END_MARKER" '
-    $0 ~ b { flag=1 }
+    index($0, b) { flag=1 }
     flag { print }
-    $0 ~ e { flag=0 }
+    index($0, e) { flag=0 }
   ' "$file"
 }
 
 region="$(extract_region "$SKILL_FILE")" || exit 2
 
-# Exactly one occurrence of each marker in the live file (Phase 3 verification bar).
-begin_count=$(grep -c "$BEGIN_MARKER" "$SKILL_FILE")
-end_count=$(grep -c "$END_MARKER" "$SKILL_FILE")
+# Exactly one occurrence of each marker in the live file (Phase 3 verification bar). Counted as a
+# fixed string (grep -cF), not a bare substring, so a prose mention of the sentinel name
+# elsewhere in the merged file cannot inflate the count.
+begin_count=$(grep -cF "$BEGIN_MARKER" "$SKILL_FILE")
+end_count=$(grep -cF "$END_MARKER" "$SKILL_FILE")
 if [[ "$begin_count" -eq 1 ]]; then
   pass "Exactly one '${BEGIN_MARKER}' marker in SKILL.md"
 else
@@ -141,6 +152,15 @@ fi
 # Runs the extracted region in a subshell against a fixture TASK_DIR, reporting loop_guard_stale
 # via stdout so the caller (which only sees the subshell's captured stdout/stderr, not its
 # variable bindings) can assert on it. Stdout and stderr are captured to separate files.
+#
+# `hard_mode="true"` is set explicitly here: the whole extracted region is wrapped in
+# `if [ "${hard_mode:-false}" = "true" ]; then ... fi` in the merged engine, so without this
+# binding the entire detector body would silently no-op (loop_guard_stale would never even be
+# set) instead of exercising the cases below. This was previously implicit -- the pre-merge
+# target file was the hard-only engine, so `hard_mode` never needed to be set at all. The
+# `__HARD_MODE__` echo lets the caller assert this binding is actually in effect (see the guard
+# assertion right after Case 1 below), so a future edit that drops the export fails loudly rather
+# than producing a silently-skipped detector region.
 run_region() {
   local task_dir="$1" max_cycles="$2" plan_version="$3" out_file="$4" err_file="$5"
   (
@@ -149,12 +169,15 @@ run_region() {
     churn_file="${task_dir}/.orchestrator-churn-state.json"
     MAX_CYCLES="$max_cycles"
     current_plan_version="$plan_version"
+    hard_mode="true"
     eval "$region"
     echo "__LOOP_GUARD_STALE__=${loop_guard_stale:-}"
+    echo "__HARD_MODE__=${hard_mode:-}"
   ) > "$out_file" 2> "$err_file"
 }
 
 result_stale() { grep '^__LOOP_GUARD_STALE__=' "$1" | tail -1 | sed 's/^__LOOP_GUARD_STALE__=//'; }
+result_hard_mode() { grep '^__HARD_MODE__=' "$1" | tail -1 | sed 's/^__HARD_MODE__=//'; }
 
 # ─── Fixture builders ──────────────────────────────────────────────────────────────────────────
 # make_guard PATH MAX_CYCLES PLAN_VERSION [MTIME_OFFSET_DAYS]
@@ -238,6 +261,15 @@ if [[ ! -s "$err" ]]; then
   pass "Case 1 (current guard): stderr is empty"
 else
   fail "Case 1 (current guard): expected empty stderr, got: $(cat "$err")"
+fi
+# Fixture guard assertion: the extracted region is entirely gated on `hard_mode = "true"` in the
+# merged engine (see run_region's header comment). If a future edit drops the `hard_mode="true"`
+# export, the whole detector body silently no-ops rather than exercising Case 1 at all -- this
+# assertion converts that silent skip into a loud, named failure.
+if [[ "$(result_hard_mode "$out")" == "true" ]]; then
+  pass "Case 1 (current guard): fixture ran with hard_mode=true (detector region actually executed)"
+else
+  fail "Case 1 (current guard): expected fixture hard_mode=true, got '$(result_hard_mode "$out")' -- detector region may have been silently skipped"
 fi
 
 # =====================================================================

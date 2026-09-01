@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Retarget test-loop-guard-staleness.sh",
+  "started_at": "2026-09-01T18:52:00Z",
+  "last_updated": "2026-09-01T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Retarget SKILL_FILE to merged engine", "status": "done", "note": "SKILL_FILE now skill-orchestrate/SKILL.md", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 2, "description": "Harden marker-count assertions to full sentinel comment form with grep -cF", "status": "done", "note": "begin_count/end_count now grep -cF against '# --- loop-guard-staleness:begin/end ---'", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 3, "description": "Decide extract_region marker form", "status": "done", "note": "Verified prose mention at line 94 precedes real sentinel at line 224 in merged file -- switched extract_region to full comment form (index($0,b/e) substring match) to avoid mis-anchoring at the prose row", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 4, "description": "Set hard_mode=true explicitly in fixture env", "status": "done", "note": "run_region() subshell now binds hard_mode=\"true\"; without it the whole detector region no-ops since it is wrapped in if [ \"${hard_mode:-false}\" = \"true\" ]", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 5, "description": "Add hard_mode assertion guard", "status": "done", "note": "New assertion after Case 1 checks result_hard_mode(\"$out\") == \"true\"; mutation-tested by temporarily removing the hard_mode=\"true\" binding -- Case 1's new assertion failed loudly (and 15 downstream cases failed too, confirming the whole region no-ops), then reverted and re-verified clean (29 passed, 0 failed)", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 6, "description": "Update header comment for Stage 2 of merged engine", "status": "done", "note": "Header now names skill-orchestrate/SKILL.md Stage 2 and explains the hard_mode-gating and why the fixture sets it explicitly", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
