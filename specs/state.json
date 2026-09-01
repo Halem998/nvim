@@ -1179,7 +1179,8 @@
       "last_updated": "2026-09-01T13:33:07Z",
       "dependencies": [
         118,
-        119
+        119,
+        128
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
