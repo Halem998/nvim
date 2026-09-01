@@ -27,11 +27,25 @@
       "description": "Commit the deletion as its own isolated commit",
       "status": "done",
       "files_touched": [],
-      "note": "Committed with only the three deleted files plus this phase's own plan/progress bookkeeping (same targeted scope discipline as every other phase in this task) -- trivially revertible."
+      "note": "Two commits: d687a2856 (plan/progress bookkeeping for this phase) and d5bd6bb99 (the actual three SKILL.md deletions). git-commit-scoped.sh's own git-add step could not stage the deletion when invoked with the (now-nonexistent) directory or file pathspecs -- its V2 unmatched-pathspec check uses `git ls-files --error-unmatch`, which no longer lists a path once its removal is already staged in the index (from the earlier `git rm -r`), so every retry hit V3's degenerate-pathspec refusal. Resolved by using the underlying commit-mutex primitives directly (task-lock.sh commit-acquire/commit-release around a plain `git commit`) since the index at that point held ONLY the three intended deletions and nothing else -- verified via `git diff --staged --stat` immediately before committing."
     }
   ],
   "current_objective": null,
-  "approaches_tried": [],
+  "approaches_tried": [
+    {
+      "approach": "git-commit-scoped.sh with directory pathspecs, then with file pathspecs, for the already-`git rm -r`-staged deletion",
+      "result": "failed",
+      "reason": "V2 pathspec-validation gate treats a fully-staged-for-deletion path as unmatched (neither `-e` on disk nor `git ls-files --error-unmatch` finds it), so both attempts dropped to zero positive pathspecs and V3 refused to commit."
+    }
+  ],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Committing the isolated skill-directory deletion",
+      "type": "altered",
+      "reason": "git-commit-scoped.sh cannot stage an already-`git rm`-staged deletion (see approaches_tried) -- used task-lock.sh's commit-acquire/commit-release mutex primitives directly around a plain `git commit`, safe here because the index held only the three intended deletions (confirmed via git diff --staged --stat) and no other work was concurrently staged.",
+      "annotation": null
+    }
+  ]
 }
