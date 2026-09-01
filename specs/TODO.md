@@ -1,5 +1,5 @@
 ---
-next_project_number: 138
+next_project_number: 139
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 138
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,126,128,133,134,137 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,126,128,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,75,76,89,104,105,109,112,120,124,129,136 | 29,74,87,91,102,108,126,128 | core-agent-system, extensions, literature |
 | 3 | 48,90,107,121,125,135 | 104,120,124,126,133 | core-agent-system, literature |
 | 4 | 50,127 | 48,121,124 | core-agent-system |
@@ -89,7 +89,20 @@ next_project_number: 138
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
+### Uncategorized
+
+138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
+
 ## Tasks
+
+### 138. Multi-task consumption of force_phases, MT artifact-number advance, and MT artifact_number dispatch-context threading
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: DEFERRED FROM the single-task phase-forcing-flags (A2) implementation. Single-task /orchestrate now supports composable --research/--plan/--implement phase-forcing flags (force_phases), a Stage 2b forced-phase queue, a monotonic-max status clamp, and a next_artifact_number advance on research and on a forced plan/implement postflight -- all scoped to single-task mode only. Three related gaps remain in multi-task (Stage MT-*) mode, deliberately grouped into this one task rather than filed as three:\n\n1. Stage MT-1 parses force_phases for DIAGNOSTICS ONLY today (an accepted-and-ignored notice) -- Stage MT-4 never consumes it, so a forced phase flag on a multi-task /orchestrate invocation has no per-task effect.\n2. Multi-task mode has no next_artifact_number advance mechanism at all (mirroring the single-task gap the phase-forcing-flags task closed for single-task mode as a P1 prerequisite) -- MT postflight never advances the sequence, forced or not.\n3. artifact_number is not threaded into any of Stage MT-4s three per-group dispatch loops dispatch contexts, so even if 1 and 2 were fixed, a dispatched agent in multi-task mode still has no documented way to learn which MM_ round to write into.\n\nWhy grouped into one task instead of three: MT phase selection is owned by scripts/orchestrate-triage-classify.sh, a structurally different mechanism from single-task Stage 4s semantic handler match (status-string dispatch). Fixing MT coherently means one coordinated change to all three concerns at once (classifier-side phase selection awareness, the postflight advance, and per-task dispatch-context threading) -- not three independently-landed patches that could each partially implement the feature and leave the others stale.\n\nCORRECTION TO A DESIGN-REPORT PREMISE (record this so a future reader of the design report does not re-derive it): the design report specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A2, WORK item 3) names scripts/orchestrator-postflight.sh as the site for the next_artifact_number advance. This is incorrect for /orchestrate: that script has ZERO call sites in skill-orchestrate/SKILL.md (confirmed by repo-wide grep) -- it belongs to the plain /implement command (skill-implementer/SKILL.md, skill-git-workflow/SKILL.md) instead. /orchestrates real single-task postflight path is scripts/orchestrate-stage5-postflight.sh (invoked from Stage 5s Shared postflight tail), which is where the single-task advance and clamp actually landed. This defect task multi-task advance (gap 2 above) belongs in whatever script implements Stage MT-4s postflight tail -- verify its call graph the same way before editing, rather than assuming orchestrator-postflight.sh is the target there either.\n\nScope: multi-task (Stage MT-*) only. Single-task mode is unaffected and already complete.
+
+---
 
 ### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
 - **Status**: [NOT STARTED]

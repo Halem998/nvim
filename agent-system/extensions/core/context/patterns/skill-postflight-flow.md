@@ -54,6 +54,17 @@ skill-specific.
 skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 ```
 
+An importing skill following this pattern calls the 4-argument form shown above (or the 5-argument
+form with an explicit `phase_check_mode` — see `update-task-status.sh`'s opt-in phase-accounting
+backstop). `skill_postflight_update` also accepts an optional 7th argument, `status_clamp_mode`
+(A2's monotonic-max clamp; positional 6 is reserved, unrelated to this pattern): absent or empty —
+every call this shared pattern documents — preserves the behavior below exactly.
+`"monotonic-max"` instead skips the status write when it would regress the task's lifecycle
+position (see `scripts/lib/status-vocabulary.sh`'s `status_vocabulary_would_regress`). This
+pattern's own importers never pass it; it is consumed today only by `/orchestrate`'s own
+per-cycle postflight path (`scripts/orchestrate-stage5-postflight.sh`, a script outside this
+shared block — see that script's header), on a forced re-run of an already-passed phase.
+
 This only performs the actual `update-task-status.sh postflight` call when `status` is one of the
 success values (`researched`/`planned`/`implemented`); any other status is logged and skipped, so
 a failed or partial run never advances state. It also runs the extension `postflight` hook and
@@ -64,7 +75,11 @@ appends a `lifecycle_stage` milestone event.
 the same round) and has no dedicated `skill-base.sh` function. An importing skill that needs this
 increment keeps that one `state-write.sh` call inline, immediately after this Stage 7 call —
 converting it would require a new shared function this plan does not add (see the parent plan's
-Non-Goals: "altering `skill-base.sh`'s existing function signatures").
+Non-Goals: "altering `skill-base.sh`'s existing function signatures"). This remains accurate for
+every skill following this shared pattern; `/orchestrate`'s own single-task postflight path
+(outside this shared block) additionally advances the sequence unconditionally on `researched`
+and, under A2, on a FORCED `planned`/`implemented` dispatch — see
+`scripts/orchestrate-stage5-postflight.sh`'s own header for that script-local variant.
 
 **On partial/failed status**: `skill_postflight_update` already no-ops on a non-success status;
 the importing skill still needs its own guard to skip whatever else it would otherwise do next

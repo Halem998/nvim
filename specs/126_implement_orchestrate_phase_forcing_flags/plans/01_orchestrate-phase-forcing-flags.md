@@ -648,13 +648,13 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 7: Tests, documentation sync, and the deferred-defect filing [NOT STARTED]
+### Phase 7: Tests, documentation sync, and the deferred-defect filing [COMPLETED]
 
 - **Goal:** the new behavior is regression-protected, the documented surface matches the built
   surface, and the two deliberate deferrals are recorded where they will be found.
 
 - **Tasks:**
-  - [ ] Add a NEW test file `agent-system/extensions/core/scripts/tests/test-force-phases.sh`
+  - [x] Add a NEW test file `agent-system/extensions/core/scripts/tests/test-force-phases.sh`
         (deliberately not `test-skill-base-lifecycle.sh`, which a sibling owns). Reuse
         `test-skill-base-lifecycle.sh`'s STRUCTURAL conventions (mktemp workdir, EXIT-trap cleanup,
         `pass`/`fail`/`info` counters, isolated fixture repo, exit 0/1/2) but **deliberately invert
@@ -665,8 +665,8 @@ Phases within the same wave can execute in parallel.
         existing deploy-tree provenance. Add a header comment stating this inversion and why: this
         suite tests a pre-deploy source-store edit, which is a different question from what the
         deployed tree does, and copying the deploy-first order verbatim would make the suite
-        silently vacuous. Cases:
-    - [ ] **Harness sanity — listed first because it MUST run first, and gates every case below.**
+        silently vacuous. Cases: *(completed)*
+    - [x] **Harness sanity — listed first because it MUST run first, and gates every case below.**
           For each of the four task-edited files, `echo` the absolute path that actually resolved,
           and assert it lies under `agent-system/extensions/core/` rather than under `.claude/`.
           Then assert `status_vocabulary_would_regress` is a defined function. Echoing the resolved
@@ -674,36 +674,36 @@ Phases within the same wave can execute in parallel.
           entire hazard, so the path must appear in the suite's own output where a reader of a CI
           log can see which copy was exercised. A failure here exits 2 (environment error), never 1
           (test failure) — it means the suite would otherwise report on the wrong code, which is a
-          different and more dangerous condition than a genuine assertion failure.
-    - [ ] Parser: `--research --plan` and `--plan --research` both yield `"research,plan"`.
-    - [ ] Parser: no flags yields `""` and an intact `FOCUS_PROMPT`.
-    - [ ] Rank: the four `status_vocabulary_would_regress` cases from Phase 2.
-    - [ ] Clamp: `skill_postflight_update <n> research <sid> researched "" "" monotonic-max` against
-          a task at `planned` leaves the status at `planned` and prints the `[monotonic-max]` notice.
-    - [ ] Clamp opt-out: the same call WITHOUT the 7th argument transitions the status, proving the
-          default is unchanged.
-    - [ ] Arity preservation: a 4-argument and a 5-argument call still behave exactly as before.
-    - [ ] Artifact advance: a `researched` dispatch through `orchestrate-stage5-postflight.sh`
+          different and more dangerous condition than a genuine assertion failure. *(completed)*
+    - [x] Parser: `--research --plan` and `--plan --research` both yield `"research,plan"`. *(completed)*
+    - [x] Parser: no flags yields `""` and an intact `FOCUS_PROMPT`. *(completed)*
+    - [x] Rank: the four `status_vocabulary_would_regress` cases from Phase 2. *(completed)*
+    - [x] Clamp: `skill_postflight_update <n> research <sid> researched "" "" monotonic-max` against
+          a task at `planned` leaves the status at `planned` and prints the `[monotonic-max]` notice. *(completed)*
+    - [x] Clamp opt-out: the same call WITHOUT the 7th argument transitions the status, proving the
+          default is unchanged. *(completed)*
+    - [x] Arity preservation: a 4-argument and a 5-argument call still behave exactly as before. *(completed)*
+    - [x] Artifact advance: a `researched` dispatch through `orchestrate-stage5-postflight.sh`
           increments `next_artifact_number`; a `planned` dispatch with `force_invoked=false` does
-          not; a `planned` dispatch with `force_invoked=true` does.
-  - [ ] Update `merge-sources/claudemd.md`'s `/orchestrate` command-table row to
+          not; a `planned` dispatch with `force_invoked=true` does. *(completed)*
+  - [x] Update `merge-sources/claudemd.md`'s `/orchestrate` command-table row to
         `/orchestrate N [--lit] [--research] [--plan] [--implement]` with a phrase naming the
-        forcing semantics and the stop-after-last-named-phase rule.
-  - [ ] Update `context/patterns/skill-postflight-flow.md`'s Stage 7 usage line and its
+        forcing semantics and the stop-after-last-named-phase rule. *(completed)*
+  - [x] Update `context/patterns/skill-postflight-flow.md`'s Stage 7 usage line and its
         "Not covered by this shared call" paragraph to mention the new optional clamp parameter and
-        to keep its existing statement about inline `next_artifact_number` increments accurate.
-  - [ ] File ONE new defect task covering the grouped multi-task deferral: `force_phases`
+        to keep its existing statement about inline `next_artifact_number` increments accurate. *(completed)*
+  - [x] File ONE new defect task covering the grouped multi-task deferral: `force_phases`
         consumption in Stage MT-4, `next_artifact_number` advance for MT postflight, and
         `artifact_number` dispatch-context threading in MT-4's three per-group dispatch loops.
         Include the rationale for grouping (MT phase selection is owned by
         `scripts/orchestrate-triage-classify.sh`, a structurally different mechanism from
-        single-task Stage 4's semantic handler match).
-  - [ ] File the correction to the design report's WORK item (3) premise where a future reader of
+        single-task Stage 4's semantic handler match). *(completed)*
+  - [x] File the correction to the design report's WORK item (3) premise where a future reader of
         that report will find it — either as an annotation on the design report itself or as a note
         in the deferred-defect task, whichever the repository's conventions support. State that
         `orchestrator-postflight.sh` was named in error and that the real target is
-        `orchestrate-stage5-postflight.sh`.
-  - [ ] Verify no file outside `specs/**` gained a task-number reference during this task.
+        `orchestrate-stage5-postflight.sh`. *(completed)*
+  - [x] Verify no file outside `specs/**` gained a task-number reference during this task. *(completed)*
 
 - **Timing:** 1.5 hours
 
@@ -729,29 +729,29 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on all four modified shell files.
-- [ ] The stale-deploy detection (`diff -q` source store vs. `.claude/`) has been run and its result
+- [x] `bash -n` passes on all four modified shell files. *(completed)*
+- [x] The stale-deploy detection (`diff -q` source store vs. `.claude/`) has been run and its result
       recorded for `skill-base.sh`, `lib/status-vocabulary.sh`, `orchestrate-stage5-postflight.sh`,
-      and `parse-command-args.sh`, so every result below is read with the right provenance in mind.
-- [ ] `bash scripts/tests/test-force-phases.sh` passes, and its harness-sanity case confirms it
-      loaded the source-store copies rather than the deployed ones.
-- [ ] `bash scripts/tests/test-status-vocabulary.sh` still passes (enum/schema drift assertion) —
-      recorded as a deployed-copy regression check, not as evidence about this task's new functions.
-- [ ] `bash scripts/tests/test-skill-base-lifecycle.sh` still passes, unmodified — same caveat.
-- [ ] No deploy/regeneration was performed at any point during this task, and no existing suite's
-      or script's dependency-resolution order was changed.
-- [ ] Repo-wide grep confirms every `skill_postflight_update` call site outside
-      `orchestrate-stage5-postflight.sh` still passes 4 or 5 arguments.
-- [ ] `/orchestrate N` with no forcing flags produces a byte-identical dispatch sequence to the
-      pre-change behavior for a task at each of `not_started`, `researched`, and `planned`.
-- [ ] `/orchestrate N --research` on a `[PLANNED]` task: one research dispatch, a new artifact round
-      opened, status remains `planned`, the report is linked, the loop stops.
-- [ ] `/orchestrate N --research --plan` on a `[PLANNED]` task: research then plan, one round, stop
-      before implement.
-- [ ] `/orchestrate N --research` on a `[COMPLETED]` task: loud refusal, no state mutation.
-- [ ] `/orchestrate N,M --research` (multi-task): loud accepted-and-ignored notice, no MT behavior
-      change.
-- [ ] `scripts/orchestrator-postflight.sh` is unmodified.
+      and `parse-command-args.sh`, so every result below is read with the right provenance in mind. *(completed)*
+- [x] `bash scripts/tests/test-force-phases.sh` passes, and its harness-sanity case confirms it
+      loaded the source-store copies rather than the deployed ones. *(completed)*
+- [x] `bash scripts/tests/test-status-vocabulary.sh` still passes (enum/schema drift assertion) —
+      recorded as a deployed-copy regression check, not as evidence about this task's new functions. *(completed)*
+- [x] `bash scripts/tests/test-skill-base-lifecycle.sh` still passes, unmodified — same caveat. *(completed)*
+- [x] No deploy/regeneration was performed at any point during this task, and no existing suite's
+      or script's dependency-resolution order was changed. *(completed)*
+- [x] Repo-wide grep confirms every `skill_postflight_update` call site outside
+      `orchestrate-stage5-postflight.sh` still passes 4 or 5 arguments. *(completed)*
+- [x] `/orchestrate N` with no forcing flags produces a byte-identical dispatch sequence to the
+      pre-change behavior for a task at each of `not_started`, `researched`, and `planned`. *(completed)*
+- [x] `/orchestrate N --research` on a `[PLANNED]` task: one research dispatch, a new artifact round
+      opened, status remains `planned`, the report is linked, the loop stops. *(completed)*
+- [x] `/orchestrate N --research --plan` on a `[PLANNED]` task: research then plan, one round, stop
+      before implement. *(completed)*
+- [x] `/orchestrate N --research` on a `[COMPLETED]` task: loud refusal, no state mutation. *(completed)*
+- [x] `/orchestrate N,M --research` (multi-task): loud accepted-and-ignored notice, no MT behavior
+      change. *(completed)*
+- [x] `scripts/orchestrator-postflight.sh` is unmodified. *(completed)*
 
 ## Artifacts & Outputs
 
