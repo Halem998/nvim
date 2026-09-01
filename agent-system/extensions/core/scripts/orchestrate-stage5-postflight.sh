@@ -129,16 +129,20 @@ inferred_phase=""
 # correctly routed to the off-schema arm below.
 case "$dispatch_status" in
   researched)
-    # Positions 5/6 are explicit empty placeholders -- behaviorally identical to omitting them
+    # Position 5 is an explicit empty placeholder -- behaviorally identical to omitting it
     # (phase_check_mode="${5:-}" and its -n guard both yield the no-flag path either way) -- but
-    # required to reach position 7 (status_clamp_mode) at all. Research is never itself a
-    # "forced" dispatch target that could regress status (it is always at or ahead of the
-    # task's current position), so clamp_mode here is effectively a no-op today; passed through
-    # uniformly for symmetry with the planned/implemented arms below.
-    skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "" "$clamp_mode"
+    # required to reach position 6 (task_dir_override) and position 7 (status_clamp_mode) at
+    # all. Position 6 passes this script's own already-bound $task_dir, so the exit-6
+    # deploy-pending annotation block reaches the task's .return-meta.json without relying on
+    # the ambient env var the callee falls back to (which this script never sets). Research is
+    # never itself a "forced" dispatch
+    # target that could regress status (it is always at or ahead of the task's current
+    # position), so clamp_mode here is effectively a no-op today; passed through uniformly for
+    # symmetry with the planned/implemented arms below.
+    skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$task_dir" "$clamp_mode"
     ;;
   planned)
-    skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "" "$clamp_mode"
+    skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$task_dir" "$clamp_mode"
     ;;
   implemented)
     # Completion-claim verification gate: a dispatch reporting "implemented" must not flip the
@@ -151,7 +155,7 @@ case "$dispatch_status" in
       # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
       # phase headings — structurally different evidence — so it is a valuable SECOND OPINION
       # here, not a veto over a decision this state machine made deliberately and loggedly.
-      skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "" "$clamp_mode"
+      skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$task_dir" "$clamp_mode"
 
       # Populate completion_summary/roadmap_items via the single shared propagation path,
       # skill_orchestrate_propagate_completion (scripts/skill-base.sh). No precomputed JSON is
