@@ -1,5 +1,5 @@
 ---
-next_project_number: 132
+next_project_number: 134
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 132
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130 | -- | core-agent-system, literature, neovim |
-| 2 | 30,74,104,105,109,112,120,124,129 | 29,31,102,108,126,128,130 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130,132 | -- | core-agent-system, literature, neovim |
+| 2 | 30,74,104,105,109,112,120,124,129,133 | 29,31,102,108,126,128,130,132 | core-agent-system, extensions, literature |
 | 3 | 75,76,107,121,125 | 74,104,120,124,128 | core-agent-system, extensions, literature |
 | 4 | 127 | 121,124 | core-agent-system |
 | 5 | 88 | 87,127 | core-agent-system |
@@ -65,6 +65,8 @@ next_project_number: 132
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
+132 [NOT STARTED] — Register a new --defect-class in the system-defect vocabulary so 
+  └─ 133 [NOT STARTED] — Fix a substantive reporting defect: under /orchestrate, the deplo
 
 ### Extensions
 
@@ -94,6 +96,62 @@ next_project_number: 132
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
 
 ## Tasks
+
+### 133. Fix the /orchestrate deploy-pending annotation: bind TASK_DIR explicitly instead of ambiently
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 132
+
+**Description**: Fix a substantive reporting defect: under /orchestrate, the deploy-pending annotation that `skill_postflight_update` is documented to record never lands, because the annotation block is guarded on an ambient environment variable the orchestrate caller never sets.
+
+CANONICAL SOURCE. Edit `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`, `agent-system/extensions/core/scripts/skill-base.sh`, and `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.
+
+VERIFIED CURRENT STATE (confirmed by direct inspection; the research phase should not need to re-derive this).
+- `skill-base.sh:199` sets `TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"`, but only inside the skill task-context loader.
+- `orchestrate-stage5-postflight.sh:55` binds the task directory ONLY as a lowercase positional, `task_dir="${4:-}"`, and never sets or exports `TASK_DIR`.
+- That script calls `skill_postflight_update` at lines 111, 114, and 127.
+- The exit-6 annotation block inside `skill_postflight_update` is guarded at `skill-base.sh:536` on `[[ -n "${TASK_DIR:-}" && -f "${TASK_DIR}/.return-meta.json" ]]`.
+- Consequence: under /orchestrate that guard is ALWAYS false, so `deploy_pending` and `deploy_pending_reason` silently stay null on every deploy-pending refusal, while the `[deploy-check] deploy-pending: ...` line still prints. Observed directly on a real run; the deferral had to be diagnosed by hand.
+
+CONTRACT THIS DEFEATS. `context/patterns/regeneration-is-manual-only.md`, in its "Automated Exception: The Postflight Completion-Deploy Gate" section, states that a task refused under /orchestrate "defers loudly (via the `deploy_pending` marker `skill_postflight_update` records into its `.return-meta.json`)". skill-base.sh's own comment above the block calls it the "D6 residual mitigation" for exactly the /orchestrate reporting surface it fails to reach. The documentation describes behavior that does not occur.
+
+RECOMMENDATION FOR THE PLAN PHASE TO WEIGH, NOT A SETTLED DECISION. Two fixes are available: (a) export `TASK_DIR` at the orchestrate caller, or (b) thread the task directory into `skill_postflight_update` as an explicit parameter. Option (b) is recommended, because it removes the ambient env-var coupling rather than satisfying it -- the ambient coupling is the underlying fragility, and (a) leaves the same trap set for the next non-skill caller. The plan phase should weigh (b)'s cost: `skill_postflight_update` already takes an optional 5th argument (`phase_check_mode`), so a new parameter must not disturb that positional contract or the existing callers' byte-for-byte behavior. Record the judgment either way.
+
+CALLER AUDIT RESULT (already performed). The other `skill_postflight_update` callers are skill files -- `skill-web-implementation`, `skill-web-research`, `skill-epi-implement`, `skill-epi-research` -- which run inside the skill context where `skill-base.sh:199` has already set `TASK_DIR`. They are SAFE TODAY. `orchestrate-stage5-postflight.sh` is the current outlier, but the coupling remains latent for any future non-skill caller, which is the argument for option (b). Re-confirm this audit against the tree at implementation time rather than trusting it blindly.
+
+VERIFICATION REQUIREMENT. Add a regression test to `scripts/tests/test-skill-base-lifecycle.sh` asserting that on an exit-6 refusal, `deploy_pending` is true and `deploy_pending_reason` is non-null in the task's `.return-meta.json`. Note the existing test file's own comment (around line 25) recording that these lifecycle functions hardcode a bare relative path -- that constraint shapes how the test must set up its fixture.
+
+NON-GOALS. Do not change the completion-deploy gate's refusal logic or its exit-6 semantics. Do not alter what `update-task-status.sh` returns. Do not weaken the block's best-effort, non-blocking character: a failure to annotate `.return-meta.json` must still never escalate past a warning, since the authoritative outcome remains update-task-status.sh's own rc.
+
+---
+
+### 132. Register a defect class for ambient-binding marker failures in the recorder and discrimination doc
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Register a new --defect-class in the system-defect vocabulary so that a documented observation marker which silently fails to land -- because of a caller/callee variable-binding mismatch -- can be recorded to specs/events.jsonl at all. Today it cannot: the recorder correctly rejects any unsanctioned class name, and none of the thirteen existing classes covers this shape.
+
+CANONICAL SOURCE. Edit `agent-system/extensions/core/scripts/system-defect-record.sh` and `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.
+
+MOTIVATING INSTANCE. During a live /orchestrate run the completion-deploy gate printed `[deploy-check] deploy-pending: task N postflight refused by the completion-deploy gate (exit 6)`, but the `deploy_pending` and `deploy_pending_reason` fields it is documented to record stayed null in the task's `.return-meta.json`. The deferral had to be diagnosed by hand. Attempting to record that detection failed: `system-defect-record.sh` exited 1 with "invalid --defect-class". The recorder is NOT buggy -- the vocabulary simply has no home for this defect shape.
+
+VERIFIED CURRENT STATE.
+- The closed enum is hard-coded in a `case` statement at `system-defect-record.sh:161-170`.
+- The discrimination doc's class table occupies lines 79-91, one row per class.
+- The literal count word "thirteen" also appears in prose that must be updated in step, at minimum: the usage comment at `system-defect-record.sh:16`, the error message at `system-defect-record.sh:167`, and the doc's own header/prose around the table.
+
+REQUIRED SCOPE. Whatever class name is chosen MUST be registered in BOTH the pattern doc's table AND the recorder's validator in the same change. Registering in only one place reproduces exactly the silent-rejection failure this task exists to close.
+
+CANDIDATE NAME, NOT A DECISION. `AMBIENT_BINDING_MISMATCH` is offered as a starting point for the plan phase to weigh and settle -- a callee guarded on an ambient environment variable that its caller binds only positionally (or not at all), so a documented side effect silently no-ops while the primary code path succeeds. The plan phase should confirm this name reads correctly alongside the existing thirteen, that it names the MECHANISM rather than the single motivating instance (so it generalizes to future occurrences), and that it does not overlap an existing class. An alternative framing centered on the unreached observability marker rather than the binding mechanism is a legitimate competing option; record the judgment either way.
+
+PRECEDENT. The pattern doc already establishes additive class registration as a routine move, not a novel one: several classes are annotated as having been added deliberately by downstream work, and three (`ARTIFACTS_MISSING_ON_SUCCESS`, `SESSION_LOCK_CONTENTION`, `HOOK_REGEX_BOUNDARY_DEFECT`, plus `DEPLOY_ORPHAN_DRIFT`) are marked "not currently computed anywhere" -- so a class with no automated detector today is an accepted state, and the new class need not ship with a detector to be worth registering.
+
+NON-GOALS. Do not build an automated detector for the new class as part of this task. Do not restructure the existing thirteen classes or renumber/reorder the table. Do not fix the underlying binding defect itself -- that is the dependent task.
+
+---
 
 ### 131. Tag annotated and changelog preflight
 - **Status**: [COMPLETED]
