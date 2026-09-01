@@ -43,7 +43,7 @@ All 16 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/tag` | `/tag` | Create semantic version tag (user-only) |
 | `/zulip` | `/zulip` | Fetch a Zulip thread via API and write formatted JSON to a file |
 
-Multi-task syntax: `/research`, `/plan`, and `/implement` accept comma-separated and range task numbers (e.g., `/research 7, 22-24`). Flags like `--team`, `--force`, `--fast`, `--hard` modify behavior.
+Multi-task syntax: `/research`, `/plan`, and `/implement` accept comma-separated and range task numbers (e.g., `/research 7, 22-24`). Flags like `--force`, `--fast`, `--hard` modify behavior.
 
 ## Agents
 

@@ -69,7 +69,7 @@ Round 2 (after blocker/revision):
 
 **Team Mode Example**:
 ```
-/research 309 --team
+/orchestrate 309 --team
   -> 01_teammate-a-findings.md
   -> 01_teammate-b-findings.md
   -> 01_teammate-c-findings.md

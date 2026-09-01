@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Repair README.md and rules/artifact-formats.md",
+  "started_at": "2026-09-01T20:17:00Z",
+  "last_updated": "2026-09-01T20:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Drop --team from README.md flag list; retarget artifact-formats.md Team Mode Example to /orchestrate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/rules/artifact-formats.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -241,26 +241,28 @@ silently editing or silently skipping it.
 
 ---
 
-### Phase 3: Repair `README.md` and `rules/artifact-formats.md` [NOT STARTED]
+### Phase 3: Repair `README.md` and `rules/artifact-formats.md` [COMPLETED]
 
 **Goal**: Fix the two smaller standalone sites that still show `--team` on `/research`.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/README.md`, locate the multi-task-syntax line by anchored
+- [x] In `agent-system/extensions/core/README.md`, locate the multi-task-syntax line by anchored
   grep for `Flags like` (hypothesised line 46) and drop `` `--team`, `` from the flag list,
-  leaving `--force`, `--fast`, `--hard`.
-- [ ] Cross-check `agent-system/extensions/core/merge-sources/claudemd.md`'s equivalent
+  leaving `--force`, `--fast`, `--hard`. *(completed: confirmed at line 46)*
+- [x] Cross-check `agent-system/extensions/core/merge-sources/claudemd.md`'s equivalent
   multi-task line (which already reads `Flags like --force apply to all tasks`) and confirm the
   README now agrees with it. If it does not, align the README to the merge source, not the
-  reverse.
-- [ ] In `agent-system/extensions/core/rules/artifact-formats.md`, locate the
+  reverse. *(completed: neither line mentions `--team`; the merge source's "Flags like --force"
+  is a non-exhaustive summary and does not contradict the README's fuller `--force, --fast,
+  --hard` list — no reconciliation edit needed)*
+- [x] In `agent-system/extensions/core/rules/artifact-formats.md`, locate the
   `**Team Mode Example**:` block (hypothesised lines 70-78) and retarget its command from
   `/research 309 --team` to `/orchestrate 309 --team`. Retarget rather than delete: the
   `01_teammate-{letter}-findings.md` / `01_team-research.md` naming convention the example
   illustrates is still live under `/orchestrate --team`, so the example documents a real
-  mechanism under a new owner.
-- [ ] Leave the `**Team Mode** (parallel teammates):` naming-convention block at hypothesised
-  line 50 untouched — it is command-agnostic and remains correct.
+  mechanism under a new owner. *(completed: retargeted at line 72)*
+- [x] Leave the `**Team Mode** (parallel teammates):` naming-convention block at hypothesised
+  line 50 untouched — it is command-agnostic and remains correct. *(completed: untouched)*
 
 **Timing**: 0.3 hours
 
