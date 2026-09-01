@@ -1,7 +1,7 @@
 # Implementation Plan: Wire model-flag threading through /orchestrate
 
 - **Task**: 114 - Wire model-flag threading through /orchestrate and the base orchestrate engine
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (but see Sequencing below — this must land BEFORE the lifecycle-command deletion task)
 - **Research Inputs**: `specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md`

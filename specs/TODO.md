@@ -11,9 +11,9 @@ next_project_number: 134
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,87,91,100,102,103,106,108,110,111,113,114,120,126,128,130,133 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,74,89,104,105,109,112,121,124,129 | 29,87,102,108,114,120,126,128,130 | core-agent-system, extensions, literature |
-| 3 | 48,75,76,90,107,125,127 | 74,104,121,124 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,120,126,128,133 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,75,76,89,104,105,109,112,121,124,129 | 29,74,87,102,108,120,126,128 | core-agent-system, extensions, literature |
+| 3 | 48,90,107,125,127 | 104,121,124 | core-agent-system, literature |
 | 4 | 50,88 | 48,87,127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -33,23 +33,20 @@ next_project_number: 134
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-114 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
+120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
+  └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
     └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-    └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-      └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
-  └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
-126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
-  └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-130 [IMPLEMENTING] — Make lake-build-guard.sh's success signal trustworthy. The script
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
 
 ### Extensions
@@ -185,7 +182,7 @@ NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do no
 ---
 
 ### 130. Stop lake-build-guard.sh reporting passes for builds it did not run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -810,12 +807,13 @@ VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode singl
 ---
 
 ### 114. Wire model-flag threading through /orchestrate and the base orchestrate engine
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md]
 - **Plan**: [114_wire_model_flag_through_orchestrate/plans/01_wire-model-flag-orchestrate.md]
+- **Summary**: [114_wire_model_flag_through_orchestrate/summaries/01_wire-model-flag-orchestrate-summary.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: retargeted at the consolidated engine) ===
 STALE ANCHORS: the verified-defect line numbers and dispatch-site inventory below predate the landed consolidation work (dispatch-prep stage, hard-contracts injection, hard-mode state-machine migration, team fan-out): skill-orchestrate/SKILL.md has since grown from 188,284 to ~268,000 bytes and gained a dispatch-prep stage invoked once per dispatch. Re-measure; do not trust the line numbers.
