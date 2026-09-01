@@ -1,7 +1,7 @@
 # Implementation Plan: Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
 
 - **Task**: 128 - Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 119 (hard-mode state-machine consolidation — already landed; this plan builds on the acceptance-checklist and residue notes it wrote)
 - **Research Inputs**: `specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md`
