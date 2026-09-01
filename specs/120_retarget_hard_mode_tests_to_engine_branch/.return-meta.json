@@ -1,26 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md",
-      "summary": "Per-file findings for all 7 hard-mode test/lint files: where each mechanism now lives inside skill-orchestrate/SKILL.md's hard_mode branches, what survives a mechanical retarget vs. what needs a logic rewrite, and a semantic-drift fix required in the loop-guard-budget-override test's Case 4."
+      "type": "plan",
+      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md",
+      "summary": "8-phase plan retargeting all 7 hard-mode test/lint files from skill-orchestrate-hard/SKILL.md to skill-orchestrate/SKILL.md's hard_mode branches, including the Case 4 correctness fix, two comparison-premise rewrites, four planning-discovered defects, and a per-file mutation-check gate."
     }
   ],
-  "next_steps": "Run /plan 120 to create an implementation plan from this report.",
+  "next_steps": "Run /implement 120 to execute the plan",
   "metadata": {
     "session_id": "sess_1788268286_hrisls",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["team-lead", "research-120"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 8,
+    "dependency_waves": [[1], [2, 3, 4, 5, 6], [7], [8]]
   },
   "memory_candidates": [
     {
-      "content": "When a source-store consolidation merges two sibling SKILL.md files (e.g. a base engine + its -hard variant) into one file with hard_mode-gated branches, tests that previously compared the two files for parity (extract-and-diff pattern) lose their comparison target and need a structural rewrite (extract-once, assert-correctness) rather than a path-only retarget. Tests anchored on sentinel comments (# --- name:begin/:end ---) that already existed identically in both source files typically retarget mechanically since the merge keeps one copy under the same sentinel name; tests anchored on field-level jq-filter extraction are more likely to hit variable-name/read-form drift where the merge consolidated or renamed the field read.",
+      "content": "When retargeting tests after two sibling SKILL.md files are merged into one hard_mode-gated file, a bare-substring grep assertion that was safe against a small single-purpose file can silently break against the large merged file: the merged file's own design-decision tables and residue notes mention sentinel names in prose, so `grep -c 'name:begin'` matches both the real sentinel and its documentation row, and an 'exactly one marker' assertion fails against correct code. The robust form is to count the full sentinel comment (`# --- name:begin ---`) with `grep -cF`. The same class of hazard applies to `grep -n ... | head -1` line derivation over a merged file: it mis-anchors silently rather than failing, so add an explicit match-count-equals-one guard before taking `head -1`. Check both patterns whenever a fixture's target file grows by an order of magnitude.",
       "category": "PATTERN",
-      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["skill-orchestrate", "hard_mode", "test-retarget", "sentinel-extraction", "consolidation"]
+      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-retarget", "sentinel-extraction", "grep-anchoring", "file-merge", "silent-failure"]
     }
   ]
 }
