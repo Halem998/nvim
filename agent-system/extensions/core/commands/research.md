@@ -1,7 +1,7 @@
 ---
 description: Research a task and create reports
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, Edit
-argument-hint: TASK_NUMBERS [FOCUS] [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
+argument-hint: TASK_NUMBERS [FOCUS] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -21,7 +21,6 @@ Conduct research for a task by delegating to the appropriate research skill/suba
 | `7` | 7 | single |
 | `7, 22-24, 59` | 7, 22, 23, 24, 59 | multi |
 | `7 focus on APIs` | 7 | single (with focus) |
-| `7, 22-24 --team` | 7, 22, 23, 24 | multi (with team) |
 
 When multiple tasks are specified, each task is researched independently in parallel. Flags and focus prompts apply uniformly to all tasks.
 
@@ -29,8 +28,6 @@ When multiple tasks are specified, each task is researched independently in para
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--team` | Enable multi-agent parallel research with multiple teammates | false |
-| `--team-size N` | Number of teammates to spawn (2-4) | 2 |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
 | `--hard` | High-effort mode: deeper reasoning, more thorough analysis | false |
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
@@ -40,13 +37,12 @@ When multiple tasks are specified, each task is researched independently in para
 | `--clean` | Skip automatic memory and roadmap retrieval | false |
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based research | false |
 
-When `--team` is specified, research is delegated to `skill-team-research` which spawns multiple research agents working in parallel on different aspects of the task. Each teammate produces a research report, and the lead synthesizes findings into a final comprehensive report.
-
-**Note**: Team mode requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. If unavailable, gracefully degrades to single-agent research.
+For parallel multi-agent research, use `/orchestrate`'s team fan-out mode, which routes through
+`skill-orchestrate`'s Stage 3.6/3.6a.
 
 ## Anti-Bypass Constraint
 
-**PROHIBITION**: You MUST NOT write research report artifacts directly using Write or Edit tools. All report files MUST be created by invoking the appropriate skill (skill-researcher or skill-team-research) via the Skill tool.
+**PROHIBITION**: You MUST NOT write research report artifacts directly using Write or Edit tools. All report files MUST be created by invoking the appropriate skill (skill-researcher) via the Skill tool.
 
 **Why**: Direct writes bypass format enforcement (validate-artifact.sh), produce non-conforming artifacts missing required metadata fields and sections, and circumvent the delegation chain that ensures quality. A PostToolUse hook monitors all Write/Edit operations to artifact paths and will flag violations with corrective context.
 
@@ -300,8 +296,6 @@ invocation's overall status as `partial` (never a hard failure) and names the mu
 task set, suggesting a solo re-run once the field is clear. A conflict must never error the
 invocation.
 
-**Team mode interaction**: If `--team` is in `remaining_args`, team mode is applied to ALL tasks (each task routes to `skill-team-research`). Total agents spawned = `N_tasks * team_size`. Use with care due to cost multiplication.
-
 #### Step 4: Batch Git Commit
 
 Release the batch's in-flight session registry entry now, so it is cleaned up regardless of any
@@ -420,24 +414,9 @@ cosmetic change from a gate-in refactor, not a defect.
 
 ### STAGE 1.5: PARSE FLAGS
 
-**Parse arguments to determine team mode and focus prompt.**
+**Parse arguments to determine flags and focus prompt.**
 
-1. **Extract Team Options**
-   Check remaining args (after task number) for team flags:
-   - `--team` -> `team_mode = true`
-   - `--team-size N` -> `team_size = N` (clamp 2-4)
-
-   If no team flag found: `team_mode = false`, `team_size = 2`
-
-2. **Validate Team Size**
-   ```bash
-   # Clamp team_size to valid range
-   team_size=${team_size:-2}
-   [ "$team_size" -lt 2 ] && team_size=2
-   [ "$team_size" -gt 4 ] && team_size=4
-   ```
-
-3. **Extract Effort Flags**
+1. **Extract Effort Flags**
    Check remaining args for effort flags:
    - `--fast` -> `effort_flag = "fast"` (low-effort mode: lighter reasoning)
    - `--hard` -> `effort_flag = "hard"` (high-effort mode: deeper reasoning)
@@ -445,7 +424,7 @@ cosmetic change from a gate-in refactor, not a defect.
    If multiple are provided, last one wins.
    If none: `effort_flag = null` (normal effort)
 
-4. **Extract Model Flags**
+2. **Extract Model Flags**
    Check remaining args for model flags:
    - `--haiku` -> `model_flag = "haiku"` (use Haiku model)
    - `--sonnet` -> `model_flag = "sonnet"` (use Sonnet model)
@@ -455,22 +434,20 @@ cosmetic change from a gate-in refactor, not a defect.
    If multiple are provided, last one wins.
    If none: `model_flag = null` (use agent's frontmatter default: opus for planner/meta-builder/reviser; sonnet for general-purpose agents)
 
-5. **Extract Clean Flag**
+3. **Extract Clean Flag**
    Check remaining args for memory retrieval suppression:
    - `--clean` -> `clean_flag = true` (skip automatic memory retrieval)
 
    If not present: `clean_flag = false`
 
-6. **Extract Lit Flag**
+4. **Extract Lit Flag**
    Check remaining args for literature mode:
    - `--lit` -> `lit_flag = true` (literature-based task: paper-to-code, spec-to-implementation)
 
    If not present: `lit_flag = false`
 
-7. **Extract Focus Prompt**
+5. **Extract Focus Prompt**
    Remove all recognized flags from remaining args:
-   - Remove `--team`
-   - Remove `--team-size N` (flag and its value)
    - Remove `--fast`, `--hard`
    - Remove `--haiku`, `--sonnet`, `--opus`, `--fable`
    - Remove `--clean`
@@ -484,13 +461,7 @@ cosmetic change from a gate-in refactor, not a defect.
 
 **EXECUTE NOW**: After STAGE 1.5 completes, immediately invoke the Skill tool.
 
-**Team Mode Routing** (when `--team` flag present):
-
-If `team_mode == true`:
-- Route to `skill-team-research` regardless of task_type
-- Pass `team_size` parameter
-
-**Extension Routing** (when `--team` flag NOT present):
+**Extension Routing**:
 
 Resolve the skill through the single canonical router, `command-route-skill.sh` — this command
 does not hand-roll its own manifest loop. STAGE 1.5 parses `--hard`/`--fast` into the prose
@@ -527,19 +498,11 @@ skill_name="$SKILL_NAME"
 
 **Skill Selection Logic**:
 ```
-if team_mode:
-  skill_name = "skill-team-research"
-else:
-  skill_name = {extension routing lookup} OR "skill-researcher"
+skill_name = {extension routing lookup} OR "skill-researcher"
 ```
 
 **Invoke the Skill tool NOW** with:
 ```
-# For team mode:
-skill: "skill-team-research"
-args: "task_number={N} focus={focus_prompt} team_size={team_size} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
-
-# For single-agent mode:
 skill: "{skill-name from table above}"
 args: "task_number={N} focus={focus_prompt} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
 ```
