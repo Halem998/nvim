@@ -1,21 +1,25 @@
 {
-  "dispatch_seq": 1,
+  "dispatch_seq": 3,
   "task_number": 124,
-  "phase": "plan",
-  "status": "planned",
-  "session_id": "sess_1788304786_edca9f_124",
-  "agent_type": "planner-agent",
+  "phase": "implement",
+  "status": "completed",
+  "session_id": "sess_1788304786_edca9f",
+  "agent_type": "general-implementation-agent",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md",
+      "summary": "Deleted the three lifecycle command files (1,766 lines) and de-registered them from manifest.json in one atomic commit; reconciled merge-sources/claudemd.md and index-entries.json end to end; retired three vacuous test guards; pruned stale deployed copies; produced a triaged out-of-scope reference inventory."
+    },
     {
       "type": "plan",
       "path": "specs/124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md",
-      "summary": "7-phase, 5-wave, 5.25-hour deletion plan for the three lifecycle command files with full companion-edit coverage."
+      "summary": "7-phase, 5-wave deletion plan, all phases [COMPLETED]."
     }
   ],
-  "phase_count": 7,
-  "estimated_hours": 5.25,
-  "dependency_waves": [[1], [2, 3], [4], [5, 6], [7]],
+  "phases_completed": 7,
+  "phases_total": 7,
   "blocked": false,
-  "notes": "Research report's blocking verdict on precondition (c) is STALE and superseded: task 126 landed the --research/--plan/--implement phase-forcing flags, verified present in both the source store and the deployed .claude/ tree at plan time. All three preconditions now satisfied; deletion may proceed. Plan adds four companion-edit surfaces the report did not cover: manifest.json de-registration (atomic with deletion), six index-entries.json load_when bindings (three context files would otherwise lose their only trigger), three vacuous static test guards, and stale deploy-artifact pruning.",
-  "next_steps": "Run /implement 124 to execute the plan"
+  "notes": "All 7 phases completed. Every verification criterion passed or was confirmed byte-identical to the Phase 1 baseline. Two corrections to the plan's own stated expectations, neither affecting outcome: (1) check-extension-docs.sh's Rule K deployed-orphan detection is structurally blind to the gitignored .claude/ tree and never fired at any phase (verified deployed-tree cleanliness by direct ls instead); (2) the --lit Per-Invocation Only sentence named in Phase 2's task list lives in the literature extension's own merge-source file, outside this task's declared core-file scope, and was correctly left untouched. Highest-priority follow-up finding from Phase 7's audit: skill-orchestrate/SKILL.md:2708 is a LIVE skill (not deprecated docs) whose blocker-escalation message still suggests running two now-deleted commands manually -- recommended as the top item in a single scoped follow-up task, not created here per the plan's own Non-Goals.",
+  "next_steps": "Task 124 complete. Task 125 (deleting the three lifecycle skills) can now proceed -- its precondition (this task landing) is satisfied. Recommend a follow-up task to sweep the ~73-file out-of-scope reference surface inventoried in the summary, prioritizing skill-orchestrate/SKILL.md:2708."
 }

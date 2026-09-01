@@ -494,7 +494,7 @@ anything.
 
 ---
 
-### Phase 7: Deletion-reference audit, out-of-scope inventory, and final gate [NOT STARTED]
+### Phase 7: Deletion-reference audit, out-of-scope inventory, and final gate [COMPLETED]
 
 **Goal**: Find references the literal-name greps structurally cannot (glob, path-pattern, and
 prose-without-the-name), and hand the follow-up work over scoped rather than leaving it to be
@@ -502,13 +502,15 @@ rediscovered.
 
 **Tasks**:
 
-- [ ] Run the purpose-built auditor:
+- [x] Run the purpose-built auditor:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/audit-deletion-references.sh research.md plan.md implement.md`.
       Its hits are triage candidates, not failures — read them. Note that the bare words
       `research`/`plan`/`implement` are too generic to audit usefully; use the `.md` filenames so
       the literal-name pass stays signal-bearing, and rely on the wildcard and reachability passes
-      for the rest.
-- [ ] Triage Phase 1's ~76-file reference inventory into three named buckets, and write the
+      for the rest. *(completed: Pass 1 = 0 hits, Pass 2 = 146 hits (all confirmed unrelated
+      artifact-naming convention), Pass 3 = same 3 pre-existing baseline FAILs plus a clean
+      generate-context-line-counts.sh --check)*
+- [x] Triage Phase 1's ~76-file reference inventory into three named buckets, and write the
       result into this task's summary artifact (not into a deliverable file):
       1. **Operational** — text that instructs an agent or user to *invoke* `/research N`,
          `/plan N`, or `/implement N` as a step. Highest priority follow-up; these are now
@@ -518,19 +520,29 @@ rediscovered.
       3. **Legitimate** — the words used as ordinary nouns or as artifact-type names
          (`plan-format.md`, "research report", "the research/plan/implement lifecycle" as a phase
          sequence rather than a command list). No action.
-- [ ] Name explicitly in the summary the files that are wholesale orphaned rather than merely
+      *(completed: 12 Operational files, ~58 Descriptive files (of 73 total, post-deletion),
+      1 Legitimate; full detail in progress/phase-7-progress.json and the summary. Highest-priority
+      finding: skill-orchestrate/SKILL.md:2708 is a LIVE skill, not deprecated docs, whose
+      blocker-escalation message still suggests running two now-deleted commands manually)*
+- [x] Name explicitly in the summary the files that are wholesale orphaned rather than merely
       stale, so the follow-up scope is unambiguous. Known at plan time:
       `docs/examples/research-flow-example.md` (an end-to-end walkthrough of a deleted command),
       `context/processes/research-workflow.md`, `context/processes/planning-workflow.md`,
       `context/processes/implementation-workflow.md`, and
       `context/patterns/multi-task-operations.md` (body still describes multi-task syntax for the
       three deleted commands; its trigger was retargeted in Phase 3 but its content was not).
-- [ ] Recommend the follow-up as a single scoped task in the summary. Do **not** create it —
-      task creation is not this plan's scope.
-- [ ] Run the final gate set: `check-extension-docs.sh`, `check-task-references.sh`,
+      *(completed: all 5 confirmed still present and still wholesale about the deleted commands;
+      the three processes/*-workflow.md files confirmed to already carry on_demand:true with an
+      empty load_when.commands array, a pre-existing condition unrelated to this task)*
+- [x] Recommend the follow-up as a single scoped task in the summary. Do **not** create it —
+      task creation is not this plan's scope. *(completed: recommendation written into the
+      summary artifact; no task created)*
+- [x] Run the final gate set: `check-extension-docs.sh`, `check-task-references.sh`,
       `test-conflict-predicate.sh`, `test-four-tier-conflict.sh`, plus any repo-standard postflight
-      validators. All must pass or be explained against the Phase 1 baseline.
-- [ ] Confirm the full change set introduces zero task-number references outside `specs/**`.
+      validators. All must pass or be explained against the Phase 1 baseline. *(completed: all
+      pass or are byte-identical to the Phase 1 baseline; see progress/phase-7-progress.json)*
+- [x] Confirm the full change set introduces zero task-number references outside `specs/**`.
+      *(completed: check-task-references.sh (deployed) PASS, 0 occurrences across 4 trees)*
 
 **Timing**: 0.75 hours
 

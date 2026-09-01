@@ -1,9 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 124,
   "session_id": "sess_1788304786_edca9f",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "orchestrator_mode": true,
-  "dispatch_seq": 3
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md",
+      "summary": "Deleted the three lifecycle command files (1,766 lines) and de-registered them from manifest.json in one atomic commit; reconciled merge-sources/claudemd.md and index-entries.json end to end; retired three vacuous test guards; pruned stale deployed copies; produced a triaged out-of-scope reference inventory (12 operational, ~58 descriptive, 1 legitimate, 5 wholesale-orphaned)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted commands/research.md, commands/plan.md, and commands/implement.md (1,766 lines total) from the core extension source store, de-registered them from manifest.json atomically, reconciled every dangling reference in merge-sources/claudemd.md and index-entries.json, retired three vacuous test guards, pruned stale deployed copies, and produced a triaged inventory of the remaining out-of-scope reference surface (highest-priority finding: a live skill-orchestrate/SKILL.md escalation message still suggests two now-deleted commands)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When deleting a command/skill/agent file from the agent-system source store, check-extension-docs.sh's Rule K (deployed-command-orphan detection) can NEVER fire for the deployed .claude/ tree, because .claude/ is entirely gitignored and Rule K's check_flat_category_orphans() enumerates deployed files via `git -C \"$REPO_ROOT\" ls-files \"<category>\"`, which returns nothing for any gitignored path. Do not expect (or wait for) a Rule K FAIL/PASS transition as evidence that stale deployed copies were pruned -- verify with a direct `ls` of the deployed directory instead. This applies to any deployed category (commands, agents, scripts) under a gitignored deploy root.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs", "rule-k", "gitignored-deploy-tree", "orphan-detection", "deploy-verification"]
+    },
+    {
+      "content": "When a task's plan explicitly names literal deleted-file paths as required verification text (e.g. 'zero grep hits for path X anywhere under scripts/'), retargeted explanatory comments describing what used to call a now-deleted file must avoid spelling out the literal deleted path -- describe it generically ('the three former lifecycle command files') instead. A first-draft retarget that names the old path for historical context will fail the plan's own grep-based verification.",
+      "category": "PATTERN",
+      "source_artifact": "specs/124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["comment-retargeting", "grep-verification", "deletion-cleanup", "zero-hit-check"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
