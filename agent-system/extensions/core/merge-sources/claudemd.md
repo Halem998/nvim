@@ -96,9 +96,6 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
-| `/research` | `/research N[,N-N] [focus] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Research task(s), route by task type |
-| `/plan` | `/plan N[,N-N] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Create implementation plan(s) |
-| `/implement` | `/implement N[,N-N] [--force] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
 | `/review` | `/review` | Analyze codebase |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
@@ -108,11 +105,11 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean orphaned processes and old files |
 | `/tag` | `/tag [--patch|--minor|--major]` | Create semantic version tag (user-only) |
-| `/orchestrate` | `/orchestrate N [--lit] [--research] [--plan] [--implement]` | Drive task autonomously through full lifecycle (no confirmation gates); the three phase-forcing flags are composable and re-run an already-passed phase, stopping after the last named phase rather than falling through to status-derived dispatch |
+| `/orchestrate` | `/orchestrate N[,N-N] [--lit] [--research] [--plan] [--implement]` | Drive task(s) autonomously through full lifecycle (no confirmation gates); the three phase-forcing flags are composable and re-run an already-passed phase in canonical lifecycle order (research, plan, implement) regardless of typed order, opening a new `MM_` artifact round and never regressing status, then stopping after the last named phase rather than falling through to status-derived dispatch — single-task only, accepted and ignored with a notice in multi-task mode |
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 
-**Multi-task syntax**: `/research`, `/plan`, and `/implement` accept multiple task numbers using commas and ranges (e.g., `/research 7, 22-24, 59`). Each task is processed by a separate agent in parallel. Flags like `--force` apply to all tasks. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
+**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`). Each task is processed through the full lifecycle using dependency-aware wave dispatch. Flags like `--research`/`--plan`/`--implement` and `--team` are single-task only — accepted and ignored (with a notice) in multi-task mode. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
 
 ### Utility Scripts
 
@@ -166,18 +163,17 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-project-overview | (direct execution) |
 | /review | (direct execution) — code-reviewer-agent available for future skill integration |
 
-**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field using a tiered policy: Opus for deep-reasoning agents (planner, meta-builder, reviser, formal/lean/math/logic) AND for orchestrator commands (`/research`, `/plan`, `/implement`) which accumulate large context across sequential sub-agent calls and require the 1M context auto-upgrade; Sonnet for worker agents (research, implementation, review, spawn, domain tasks) which have their own fresh context per invocation. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`, `--fable`) select the model family. These flags work on `/research`, `/plan`, and `/implement`. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
+**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field using a tiered policy: Opus for deep-reasoning agents (planner, meta-builder, reviser, formal/lean/math/logic) AND for the `/orchestrate` command, which accumulates large context across sequential sub-agent calls and requires the 1M context auto-upgrade; Sonnet for worker agents (research, implementation, review, spawn, domain tasks) which have their own fresh context per invocation. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`, `--fable`) select the model family. These flags work on `/orchestrate`'s research/plan/implement dispatches. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
 **User-Only Skills**: Skills marked as "user-only" cannot be invoked by agents. These are for human-controlled operations like deployment (`skill-tag`).
 
 **Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-{domain}-research -> {domain}-research-agent). Extension task types use bare values (e.g., `python`) or compound values (e.g., `present:grant`) for sub-routing.
 
-**Team Mode**: `--team` is exclusively an `/orchestrate` flag, served by `skill-orchestrate`'s
-Stage 3.6/3.6a team fan-out — it spawns multiple parallel teammates for a research or plan phase
-(and parallel phase execution for implement) and synthesizes their output. `/research`, `/plan`,
-and `/implement` no longer accept `--team`; each is single-agent only. Requires
-`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to single-agent
-if unavailable.
+**Team Mode**: `--team` is exclusively an `/orchestrate` flag (single-task mode only), served by
+`skill-orchestrate`'s Stage 3.6/3.6a team fan-out — it spawns multiple parallel teammates for a
+research or plan phase (and parallel phase execution for implement) and synthesizes their output.
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to
+single-agent if unavailable.
 
 **Note**: Team mode uses ~5x tokens compared to single-agent. Default team_size=3 (Primary + Alternatives + Critic). Use `--fast` for 2 or `--hard` for 4.
 
@@ -228,7 +224,7 @@ Use `--hard` when one or more of the following apply:
 ### Routing Mechanism
 
 Every routing consumer (`command-route-skill.sh` for skills, `command-route-agent.sh` for
-agents, called from `/research`, `/plan`, `/implement`, and both `/orchestrate` engines) shares
+agents, called from both `/orchestrate` engines) shares
 one ladder, implemented once in `scripts/lib/manifest-routing-lib.sh`, resolving `--hard` as a
 4th `effort_flag` argument against the `routing_hard`/`routing_agents_hard` manifest blocks.
 See `context/guides/manifest-routing-schema.md` for the full routing model (all four
@@ -238,8 +234,8 @@ manifest blocks, agent-name declaration rules) and `context/guides/hard-mode-rou
 ### Per-Invocation Only
 
 `--hard` is a per-invocation flag only. There is no sticky hard mode or `effort_mode` field
-in state.json. Each invocation of `/research`, `/plan`, `/implement`, or `/orchestrate` must
-explicitly pass `--hard` to activate hard mode.
+in state.json. Each invocation of `/orchestrate` must explicitly pass `--hard` to activate hard
+mode.
 
 ## Literature Mode (`--lit`) — Extension Pointer
 
@@ -292,7 +288,7 @@ See `.claude/docs/reference/standards/multi-task-creation-standard.md` for the f
 ## Error Handling
 
 - **On failure**: Keep task in current status, log to errors.json, preserve partial progress
-- **On timeout**: Mark phase [PARTIAL], next /implement resumes
+- **On timeout**: Mark phase [PARTIAL], next `/orchestrate` (or resumed dispatch) picks up from there
 - **Git failures**: Non-blocking (logged, not fatal)
 
 ## jq Command Safety

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Reconcile merge-sources/claudemd.md end to end",
+  "started_at": "2026-09-01T23:32:00Z",
+  "last_updated": "2026-09-01T23:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove three Command Reference table rows", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Amend /orchestrate row with full semantics incl single-task-only", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Reconcile six prose sites naming the deleted commands", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "Re-read whole file, confirm zero command-name occurrences remain", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no task-number reference introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "13 grep hits found (matching plan hypothesis), 4 legitimate non-command uses left alone (lines 116, 166 (research/plan/implement as nouns), 253, 255). Six prose sites reconciled: Multi-task syntax paragraph (now describes /orchestrate), Model Enforcement (orchestrator command list + flags-work-on sentence), Team Mode (--team is /orchestrate-only, single-task), Routing Mechanism consumer list, Per-Invocation Only (--hard) sentence, Error Handling timeout bullet. The /orchestrate row was strengthened beyond the plan's minimum ask to explicitly state all six load-bearing points (composability, canonical ordering, stop-after-last, new artifact round, no status regression, single-task-only) per Phase 2's own verification criterion requiring word-for-word coverage. check-task-references.sh reports zero violations for this file."
+}

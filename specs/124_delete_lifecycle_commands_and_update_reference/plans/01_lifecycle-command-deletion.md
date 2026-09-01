@@ -193,7 +193,7 @@ planned ones.
 
 ---
 
-### Phase 2: Reconcile merge-sources/claudemd.md end to end [NOT STARTED]
+### Phase 2: Reconcile merge-sources/claudemd.md end to end [COMPLETED]
 
 **Goal**: Make the shipped command reference correct for a world without `/research`, `/plan`,
 and `/implement` — the table and the prose in the same file, so the file is never internally
@@ -201,12 +201,14 @@ self-contradictory.
 
 **Tasks**:
 
-- [ ] Remove the three Command Reference table rows for `/research`, `/plan`, `/implement`
-      (currently lines ~99-101).
-- [ ] Verify the surviving `/orchestrate` row (currently line ~111) against Phase 1's recorded
+- [x] Remove the three Command Reference table rows for `/research`, `/plan`, `/implement`
+      (currently lines ~99-101). *(completed)*
+- [x] Verify the surviving `/orchestrate` row (currently line ~111) against Phase 1's recorded
       semantics, and amend it if it understates them — in particular it must state that the
-      phase-forcing flags are single-task only, which the current row omits.
-- [ ] Reconcile the six prose sites in the same file that name the deleted commands as live
+      phase-forcing flags are single-task only, which the current row omits. *(completed: row
+      strengthened to state all six load-bearing points word-for-word — composability, canonical
+      ordering, stop-after-last, new artifact round, no status regression, single-task only)*
+- [x] Reconcile the six prose sites in the same file that name the deleted commands as live
       entry points. Located at plan time near lines 115, 169, 177-178, 231, 241, 295; re-locate
       by grep rather than by line number. Specifically:
       - the **Multi-task syntax** paragraph (multi-task numbers/ranges now belong to
@@ -219,13 +221,17 @@ self-contradictory.
       - the **Routing Mechanism** paragraph's consumer list;
       - the `--hard` and `--lit` **Per-Invocation Only** sentences enumerating the four commands;
       - the **Error Handling** bullet "next /implement resumes".
-- [ ] Re-read the whole file once after editing and confirm zero remaining occurrences of
+      *(completed: all six sites reconciled; the `--lit` Per-Invocation Only sentence lives in
+      the literature extension's own merge-source file, out of this file's scope, and was left
+      untouched)*
+- [x] Re-read the whole file once after editing and confirm zero remaining occurrences of
       `/research`, `/implement`, or `/plan` used as a *command name*. Occurrences of the words
       research/plan/implement as ordinary nouns (e.g. "the normal research/plan/implement/postflight
       lifecycle", "plan-format.md", "Report/plan formats") are correct and must be left alone —
-      this is a semantic pass, not a blind substitution.
-- [ ] Confirm no task-number reference is introduced (this file is a deliverable outside
-      `specs/**`).
+      this is a semantic pass, not a blind substitution. *(completed: 4 legitimate noun/filename
+      uses remain, zero command-name uses)*
+- [x] Confirm no task-number reference is introduced (this file is a deliverable outside
+      `specs/**`). *(completed)*
 
 **Timing**: 1 hour
 
