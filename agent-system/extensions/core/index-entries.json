@@ -501,7 +501,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata extensions for team mode",
-      "line_count": 111,
+      "line_count": 119,
       "keywords": [
         "format",
         "team",
@@ -1127,7 +1127,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 683,
+      "line_count": 685,
       "keywords": [
         "patterns",
         "multi-task",
@@ -1196,7 +1196,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 320,
+      "line_count": 316,
       "keywords": [
         "patterns",
         "skill",
@@ -1390,7 +1390,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Mapping of skills to agents",
-      "line_count": 161,
+      "line_count": 154,
       "keywords": [
         "reference",
         "skill",
@@ -2669,7 +2669,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 202,
+      "line_count": 206,
       "keywords": [
         "patterns",
         "file-scope",
@@ -2852,7 +2852,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context-protective lead pattern: orchestrators route and delegate, never read full artifacts",
-      "line_count": 269,
+      "line_count": 266,
       "keywords": [
         "context-budget",
         "lead-agent",
@@ -2947,7 +2947,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 5b self-execution fallback block: the .return-meta.json write obligation when a skill performs work without spawning a subagent",
-      "line_count": 62,
+      "line_count": 65,
       "keywords": [
         "fallback",
         "return-meta",
@@ -2993,7 +2993,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1247,
+      "line_count": 1246,
       "keywords": [
         "task-lock",
         "concurrency",

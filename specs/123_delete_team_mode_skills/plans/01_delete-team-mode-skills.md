@@ -608,32 +608,42 @@ should be revisited.
 
 ---
 
-### Phase 8: Zero-hits verification and full gate run [NOT STARTED]
+### Phase 8: Zero-hits verification and full gate run [IN PROGRESS]
 
 **Goal**: Prove the acceptance criterion mechanically, run the repository's gate set, and record
 Decisions 1-3 in the summary.
 
 **Tasks**:
-- [ ] **Zero-hits check** (the task's own acceptance criterion), with its scope fixed here:
+- [x] **Zero-hits check** (the task's own acceptance criterion), with its scope fixed here:
       `grep -rn "skill-team-research\|skill-team-plan\|skill-team-implement" agent-system/`
       must return zero hits. Note explicitly that `.claude/**` is excluded because it is a
       regenerated deploy artifact, `.memory/` because it is a vault, and
       `specs/123_delete_team_mode_skills/` because those are this task's own artifacts.
-- [ ] Redeploy the source store (`bash agent-system/extensions/core/scripts/deploy-headless.sh`
+      *(completed: 0 hits)*
+- [x] Redeploy the source store (`bash agent-system/extensions/core/scripts/deploy-headless.sh`
       or the repo's normal deploy entry point) so `.claude/**` and `.claude-extensions.json` are
       regenerated rather than hand-corrected, then re-run the zero-hits grep over `.claude/` to
       confirm the deploy tree is clean too. If the deploy tree still carries hits, that is a deploy
-      staleness finding to report, not a file to hand-edit.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh`.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh`. This suite is known to be
+      staleness finding to report, not a file to hand-edit. *(completed: default-mode deploy left
+      the deployed SKILL.md orphans in place -- additive-only by design, detect-never-delete;
+      `--wipe` full resync cleared them. Deploy tree zero-hits confirmed after --wipe.)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh`. *(completed: found and
+      fixed a real defect this task introduced -- 8 index-entries.json line_count mismatches
+      from the Phase 5/6 doc edits, fixed via the sanctioned
+      generate-context-line-counts.sh --write. Two pre-existing, unrelated failures remain --
+      see summary.)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh`. This suite is known to be
       non-deterministic under concurrency; on a failure, re-run the specific failing test in
       isolation before attributing it to this task, and report honestly which failures are this
-      task's and which are pre-existing flake.
-- [ ] Run the reference/routing lints: `lint-routing-wiring.sh`, `lint-agent-contracts.sh`,
+      task's and which are pre-existing flake. *(completed: 57 passed, 0 failed, 0 skipped)*
+- [x] Run the reference/routing lints: `lint-routing-wiring.sh`, `lint-agent-contracts.sh`,
       `lint-postflight-boundary.sh`, and `bash agent-system/extensions/core/scripts/check-task-references.sh`.
-- [ ] Confirm no file under `.claude/**` was hand-authored during this task
-      (`git log` / `git diff` scoped review).
-- [ ] Write the implementation summary, which MUST state:
+      *(completed: all four exit 0)*
+- [x] Confirm no file under `.claude/**` was hand-authored during this task
+      (`git log` / `git diff` scoped review). *(completed: .claude/ is entirely gitignored/untracked
+      in this repo, so no commit in this task's history can contain a hand-authored .claude/** file
+      -- structurally impossible, confirmed via git check-ignore)*
+- [x] Write the implementation summary, which MUST state:
       (a) Decision 1 verbatim in its deviation form — the `--lit` criterion's literal
       "resolved ONCE" wording is **not** met, why that is accepted, and what the cheap future fix
       would be. Do not report the criterion as satisfied.
