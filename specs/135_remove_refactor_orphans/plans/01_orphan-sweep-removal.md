@@ -1,7 +1,7 @@
 # Implementation Plan: Task #135
 
 - **Task**: 135 - Sweep for and remove artifacts orphaned by the orchestrate-engine consolidation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.7 hours
 - **Dependencies**: 114, 120, 123, 126, 128, 130, 133 (all complete — the tree being swept is final)
 - **Research Inputs**: `specs/135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md`
@@ -144,14 +144,14 @@ order-independent.
 
 ---
 
-### Phase 1: Capture fresh pre-sweep baseline [NOT STARTED]
+### Phase 1: Capture fresh pre-sweep baseline [COMPLETED]
 
 **Goal**: Establish, at implementation time, the exact gate state the acceptance criteria will be
 diffed against — so "no NEW findings" is a measured claim, not an inherited one.
 
 **Tasks**:
-- [ ] Create `specs/135_remove_refactor_orphans/baseline-pre-sweep.txt`.
-- [ ] Run and append full output (stdout+stderr, with exit code) for each of:
+- [x] Create `specs/135_remove_refactor_orphans/baseline-pre-sweep.txt`. *(completed)*
+- [x] Run and append full output (stdout+stderr, with exit code) for each of:
   - `bash .claude/scripts/verify-deploy.sh`
   - `bash .claude/scripts/check-extension-docs.sh`
   - `bash .claude/scripts/check-task-references.sh`
@@ -161,9 +161,14 @@ diffed against — so "no NEW findings" is a measured claim, not an inherited on
     `lint-agent-contracts`, `lint-contract-compliance`, `lint-lifecycle-status-var`,
     `lint-postflight-boundary`, `lint-routing-wiring`, `lint-state-writer-boundary`)
   - `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`
-- [ ] Record, in the baseline file's header, the count of failing checks and a one-line
-  characterisation of each failure, so Phase 8's diff is human-readable.
-- [ ] Confirm the working tree is otherwise clean of unrelated staged changes before starting.
+  *(completed: all 8 commands captured; also captured a companion `--findings` run to
+  `baseline-pre-sweep-findings.txt` for a finer-grained Phase 8 diff — 11 FINDING lines, 0
+  unexpected)*
+- [x] Record, in the baseline file's header, the count of failing checks and a one-line
+  characterisation of each failure, so Phase 8's diff is human-readable. *(completed)*
+- [x] Confirm the working tree is otherwise clean of unrelated staged changes before starting.
+  *(completed: nothing staged; unrelated modified/untracked files present from concurrent
+  sessions but out of this task's territory)*
 
 **Timing**: 0.3 hours
 

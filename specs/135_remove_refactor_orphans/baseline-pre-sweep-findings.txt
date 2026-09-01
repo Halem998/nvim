@@ -1,0 +1,42 @@
+# Pre-sweep FINDING-line capture (machine-diffable), for Phase 8 comparison
+# Timestamp: 2026-09-01T20:08:43Z
+
+## bash .claude/scripts/verify-deploy.sh --findings --quiet
+```
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [FAIL] validate-state.sh --deep reported FAIL-level finding(s) against specs/state.json
+         re-run for detail: bash .claude/scripts/validate-state.sh --deep specs/state.json
+  [FAIL] state-writer boundary lint reported hand-rolled state.json writes
+         re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose
+  [WARN] core still declares routing_hard/routing_agents_hard
+         being replaced -- migrate to the hard_contracts manifest key (see context/guides/manifest-routing-schema.md)
+[verify-deploy] FAIL -- 3 of 27 check(s) failed
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: abandon_reason (on project_number(s): 94,46,31,64,73,115,132)
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: blocks_note (on project_number(s): 106,107,109)
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:261: jq '.active_projects[0].status = "planned"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:307: jq '.active_projects[0].next_artifact_number = 2' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:317: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:327: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate16 core still declares routing_hard/routing_agents_hard
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/system-defect-discrimination.md' line_count mismatch: declared 409, actual 420
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/test-state-write-large-payload.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-force-phases.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-roadmap-argv-ceiling.sh
+```
+Exit code: 1
+
+## FINDING lines only (sorted, deduped)
+```
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: abandon_reason (on project_number(s): 94,46,31,64,73,115,132)
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: blocks_note (on project_number(s): 106,107,109)
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:261: jq '.active_projects[0].status = "planned"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:307: jq '.active_projects[0].next_artifact_number = 2' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:317: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:327: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate16 core still declares routing_hard/routing_agents_hard
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/system-defect-discrimination.md' line_count mismatch: declared 409, actual 420
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/test-state-write-large-payload.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-force-phases.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-roadmap-argv-ceiling.sh
+```

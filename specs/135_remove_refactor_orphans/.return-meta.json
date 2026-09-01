@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/135_remove_refactor_orphans/plans/01_orphan-sweep-removal.md",
-      "summary": "8-phase orphan-removal sweep: fresh baseline capture, 1 file+index-row removal, 4 stale-prose repair sites (one load-bearing, actively-injected doc with a preserved off-limits range), index-entries line_count restoration, a reusable on-demand deletion-reference detector, and a baseline-diff acceptance gate."
-    }
-  ],
-  "next_steps": "Run /implement 135 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1788287299_e65079",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 4.7,
-    "dependency_waves": [[1], [2, 3, 4, 5, 7], [6], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a repair pass edits a long document that discusses the same flag or mechanism in two different scopes (e.g. `--team` as a retired flag on /research vs. a live flag on /orchestrate), the plan must name an explicit PRESERVED line range and require a byte-identity diff of that range as a phase verification step, snapshotted before any edit. Naming only the edit sites is insufficient: the failure mode is the repairer over-generalizing from the defect to the adjacent correct passage, and a positive 'these lines must not change' assertion with a mechanical check is what catches it. Re-locate the preserved range by content anchors, not line numbers, since earlier edits shift them.",
-      "category": "PATTERN",
-      "source_artifact": "specs/135_remove_refactor_orphans/plans/01_orphan-sweep-removal.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["preserved-range", "prose-repair", "byte-identity-diff", "scope-conflation", "verification-anchor"]
-    }
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }
