@@ -305,33 +305,38 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 5: Retarget `test-loop-guard-budget-override.sh`, including the Case 4 correctness fix [NOT STARTED]
+### Phase 5: Retarget `test-loop-guard-budget-override.sh`, including the Case 4 correctness fix [COMPLETED]
 
 - **Goal:** Collapse the dual-file extraction to a single region run under both `hard_mode` values,
   and correct Case 4's `guard_session_id` expectation, which is now wrong against the merged
   file's correct behaviour.
 - **Tasks:**
-  - [ ] Replace `BASE_SKILL`/`HARD_SKILL` with a single target variable pointing at
+  - [x] Replace `BASE_SKILL`/`HARD_SKILL` with a single target variable pointing at
     `skill-orchestrate/SKILL.md`, and update the file-existence preflight loop accordingly.
-  - [ ] Extract one region using the `budget-continuation-override` begin marker plus the existing
+    *(completed: single `SKILL_FILE` variable)*
+  - [x] Extract one region using the `budget-continuation-override` begin marker plus the existing
     base resume-echo anchor (the `...(infra failures` line). Drop the hard resume-echo anchor:
     its exact single-line text no longer identifies a distinct region in this code path. Do not
     substitute the similarly-worded "lost init race" line, which is a different branch.
-  - [ ] Replace the `for f in "$BASE_SKILL" "$HARD_SKILL"` iteration with an iteration over the two
+    *(completed)*
+  - [x] Replace the `for f in "$BASE_SKILL" "$HARD_SKILL"` iteration with an iteration over the two
     `hard_mode` values (`false`, `true`) injected into the `run_region` subshell environment
-    against the one extracted region.
-  - [ ] **Case 4 correctness fix:** remove the `engine_label == "base"` gate on the
+    against the one extracted region. *(completed)*
+  - [x] **Case 4 correctness fix:** remove the `engine_label == "base"` gate on the
     `guard_session_id` mismatch INFO-log assertion. In the merged file that check is unconditional,
     shared code. Assert the INFO log appears in **both** the `hard_mode=false` and `hard_mode=true`
     runs. Replace the stale in-file comment explaining the old "the hard engine's resume-read block
     has no `guard_session_id` check" rationale with one describing the current unconditional
-    behaviour.
-  - [ ] Collapse the two Stage 7 `MAX_CYCLES` / `--continue-budget` message checks into a single
-    check against the merged file, and update its pass/fail strings.
-  - [ ] Confirm the region still ends where the synthetic-`fi` append technique expects — the
+    behaviour. *(completed: verified passing under both hard_mode values)*
+  - [x] Collapse the two Stage 7 `MAX_CYCLES` / `--continue-budget` message checks into a single
+    check against the merged file, and update its pass/fail strings. *(completed: anchor confirmed
+    unique in merged file)*
+  - [x] Confirm the region still ends where the synthetic-`fi` append technique expects — the
     merged file's hard-only burnout echo is deliberately written as a self-closed `if` block so
     this technique keeps working. Do not restructure the extraction to depend on that block's
-    internal shape.
+    internal shape. *(completed: confirmed via bash -n pass and added a new burnout-echo assertion
+    in Case 2 that positively exercises hard_mode=false producing no line and hard_mode=true
+    producing exactly one)*
 - **Timing:** 1 hour
 - **Depends on:** 1
 - **Verification Tier:** local

@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Retarget test-loop-guard-budget-override.sh, including the Case 4 correctness fix",
+  "started_at": "2026-09-01T19:22:00Z",
+  "last_updated": "2026-09-01T19:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Single target variable replacing BASE_SKILL/HARD_SKILL", "status": "done", "note": "SKILL_FILE now single skill-orchestrate/SKILL.md path; preflight loop reduced to single existence check", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 2, "description": "Single-region extraction using base resume-echo anchor only", "status": "done", "note": "RESUME_ANCHOR uses the '...(infra failures' line; RESUME_ANCHOR_HARD dropped; comment explains why the lost-init-race line is not substituted", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 3, "description": "Iterate over hard_mode values instead of base/hard files", "status": "done", "note": "for hard_mode_val in false true; run_region() extended with hard_mode_val positional param bound into the subshell", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 4, "description": "Case 4 correctness fix", "status": "done", "note": "Removed engine_label==base gate; INFO log assertion now runs for both hard_mode values unconditionally; stale comment replaced with one describing the unconditional shared-code behavior", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 5, "description": "Collapse Stage 7 message checks to single merged-file check", "status": "done", "note": "Single grep against SKILL_FILE; anchor confirmed unique in merged file before collapsing", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 6, "description": "Confirm synthetic-fi extraction technique still works; verify burnout echo self-closed", "status": "done", "note": "bash -n passes on extracted region. Added new positive assertion in Case 2 (which always falls through to the resume-read block regardless of hard_mode) confirming hard_mode=false produces no burnout line and hard_mode=true produces exactly one.", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

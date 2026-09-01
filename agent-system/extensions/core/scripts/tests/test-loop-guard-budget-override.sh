@@ -1,24 +1,27 @@
 #!/usr/bin/env bash
 # test-loop-guard-budget-override.sh - Regression suite for Defect B: the explicit,
 # operator-typed `--continue-budget` override that lets an operator continue a task's work past
-# an exhausted MAX_CYCLES work-cycle budget, in BOTH orchestrate engines. Proves the documented
-# resume path (`/orchestrate {N} [--hard] --continue-budget`) actually authorizes a fresh budget
-# rather than silently no-op looping, while an ORDINARY cross-turn resume (no exhaustion, or a
-# differing guard_session_id) is never disturbed by this override -- the exact invariant
+# an exhausted MAX_CYCLES work-cycle budget, in BOTH `hard_mode` values of the merged
+# skill-orchestrate/SKILL.md engine. Proves the documented resume path
+# (`/orchestrate {N} [--hard] --continue-budget`) actually authorizes a fresh budget rather than
+# silently no-op looping, while an ORDINARY cross-turn resume (no exhaustion, or a differing
+# guard_session_id) is never disturbed by this override -- the exact invariant
 # test-session-runtime-files.sh Case 3 already protects, asserted here from a second angle.
 #
 # Structural model: scripts/tests/test-handoff-dispatch-identity.sh (sentinel-region extraction
 # via awk, mktemp -d workdir with an EXIT trap, pass()/fail()/info() helpers, exit 0 all-pass /
-# 1 any-fail / 2 environment error, every case run against BOTH engines).
+# 1 any-fail / 2 environment error, every case run against BOTH `hard_mode` values).
 #
-# Region scope (HONEST SCOPE LIMIT, matching test-loop-guard-staleness.sh's own convention): each
-# extracted region spans from the `budget-continuation-override:begin` sentinel through the
-# unique "Resuming — cycle" echo inside the pre-existing resume-read `if` branch, with a
+# Region scope (HONEST SCOPE LIMIT, matching test-loop-guard-staleness.sh's own convention): the
+# single extracted region spans from the `budget-continuation-override:begin` sentinel through
+# the unique "Resuming — cycle" echo inside the pre-existing resume-read `if` branch, with a
 # synthetic `fi` appended to close that intentionally-truncated block. This exercises the full
 # override mechanism (peek, archive-or-refuse, reinit) AND the immediately-following resume read
-# (cycle_count/dispatch_seq_counter/session_id-mismatch-INFO-log), but deliberately does NOT
-# reach the fresh-init `else` branch, which depends on `task-lock.sh init-marker` and is out of
-# scope here exactly as it is for the staleness suite's own sibling region.
+# (cycle_count/dispatch_seq_counter/session_id-mismatch-INFO-log, plus the hard-mode-only burnout
+# echo), but deliberately does NOT reach the fresh-init `else` branch, which depends on
+# `task-lock.sh init-marker` and is out of scope here exactly as it is for the staleness suite's
+# own sibling region. The region is run once per `hard_mode` value (false, true) rather than once
+# per source file, since both values now live in the same merged engine.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 
@@ -30,15 +33,12 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 fi
 
-BASE_SKILL="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
-HARD_SKILL="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+SKILL_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 
-for f in "$BASE_SKILL" "$HARD_SKILL"; do
-  if [[ ! -f "$f" ]]; then
-    echo "ERROR: required file not found: $f" >&2
-    exit 2
-  fi
-done
+if [[ ! -f "$SKILL_FILE" ]]; then
+  echo "ERROR: required file not found: $SKILL_FILE" >&2
+  exit 2
+fi
 
 PASSED=0
 FAILED=0
@@ -52,10 +52,15 @@ cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
 BEGIN_MARKER='budget-continuation-override:begin'
-RESUME_ANCHOR_BASE='Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures'
-RESUME_ANCHOR_HARD='Resuming — cycle $cycle_count of $MAX_CYCLES (burnout signals so far'
+# Base resume-echo anchor only -- the merged file has a single unconditional "Resuming — cycle"
+# echo (the former hard-only "burnout signals so far" wording now lives in a separate,
+# self-closed `if [ "${hard_mode:-false}" = "true" ]` block immediately above this echo, not as
+# an alternate ending to it). Do NOT substitute the similarly-worded "Resuming (lost init race) —
+# cycle ..." line further down the file -- that is the fresh-init `else` branch, a different
+# extraction target this suite deliberately does not cover (see HONEST SCOPE LIMIT above).
+RESUME_ANCHOR='Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures'
 
-# Plain substring match (index()), not a regex match ($0 ~ pat) -- the anchors contain regex
+# Plain substring match (index()), not a regex match ($0 ~ pat) -- the anchor contains regex
 # metacharacters ($, () that would otherwise need escaping and are fragile to get right.
 extract_region() {
   local file="$1" resume_anchor="$2"
@@ -66,58 +71,52 @@ extract_region() {
   ' "$file"
 }
 
-for f in "$BASE_SKILL" "$HARD_SKILL"; do
-  bcount=$(grep -c "$BEGIN_MARKER" "$f")
-  label="$(basename "$(dirname "$(dirname "$f")")")/$(basename "$f")"
-  if [[ "$bcount" -eq 1 ]]; then
-    pass "Exactly one '${BEGIN_MARKER}' marker in $label"
-  else
-    fail "Expected exactly one '${BEGIN_MARKER}' marker in $label, found ${bcount}"
-  fi
-done
-
-base_region="$(extract_region "$BASE_SKILL" "$RESUME_ANCHOR_BASE")"
-hard_region="$(extract_region "$HARD_SKILL" "$RESUME_ANCHOR_HARD")"
-
-if [[ -z "$base_region" ]]; then
-  echo "ERROR: could not extract budget-override region from $BASE_SKILL" >&2
-  exit 2
+bcount=$(grep -c "$BEGIN_MARKER" "$SKILL_FILE")
+if [[ "$bcount" -eq 1 ]]; then
+  pass "Exactly one '${BEGIN_MARKER}' marker in skills/SKILL.md"
+else
+  fail "Expected exactly one '${BEGIN_MARKER}' marker in skills/SKILL.md, found ${bcount}"
 fi
-if [[ -z "$hard_region" ]]; then
-  echo "ERROR: could not extract budget-override region from $HARD_SKILL" >&2
+
+region="$(extract_region "$SKILL_FILE" "$RESUME_ANCHOR")"
+
+if [[ -z "$region" ]]; then
+  echo "ERROR: could not extract budget-override region from $SKILL_FILE" >&2
   exit 2
 fi
 
 # =====================================================================
-# bash -n: each extracted region must be independently syntax-clean.
+# bash -n: the extracted region must be independently syntax-clean.
 # =====================================================================
-for pair in "base:$base_region" "hard:$hard_region"; do
-  label="${pair%%:*}"; region="${pair#*:}"
-  syntax_file="$WORKDIR/syntax-${label}.sh"
-  {
-    echo '#!/usr/bin/env bash'
-    echo 'TASK_DIR="/tmp/fixture"'
-    echo 'loop_guard_file="/tmp/fixture/.orchestrator-loop-guard"'
-    echo 'MAX_CYCLES=13'
-    echo 'MAX_INFRA_FAILURES=3'
-    echo 'continue_budget_flag=false'
-    echo 'task_number=1'
-    echo 'session_id="sess_fixture"'
-    printf '%s\n' "$region"
-  } > "$syntax_file"
-  if bash -n "$syntax_file" 2>"$WORKDIR/syntax-${label}.err"; then
-    pass "Extracted region ($label engine) is bash -n clean"
-  else
-    fail "Extracted region ($label engine) failed bash -n: $(cat "$WORKDIR/syntax-${label}.err")"
-  fi
-done
+syntax_file="$WORKDIR/syntax.sh"
+{
+  echo '#!/usr/bin/env bash'
+  echo 'TASK_DIR="/tmp/fixture"'
+  echo 'loop_guard_file="/tmp/fixture/.orchestrator-loop-guard"'
+  echo 'MAX_CYCLES=13'
+  echo 'MAX_INFRA_FAILURES=3'
+  echo 'continue_budget_flag=false'
+  echo 'task_number=1'
+  echo 'session_id="sess_fixture"'
+  echo 'hard_mode="false"'
+  printf '%s\n' "$region"
+} > "$syntax_file"
+if bash -n "$syntax_file" 2>"$WORKDIR/syntax.err"; then
+  pass "Extracted region is bash -n clean"
+else
+  fail "Extracted region failed bash -n: $(cat "$WORKDIR/syntax.err")"
+fi
 
 # ── Region execution harness ────────────────────────────────────────────────────────────────────
-# Runs an extracted region (base or hard) in a subshell against a fixture TASK_DIR. `exit 1` in
-# the flag-absent branch only exits this SUBSHELL, not the test script itself, so it is safe to
-# execute directly -- the caller observes it via $? from the subshell, not process termination.
+# Runs the extracted region in a subshell against a fixture TASK_DIR, under a given `hard_mode`
+# value. `exit 1` in the flag-absent branch only exits this SUBSHELL, not the test script itself,
+# so it is safe to execute directly -- the caller observes it via $? from the subshell, not
+# process termination. `hard_mode` gates only the self-closed burnout-echo block inside the
+# region (see the region-scope comment above); the rest of the region -- including the
+# guard_session_id mismatch INFO log Case 4 exercises -- is unconditional, shared code, so this
+# is the ONLY per-`hard_mode` behavioral difference the region itself can produce.
 run_region() {
-  local region="$1" task_dir="$2" max_cycles="$3" flag="$4" session_id="$5" out_file="$6" err_file="$7"
+  local region="$1" task_dir="$2" max_cycles="$3" flag="$4" session_id="$5" hard_mode_val="$6" out_file="$7" err_file="$8"
   (
     TASK_DIR="$task_dir"
     loop_guard_file="${task_dir}/.orchestrator-loop-guard"
@@ -126,6 +125,7 @@ run_region() {
     continue_budget_flag="$flag"
     task_number=1
     session_id="$session_id"
+    hard_mode="$hard_mode_val"
     eval "$region"
     echo "__EXIT_CODE__=0"
   ) > "$out_file" 2> "$err_file"
@@ -151,18 +151,18 @@ count_glob() {
 
 LIVE_MAX_CYCLES=13
 
-for pair in "base:$base_region" "hard:$hard_region"; do
-  engine_label="${pair%%:*}"; region="${pair#*:}"
+for hard_mode_val in "false" "true"; do
+  engine_label="hard_mode=${hard_mode_val}"
 
   # =====================================================================
   # Case 1: cycle_count == MAX_CYCLES, flag ABSENT. Expected: subshell exits 1 (refuses
   # immediately -- never enters the main loop, never a zero-iteration no-op), ERROR names the
   # actual working command, and the guard is left fully in place (not archived, not reset).
   # =====================================================================
-  fx="$WORKDIR/case1-${engine_label}"; mkdir -p "$fx"
+  fx="$WORKDIR/case1-${hard_mode_val}"; mkdir -p "$fx"
   make_guard "$fx/.orchestrator-loop-guard" "$LIVE_MAX_CYCLES"
   out="$fx.out"; err="$fx.err"
-  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "false" "sess_current" "$out" "$err")
+  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "false" "sess_current" "$hard_mode_val" "$out" "$err")
   if [[ "$exit_code" -eq 1 ]]; then
     pass "case1-flag-absent (${engine_label}): subshell exits 1 (refuses immediately)"
   else
@@ -189,10 +189,10 @@ for pair in "base:$base_region" "hard:$hard_region"; do
   # dated name, SAME guard path reinitialized at cycle_count=0 with dispatch_seq_counter and
   # detected_defects preserved, loud log emitted naming the exhausted count and the flag.
   # =====================================================================
-  fx="$WORKDIR/case2-${engine_label}"; mkdir -p "$fx"
+  fx="$WORKDIR/case2-${hard_mode_val}"; mkdir -p "$fx"
   make_guard "$fx/.orchestrator-loop-guard" "$LIVE_MAX_CYCLES" "sess_fixture_guard_writer" 7 '["marker"]'
   out="$fx.out"; err="$fx.err"
-  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "true" "sess_current" "$out" "$err")
+  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "true" "sess_current" "$hard_mode_val" "$out" "$err")
   if [[ "$exit_code" -eq 0 ]]; then
     pass "case2-flag-present (${engine_label}): subshell exits 0 (continues to resume read)"
   else
@@ -230,15 +230,32 @@ for pair in "base:$base_region" "hard:$hard_region"; do
   else
     fail "case2-flag-present (${engine_label}): stderr missing expected content: $(cat "$err")"
   fi
+  # Burnout-echo assertion: the region's self-closed `if [ "${hard_mode:-false}" = "true" ]` block
+  # (immediately above the unconditional "Resuming — cycle" echo) is exercised here since Case 2's
+  # reinit falls through into the resume-read block that contains both echoes. hard_mode=false
+  # must produce NO burnout line; hard_mode=true must produce exactly one.
+  if [[ "$hard_mode_val" == "true" ]]; then
+    if grep -qE 'Resuming \(hard mode\) — burnout signals so far' "$out"; then
+      pass "case2-flag-present (${engine_label}): hard-mode burnout echo present"
+    else
+      fail "case2-flag-present (${engine_label}): expected hard-mode burnout echo missing: $(cat "$out")"
+    fi
+  else
+    if grep -qE 'Resuming \(hard mode\) — burnout signals so far' "$out"; then
+      fail "case2-flag-present (${engine_label}): unexpected hard-mode burnout echo present under hard_mode=false"
+    else
+      pass "case2-flag-present (${engine_label}): no hard-mode burnout echo under hard_mode=false"
+    fi
+  fi
 
   # =====================================================================
   # Case 3: cycle_count BELOW MAX_CYCLES, flag PRESENT. Expected: the flag is INERT when the
   # budget is not exhausted -- no archive, no reinit, ordinary resume proceeds untouched.
   # =====================================================================
-  fx="$WORKDIR/case3-${engine_label}"; mkdir -p "$fx"
+  fx="$WORKDIR/case3-${hard_mode_val}"; mkdir -p "$fx"
   make_guard "$fx/.orchestrator-loop-guard" 2 "sess_fixture_guard_writer" 5
   out="$fx.out"; err="$fx.err"
-  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "true" "sess_current" "$out" "$err")
+  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "true" "sess_current" "$hard_mode_val" "$out" "$err")
   if [[ "$exit_code" -eq 0 ]]; then
     pass "case3-below-budget-flag-present (${engine_label}): subshell exits 0"
   else
@@ -265,29 +282,26 @@ for pair in "base:$base_region" "hard:$hard_region"; do
   # (from the pre-existing, untouched session_id-mismatch block), never a reset -- asserting the
   # test-session-runtime-files.sh Case 3 invariant from a second angle, inside this suite too.
   # =====================================================================
-  fx="$WORKDIR/case4-${engine_label}"; mkdir -p "$fx"
+  fx="$WORKDIR/case4-${hard_mode_val}"; mkdir -p "$fx"
   make_guard "$fx/.orchestrator-loop-guard" 2 "sess_a_different_writer" 5
   out="$fx.out"; err="$fx.err"
-  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "false" "sess_current_caller" "$out" "$err")
+  exit_code=$(run_region "$region" "$fx" "$LIVE_MAX_CYCLES" "false" "sess_current_caller" "$hard_mode_val" "$out" "$err")
   if [[ "$exit_code" -eq 0 ]]; then
     pass "case4-session-id-mismatch (${engine_label}): subshell exits 0"
   else
     fail "case4-session-id-mismatch (${engine_label}): expected exit 0, got ${exit_code}"
   fi
-  # The session_id-mismatch INFO log itself is a BASE-ENGINE-ONLY, pre-existing, untouched
-  # feature -- skill-orchestrate-hard/SKILL.md's own resume-read block has no guard_session_id
-  # check at all (confirmed: zero occurrences of "guard_session_id" in that file). This is not a
-  # parity gap this task's scope covers; the invariant this case actually asserts for BOTH
-  # engines is "a differing session_id never resets cycle_count", checked below regardless of
-  # engine. It is plain `echo` (no `>&2`) in base mode, so it lands on stdout, not stderr.
-  if [[ "$engine_label" == "base" ]]; then
-    if grep -qE 'INFO: loop guard was last written by a different session_id' "$out"; then
-      pass "case4-session-id-mismatch (${engine_label}): INFO log present, never a gate"
-    else
-      fail "case4-session-id-mismatch (${engine_label}): expected INFO log missing: $(cat "$out")"
-    fi
+  # CORRECTNESS FIX (this task's plan Phase 5 centre of gravity): the session_id-mismatch INFO
+  # log used to be gated on `engine_label == "base"`, because the pre-merge hard engine's own
+  # resume-read block genuinely had no guard_session_id check at all. In the merged file that
+  # check (lines ~358-361 of skill-orchestrate/SKILL.md) is UNCONDITIONAL, shared code -- it runs
+  # identically regardless of `hard_mode`. The old base-only gate is now simply wrong: asserted
+  # here for BOTH `hard_mode` values, not skipped for hard_mode=true. It is plain `echo` (no
+  # `>&2`), so it lands on stdout, not stderr.
+  if grep -qE 'INFO: loop guard was last written by a different session_id' "$out"; then
+    pass "case4-session-id-mismatch (${engine_label}): INFO log present, never a gate"
   else
-    info "case4-session-id-mismatch (${engine_label}): hard engine has no guard_session_id INFO log (base-only, pre-existing) -- asserting the never-reset invariant only"
+    fail "case4-session-id-mismatch (${engine_label}): expected INFO log missing: $(cat "$out")"
   fi
   if [[ -f "$fx/.orchestrator-loop-guard" ]]; then
     mismatch_cc=$(jq -r '.cycle_count' "$fx/.orchestrator-loop-guard")
@@ -302,17 +316,14 @@ for pair in "base:$base_region" "hard:$hard_region"; do
 done
 
 # =====================================================================
-# Stage 7 message assertion: both engines' MAX_CYCLES branch names --continue-budget.
+# Stage 7 message assertion: the merged engine's MAX_CYCLES branch names --continue-budget. This
+# message is shared, unconditional code (not per-`hard_mode`), so a single check against the one
+# merged file replaces what used to be two per-engine checks.
 # =====================================================================
-if grep -A3 'MAX_CYCLES ($MAX_CYCLES) reached for task' "$BASE_SKILL" | grep -q -- '--continue-budget'; then
+if grep -A3 'MAX_CYCLES ($MAX_CYCLES) reached for task' "$SKILL_FILE" | grep -q -- '--continue-budget'; then
   pass "skill-orchestrate/SKILL.md Stage 7 MAX_CYCLES message names --continue-budget"
 else
   fail "skill-orchestrate/SKILL.md Stage 7 MAX_CYCLES message does not name --continue-budget"
-fi
-if grep -A3 'MAX_CYCLES ($MAX_CYCLES) reached for task' "$HARD_SKILL" | grep -q -- '--continue-budget'; then
-  pass "skill-orchestrate-hard/SKILL.md Stage 7 MAX_CYCLES message names --continue-budget"
-else
-  fail "skill-orchestrate-hard/SKILL.md Stage 7 MAX_CYCLES message does not name --continue-budget"
 fi
 
 # =====================================================================
