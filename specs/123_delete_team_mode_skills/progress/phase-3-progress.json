@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Drop the skills from manifest.json and the README tree",
+  "started_at": "2026-09-01T00:45:00Z",
+  "last_updated": "2026-09-01T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "manifest.json: remove 3 provides.skills entries, confirm no routing block names them",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"],
+      "note": "python3 json-load substring search over the whole parsed file found 'skill-team' only in the 3 removed provides.skills entries -- no routing/routing_agents/routing_hard/routing_agents_hard block named any of the three. Valid JSON after edit."
+    },
+    {
+      "id": 2,
+      "description": "README.md: remove 3 tree lines, fix box-drawing, fix adjacent count",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/README.md"],
+      "note": "skill-fix-it/ became the new last child, retitled with the closing box character. The '16 skill wrappers' comment was corrected to '13' since it counted the visible tree list exactly (16 before, 13 after removing the 3 team lines)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

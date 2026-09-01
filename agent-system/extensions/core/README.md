@@ -86,7 +86,7 @@ core/
 │   ├── spawn.md, merge.md, project-overview.md, tag.md
 │   └── (each defines preflight, delegation, postflight)
 │
-├── skills/                    # 16 skill wrappers
+├── skills/                    # 13 skill wrappers
 │   ├── skill-orchestrate/     # Autonomous lifecycle state machine (/orchestrate command)
 │   ├── skill-researcher/      # General research
 │   ├── skill-planner/         # Plan creation
@@ -99,10 +99,7 @@ core/
 │   ├── skill-reviser/         # Plan revision
 │   ├── skill-spawn/           # Blocker decomposition
 │   ├── skill-git-workflow/    # Scoped git commits
-│   ├── skill-fix-it/          # Tag scanning
-│   ├── skill-team-research/   # Parallel research
-│   ├── skill-team-plan/       # Parallel planning
-│   └── skill-team-implement/  # Parallel implementation
+│   └── skill-fix-it/          # Tag scanning
 │
 ├── rules/                     # 6 auto-applied rules
 │   ├── artifact-formats.md
