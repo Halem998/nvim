@@ -1,7 +1,7 @@
 # Implementation Plan: Task #124
 
 - **Task**: 124 - Delete /research, /plan, /implement commands and update the CLAUDE.md command reference
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.25 hours
 - **Dependencies**: Task 117, Task 68, Task 81, Task 126 (all `[COMPLETED]`)
 - **Research Inputs**: `specs/124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md`
@@ -134,7 +134,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Precondition re-verification and baseline capture [NOT STARTED]
+### Phase 1: Precondition re-verification and baseline capture [COMPLETED]
 
 **Goal**: Confirm the replacement spelling is live before anything is deleted, and capture the
 pre-change lint/test baseline so later phases can prove "no worse than before" rather than assert
@@ -142,27 +142,34 @@ it.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/commands/orchestrate.md`'s `## Options` table rows
+- [x] Re-read `agent-system/extensions/core/commands/orchestrate.md`'s `## Options` table rows
       for `--research`/`--plan`/`--implement` and its Constraints bullet on the same flags.
       Record the exact shipped semantics: composable, canonical lifecycle ordering regardless of
       typed order, stop-after-last-named-phase, opens a new `MM_` artifact round, never regresses
       status, and **single-task only** (accepted and ignored with a loud notice in multi-task
       mode). This recorded wording is the input to Phase 2 — do not paraphrase from this plan.
-- [ ] Confirm `force_phases` is consumed, not merely parsed: grep
+      *(completed)*
+- [x] Confirm `force_phases` is consumed, not merely parsed: grep
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` for `force_phases` and
-      confirm the Stage 2b forced-phase queue exists.
-- [ ] Confirm the flags are present in the deployed tree
+      confirm the Stage 2b forced-phase queue exists. *(completed: Stage 2b builds an ordered
+      force_queue consumed by Stage 3's 3c ahead of status-derived dispatch)*
+- [x] Confirm the flags are present in the deployed tree
       (`.claude/commands/orchestrate.md`, `.claude/skills/skill-orchestrate/SKILL.md`), so the
       documented spelling works for the user today and not only after the next redeploy.
-- [ ] Capture baseline: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
+      *(completed)*
+- [x] Capture baseline: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
       — save full output to `/tmp/claude-1000/-home-benjamin--config-nvim/9ecff4ae-c031-4975-a1dc-9ecaa7a76fe2/scratchpad/baseline-extension-docs.txt`.
       A pre-existing failure is a baseline, not a blocker; record it so Phase 6 compares like for
-      like.
-- [ ] Capture baseline: `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh`
+      like. *(completed: 3 pre-existing FAILs, all unrelated missing-script-registration issues
+      for test-state-write-large-payload.sh, tests/test-force-phases.sh,
+      tests/test-roadmap-argv-ceiling.sh)*
+- [x] Capture baseline: `bash agent-system/extensions/core/scripts/test-conflict-predicate.sh`
       — save pass/fail counts, including the 9.6/9.7/9.8 lines, to the same scratchpad directory.
-- [ ] Capture baseline reference inventory:
+      *(completed: 36 passed, 0 failed)*
+- [x] Capture baseline reference inventory:
       `grep -rl -- "\`/research\|\`/implement\|\`/plan\b" agent-system/extensions/core/`
-      — save the file list (expected ~76 files) for Phase 7's triage.
+      — save the file list (expected ~76 files) for Phase 7's triage. *(completed: exactly 76
+      files, matching hypothesis)*
 
 **Timing**: 0.5 hours
 
