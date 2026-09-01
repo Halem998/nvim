@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Add Step 3.6 Validate Changelog Entry",
+  "started_at": "2026-09-01T12:00:00Z",
+  "last_updated": "2026-09-01T12:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert Step 3.6 heading between Step 3.5 block and Step 4 heading, with prose preamble", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 2, "description": "Implement bounded-depth changelog discovery reusing Step 3.5's exclusion set, printing ignored extra candidates", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 3, "description": "Absence branch: informational skip, set bare-version tag_message fallback", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 4, "description": "Presence branch: require heading, extract section via awk, require non-empty after whitespace strip", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 5, "description": "Failure disclosure + disclose-then-warn override with --skip-changelog-check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 6, "description": "Success branch: build tag_message from version + changelog section, add decision comment block", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

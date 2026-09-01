@@ -181,7 +181,7 @@ argument parsing, so later phases have a `$skip_changelog_check` variable to bra
 
 ---
 
-### Phase 2: Add Step 3.6 "Validate Changelog Entry" [NOT STARTED]
+### Phase 2: Add Step 3.6 "Validate Changelog Entry" [COMPLETED]
 
 **Goal**: Insert the changelog gate between Step 3.5 and Step 4, implementing discover ->
 require-heading -> extract-section -> require-non-empty -> disclose-then-optionally-override, and
@@ -189,13 +189,13 @@ setting the `$tag_message` / `$tag_message_source` variables Phase 3 consumes.
 
 **Tasks**:
 
-- [ ] Insert a new `### Step 3.6: Validate Changelog Entry` heading between the end of Step 3.5's
-      fenced block and the `### Step 4: Display Summary` heading.
-- [ ] Write a prose preamble mirroring Step 3.5's, carrying the same placement rationale
+- [x] Insert a new `### Step 3.6: Validate Changelog Entry` heading between the end of Step 3.5's
+      fenced block and the `### Step 4: Display Summary` heading. *(completed)*
+- [x] Write a prose preamble mirroring Step 3.5's, carrying the same placement rationale
       explicitly — that this step runs on every invocation path (default, `--force`, `--dry-run`)
       **because it sits strictly before Step 5's `--dry-run` `exit 0`**. This sentence is the
-      guard against a future editor relocating the step; do not paraphrase it away.
-- [ ] Implement bounded-depth discovery reusing Step 3.5's exclusion set verbatim:
+      guard against a future editor relocating the step; do not paraphrase it away. *(completed)*
+- [x] Implement bounded-depth discovery reusing Step 3.5's exclusion set verbatim:
       ```bash
       changelog_candidates=$(find "$repo_root" -maxdepth 3 -type f \
         -not -path '*/node_modules/*' \
@@ -211,18 +211,18 @@ setting the `$tag_message` / `$tag_message_source` variables Phase 3 consumes.
       changelog_file=$(printf '%s\n' "$changelog_candidates" | head -1)
       ```
       `$repo_root` and `$new_version_bare` are already in scope from Step 3.5 — reuse them, do not
-      recompute.
-- [ ] Print any candidates beyond the first as explicitly ignored, so the transcript discloses the
-      ambiguity rather than silently picking.
-- [ ] Absence branch (informational, proceeds normally, phrased to parallel Step 3.5's "No
+      recompute. *(completed)*
+- [x] Print any candidates beyond the first as explicitly ignored, so the transcript discloses the
+      ambiguity rather than silently picking. *(completed)*
+- [x] Absence branch (informational, proceeds normally, phrased to parallel Step 3.5's "No
       declared package version found ... Skipping version-consistency check."):
       ```
       No CHANGELOG.md found near repo root (bounded-depth search, vendor/build dirs excluded).
       Skipping changelog check.
       ```
       In this branch set `tag_message="$new_version"` and
-      `tag_message_source="bare version string (no CHANGELOG found)"`.
-- [ ] Presence branch: require `grep -q "^## \[${new_version_bare}\]" "$changelog_file"`, then
+      `tag_message_source="bare version string (no CHANGELOG found)"`. *(completed)*
+- [x] Presence branch: require `grep -q "^## \[${new_version_bare}\]" "$changelog_file"`, then
       extract the section with the reference gate's `awk` (heading exclusive, up to but not
       including the next `^## ` heading), then require non-emptiness after whitespace stripping:
       ```bash
@@ -233,29 +233,33 @@ setting the `$tag_message` / `$tag_message_source` variables Phase 3 consumes.
       ' "$changelog_file")
       if [ -z "$(printf '%s' "$changelog_section" | tr -d '[:space:]')" ]; then ...
       ```
-- [ ] Failure disclosure: on missing heading OR empty section, print the changelog path and the
+      *(completed)*
+- [x] Failure disclosure: on missing heading OR empty section, print the changelog path and the
       specific failure state in full **before** branching on the flag. Then either
       `exit 1` with a resolution hint ("Add a non-empty `## [$new_version_bare]` section to
       $changelog_file, commit, then re-run /tag. Or pass --skip-changelog-check to proceed anyway
       (not recommended).") or, when `skip_changelog_check=true`, print
       `WARNING: --skip-changelog-check is set. Proceeding despite the above.` and fall back to
       `tag_message="$new_version"` / `tag_message_source="bare version string (changelog check skipped)"`.
-- [ ] Success branch: print `Changelog entry: OK -- $changelog_file has a non-empty '## [$new_version_bare]' section.`
+      *(completed)*
+- [x] Success branch: print `Changelog entry: OK -- $changelog_file has a non-empty '## [$new_version_bare]' section.`
       and build the tag message:
       ```bash
       tag_message=$(printf '%s\n\n%s\n' "$new_version" "$changelog_section")
       tag_message_source="CHANGELOG section for $new_version_bare ($changelog_file)"
       ```
-- [ ] Add a comment block immediately above the message construction recording the **decision**:
+      *(completed)*
+- [x] Add a comment block immediately above the message construction recording the **decision**:
       the annotated tag's subject line is `$new_version` and its body is the extracted CHANGELOG
       section, because that section is already validated non-empty by this step and is the same
       content the release preflight reads; the bare `$new_version` message is a deliberate
       *fallback* used only when no section is available (no changelog, or check skipped), not a
       default reached by omission. Also record that `-a` is used rather than `-s` because signing
-      requires a configured GPG key that is not universal across consuming repos.
-- [ ] Confirm `$tag_message` and `$tag_message_source` are assigned on **every** reachable path
+      requires a configured GPG key that is not universal across consuming repos. *(completed)*
+- [x] Confirm `$tag_message` and `$tag_message_source` are assigned on **every** reachable path
       out of this step (absence, skip-override, success). A path that leaves them unset would make
-      Phase 3's `git tag -a -m ""` silently produce an empty message.
+      Phase 3's `git tag -a -m ""` silently produce an empty message. *(completed: verified 3
+      reachable exits, each assigns tag_message; grep -c 'tag_message=' within the block equals 3)*
 
 **Timing**: 0.75 hours
 

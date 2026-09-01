@@ -271,6 +271,96 @@ else
 fi
 ```
 
+### Step 3.6: Validate Changelog Entry
+
+Ensure a discovered CHANGELOG declares a non-empty entry for the computed version before
+proceeding. This step runs for every invocation path — default, `--force`, and `--dry-run`
+alike — because it sits strictly before Step 5's `--dry-run` `exit 0`:
+
+```bash
+echo ""
+echo "=== Validating Changelog Entry ==="
+echo ""
+
+# Bounded-depth discovery, excluding the same vendor/build directories Step 3.5 excludes.
+# $repo_root and $new_version_bare are already in scope from Step 3.5.
+changelog_candidates=$(find "$repo_root" -maxdepth 3 -type f \
+  -not -path '*/node_modules/*' \
+  -not -path '*/.git/*' \
+  -not -path '*/dist/*' \
+  -not -path '*/build/*' \
+  -not -path '*/target/*' \
+  -not -path '*/__pycache__/*' \
+  -not -path '*/.venv/*' \
+  -not -path '*/venv/*' \
+  -iname 'CHANGELOG.md' \
+  2>/dev/null | sort)
+changelog_file=$(printf '%s\n' "$changelog_candidates" | head -1)
+
+# A repo has at most one canonical changelog by convention; disclose any additional
+# candidates as explicitly ignored rather than silently picking the sorted-first match.
+extra_candidates=$(printf '%s\n' "$changelog_candidates" | tail -n +2)
+if [ -n "$extra_candidates" ]; then
+  echo "Multiple CHANGELOG.md files found; using: $changelog_file"
+  echo "Ignored additional candidates:"
+  printf '%s\n' "$extra_candidates" | sed 's/^/  /'
+fi
+
+if [ -z "$changelog_file" ]; then
+  echo "No CHANGELOG.md found near repo root (bounded-depth search, vendor/build dirs excluded)."
+  echo "Skipping changelog check."
+  tag_message="$new_version"
+  tag_message_source="bare version string (no CHANGELOG found)"
+else
+  changelog_ok=true
+  heading_found=false
+  if grep -q "^## \[${new_version_bare}\]" "$changelog_file"; then
+    heading_found=true
+    changelog_section=$(awk -v ver="$new_version_bare" '
+      $0 ~ "^## \\[" ver "\\]" { found=1; next }
+      found && /^## / { exit }
+      found { print }
+    ' "$changelog_file")
+    if [ -z "$(printf '%s' "$changelog_section" | tr -d '[:space:]')" ]; then
+      changelog_ok=false
+    fi
+  else
+    changelog_ok=false
+  fi
+
+  if [ "$changelog_ok" = false ]; then
+    echo "Error: Changelog entry missing or empty for $new_version_bare."
+    echo ""
+    echo "Changelog file: $changelog_file"
+    if [ "$heading_found" = true ]; then
+      echo "The '## [$new_version_bare]' heading exists but its section is empty."
+    else
+      echo "No '## [$new_version_bare]' heading found."
+    fi
+    echo ""
+    if [ "$skip_changelog_check" = true ]; then
+      echo "WARNING: --skip-changelog-check is set. Proceeding despite the above."
+      tag_message="$new_version"
+      tag_message_source="bare version string (changelog check skipped)"
+    else
+      echo "Resolution: Add a non-empty '## [$new_version_bare]' section to $changelog_file, commit, then re-run /tag."
+      echo "Or pass --skip-changelog-check to proceed anyway (not recommended)."
+      exit 1
+    fi
+  else
+    echo "Changelog entry: OK -- $changelog_file has a non-empty '## [$new_version_bare]' section."
+    # Decision: the annotated tag's subject line is $new_version and its body is the extracted
+    # CHANGELOG section, because that section is already validated non-empty by this step and is
+    # the same content the release preflight reads. The bare $new_version message is a deliberate
+    # fallback used only when no section is available (no changelog, or check skipped) -- not a
+    # default reached by omission. -a (not -s) is used because signing requires a configured GPG
+    # key that is not universal across consuming repos.
+    tag_message=$(printf '%s\n\n%s\n' "$new_version" "$changelog_section")
+    tag_message_source="CHANGELOG section for $new_version_bare ($changelog_file)"
+  fi
+fi
+```
+
 ### Step 4: Display Summary
 
 Show what will be deployed:
