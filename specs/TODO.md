@@ -11,7 +11,7 @@ next_project_number: 132
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130,131 | -- | core-agent-system, literature, neovim |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130 | -- | core-agent-system, literature, neovim |
 | 2 | 30,74,104,105,109,112,120,124,129 | 29,31,102,108,126,128,130 | core-agent-system, extensions, literature |
 | 3 | 75,76,107,121,125 | 74,104,120,124,128 | core-agent-system, extensions, literature |
 | 4 | 127 | 121,124 | core-agent-system |
@@ -65,7 +65,6 @@ next_project_number: 132
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
-131 [IMPLEMENTING] — Make /tag produce releases that a release workflow's preflight wi
 
 ### Extensions
 
@@ -97,7 +96,7 @@ next_project_number: 132
 ## Tasks
 
 ### 131. Tag annotated and changelog preflight
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

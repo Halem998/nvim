@@ -1,7 +1,7 @@
 # Implementation Plan: Task #131
 
 - **Task**: 131 - Make /tag produce releases that a release workflow's preflight will actually accept
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/131_tag_annotated_and_changelog_preflight/reports/01_tag-annotated-and-changelog-preflight.md
