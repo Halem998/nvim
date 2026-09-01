@@ -295,7 +295,7 @@ report it rather than silently extending or silently skipping.
 
 ---
 
-### Phase 3: Port the gate body with the corrected matcher into the `researched` and `planning` handlers [NOT STARTED]
+### Phase 3: Port the gate body with the corrected matcher into the `researched` and `planning` handlers [COMPLETED]
 
 **Goal**: Land the verify-then-re-dispatch gate itself in both handlers, using the corrected
 patterns from Phase 1 and reusing each handler's already-computed `research_artifact` rather than
@@ -303,45 +303,45 @@ recomputing it.
 
 **Tasks**:
 
-- [ ] Re-locate the `#### State: researched` handler. Its anchor: the sentence
+- [x] Re-locate the `#### State: researched` handler. Its anchor: the sentence
       `Read research artifact path from state.json:` followed by the `research_artifact=$(jq -r ...
       select(.type == "report") ...)` block, followed by
       `skill_preflight_update "$task_number" "plan" "$session_id"`.
-- [ ] Insert the H4 gate IMMEDIATELY BEFORE that `skill_preflight_update` call, wrapped in the
+- [x] Insert the H4 gate IMMEDIATELY BEFORE that `skill_preflight_update` call, wrapped in the
       `$hard_mode` fork so base mode reaches `skill_preflight_update` unchanged. Port the `-hard`
       engine's logic — its structure only, NOT its `grep` lines:
-  - [ ] `if [ "$adversarial_verified" = "false" ]; then` — the outer gate.
-  - [ ] Use the handler's already-in-scope `research_artifact` as the file under test. Do NOT add a
+  - [x] `if [ "$adversarial_verified" = "false" ]; then` — the outer gate.
+  - [x] Use the handler's already-in-scope `research_artifact` as the file under test. Do NOT add a
         second `jq` query; the `-hard` engine recomputes it independently only because its handler
         has no such value in scope, which is not the case here.
-  - [ ] The two corrected `grep` checks, joined by `&&`, copied CHARACTER-FOR-CHARACTER from Phase 1
+  - [x] The two corrected `grep` checks, joined by `&&`, copied CHARACTER-FOR-CHARACTER from Phase 1
         (bind them to `"$research_artifact"`, which is the only substitution permitted — the
         pattern strings themselves are verbatim). Explicitly do not copy the `grep` lines from
         `skill-orchestrate-hard/SKILL.md`; those are the broken originals.
-  - [ ] On both checks passing: set `adversarial_verified=true` and log the "section with Claim
+  - [x] On both checks passing: set `adversarial_verified=true` and log the "section with Claim
         Verification Table found in report; proceeding to planning" message, adapted to this
         engine's own log-prefix convention (the `-hard` engine's `[hard-orchestrate]` prefix is not
         this engine's).
-  - [ ] On failure: dispatch `$RESEARCH_AGENT` as a focused verification pass with
+  - [x] On failure: dispatch `$RESEARCH_AGENT` as a focused verification pass with
         `focus_prompt: "divergence audit"` and `orchestrator_mode: false`, mint
         `dispatch_start_ts` / `dispatch_was_transport_error=false` / `dispatch_seq` per this
         engine's own dispatch-window convention, do NOT write `.orchestrator-handoff.json`
         (research agents never write it), increment `cycle_count`, and loop.
-  - [ ] Empty-or-missing `research_artifact`: set `adversarial_verified=true` (nothing to verify;
+  - [x] Empty-or-missing `research_artifact`: set `adversarial_verified=true` (nothing to verify;
         proceed) rather than blocking.
-  - [ ] Preserve the `-hard` engine's explicit warning comment that `skill_preflight_update` fires
+  - [x] Preserve the `-hard` engine's explicit warning comment that `skill_preflight_update` fires
         ONLY inside the verified branch and never in the re-dispatch branch — a preflight in the
         re-dispatch branch would wrongly regress status from `researched` to `researching`.
-- [ ] Carry an in-file comment recording that the `\b` word-boundary anchors were DELIBERATELY
+- [x] Carry an in-file comment recording that the `\b` word-boundary anchors were DELIBERATELY
       removed from the table pattern for grep-portability under the deployed engine, pointing at
       the companion word-boundary portability audit by description (no task number). Also carry the
       `-hard` engine's existing comment describing the pattern's shape-matching intent (matching by
       table-cell shape, not a fixed header string, tolerant of extra columns, matching both known
       passing header formats).
-- [ ] Re-locate the `#### State: planning` handler, anchored by its `**Converged (was: exit with
+- [x] Re-locate the `#### State: planning` handler, anchored by its `**Converged (was: exit with
       warning ...)**` paragraph and its own duplicate `research_artifact` / `skill_preflight_update`
       pair.
-- [ ] Insert the identical gate at the identical position in that handler. The `-hard` engine's own
+- [x] Insert the identical gate at the identical position in that handler. The `-hard` engine's own
       text states the `planning` handler runs the identical block for the identical reason: a task
       stranded in `planning` has research already complete and needs the same re-dispatch-to-plan
       treatment. Keep the two insertions byte-identical apart from any handler-name mention, so the

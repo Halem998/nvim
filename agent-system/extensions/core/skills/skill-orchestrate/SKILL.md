@@ -1404,6 +1404,76 @@ research_artifact=$(jq -r --argjson num "$task_number" \
   specs/state.json)
 ```
 
+**H4: Adversarial verification gate (hard mode only)** — ported from
+`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+rather than transcribing the original false-negative ones (see the companion word-boundary
+portability audit for the general defect shape this instance exercises). In base mode
+(`$hard_mode = false`) this gate is a no-op and `skill_preflight_update` below runs unchanged.
+
+```bash
+if [ "${hard_mode:-false}" = "true" ] && [ "$adversarial_verified" = "false" ]; then
+  echo "[orchestrate] H4: Dispatching adversarial verification before planning" >&2
+
+  if [ -n "$research_artifact" ] && [ -f "$research_artifact" ]; then
+    # Check if adversarial verification section already exists in report, AND that it contains
+    # a claim-verification table matched by SHAPE, not by a fixed header string (non-fatal
+    # structural strengthening; both checks must pass to skip re-dispatch). Shape: a table-cell
+    # containing the word "claim" immediately followed by a cell containing both "source" and
+    # "counterexample" (case- and spacing-insensitive, tolerant of extra columns). Both known
+    # passing formats match: the canonical `| Claim | Source/Counterexample | ... |` header and
+    # the observed `| # | Claim under attack | Source / counterexample | Outcome |` header. An
+    # unrelated table does not match.
+    #
+    # The heading check tolerates an optional numeric prefix (`## 7.`, `## 7.2.`, or the
+    # unnumbered `## Adversarial Self-Verification`) — the `-hard` engine's fixed-string check
+    # false-negatives on any numbered heading. The table check deliberately omits `\b`
+    # word-boundary anchors: the deployed POSIX/DFA `-E` grep mis-evaluates a `\b` anchor
+    # occurring downstream of an earlier `\b`-anchored subexpression separated by a `[^|]*` run,
+    # producing a false negative even against the canonical header — the `|`-delimited cell
+    # structure alone does the discriminating work, so the anchors are deliberately dropped for
+    # grep-portability, not restored (see the companion word-boundary portability audit).
+    if grep -qE '## ([0-9]+\.([0-9]+\.)?[[:space:]]*)?Adversarial Self-Verification' "$research_artifact" && \
+       grep -qiE '\|[^|]*claim[^|]*\|[^|]*source[^|]*counterexample[^|]*\|' "$research_artifact"; then
+      echo "[orchestrate] H4: Adversarial verification section with Claim Verification Table found in report. Proceeding to planning." >&2
+      adversarial_verified=true
+    else
+      # Dispatch a focused verification research pass. $RESEARCH_AGENT never writes
+      # .orchestrator-handoff.json, per the Stage 3.6 "Scoping Decision" in
+      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+      # in docs/architecture/handoff-schema.md, so no absolute anchor (handoff_path) is passed
+      # here, and orchestrator_mode is explicitly false.
+      dispatch_start_ts=$(date -u +%s)
+      dispatch_was_transport_error=false
+      dispatch_seq=$(mint_dispatch_seq)
+
+      Agent tool:
+        subagent_type: $RESEARCH_AGENT
+        prompt: "Adversarial verification pass for task $task_number. Read the research report at $research_artifact and verify all load-bearing claims. Focus: divergence audit — check for analysis-paralysis signatures, verify source citations, flag uncertain claims."
+        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", orchestrator_mode: false}
+
+      # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
+      # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
+      # ONLY if the call itself returned a transport/API-layer error with no subagent-authored
+      # text of any kind. Any subagent-authored output means false.
+      Increment cycle_count. Loop continues — do NOT fall through to skill_preflight_update or
+      the planning dispatch below this cycle.
+    fi
+  else
+    adversarial_verified=true  # No report to verify; proceed
+  fi
+fi
+```
+
+**Preflight and planning dispatch** — reached when hard mode is off, or the gate above has
+confirmed `adversarial_verified=true`. NEVER reached from inside the re-dispatch branch above
+(which re-dispatches `$RESEARCH_AGENT` while status is still `researched`; a preflight there
+would incorrectly regress status to `researching`). This is the single plan-preflight call for
+this handler.
+
+```bash
+if [ "${hard_mode:-false}" != "true" ] || [ "$adversarial_verified" = "true" ]; then
+```
+
 ```bash
 skill_preflight_update "$task_number" "plan" "$session_id"
 ```
@@ -1454,6 +1524,7 @@ After Agent tool returns: read handoff. Increment cycle_count.
 
 ```bash
 fi
+fi
 ```
 
 #### State: `planning`
@@ -1467,6 +1538,76 @@ Read research artifact path from state.json:
 research_artifact=$(jq -r --argjson num "$task_number" \
   '[.active_projects[] | select(.project_number == $num) | .artifacts // [] | .[] | select(.type == "report")] | .[0].path // ""' \
   specs/state.json)
+```
+
+**H4: Adversarial verification gate (hard mode only)** — ported from
+`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+rather than transcribing the original false-negative ones (see the companion word-boundary
+portability audit for the general defect shape this instance exercises). In base mode
+(`$hard_mode = false`) this gate is a no-op and `skill_preflight_update` below runs unchanged.
+
+```bash
+if [ "${hard_mode:-false}" = "true" ] && [ "$adversarial_verified" = "false" ]; then
+  echo "[orchestrate] H4: Dispatching adversarial verification before planning" >&2
+
+  if [ -n "$research_artifact" ] && [ -f "$research_artifact" ]; then
+    # Check if adversarial verification section already exists in report, AND that it contains
+    # a claim-verification table matched by SHAPE, not by a fixed header string (non-fatal
+    # structural strengthening; both checks must pass to skip re-dispatch). Shape: a table-cell
+    # containing the word "claim" immediately followed by a cell containing both "source" and
+    # "counterexample" (case- and spacing-insensitive, tolerant of extra columns). Both known
+    # passing formats match: the canonical `| Claim | Source/Counterexample | ... |` header and
+    # the observed `| # | Claim under attack | Source / counterexample | Outcome |` header. An
+    # unrelated table does not match.
+    #
+    # The heading check tolerates an optional numeric prefix (`## 7.`, `## 7.2.`, or the
+    # unnumbered `## Adversarial Self-Verification`) — the `-hard` engine's fixed-string check
+    # false-negatives on any numbered heading. The table check deliberately omits `\b`
+    # word-boundary anchors: the deployed POSIX/DFA `-E` grep mis-evaluates a `\b` anchor
+    # occurring downstream of an earlier `\b`-anchored subexpression separated by a `[^|]*` run,
+    # producing a false negative even against the canonical header — the `|`-delimited cell
+    # structure alone does the discriminating work, so the anchors are deliberately dropped for
+    # grep-portability, not restored (see the companion word-boundary portability audit).
+    if grep -qE '## ([0-9]+\.([0-9]+\.)?[[:space:]]*)?Adversarial Self-Verification' "$research_artifact" && \
+       grep -qiE '\|[^|]*claim[^|]*\|[^|]*source[^|]*counterexample[^|]*\|' "$research_artifact"; then
+      echo "[orchestrate] H4: Adversarial verification section with Claim Verification Table found in report. Proceeding to planning." >&2
+      adversarial_verified=true
+    else
+      # Dispatch a focused verification research pass. $RESEARCH_AGENT never writes
+      # .orchestrator-handoff.json, per the Stage 3.6 "Scoping Decision" in
+      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+      # in docs/architecture/handoff-schema.md, so no absolute anchor (handoff_path) is passed
+      # here, and orchestrator_mode is explicitly false.
+      dispatch_start_ts=$(date -u +%s)
+      dispatch_was_transport_error=false
+      dispatch_seq=$(mint_dispatch_seq)
+
+      Agent tool:
+        subagent_type: $RESEARCH_AGENT
+        prompt: "Adversarial verification pass for task $task_number. Read the research report at $research_artifact and verify all load-bearing claims. Focus: divergence audit — check for analysis-paralysis signatures, verify source citations, flag uncertain claims."
+        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", orchestrator_mode: false}
+
+      # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
+      # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
+      # ONLY if the call itself returned a transport/API-layer error with no subagent-authored
+      # text of any kind. Any subagent-authored output means false.
+      Increment cycle_count. Loop continues — do NOT fall through to skill_preflight_update or
+      the planning dispatch below this cycle.
+    fi
+  else
+    adversarial_verified=true  # No report to verify; proceed
+  fi
+fi
+```
+
+**Preflight and planning dispatch** — reached when hard mode is off, or the gate above has
+confirmed `adversarial_verified=true`. NEVER reached from inside the re-dispatch branch above
+(which re-dispatches `$RESEARCH_AGENT` while status is still `researched`; a preflight there
+would incorrectly regress status to `researching`). This is the single plan-preflight call for
+this handler.
+
+```bash
+if [ "${hard_mode:-false}" != "true" ] || [ "$adversarial_verified" = "true" ]; then
 ```
 
 ```bash
@@ -1518,6 +1659,7 @@ charged.
 After Agent tool returns: read handoff. Increment cycle_count.
 
 ```bash
+fi
 fi
 ```
 
