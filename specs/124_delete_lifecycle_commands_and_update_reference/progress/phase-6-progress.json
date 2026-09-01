@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Prune stale deployed copies and re-verify the deploy tree",
+  "started_at": "2026-09-01T23:54:00Z",
+  "last_updated": "2026-09-02T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove the three orphaned deployed command files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run non-destructive deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed CLAUDE.md reflects Phase 2 edits", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm deployed index.json reflects Phase 3 edits", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-run check-extension-docs.sh and diff against Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run validate-context-index.sh against deployed tree", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Escalate to --wipe only if targeted removal insufficient", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Note: .claude/** is gitignored (deploy artifact), so nothing under it is a tracked/committable change -- confirmed via 'git status --porcelain .claude/' returning empty despite real file changes on disk. deploy-headless.sh landed the deploy (CLAUDE.md and context/index.json regenerated from the Phase 2/3 source edits) but its own fast-gate verify-deploy.sh sub-step exited FAIL (3 of 26 checks). Investigated all 3: (1) doc-lint (check-extension-docs.sh) FAIL is byte-identical to the Phase 1 baseline (same 3 pre-existing, unrelated missing-script-registration issues) -- confirmed via diff, zero delta. (2) validate-state.sh --deep FAIL is about 'abandon_reason'/'blocks_note' unknown fields on OTHER task entries (94,46,31,64,73,115,132,106,107,109) -- task 124's own state.json entry has neither field; confirmed via direct jq inspection, completely unrelated to this task's changes. (3) lint-state-writer-boundary.sh FAIL flags hand-rolled state.json writes in agent-system/extensions/core/scripts/tests/test-force-phases.sh (a pre-existing file this task never touched, and incidentally the same file named in the doc-lint's own pre-existing baseline FAIL). None of the 3 verify-deploy.sh failures trace to this task's own changes or file scope. Deployed CLAUDE.md confirmed to carry the Phase 2 edits (no /research /plan /implement command rows in the core-sourced section; the amended /orchestrate row present verbatim). Remaining /research /plan /implement mentions in the deployed CLAUDE.md trace to OTHER extensions' merge-sources (literature, memory, nix) which are out of this task's declared scope. Deployed context/index.json confirmed to carry all six Phase 3 retargeted load_when.commands arrays exactly. validate-context-index.sh against the deployed tree: 215 entries checked, 0 errors, 0 warnings, PASSED. Targeted file removal + non-destructive deploy-headless.sh sufficed; --wipe was never needed."
+}

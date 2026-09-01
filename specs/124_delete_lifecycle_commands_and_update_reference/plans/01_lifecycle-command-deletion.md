@@ -430,33 +430,41 @@ after editing — it must return zero hits.
 
 ---
 
-### Phase 6: Prune stale deployed copies and re-verify the deploy tree [NOT STARTED]
+### Phase 6: Prune stale deployed copies and re-verify the deploy tree [COMPLETED]
 
 **Goal**: Bring the gitignored `.claude/` deploy tree into agreement with the source store, and
 prove the lint is no worse than Phase 1's baseline.
 
 **Tasks**:
 
-- [ ] Remove the three now-orphaned deployed command files: `.claude/commands/research.md`,
+- [x] Remove the three now-orphaned deployed command files: `.claude/commands/research.md`,
       `.claude/commands/plan.md`, `.claude/commands/implement.md`. These are deploy artifacts, not
       authored files — deleting them is not a `source-store-deploy-boundary.md` violation, and
-      they are regenerable in the sense that nothing regenerates them any more.
-- [ ] Run the non-destructive deploy:
+      they are regenerable in the sense that nothing regenerates them any more. *(completed)*
+- [x] Run the non-destructive deploy:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` — this refreshes
       `claudemd.md`-derived `CLAUDE.md` and the merged `index.json` from the Phase 2/3 edits.
-- [ ] Confirm the deployed `CLAUDE.md` Command Reference table no longer lists the three commands
-      and that the `/orchestrate` row carries the amended description.
-- [ ] Confirm the deployed `.claude/index.json` carries the retargeted `load_when.commands`
-      arrays.
-- [ ] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
+      *(completed: deploy landed; its fast-gate verify-deploy.sh sub-step FAILed on 3 checks, all
+      confirmed pre-existing and unrelated to this task -- see progress notes)*
+- [x] Confirm the deployed `CLAUDE.md` Command Reference table no longer lists the three commands
+      and that the `/orchestrate` row carries the amended description. *(completed)*
+- [x] Confirm the deployed `.claude/index.json` carries the retargeted `load_when.commands`
+      arrays. *(completed: deployed path is .claude/context/index.json; all six entries verified)*
+- [x] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh`
       and diff against Phase 1's baseline. The Rule K orphan failures observed at Phase 4 must be
-      gone; no new failure class may appear.
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-context-index.sh` (or its deployed
-      counterpart) now that the merged index exists.
-- [ ] If the default resync leaves any stale artifact behind that a targeted removal cannot fix,
+      gone; no new failure class may appear. *(completed with a correction: no Rule K orphan
+      failure was ever observed at Phase 4 -- Rule K is structurally blind to .claude/, which is
+      entirely gitignored, so it can never fire there; see the Phase 4 handoff. Re-run here is
+      byte-identical to the Phase 1 baseline via diff -- zero delta, no new failure class)*
+- [x] Run `bash agent-system/extensions/core/scripts/validate-context-index.sh` (or its deployed
+      counterpart) now that the merged index exists. *(completed: deployed counterpart
+      `.claude/scripts/validate-context-index.sh` -- 215 entries checked, 0 errors, 0 warnings,
+      PASSED)*
+- [x] If the default resync leaves any stale artifact behind that a targeted removal cannot fix,
       escalate to `bash agent-system/extensions/core/scripts/deploy-headless.sh --wipe` — this is
       destructive to `.claude/` (snapshot, `rm -rf`, regenerate, restore) and is the documented
-      fallback, so state explicitly in the summary if it was used and why.
+      fallback, so state explicitly in the summary if it was used and why. *(completed: not
+      needed -- targeted removal + non-destructive deploy-headless.sh sufficed)*
 
 **Timing**: 0.75 hours
 
