@@ -1080,6 +1080,27 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+**`team_mode` fork (first occurrence — stated fully here; every later occurrence in this file
+references this paragraph rather than restating it)**: at the same granularity the `hard_mode`
+fork (D5) uses on the `planned`/`implementing` handler below, this handler forks its whole
+dispatch body on `team_mode`:
+
+```bash
+if [ "${team_mode:-false}" = "true" ]; then
+```
+
+Run **Stage 3.6: Team Fan-Out** (see above) with `phase=research` and the rest of Stage 3.6's
+already-derived inputs (`team_size_eff`, `hard_mode`, `clean_flag`, `effort_flag`, `lit_flag`,
+`session_id`, `task_dir`, `handoff_path`) — pointer only, never an inlined copy of that stage's
+body. A `fanout_degraded=true` return means Stage 3.6 itself found no teammate to spawn (the
+teams runtime is unavailable, or Stage 3.6a's own builder degraded) — in that event, fall straight
+through to the `else` branch below and run its single-agent dispatch unchanged. The degraded path
+costs nothing beyond the one warning Stage 3.6 already emits.
+
+```bash
+else
+```
+
 Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
 `memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
 
@@ -1099,6 +1120,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
+
+```bash
+fi
+```
 
 #### State: `researching`
 
@@ -1127,6 +1152,20 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+**`team_mode` fork** (see the `not_started` handler above for the full statement of this fork's
+semantics; not restated here):
+
+```bash
+if [ "${team_mode:-false}" = "true" ]; then
+```
+
+Run **Stage 3.6: Team Fan-Out** with `phase=research` (pointer only). A `fanout_degraded=true`
+return falls through to the `else` branch below.
+
+```bash
+else
+```
+
 Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
 `memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
 
@@ -1146,6 +1185,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
+
+```bash
+fi
+```
 
 #### State: `researched`
 
@@ -1169,6 +1212,20 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+**`team_mode` fork** (see the `not_started` handler for the full statement of this fork's
+semantics; not restated here):
+
+```bash
+if [ "${team_mode:-false}" = "true" ]; then
+```
+
+Run **Stage 3.6: Team Fan-Out** with `phase=plan` (pointer only). A `fanout_degraded=true` return
+falls through to the `else` branch below.
+
+```bash
+else
+```
+
 Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
 `memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
 
@@ -1188,6 +1245,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
+
+```bash
+fi
+```
 
 #### State: `planning`
 
@@ -1215,6 +1276,20 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
+**`team_mode` fork** (see the `not_started` handler for the full statement of this fork's
+semantics; not restated here):
+
+```bash
+if [ "${team_mode:-false}" = "true" ]; then
+```
+
+Run **Stage 3.6: Team Fan-Out** with `phase=plan` (pointer only). A `fanout_degraded=true` return
+falls through to the `else` branch below.
+
+```bash
+else
+```
+
 Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
 `memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
 
@@ -1234,6 +1309,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
+
+```bash
+fi
+```
 
 #### State: `planned` or `implementing`
 
@@ -1482,15 +1561,20 @@ else
 fi
 ```
 
-**Parallel Wave Dispatch: DISABLED.** The Per-Phase Dispatch handler above is the sole
-implement-dispatch path in hard mode: the orchestrator dispatches exactly one phase per cycle
-and blocks on its return — no simultaneous/background `Agent` calls. Territory contracts (H7)
-still inform the single-phase dispatch context above, but never fan out into parallel dispatch.
+**Parallel Wave Dispatch: DISABLED (scoped to the hard branch's own per-phase dispatch).** The
+Per-Phase Dispatch handler above is the sole implement-dispatch path THIS BRANCH (`hard_mode ==
+"true"`) uses: the orchestrator dispatches exactly one phase per cycle and blocks on its return —
+no simultaneous/background `Agent` calls. Territory contracts (H7) still inform the single-phase
+dispatch context above, but never fan out into parallel dispatch here. This scoping is
+deliberate, not incidental: team-mode research/plan fan-out (Stage 3.6, wired into the four
+handlers above) is the sanctioned base-mode exception to it, and implement fan-out remains
+suppressed under `hard_mode` regardless of `team_mode` — see Stage 3.6a's `implement` branch,
+whose D5 hard-mode interaction paragraph returns an empty teammate plan for exactly this reason.
 This is a statement about what this orchestrator's own Stage 4 does — it never issues two
-concurrent `Agent` calls — not a claim about the state of the world: a previously-dispatched
-agent may still be live via a self-armed watcher/monitor or an operator resume (see
-`context/patterns/dispatch-report-not-termination.md`), entirely outside this orchestrator's
-own control flow.
+concurrent `Agent` calls from THIS branch — not a claim about the state of the world: a
+previously-dispatched agent may still be live via a self-armed watcher/monitor or an operator
+resume (see `context/patterns/dispatch-report-not-termination.md`), entirely outside this
+orchestrator's own control flow.
 
 ##### Base branch: whole-plan dispatch (unchanged)
 
@@ -1509,6 +1593,22 @@ skill_preflight_update "$task_number" "implement" "$session_id"
 dispatch_start_ts=$(date -u +%s)
 dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
+```
+
+**`team_mode` fork** (see the `not_started` handler above for the full statement of this fork's
+semantics; not restated here). Since this whole base branch already runs only when `hard_mode` is
+`"false"`, this is where implement's own team-mode fan-out actually reaches Stage 3.6 — the hard
+branch above never reaches this point:
+
+```bash
+if [ "${team_mode:-false}" = "true" ]; then
+```
+
+Run **Stage 3.6: Team Fan-Out** with `phase=implement` (pointer only). A `fanout_degraded=true`
+return falls through to the `else` branch below.
+
+```bash
+else
 ```
 
 Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
@@ -1530,6 +1630,10 @@ error it hit — means `false`. Then read handoff (Stage 5), which decides wheth
 charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
+
+```bash
+fi
+```
 
 ```bash
 fi
@@ -2440,6 +2544,11 @@ Read from delegation context:
   for every per-task dispatch this batch makes, and reserved for later conditional
   state-machine branches (churn/three-strikes counters, the burnout circuit breaker) that read
   this same boolean rather than re-deriving it.
+- `team_mode` (default: `"false"`) — read here for DIAGNOSTICS ONLY. Multi-task mode never fans
+  out per task (multiplying per-task concurrency by per-teammate fan-out is unbounded — see
+  `context/patterns/multi-task-operations.md`'s cost-warning), so this value never gates a Stage
+  MT-4 dispatch fork. When `team_mode` is `"true"`, emit one notice per batch, once, here:
+  `echo "[orchestrate] NOTICE: --team is accepted and ignored in multi-task mode — no per-task teammate fan-out will occur" >&2`.
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was

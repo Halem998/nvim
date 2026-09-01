@@ -517,28 +517,30 @@ territory literal already does) rather than assuming the list is always present.
 
 ---
 
-### Phase 7: Wire dispatch sites and reconcile concurrency notes [NOT STARTED]
+### Phase 7: Wire dispatch sites and reconcile concurrency notes [COMPLETED]
 
 **Goal**: Make the five Stage 4 dispatch sites actually use Stage 3.6, and reconcile the existing
 concurrency prose so it no longer contradicts the new stage.
 
 **Tasks**:
-- [ ] For each research-dispatching handler (`not_started`, `researching`), each plan-dispatching
+- [x] For each research-dispatching handler (`not_started`, `researching`), each plan-dispatching
       handler (`researched`, `planning`), and the base branch of `planned`/`implementing`: add a
       `team_mode` fork at the same granularity the existing `hard_mode` fork (D5) uses —
       `if [ "${team_mode:-false}" = "true" ]; then` run **Stage 3.6** with the matching `phase`
       (pointer line only, never an inlined body) `else` the existing single-agent Agent dispatch,
-      unchanged `fi`.
-- [ ] State once, at the first fork, that a `fanout_degraded=true` return from Stage 3.6 means the
+      unchanged `fi`. *(completed)*
+- [x] State once, at the first fork, that a `fanout_degraded=true` return from Stage 3.6 means the
       handler proceeds with its own `else`-branch single dispatch — so the degraded path costs
-      nothing beyond one warning.
-- [ ] Amend the "Parallel Wave Dispatch: DISABLED" note per D5: it scopes the hard branch's own
+      nothing beyond one warning. *(completed)*
+- [x] Amend the "Parallel Wave Dispatch: DISABLED" note per D5: it scopes the hard branch's own
       per-phase dispatch; team-mode research/plan fan-out is the sanctioned base-mode exception; and
-      implement fan-out remains suppressed under `hard_mode`.
-- [ ] Stage MT-1 / Stage MT-4: read `team_mode` for diagnostics and emit one notice that multi-task
-      mode does not fan out per task; do not add a fan-out fork to Stage MT-4.
-- [ ] Update Stage 1's acceptance-checklist table region only if the new stage changes a row's
-      accuracy; otherwise leave it byte-identical.
+      implement fan-out remains suppressed under `hard_mode`. *(completed)*
+- [x] Stage MT-1 / Stage MT-4: read `team_mode` for diagnostics and emit one notice that multi-task
+      mode does not fan out per task; do not add a fan-out fork to Stage MT-4. *(completed: read +
+      notice added in Stage MT-1; Stage MT-4 left untouched, i.e. no fan-out fork added there)*
+- [x] Update Stage 1's acceptance-checklist table region only if the new stage changes a row's
+      accuracy; otherwise leave it byte-identical. *(completed: table is scoped to the hard-mode
+      state-machine migration and is unrelated to team-mode; left byte-identical)*
 
 **Timing**: 1 hour
 
