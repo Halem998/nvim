@@ -404,7 +404,7 @@ mirroring claim holds.
 
 ---
 
-### Phase 5: Update commands/tag.md [NOT STARTED]
+### Phase 5: Update commands/tag.md [COMPLETED]
 
 **Goal**: Bring the command doc into agreement with the skill, so the numbered workflow and the
 Requirements section no longer silently contradict it. Also fix the pre-existing drift where the
@@ -412,24 +412,26 @@ frontmatter `argument-hint` omits `--skip-version-check`.
 
 **Tasks**:
 
-- [ ] Frontmatter `argument-hint`: extend to
+- [x] Frontmatter `argument-hint`: extend to
       `"[--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check] [--skip-changelog-check]"`.
       Note this fixes an existing omission (`--skip-version-check` was already missing) as well as
-      adding the new flag.
-- [ ] `## Usage` fenced block: match the skill's Command Syntax line exactly.
-- [ ] Flags table: add a `--skip-changelog-check` row after the `--skip-version-check` row, phrased
+      adding the new flag. *(completed)*
+- [x] `## Usage` fenced block: match the skill's Command Syntax line exactly. *(completed)*
+- [x] Flags table: add a `--skip-changelog-check` row after the `--skip-version-check` row, phrased
       in the same register ("Explicit override for a missing or empty changelog entry; still
-      reports the failure").
-- [ ] `## Workflow` numbered list: insert changelog validation as a new step 4 —
+      reports the failure"). *(completed)*
+- [x] `## Workflow` numbered list: insert changelog validation as a new step 4 —
       `4. **Validate Changelog Entry**: Require a non-empty \`## [VERSION]\` section in a discovered CHANGELOG; fail if present-but-missing` —
       and renumber the following entries. Change the tag-creation entry from
       `**Create Tag**: \`git tag vX.Y.Z\`` to
       `**Create Tag**: \`git tag -a vX.Y.Z -m "<version + CHANGELOG section>"\` (annotated, not lightweight)`.
-- [ ] `## Requirements` section: add a bullet phrased to parallel the existing version-consistency
+      *(completed)*
+- [x] `## Requirements` section: add a bullet phrased to parallel the existing version-consistency
       bullet's vacuous-satisfaction construction —
       "A discovered CHANGELOG (if any) has a non-empty `## [VERSION]` section for the computed
-      version — a repo with no CHANGELOG satisfies this requirement vacuously".
-- [ ] Leave the `## Warning` and `## Agent Restrictions` sections untouched.
+      version — a repo with no CHANGELOG satisfies this requirement vacuously". *(completed)*
+- [x] Leave the `## Warning` and `## Agent Restrictions` sections untouched. *(completed: confirmed
+      byte-unchanged)*
 
 **Timing**: 0.4 hours
 

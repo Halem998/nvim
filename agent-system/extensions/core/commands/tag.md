@@ -1,6 +1,6 @@
 ---
 description: Create and push semantic version tags for CI/CD deployment (user-only)
-argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
+argument-hint: "[--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check] [--skip-changelog-check]"
 ---
 
 # Command: /tag
@@ -21,7 +21,7 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 ## Usage
 
 ```bash
-/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check]
+/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check] [--skip-changelog-check]
 ```
 
 | Flag | Description |
@@ -32,6 +32,7 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 | `--force` | Skip confirmation prompt |
 | `--dry-run` | Show what would be done without executing |
 | `--skip-version-check` | Explicit override for a declared-version mismatch; still reports the divergence |
+| `--skip-changelog-check` | Explicit override for a missing or empty changelog entry; still reports the failure |
 
 ---
 
@@ -51,11 +52,12 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 1. **Validate Git State**: Check for clean working tree and up-to-date branch
 2. **Compute Version**: Calculate new version based on increment type
 3. **Validate Version Consistency**: Compare declared package version against computed tag; fail on mismatch
-4. **Display Summary**: Show commits since last tag
-5. **Confirm**: Interactive confirmation (unless --force)
-6. **Create Tag**: `git tag vX.Y.Z`
-7. **Push Tag**: `git push origin vX.Y.Z`
-8. **Update State**: Record deployment in state.json
+4. **Validate Changelog Entry**: Require a non-empty `## [VERSION]` section in a discovered CHANGELOG; fail if present-but-missing
+5. **Display Summary**: Show commits since last tag
+6. **Confirm**: Interactive confirmation (unless --force)
+7. **Create Tag**: `git tag -a vX.Y.Z -m "<version + CHANGELOG section>"` (annotated, not lightweight)
+8. **Push Tag**: `git push origin vX.Y.Z`
+9. **Update State**: Record deployment in state.json
 
 ---
 
@@ -67,6 +69,8 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 - No existing tag with computed version
 - Declared package version (if any manifest declares one) matches the computed tag version — a
   repo with no manifest satisfies this requirement vacuously
+- A discovered CHANGELOG (if any) has a non-empty `## [VERSION]` section for the computed
+  version — a repo with no CHANGELOG satisfies this requirement vacuously
 
 ---
 

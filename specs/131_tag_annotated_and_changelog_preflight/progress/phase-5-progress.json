@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Update commands/tag.md",
+  "started_at": "2026-09-01T12:18:00Z",
+  "last_updated": "2026-09-01T12:22:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend argument-hint frontmatter with skip-version-check and skip-changelog-check", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 2, "description": "Update Usage fenced block to match skill Command Syntax", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 3, "description": "Add --skip-changelog-check flags-table row", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 4, "description": "Insert Workflow step 4 for changelog validation, renumber, update Create Tag step to annotated", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]},
+    {"id": 5, "description": "Add Requirements bullet for changelog entry with vacuous-satisfaction phrasing", "status": "done", "files_touched": ["agent-system/extensions/core/commands/tag.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
