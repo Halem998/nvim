@@ -575,18 +575,21 @@ should be revisited.
 
 ---
 
-### Phase 7: Delete the three skill directories [NOT STARTED]
+### Phase 7: Delete the three skill directories [COMPLETED]
 
 **Goal**: Remove the skills themselves, last, once nothing depends on their content.
 
 **Tasks**:
-- [ ] Confirm every Wave 2 phase is `[COMPLETED]` and committed before proceeding.
-- [ ] `git rm -r agent-system/extensions/core/skills/skill-team-research
+- [x] Confirm every Wave 2 phase is `[COMPLETED]` and committed before proceeding. *(completed:
+      Phases 2-6 all [COMPLETED] and committed, verified with a re-run of the master inventory
+      grep -- zero hits outside the three skill directories)*
+- [x] `git rm -r agent-system/extensions/core/skills/skill-team-research
       agent-system/extensions/core/skills/skill-team-plan
       agent-system/extensions/core/skills/skill-team-implement`
       (full directory removal, not just `SKILL.md` — confirm with `ls` first whether any directory
-      holds additional files, and remove those too).
-- [ ] Commit the deletion as its own commit so it is trivially revertible in isolation.
+      holds additional files, and remove those too). *(completed: each directory held only
+      SKILL.md, confirmed via ls before removal)*
+- [x] Commit the deletion as its own commit so it is trivially revertible in isolation.
 
 **Timing**: 0.25 hours
 

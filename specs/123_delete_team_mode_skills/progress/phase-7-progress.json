@@ -1,0 +1,37 @@
+{
+  "phase": 7,
+  "phase_name": "Delete the three skill directories",
+  "started_at": "2026-09-01T02:30:00Z",
+  "last_updated": "2026-09-01T02:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm every Wave 2 phase is COMPLETED and committed",
+      "status": "done",
+      "files_touched": [],
+      "note": "Phases 2-6 all [COMPLETED] and committed (584e2cb11, 1ea95f869, f7f8e28e8, b1b26a0c5, f82fe2e1c, b685221d1, ac4a56052, 4cbc39101). Re-ran the master inventory grep -- zero hits outside the three skill directories."
+    },
+    {
+      "id": 2,
+      "description": "git rm -r the three skill directories",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-implement/SKILL.md"
+      ],
+      "note": "Confirmed via ls that each directory held only SKILL.md before removal. git rm -r staged all three deletions."
+    },
+    {
+      "id": 3,
+      "description": "Commit the deletion as its own isolated commit",
+      "status": "done",
+      "files_touched": [],
+      "note": "Committed with only the three deleted files plus this phase's own plan/progress bookkeeping (same targeted scope discipline as every other phase in this task) -- trivially revertible."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
