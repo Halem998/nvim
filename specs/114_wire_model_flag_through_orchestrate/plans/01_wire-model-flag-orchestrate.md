@@ -357,7 +357,7 @@ edits Stage 3.5.
 
 ---
 
-### Phase 4: Pass `model` at every lifecycle dispatch site [NOT STARTED]
+### Phase 4: Pass `model` at every lifecycle dispatch site [COMPLETED]
 
 **Goal**: every dispatch site that calls Stage 3.5 emits the Agent tool's `model` parameter when
 `model` is non-empty, and omits it entirely when empty.

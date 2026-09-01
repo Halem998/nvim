@@ -841,6 +841,8 @@ Agent calls in one message concurrently; multiple messages force sequential exec
    dispatch site in this file already calls).
 3. Invoke the Agent tool:
    - `subagent_type`: the tuple's `subagent_type`
+   - `model`: THIS teammate's own Stage 3.5 `model` output, passed as the Agent tool's `model`
+     parameter when non-empty; omitted when empty
    - `prompt`: the tuple's `prompt`, with `memory_context`, then `lit_context`, then
      `effort_note`, then `hard_contracts_block` from THIS teammate's own Stage 3.5 call appended,
      in that order, skipping any that is empty — identical to every other dispatch site's own
@@ -1128,6 +1130,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
@@ -1193,6 +1196,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
@@ -1253,6 +1257,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
@@ -1317,6 +1322,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
@@ -1526,6 +1532,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Implement phase $next_phase of task $task_number" then append `phase_mission_block`, then `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `$dispatch_context` (built above) |
 
@@ -1638,6 +1645,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
@@ -1723,6 +1731,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
@@ -1788,6 +1797,7 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
@@ -3412,7 +3422,7 @@ For each task in `research_tasks`:
 - Run **Stage 3.5: Dispatch Prep** with `phase=research` for this task (the same single canonical
   procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
   `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Invoke Agent tool: `subagent_type = research_agents[task_num]` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Research task $task_num: $description" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `plan_tasks`:
 - Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
@@ -3424,7 +3434,7 @@ For each task in `plan_tasks`:
 - Run **Stage 3.5: Dispatch Prep** with `phase=plan` for this task (the same single canonical
   procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
   `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Invoke Agent tool: `subagent_type = "planner-agent"` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Create implementation plan for task $task_num" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `implement_tasks`:
 - Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
@@ -3441,7 +3451,7 @@ For each task in `implement_tasks`:
 - Run **Stage 3.5: Dispatch Prep** with `phase=implement` for this task (the same single canonical
   procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
   `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Implement task $task_num following the plan" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
