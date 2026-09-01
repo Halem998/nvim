@@ -1,0 +1,26 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md",
+      "summary": "Per-file findings for all 7 hard-mode test/lint files: where each mechanism now lives inside skill-orchestrate/SKILL.md's hard_mode branches, what survives a mechanical retarget vs. what needs a logic rewrite, and a semantic-drift fix required in the loop-guard-budget-override test's Case 4."
+    }
+  ],
+  "next_steps": "Run /plan 120 to create an implementation plan from this report.",
+  "metadata": {
+    "session_id": "sess_1788268286_hrisls",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["team-lead", "research-120"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a source-store consolidation merges two sibling SKILL.md files (e.g. a base engine + its -hard variant) into one file with hard_mode-gated branches, tests that previously compared the two files for parity (extract-and-diff pattern) lose their comparison target and need a structural rewrite (extract-once, assert-correctness) rather than a path-only retarget. Tests anchored on sentinel comments (# --- name:begin/:end ---) that already existed identically in both source files typically retarget mechanically since the merge keeps one copy under the same sentinel name; tests anchored on field-level jq-filter extraction are more likely to hit variable-name/read-form drift where the merge consolidated or renamed the field read.",
+      "category": "PATTERN",
+      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["skill-orchestrate", "hard_mode", "test-retarget", "sentinel-extraction", "consolidation"]
+    }
+  ]
+}
