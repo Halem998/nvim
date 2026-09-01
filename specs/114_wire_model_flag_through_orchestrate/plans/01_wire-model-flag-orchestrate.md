@@ -426,7 +426,7 @@ record the actual count in the implementation summary.
 
 ---
 
-### Phase 5: Verification pass and consistency audit [NOT STARTED]
+### Phase 5: Verification pass and consistency audit [COMPLETED]
 
 **Goal**: prove the change is additive (the single most important check) and that a set flag
 traces end-to-end through all three dispatch paths.
