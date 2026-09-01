@@ -1,7 +1,7 @@
 # Implementation Plan: Task #122
 
 - **Task**: 122 - Build the team-mode shared fan-out stage in skill-orchestrate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9.5 hours
 - **Dependencies**: 117 (dispatch prep stage, completed), 119 (hard-mode state-machine migration, completed)
 - **Research Inputs**: specs/122_build_team_mode_fanout_stage/reports/01_team-fanout-stage-research.md
@@ -566,29 +566,43 @@ time and report any additional dispatching handler found.
 
 ---
 
-### Phase 8: Full verification and consistency pass [NOT STARTED]
+### Phase 8: Full verification and consistency pass [COMPLETED]
 
 **Goal**: Run the complete gate set, confirm the untouched-file guarantees, and record residue.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/check-task-references.sh` — zero unexempted hits in the edited files.
-- [ ] `bash .claude/scripts/lint/lint-postflight-boundary.sh` on `skill-orchestrate` — the new stage
-      must not violate the postflight boundary.
-- [ ] `bash .claude/scripts/lint/lint-routing-wiring.sh` and
-      `bash .claude/scripts/validate-wiring.sh` — no routing regression.
-- [ ] `bash -n agent-system/extensions/core/scripts/parse-command-args.sh`.
-- [ ] `bash .claude/scripts/validate-state.sh` and `bash .claude/scripts/check-deploy-freshness.sh`
+- [x] `bash .claude/scripts/check-task-references.sh` — zero unexempted hits in the edited files.
+      *(completed: PASS, 0 unexempted occurrences)*
+- [x] `bash .claude/scripts/lint/lint-postflight-boundary.sh` on `skill-orchestrate` — the new stage
+      must not violate the postflight boundary. *(completed: 33 files checked, 0 violations)*
+- [x] `bash .claude/scripts/lint/lint-routing-wiring.sh` and
+      `bash .claude/scripts/validate-wiring.sh` — no routing regression. *(completed:
+      lint-routing-wiring.sh PASSED 323/0 failed. validate-wiring.sh reports 41 pre-existing
+      failures, all "Missing context file" for `project/neovim/**` and `project/memory/README.md`
+      — unrelated to skill-orchestrate/orchestrate.md/parse-command-args.sh and present before
+      this task's commits; confirmed via `git diff 029e328dc..HEAD --stat -- agent-system/
+      scripts/` showing only the three D2-scoped files changed. No routing regression from this
+      work.)*
+- [x] `bash -n agent-system/extensions/core/scripts/parse-command-args.sh`. *(completed: exits 0)*
+- [x] `bash .claude/scripts/validate-state.sh` and `bash .claude/scripts/check-deploy-freshness.sh`
       (advisory; regeneration of `.claude/` is the operator's manual step and is NOT performed here).
-- [ ] Confirm the untouched-file guarantee with `git status --short`: no modification to
+      *(completed: validate-state.sh's 2 failures are pre-existing unrelated schema issues —
+      `abandon_reason` on project 64/115, `blocks_note` on 106/107/109 — not touched by this task;
+      check-deploy-freshness.sh WARNs that the deployed `.claude/` tree is stale, exactly the
+      expected advisory outcome since regeneration is manual-only)*
+- [x] Confirm the untouched-file guarantee with `git status --short`: no modification to
       `agents/synthesis-agent.md`, `context/contracts/territory.md`,
-      `hooks/subagent-postflight.sh`, or any `skills/skill-team-*/` file.
-- [ ] Grep for accidental duplication: exactly one `### Stage 3.6:` and one `### Stage 3.6a:`
-      definition, and no inlined copy of either body at a dispatch site.
-- [ ] Read the full Stage 3.6/3.6a region end to end once and confirm the five decisions (D1-D5) are
-      each visibly honored in the shipped text.
-- [ ] Record residue in the implementation summary: the hook-side read predicate and the
+      `hooks/subagent-postflight.sh`, or any `skills/skill-team-*/` file. *(completed: confirmed
+      clean for all five)*
+- [x] Grep for accidental duplication: exactly one `### Stage 3.6:` and one `### Stage 3.6a:`
+      definition, and no inlined copy of either body at a dispatch site. *(completed: exactly 1
+      of each; every Stage 4/MT-1 reference is a pointer line, not an inlined body)*
+- [x] Read the full Stage 3.6/3.6a region end to end once and confirm the five decisions (D1-D5) are
+      each visibly honored in the shipped text. *(completed)*
+- [x] Record residue in the implementation summary: the hook-side read predicate and the
       `events.jsonl` misattribution amendment remain with the hook-scope task (named by file path,
-      not task number, in any deliverable text).
+      not task number, in any deliverable text). *(completed: recorded in the implementation
+      summary's Follow-ups section)*
 
 **Timing**: 1 hour
 

@@ -1,29 +1,49 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
-      "summary": "8-phase plan for the shared team-mode fan-out stage (Stage 3.6 skeleton + Stage 3.6a per-phase teammate-plan builder) in skill-orchestrate, plus --team/--team-size on orchestrate.md."
+      "summary": "8-phase plan for the shared team-mode fan-out stage (Stage 3.6 skeleton + Stage 3.6a per-phase teammate-plan builder) in skill-orchestrate, plus --team/--team-size on orchestrate.md. All 8 phases now COMPLETED."
+    },
+    {
+      "type": "summary",
+      "path": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
+      "summary": "Implementation summary: shared Stage 3.6 team fan-out skeleton, Stage 3.6a per-phase teammate-plan builder, --team/--team-size flags, and TEAM_SIZE_EXPLICIT export, all five Decision Record items (D1-D5) honored."
     }
   ],
-  "next_steps": "Run /implement 122 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788220921_6485b3",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 9.5,
-    "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8]]
+  "completion_data": {
+    "completion_summary": "Added a shared, phase-parameterized team-mode fan-out stage (Stage 3.6) and per-phase teammate-plan builder (Stage 3.6a) to skill-orchestrate/SKILL.md, wired into all five single-task dispatch sites plus Stage MT-1 diagnostics, with --team/--team-size flags on orchestrate.md and a strictly additive TEAM_SIZE_EXPLICIT export from parse-command-args.sh."
   },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
+    "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When collapsing N duplicated orchestration flows into one shared stage, check whether the duplicates actually share a shape before parameterizing. In this agent system the three team skills looked uniform but were not: research/plan spawn a FIXED named-role set with letter-suffixed artifact files, while implement spawns a DYNAMIC set keyed to plan phases in dependency waves, with real source-file ownership and an ad-hoc debugger role. The correct factoring is a shared skeleton (availability check, spawn, wait, collect, correlate, stage, clean up) plus a per-phase builder that returns a uniform teammate-tuple array; the skeleton never learns which phase produced the tuples. This mirrors the existing handler/dispatch-prep relationship, where per-status handlers differ in dispatch content but share one sub-call.",
-      "category": "PATTERN",
-      "source_artifact": "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["fan-out", "shared-stage-factoring", "team-mode", "orchestration", "skeleton-plus-builder"]
+      "content": "When a shared bash-in-markdown skill file (e.g. skill-orchestrate/SKILL.md) needs a new conditional fork inserted into several near-identical existing dispatch handlers, the file's own convention of splitting a single logical if/else/fi across separate ```bash fenced blocks (interspersed with prose) means `bash -n` on any one fenced block in isolation will spuriously fail. Verify correctness instead by extracting just that handler's own bash blocks in document order and confirming the first line of each is exactly `if ...; then` / `else` / `fi` (or the nested equivalent) — i.e. verify block-sequence balance, not per-block syntax.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash-in-markdown", "skill-file-verification", "if-else-fi-fork", "syntax-check", "skill-orchestrate"]
+    },
+    {
+      "content": "When a plan's Decision Record narrows a task's file_scope to an exact small set of files, verify the untouched-file guarantee at the end with `git diff <pre-task-sha>..HEAD --stat -- <broad-parent-dir>` rather than only `git status --short` on the specific excluded paths — the diff-stat form catches any file outside the declared scope that got modified, not just the specific files you remembered to check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/122_build_team_mode_fanout_stage/summaries/01_team-fanout-stage-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["file-scope", "untouched-file-guarantee", "git-diff-stat", "verification"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1788220921_6485b3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
 }
