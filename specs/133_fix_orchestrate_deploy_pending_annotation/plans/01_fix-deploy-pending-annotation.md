@@ -1,7 +1,7 @@
 # Implementation Plan: Register the ambient-binding defect class and fix the deploy-pending annotation
 
 - **Task**: 133 - Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [IMPLEMENTING]
+- **Status**: [PARTIAL]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md
@@ -508,24 +508,56 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Record the motivating incident under the new class [NOT STARTED]
+### Phase 5: Record the motivating incident under the new class [PARTIAL]
 
 - **Goal:** Close the loop end-to-end by recording, to `specs/events.jsonl`, the exact incident
   whose recording previously failed with exit 1, "invalid --defect-class."
 
 - **Tasks:**
-  - [ ] Read `agent-system/extensions/core/scripts/system-defect-record.sh`'s usage block to
+  - [x] Read `agent-system/extensions/core/scripts/system-defect-record.sh`'s usage block to *(completed)*
         confirm the required flags and their current spellings before invoking it.
   - [ ] Invoke the recorder with `--defect-class AMBIENT_BINDING_MISMATCH`, attributing the defect
         to `scripts/skill-base.sh` (the guard site) and/or
         `scripts/orchestrate-stage5-postflight.sh` (the caller site), with a description naming
         the mechanism: the exit-6 annotation guard read an ambient `TASK_DIR` that the
         `/orchestrate` caller never set, so the guard silently evaluated false and the documented
-        `deploy_pending` marker never landed.
+        `deploy_pending` marker never landed. *(deviation: deferred — see "Phase 5 blocker" note
+        below this list; blocked by `deploy-root-guard.sh`, not by anything this task can fix
+        without violating its own Non-Goals)*
   - [ ] Confirm the invocation exits **0** (previously exit 1) and that a corresponding record
-        appears in `specs/events.jsonl`.
+        appears in `specs/events.jsonl`. *(deviation: deferred to the follow-up recorder
+        invocation once a deploy occurs — see note below)*
   - [ ] Confirm the recorder wrote a well-formed JSON line: `tail -1 specs/events.jsonl | jq .`
-        parses and the `defect_key`/detail carries the new class name.
+        parses and the `defect_key`/detail carries the new class name. *(deviation: deferred,
+        same reason)*
+
+**Phase 5 blocker (discovered during implementation, not anticipated by the plan or its research
+report)**: `system-defect-record.sh` sources `deploy-root-guard.sh` (line 197, after argument
+validation but before any write), which structurally requires the invoking script's own directory
+to end in `/.claude` or `/.opencode` — i.e. it is, by design, **NOT RUNNABLE FROM THE SOURCE
+STORE** (the script's own header says so explicitly). Verified: an invocation from
+`agent-system/extensions/core/scripts/system-defect-record.sh` past the point where an unknown
+`--defect-class` would be rejected exits 1 from this guard, naming the source-store path as the
+cause. The only path that satisfies the guard is the **deployed** copy,
+`.claude/scripts/system-defect-record.sh` — and PROJECT_ROOT is derived structurally as two
+literal directory levels above that script's own on-disk location
+(`common_repo_root "$SCRIPT_DIR" 2`, no `git rev-parse` fallback), so there is no way to satisfy
+the guard from a location other than the real `.claude/scripts/` that also resolves PROJECT_ROOT
+to the real repo root (any other `.claude`-shaped directory two levels below some other root
+would misdirect the `specs/events.jsonl` write). The real deployed copy currently predates this
+task's Phase 1 change (`grep -c AMBIENT_BINDING_MISMATCH .claude/scripts/system-defect-record.sh`
+returns 0) and therefore does not yet recognize the new class.
+
+Closing this gap requires either running the deploy/regeneration step, or hand-authoring
+`.claude/**`, and **both are explicitly prohibited**: this plan's own Non-Goals state "Do not
+regenerate or deploy `.claude/`," and the repo-wide
+`.claude/rules/source-store-deploy-boundary.md` rule prohibits hand-authoring `.claude/**` files
+regardless of task. Neither prohibition is this task's to waive. This phase is therefore left
+`[PARTIAL]` rather than forced through a prohibited workaround or a hand-edited `events.jsonl`
+line (the plan's own Files-to-modify note for this phase states the file is "never hand-edited").
+See the phase-5 progress file and handoff for the exact follow-up command to run once a deploy
+has occurred (which this very task's Part 2 fix means will now be correctly reported as
+`deploy_pending` rather than silently deferred).
 
 - **Timing:** 30 minutes
 

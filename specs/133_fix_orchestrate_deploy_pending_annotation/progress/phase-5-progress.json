@@ -1,0 +1,74 @@
+{
+  "phase": 5,
+  "phase_name": "Record the motivating incident under the new class",
+  "started_at": "2026-09-01T00:50:00Z",
+  "last_updated": "2026-09-01T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read system-defect-record.sh's usage block to confirm required flags before invoking",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Invoke the recorder with --defect-class AMBIENT_BINDING_MISMATCH and confirm exit 0 with a well-formed events.jsonl line",
+      "status": "blocked",
+      "files_touched": [],
+      "note": "Blocked by deploy-root-guard.sh, not by this task's own code. See approaches_tried below."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Invoke agent-system/extensions/core/scripts/system-defect-record.sh (source-store copy) directly with a real --defect-class AMBIENT_BINDING_MISMATCH call (past argument validation)",
+      "result": "failed",
+      "reason": "deploy-root-guard.sh (sourced at line 197, after validation) structurally requires the invoking script's own on-disk directory to end in /.claude or /.opencode. The source-store path (agent-system/extensions/core/scripts/) fails this check by design -- the script's own header states it is 'NOT RUNNABLE FROM THE SOURCE STORE'. Exits 1 with a named guard error."
+    },
+    {
+      "approach": "Invoke the deployed copy, .claude/scripts/system-defect-record.sh",
+      "result": "failed",
+      "reason": "The deployed copy predates this task's Phase 1 registration (grep -c AMBIENT_BINDING_MISMATCH .claude/scripts/system-defect-record.sh returns 0), so it would still reject the new class with the pre-existing 'invalid --defect-class' exit 1 -- reproducing the exact failure this task exists to close, not proof it is fixed."
+    },
+    {
+      "approach": "Considered constructing a throwaway directory literally named .claude/scripts/ (e.g. under the scratchpad) containing a copy of the updated source-store system-defect-record.sh, to satisfy deploy-root-guard.sh's structural path-shape check without touching the real .claude/",
+      "result": "failed",
+      "reason": "PROJECT_ROOT is derived purely structurally as two literal directory levels above the invoking script's own location (common_repo_root \"$SCRIPT_DIR\" 2 -- no git rev-parse fallback), so a throwaway .claude/scripts/ anywhere other than exactly two levels below the real repo root would misdirect the specs/events.jsonl write to a fake location, defeating the point of the recording. There is no location that satisfies the guard AND resolves PROJECT_ROOT to the real repo root other than the real, currently-stale .claude/scripts/."
+    },
+    {
+      "approach": "Considered deploying (bash scripts/deploy-headless.sh or the picker's Reload All) to refresh .claude/scripts/system-defect-record.sh, then invoking the deployed copy",
+      "result": "rejected without attempting",
+      "reason": "This plan's own Non-Goals explicitly state 'Do not regenerate or deploy .claude/.' Deploying would also import every concurrently-in-flight sibling task's agent-system/extensions/** edits into .claude/, which is exactly the destabilization risk the plan's own Risks table names for concurrent skill-base.sh edits. Not attempted."
+    },
+    {
+      "approach": "Considered hand-writing a corrected events.jsonl line, or hand-patching .claude/scripts/system-defect-record.sh with the new class",
+      "result": "rejected without attempting",
+      "reason": "Both are explicitly prohibited: the plan's own Files-to-modify note for this phase states specs/events.jsonl is 'written by the recorder script (never hand-edited)', and .claude/rules/source-store-deploy-boundary.md repo-wide prohibits hand-authoring .claude/** files regardless of task."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "Invoke the recorder with --defect-class AMBIENT_BINDING_MISMATCH, attributing the defect to scripts/skill-base.sh and/or scripts/orchestrate-stage5-postflight.sh",
+      "type": "deferred",
+      "reason": "Structurally blocked by deploy-root-guard.sh until a deploy occurs; deploying is prohibited by this plan's own Non-Goals. See approaches_tried above for the full investigation.",
+      "annotation": "*(deviation: deferred — see \"Phase 5 blocker\" note in the plan)*"
+    },
+    {
+      "task_id": "5.3",
+      "description": "Confirm the invocation exits 0 and a corresponding record appears in specs/events.jsonl",
+      "type": "deferred",
+      "reason": "Same blocker as 5.2 -- cannot be verified until the recorder is actually invocable.",
+      "annotation": "*(deviation: deferred to the follow-up recorder invocation once a deploy occurs)*"
+    },
+    {
+      "task_id": "5.4",
+      "description": "Confirm the recorder wrote a well-formed JSON line",
+      "type": "deferred",
+      "reason": "Same blocker as 5.2/5.3.",
+      "annotation": "*(deviation: deferred, same reason)*"
+    }
+  ],
+  "follow_up_command": "Once a deploy has occurred (e.g. via this task's own eventual deploy-pending resolution, or a later /orchestrate cycle's [Reload All]/deploy-headless.sh run) and .claude/scripts/system-defect-record.sh contains AMBIENT_BINDING_MISMATCH (verify with: grep -c AMBIENT_BINDING_MISMATCH .claude/scripts/system-defect-record.sh), run: bash .claude/scripts/system-defect-record.sh --defect-class AMBIENT_BINDING_MISMATCH --detecting-site 'skill-base.sh:skill_postflight_update exit-6 block' --message 'exit-6 deploy-pending annotation guard read an ambient TASK_DIR that the /orchestrate caller never set, so the guard silently evaluated false and the documented deploy_pending marker never landed' --attributed-path .claude/scripts/skill-base.sh --task 133 ; then verify with: tail -1 specs/events.jsonl | jq ."
+}
