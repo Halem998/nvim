@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers the 13 acceptance-mapped cases below, plus a non-vacuousness (mutation) section. The
-# script under test is invoked as a REAL SUBPROCESS throughout (never sourced): its behavior
-# depends on genuine flock() semantics, process substitution, and PATH-resolved external
-# commands (`lake`, `flock`, optionally `systemd-run`), none of which are meaningfully testable
-# by calling functions directly in-process the way test-claude-refresh-matcher.sh does for its
-# pure predicates.
+# Covers 21 acceptance-mapped cases below (the original 13 plus 8 added for the truthful-success
+# fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
+# idiom), plus a non-vacuousness (mutation) section. The script under test is invoked as a REAL
+# SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
+# process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
+# `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
+# the way test-claude-refresh-matcher.sh does for its pure predicates.
 #
 # Fixture model: every case builds its OWN fresh package root under the suite's mktemp -d
 # workdir via build_fixture() (heredoc-authored fake `lake`, per the core convention -- no
@@ -14,7 +15,11 @@
 # merely tidy: lake-build-guard.sh's result-sharing cache means a SECOND build against an
 # unchanged, already-built fixture legitimately replays the first build's result rather than
 # re-invoking `lake` -- reusing a fixture across cases would make later cases silently test the
-# cache instead of what they intend to.
+# cache instead of what they intend to. A second fixture variant, build_fixture_unknown_cmd(),
+# installs a fake `lake` that prints "error: unknown command '<arg>'" to stderr and exits 0 for
+# ANY first argument -- this deterministically reproduces the documented Defect A shape (an
+# unknown lake subcommand exiting 0) without depending on the REAL `lake` binary, whose actual
+# exit code for an unknown command differs across machines/versions (see the plan's Risks table).
 #
 # Design note this suite locks in (see the script's own header comment for the full statement):
 # sharing is checked on BOTH the immediate-acquire (uncontended) and waiter (contended) lock
@@ -86,6 +91,30 @@ if [ -n "${FAKE_LAKE_SLEEP:-}" ]; then
   sleep "$FAKE_LAKE_SLEEP"
 fi
 exit "${FAKE_LAKE_EXIT:-0}"
+FAKE_LAKE_EOF
+  chmod +x "$root/bin/lake"
+}
+
+# Variant fake `lake` for Defect A regression cases: given ANY first argument, prints
+# "error: unknown command '<arg>'" to stderr and exits 0 -- deterministically reproducing the
+# documented "unknown command, exit 0" defect shape. The REAL `lake` binary MUST NOT be used for
+# these cases (see the plan's Risks & Mitigations: on this machine `lake TARGET` actually exits 1,
+# not 0, which would make a real-binary-based regression test vacuous or version-flaky).
+build_fixture_unknown_cmd() {
+  local root="$1"
+  mkdir -p "$root/bin" "$root/src"
+  cat > "$root/lakefile.toml" <<'EOF'
+name = "fixture"
+EOF
+  echo "leanprover/lean4:stable" > "$root/lean-toolchain"
+  echo "def foo := 1" > "$root/src/Foo.lean"
+  cat > "$root/bin/lake" <<'FAKE_LAKE_EOF'
+#!/usr/bin/env bash
+if [ -n "${FAKE_LAKE_COUNTER:-}" ]; then
+  echo "invocation" >> "$FAKE_LAKE_COUNTER"
+fi
+echo "error: unknown command '${1:-}'" >&2
+exit 0
 FAKE_LAKE_EOF
   chmod +x "$root/bin/lake"
 }
@@ -370,6 +399,144 @@ if [ -z "$LEAN_NUM_THREADS_ASSIGNMENTS" ] && [ -z "$LEAN_NUM_THREADS_EXPORTS" ] 
   pass "case 13: LEAN_NUM_THREADS appears only in comment lines ($LEAN_NUM_THREADS_TOTAL_LINES occurrence(s)) documenting it as a falsified non-lever, never assigned or exported"
 else
   fail "case 13: LEAN_NUM_THREADS regression -- total_lines=$LEAN_NUM_THREADS_TOTAL_LINES comment_lines=$LEAN_NUM_THREADS_COMMENT_LINES assignments=[$LEAN_NUM_THREADS_ASSIGNMENTS] exports=[$LEAN_NUM_THREADS_EXPORTS]"
+fi
+
+# =====================================================================================
+# Case 14: Defect A -- unknown subcommand via the `--` path exits 77 before any build runs
+# =====================================================================================
+CASE14_ROOT="$WORKDIR/case14"
+build_fixture_unknown_cmd "$CASE14_ROOT"
+COUNTER14="$WORKDIR/case14_counter"
+: > "$COUNTER14"
+
+RC14=0
+FAKE_LAKE_COUNTER="$COUNTER14" run_guard "$CASE14_ROOT" build -- garbagecmd TARGET > /dev/null 2>&1 || RC14=$?
+INVOCATIONS14="$(wc -l < "$COUNTER14" | tr -d ' ')"
+
+if [ "$RC14" = "77" ] && [ "$INVOCATIONS14" = "0" ]; then
+  pass "case 14: unrecognized subcommand via the -- path exits 77 with zero fake-lake invocations (Defect A)"
+else
+  fail "case 14: expected exit 77 and 0 invocations; got rc=$RC14 invocations=$INVOCATIONS14"
+fi
+
+# =====================================================================================
+# Case 15: Defect A -- unknown subcommand via the bare catch-all path exits 77 (the case a
+# `--`-only fix would miss, since this suite's own invocations use this shape throughout)
+# =====================================================================================
+CASE15_ROOT="$WORKDIR/case15"
+build_fixture_unknown_cmd "$CASE15_ROOT"
+COUNTER15="$WORKDIR/case15_counter"
+: > "$COUNTER15"
+
+RC15=0
+FAKE_LAKE_COUNTER="$COUNTER15" run_guard "$CASE15_ROOT" build garbagecmd TARGET > /dev/null 2>&1 || RC15=$?
+INVOCATIONS15="$(wc -l < "$COUNTER15" | tr -d ' ')"
+
+if [ "$RC15" = "77" ] && [ "$INVOCATIONS15" = "0" ]; then
+  pass "case 15: unrecognized subcommand via the bare catch-all path exits 77 with zero fake-lake invocations (the case a --)-only fix would miss)"
+else
+  fail "case 15: expected exit 77 and 0 invocations; got rc=$RC15 invocations=$INVOCATIONS15"
+fi
+
+# =====================================================================================
+# Case 16: Decision 2 -- `build` with no lake arguments exits 77 (zero-length lake_args is the
+# same false-pass class as an unknown subcommand: no build runs, no result is recorded)
+# =====================================================================================
+CASE16_ROOT="$WORKDIR/case16"
+build_fixture_unknown_cmd "$CASE16_ROOT"
+COUNTER16="$WORKDIR/case16_counter"
+: > "$COUNTER16"
+
+RC16=0
+FAKE_LAKE_COUNTER="$COUNTER16" run_guard "$CASE16_ROOT" build > /dev/null 2>&1 || RC16=$?
+INVOCATIONS16="$(wc -l < "$COUNTER16" | tr -d ' ')"
+
+if [ "$RC16" = "77" ] && [ "$INVOCATIONS16" = "0" ]; then
+  pass "case 16: build with no lake arguments exits 77 with zero fake-lake invocations (Decision 2)"
+else
+  fail "case 16: expected exit 77 and 0 invocations; got rc=$RC16 invocations=$INVOCATIONS16"
+fi
+
+# =====================================================================================
+# Case 17: exit-code passthrough survives subcommand validation (case 2's template, run through
+# the `--` path with a RECOGNIZED subcommand)
+# =====================================================================================
+CASE17_ROOT="$WORKDIR/case17"
+build_fixture "$CASE17_ROOT"
+
+RC17=0
+FAKE_LAKE_EXIT=7 run_guard "$CASE17_ROOT" build -- build TARGET > /dev/null 2>&1 || RC17=$?
+if [ "$RC17" = "7" ]; then
+  pass "case 17: exit-code passthrough survives subcommand validation (-- build TARGET, FAKE_LAKE_EXIT=7 -> guard exit 7)"
+else
+  fail "case 17: expected guard exit 7, got $RC17"
+fi
+
+# =====================================================================================
+# Case 18: Defect B -- a scoped build followed by an unchanged-tree full build produces 2 real
+# invocations (sharing is keyed on scope, not staleness alone). `Foo.Bar` follows `build`, so
+# lake_args[0] is the valid `build` subcommand and Phase 1's validation does not interfere.
+# =====================================================================================
+CASE18_ROOT="$WORKDIR/case18"
+build_fixture "$CASE18_ROOT"
+COUNTER18="$WORKDIR/case18_counter"
+: > "$COUNTER18"
+
+FAKE_LAKE_COUNTER="$COUNTER18" run_guard "$CASE18_ROOT" build build Foo.Bar > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$COUNTER18" run_guard "$CASE18_ROOT" build build > /dev/null 2>&1
+INVOCATIONS18="$(wc -l < "$COUNTER18" | tr -d ' ')"
+
+if [ "$INVOCATIONS18" = "2" ]; then
+  pass "case 18: a scoped build followed by an unchanged-tree full build produces 2 real fake-lake invocations (Defect B: sharing keyed on scope, not staleness alone)"
+else
+  fail "case 18: expected 2 invocations, got $INVOCATIONS18"
+fi
+
+# =====================================================================================
+# Case 19: the sharing optimization survives scope-keying -- a full build followed by an
+# IDENTICAL full build over an unchanged tree still shares (1 invocation, not disabled)
+# =====================================================================================
+CASE19_ROOT="$WORKDIR/case19"
+build_fixture "$CASE19_ROOT"
+COUNTER19="$WORKDIR/case19_counter"
+: > "$COUNTER19"
+
+FAKE_LAKE_COUNTER="$COUNTER19" run_guard "$CASE19_ROOT" build build > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$COUNTER19" run_guard "$CASE19_ROOT" build build > /dev/null 2>&1
+INVOCATIONS19="$(wc -l < "$COUNTER19" | tr -d ' ')"
+
+if [ "$INVOCATIONS19" = "1" ]; then
+  pass "case 19: an identical full build over an unchanged tree still shares (1 invocation) -- the sharing optimization survives scope-keying, it is not disabled"
+else
+  fail "case 19: expected 1 invocation, got $INVOCATIONS19"
+fi
+
+# =====================================================================================
+# Case 20: a replayed run announces itself with the lake-build-guard: REPLAY: marker on stderr
+# without --no-share; a fresh run does not emit it
+# =====================================================================================
+CASE20_ROOT="$WORKDIR/case20"
+build_fixture "$CASE20_ROOT"
+
+FRESH_ERR20="$(run_guard "$CASE20_ROOT" build build 2>&1 1>/dev/null)"
+REPLAY_ERR20="$(run_guard "$CASE20_ROOT" build build 2>&1 1>/dev/null)"
+
+if ! printf '%s' "$FRESH_ERR20" | grep -q 'lake-build-guard: REPLAY:' \
+   && printf '%s' "$REPLAY_ERR20" | grep -q 'lake-build-guard: REPLAY:'; then
+  pass "case 20: a replayed run emits the lake-build-guard: REPLAY: marker on stderr without --no-share, and a fresh run does not"
+else
+  fail "case 20: expected marker absent on the fresh run and present on the replay; fresh=[$FRESH_ERR20] replay=[$REPLAY_ERR20]"
+fi
+
+# =====================================================================================
+# Case 21: Defect C -- --help output documents the `kill -0` wait idiom and the `pgrep -f`
+# self-match pitfall (grep-based inspection case, following cases 12/13's template)
+# =====================================================================================
+HELP_OUT21="$("$GUARD" --help 2>&1)"
+if printf '%s' "$HELP_OUT21" | grep -q 'kill -0' && printf '%s' "$HELP_OUT21" | grep -q 'pgrep'; then
+  pass "case 21: --help output documents the kill -0 wait idiom and the pgrep -f self-match pitfall"
+else
+  fail "case 21: expected --help output to contain both 'kill -0' and 'pgrep'; got=[$HELP_OUT21]"
 fi
 
 # =====================================================================================

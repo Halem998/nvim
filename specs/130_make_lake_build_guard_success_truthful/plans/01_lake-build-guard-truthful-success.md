@@ -376,33 +376,33 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 5: Extend the harness with the acceptance cases [IN PROGRESS]
+### Phase 5: Extend the harness with the acceptance cases [COMPLETED]
 
 - **Goal:** Every acceptance bullet is covered by a new case in the existing suite, using the
   suite's own established patterns.
 - **Tasks:**
-  - [ ] Add a `build_fixture_unknown_cmd()` variant (or an opt-in flag on `build_fixture()`)
+  - [x] Add a `build_fixture_unknown_cmd()` variant (or an opt-in flag on `build_fixture()`) *(completed)*
         producing a fake `lake` that, given a first argument it does not recognize, prints
         `error: unknown command '<arg>'` to stderr and **exits 0** — deterministically reproducing
         the documented defect shape. The real `lake` binary MUST NOT be used (see Risks).
-  - [ ] Case: `build -- TARGET` (unknown subcommand, via the `--` path) exits 77, and the fake
+  - [x] Case: `build -- TARGET` (unknown subcommand, via the `--` path) exits 77, and the fake *(completed)*
         `lake` counter records zero invocations.
-  - [ ] Case: `build TARGET` (unknown subcommand, via the bare catch-all path) exits 77 — this is
+  - [x] Case: `build TARGET` (unknown subcommand, via the bare catch-all path) exits 77 — this is *(completed)*
         the case a `--)`-only fix would miss.
-  - [ ] Case: `build` with no lake arguments exits 77 (Decision 2).
-  - [ ] Case: `build -- build TARGET` with `FAKE_LAKE_EXIT=7` still exits 7 — exit-code
+  - [x] Case: `build` with no lake arguments exits 77 (Decision 2). *(completed)*
+  - [x] Case: `build -- build TARGET` with `FAKE_LAKE_EXIT=7` still exits 7 — exit-code *(completed)*
         passthrough survives validation, following case 2's template.
-  - [ ] Case: a scoped build (`build Foo.Bar`) followed by an unchanged-tree full build (`build`)
+  - [x] Case: a scoped build (`build Foo.Bar`) followed by an unchanged-tree full build (`build`) *(completed)*
         produces **2** fake-`lake` invocations, asserted via `FAKE_LAKE_COUNTER`, not by output
         inspection. Note that `Foo.Bar` follows `build`, so `lake_args[0]` is the valid `build`
         subcommand and Phase 1's validation does not interfere.
-  - [ ] Case: a full build followed by an identical full build over an unchanged tree produces
+  - [x] Case: a full build followed by an identical full build over an unchanged tree produces *(completed)*
         **1** invocation — the sharing optimization is preserved, not disabled.
-  - [ ] Case: a replayed run emits the `lake-build-guard: REPLAY:` marker on stderr without
+  - [x] Case: a replayed run emits the `lake-build-guard: REPLAY:` marker on stderr without *(completed)*
         `--no-share`, and a fresh run does not.
-  - [ ] Case: `--help` output contains the `kill -0` wait idiom and the `pgrep` self-match warning
+  - [x] Case: `--help` output contains the `kill -0` wait idiom and the `pgrep` self-match warning *(completed)*
         (grep-based inspection case, following cases 12/13's template).
-  - [ ] Update the suite's header comment: it currently says "the 13 acceptance-mapped cases below".
+  - [x] Update the suite's header comment: it currently says "the 13 acceptance-mapped cases below". *(completed)*
         Restate the count and add one line per new case to the fixture-model note where the new
         fake-`lake` variant needs explaining.
 - **Timing:** 1 hour 15 minutes
@@ -423,7 +423,7 @@ extend a harness whose new cases assert behavior introduced by the earlier phase
 
 ---
 
-### Phase 6: Mutation coverage, full-suite green, and the taxonomy observation [NOT STARTED]
+### Phase 6: Mutation coverage, full-suite green, and the taxonomy observation [IN PROGRESS]
 
 - **Goal:** Each new case is proven non-vacuous by a targeted mutation, the whole suite is green,
   and the recorder-class observation is recorded without expanding scope.
