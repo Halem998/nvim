@@ -146,6 +146,18 @@ cover these shapes, and no recorder was wired for any of the three — naming th
 instrumenting a detection site remain separate, sequential pieces of work, as with
 `ARTIFACTS_MISSING_ON_SUCCESS` above.
 
+`HOOK_REGEX_BOUNDARY_DEFECT` has since been exercised by a concrete instance from a non-hook
+site: an orchestration gate's `grep` matcher (not a validation hook) whose unstated boundary
+assumption was a `\b` word-boundary anchor composed downstream of an earlier `\b`-anchored
+subexpression, separated by a `[^|]*` run — mis-evaluated by the deployed POSIX/DFA `-E` grep
+engine, producing a false negative that wrongly rejected conforming input. This is the same
+*kind* of violation the existing row names (an unstated boundary assumption silently breaking
+once real inputs cross it), reached from a different site class than the row's own wording
+covers. The row itself is not reworded or reinterpreted here, and no count in this file is
+touched — whether the row's site-class wording ("a validation hook's regex or path-depth
+pattern") should be widened to cover this site class is left to separate, dedicated defect-class
+vocabulary work.
+
 ### Signal B — attribution
 
 Detection alone is not enough: the violation must resolve to a **named** file under

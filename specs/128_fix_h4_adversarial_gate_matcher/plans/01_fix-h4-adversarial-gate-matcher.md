@@ -494,7 +494,7 @@ matcher was deliberately left unfixed, rather than reading it as live, correct r
 
 ---
 
-### Phase 6: Record the concrete defect-shape instance in the discrimination doc [NOT STARTED]
+### Phase 6: Record the concrete defect-shape instance in the discrimination doc [COMPLETED]
 
 **Goal**: Record, additively, that the `HOOK_REGEX_BOUNDARY_DEFECT` instance has now been
 exercised by a non-hook site whose boundary assumption was a composed word-boundary anchor rather
@@ -502,20 +502,20 @@ than a fixed digit-count quantifier — without widening the vocabulary, which a
 
 **Tasks**:
 
-- [ ] Re-locate the `### Extending the Signal A vocabulary is an explicit decision, not a silent
+- [x] Re-locate the `### Extending the Signal A vocabulary is an explicit decision, not a silent
       act` section in
       `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`.
-- [ ] Append a short paragraph recording the concrete observed shape: an orchestration gate's
+- [x] Append a short paragraph recording the concrete observed shape: an orchestration gate's
       `grep` matcher, not a validation hook, whose unstated boundary assumption was a `\b` anchor
       composed downstream of an earlier `\b`-anchored subexpression — mis-evaluated by the deployed
       POSIX/DFA `-E` engine, producing a false negative that wrongly rejected conforming input.
       Note that this is the same *kind* of violation the existing row names, reached from a
       different site class.
-- [ ] Explicitly state in that paragraph that the row itself was NOT reworded or reinterpreted, and
+- [x] Explicitly state in that paragraph that the row itself was NOT reworded or reinterpreted, and
       that whether the row's site-class wording ("a validation hook's regex or path-depth pattern")
       should be widened is left to the separate defect-class vocabulary work — named descriptively,
       not by number.
-- [ ] Do NOT add, alter, or restate any count of instances anywhere in this file. Do not touch the
+- [x] Do NOT add, alter, or restate any count of instances anywhere in this file. Do not touch the
       Signal A table row, the registry, or any other section.
 
 **Timing**: 0.25 hours
