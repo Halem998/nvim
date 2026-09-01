@@ -743,14 +743,32 @@ Phases within the same wave can execute in parallel.
 - [x] Repo-wide grep confirms every `skill_postflight_update` call site outside
       `orchestrate-stage5-postflight.sh` still passes 4 or 5 arguments. *(completed)*
 - [x] `/orchestrate N` with no forcing flags produces a byte-identical dispatch sequence to the
-      pre-change behavior for a task at each of `not_started`, `researched`, and `planned`. *(completed)*
+      pre-change behavior for a task at each of `not_started`, `researched`, and `planned`.
+      *(completed: verified by construction/scoped-diff review -- Stage 2b's empty-queue
+      invariant and Stage 3c's preserved `else` branch -- and by test-force-phases.sh's clamp
+      opt-out / arity-preservation / unforced-no-advance cases at the postflight-script layer;
+      not exercised via a literal live `/orchestrate` agent-dispatch run, which this
+      implementation session does not invoke)*
 - [x] `/orchestrate N --research` on a `[PLANNED]` task: one research dispatch, a new artifact round
-      opened, status remains `planned`, the report is linked, the loop stops. *(completed)*
+      opened, status remains `planned`, the report is linked, the loop stops.
+      *(completed: this exact scenario is what test-force-phases.sh's clamp case plus its forced
+      `planned`-dispatch artifact-advance case jointly simulate at the
+      `skill_postflight_update`/`orchestrate-stage5-postflight.sh` layer -- status stays at its
+      pre-forced value and the round advances; the surrounding dispatch/stop control flow is
+      verified by code review of Stage 2b/3c/Stage 7, not by a literal live `/orchestrate` run)*
 - [x] `/orchestrate N --research --plan` on a `[PLANNED]` task: research then plan, one round, stop
-      before implement. *(completed)*
-- [x] `/orchestrate N --research` on a `[COMPLETED]` task: loud refusal, no state mutation. *(completed)*
+      before implement.
+      *(completed: verified by code review of Stage 2b's ordered queue, Stage 3c's pop-one-per-
+      cycle dispatch, and Stage 7's forced-sequence-exhausted terminal condition; not exercised
+      via a literal live `/orchestrate` run)*
+- [x] `/orchestrate N --research` on a `[COMPLETED]` task: loud refusal, no state mutation.
+      *(completed: verified by code review of Stage 3c's terminal-check-first ordering and its
+      refusal message; not exercised via a literal live `/orchestrate` run)*
 - [x] `/orchestrate N,M --research` (multi-task): loud accepted-and-ignored notice, no MT behavior
-      change. *(completed)*
+      change.
+      *(completed: verified by code review of the new Stage MT-1 bullet, mirroring the existing
+      `team_mode` notice precedent; not exercised via a literal live multi-task `/orchestrate`
+      run)*
 - [x] `scripts/orchestrator-postflight.sh` is unmodified. *(completed)*
 
 ## Artifacts & Outputs
