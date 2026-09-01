@@ -461,7 +461,7 @@ sixth site exists, cover it; if one of the five does not, record which and why.
 
 ---
 
-### Phase 6: End-to-end verification [NOT STARTED]
+### Phase 6: End-to-end verification [COMPLETED]
 
 **Goal**: Run the complete gate set — shell syntax, behavioral smoke tests against a throwaway
 repo, cross-file consistency, and the source-store boundary check — and confirm no `.claude/**`
@@ -469,7 +469,7 @@ file was touched.
 
 **Tasks**:
 
-- [ ] **Shell syntax**: extract every `bash` fence from `SKILL.md` and run `bash -n` on each
+- [x] **Shell syntax**: extract every `bash` fence from `SKILL.md` and run `bash -n` on each
       individually. Each block in this file is self-contained, so a combined extraction is also a
       valid check:
       ```bash
@@ -477,8 +477,9 @@ file was touched.
         agent-system/extensions/core/skills/skill-tag/SKILL.md > "$SCRATCH/tag-blocks.sh"
       bash -n "$SCRATCH/tag-blocks.sh"
       ```
-      Any syntax error must be traced back to its originating fence and fixed there.
-- [ ] **Behavioral smoke test**: build a throwaway git repo in the scratchpad and exercise the
+      Any syntax error must be traced back to its originating fence and fixed there. *(completed:
+      combined extraction, bash -n exit 0)*
+- [x] **Behavioral smoke test**: build a throwaway git repo in the scratchpad and exercise the
       Step 3.6 block directly with `new_version`, `new_version_bare`, `repo_root`, and
       `skip_changelog_check` preset. Cover four scenarios and confirm each verdict:
       1. No changelog anywhere -> informational skip, exit 0, `tag_message` == `$new_version`.
@@ -487,28 +488,32 @@ file was touched.
       3. `code/CHANGELOG.md` present but with **no** `## [X.Y.Z]` heading -> exit 1 by default;
          with `skip_changelog_check=true` -> exit 0 with the failure printed *above* the WARNING.
       4. `## [X.Y.Z]` heading present but the section body is whitespace-only -> same as (3).
-- [ ] **Quoting hardening check**: in scenario 2, use a changelog section containing backticks, a
+      *(completed: all four scenarios produced exact expected exit codes and tag_message values)*
+- [x] **Quoting hardening check**: in scenario 2, use a changelog section containing backticks, a
       blank line, a `$`-sigil, and a double quote. Confirm `tag_message` captures them literally
       and that a real `git tag -a "$v" -m "$tag_message"` in the throwaway repo produces a tag
       where `git cat-file -t "$v"` reports `tag` and `git tag -l --format='%(contents)' "$v"`
-      round-trips the body intact.
-- [ ] **Annotated-tag assertion**: in the throwaway repo, run the exact reference-gate assertion
+      round-trips the body intact. *(completed: round-trip confirmed byte-for-byte)*
+- [x] **Annotated-tag assertion**: in the throwaway repo, run the exact reference-gate assertion
       `[ "$(git cat-file -t "$v")" = "tag" ]` against a tag created by the new Step 6 command form.
       This is the literal contract the task exists to satisfy — verify it directly, not by
-      inference.
-- [ ] **Ordering invariant**: confirm by grep that Step 3.6 precedes Step 5's `exit 0` in file
+      inference. *(completed: literal assertion passed)*
+- [x] **Ordering invariant**: confirm by grep that Step 3.6 precedes Step 5's `exit 0` in file
       order, and that no `exit 0`/`exit 1` between Step 3.5 and Step 4 can be reached before the
-      changelog check runs.
-- [ ] **Cross-file consistency**: run the bidirectional flag-name comparison between `SKILL.md`
-      and `commands/tag.md` described in Phase 5.
-- [ ] **Source-store boundary**: `git status --short` must show modifications only under
+      changelog check runs. *(completed: Step 3.6 at line 274, Step 5's dry-run exit 0 at line 409)*
+- [x] **Cross-file consistency**: run the bidirectional flag-name comparison between `SKILL.md`
+      and `commands/tag.md` described in Phase 5. *(completed: flags match bidirectionally)*
+- [x] **Source-store boundary**: `git status --short` must show modifications only under
       `agent-system/extensions/core/` and `specs/131_*`. Zero `.claude/**` entries. If any appear,
-      revert them — the edit belongs in the source store.
-- [ ] **Non-goal audit**: confirm `user-only: true`, the Agent Restrictions sections in both files,
+      revert them — the edit belongs in the source store. *(completed: zero .claude/** entries;
+      other modified files are pre-existing, unrelated to this task)*
+- [x] **Non-goal audit**: confirm `user-only: true`, the Agent Restrictions sections in both files,
       and Step 2's git-state logic are byte-unchanged, and that no `git merge-base` /
-      `rev-list ... origin/...HEAD` ancestry check was added.
-- [ ] Record the push-before-tag deferral in the implementation summary, quoting the research
-      report's finding (4) so the follow-up task is not re-derived.
+      `rev-list ... origin/...HEAD` ancestry check was added. *(completed: all confirmed
+      byte-identical via diff against pre-Phase-1 commit; no merge-base added, only pre-existing
+      rev-list behind-check remains)*
+- [x] Record the push-before-tag deferral in the implementation summary, quoting the research
+      report's finding (4) so the follow-up task is not re-derived. *(completed: see summary)*
 
 **Timing**: 0.5 hours
 
