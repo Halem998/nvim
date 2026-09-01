@@ -1,10 +1,41 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/114_wire_model_flag_through_orchestrate/summaries/01_wire-model-flag-orchestrate-summary.md",
+      "summary": "Wired MODEL_FLAG threading through commands/orchestrate.md and skill-orchestrate/SKILL.md's Stage 1/MT-1/3.5 and all 12 lifecycle dispatch sites."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Threaded MODEL_FLAG from commands/orchestrate.md through skill-orchestrate/SKILL.md's Stage 1/Stage MT-1 context parse, Stage 3.5 Dispatch Prep's model-override resolution, and out to all 12 lifecycle dispatch sites (8 Stage 4 tables, 3 Stage MT-4 loops, 1 Stage 3.6 team fan-out loop) as the Agent tool's model parameter, with a verified no-flag regression trace proving byte-identical behavior when unset."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When threading a new flag through /orchestrate's two-file architecture (commands/orchestrate.md + skill-orchestrate/SKILL.md), commands/orchestrate.md needs 4 insertion points per dispatch site (both a flat args: Skill string AND a separate JSON delegation-context object, at each of its 2 dispatch sites), not 2 as in the simpler single-args-string pattern used by commands/research.md. Missing the JSON half leaves the flag unreachable from the context payload.",
+      "category": "PATTERN",
+      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/summaries/01_wire-model-flag-orchestrate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "flag-threading", "dispatch-site", "SKILL.md", "delegation-context"]
+    },
+    {
+      "content": "parse-command-args.sh's MODEL_FLAG (and similar flags) default to empty string \"\", not JSON null, even though some command prose (e.g. commands/research.md) frames the unset case as `model_flag = null`. Every emptiness check written when threading such a flag must test for the empty string, never the literal token null, or the no-flag regression breaks.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/summaries/01_wire-model-flag-orchestrate-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["MODEL_FLAG", "default-value", "null-vs-empty-string", "regression-check"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_impl114",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
