@@ -973,13 +973,13 @@
     {
       "project_number": 114,
       "project_name": "wire_model_flag_through_orchestrate",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Wire model-flag threading through /orchestrate and the base orchestrate engine",
       "description": "=== REVISED 2026-09-01 (backlog streamline: retargeted at the consolidated engine) ===\nSTALE ANCHORS: the verified-defect line numbers and dispatch-site inventory below predate the landed consolidation work (dispatch-prep stage, hard-contracts injection, hard-mode state-machine migration, team fan-out): skill-orchestrate/SKILL.md has since grown from 188,284 to ~268,000 bytes and gained a dispatch-prep stage invoked once per dispatch. Re-measure; do not trust the line numbers.\nNEW HOME FOR THE FIX: implement model_flag as part of the dispatch-prep stage -- it is a per-dispatch context concern exactly like --clean/--fast/--lit, which that stage already owns -- rather than wiring each dispatch site independently. The design decisions to settle (uniform vs lifecycle-only; multi-task threading) are unchanged and must still be recorded.\nDROPPED: every reference below to skill-orchestrate-hard and the abandoned mirror-into-hard task -- that file is slated for deletion and hard mode is now a hard_mode branch inside the single engine, so the hard-mode question reduces to: the dispatch-prep change must apply on the hard_mode branch too.\nSEQUENCING (load-bearing): this task must land BEFORE the lifecycle-command deletion task, which now depends on it -- the reference pattern named below lives in commands/research.md (its :450-556 region), one of the files that deletion removes. Land this while the reference still exists.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nWire model-flag support into /orchestrate: thread model_flag from the command through the base skill-orchestrate engine so a model override actually reaches dispatched agents. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (the .claude/ tree is a disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Do not hand-author anything under .claude/**.\n\nMOTIVATING CASE vs ACTUAL SCOPE. The user reported \"--fable does not work with /orchestrate\". --fable is NOT broken in isolation: ALL FOUR model flags (--haiku, --sonnet, --opus, --fable) are equally unwired on /orchestrate, through one single gap. The work is therefore \"wire model-flag support into /orchestrate\", with --fable as the motivating case. This widening was surfaced to the user and confirmed at task-creation time; it is not a silent scope expansion.\n\nORIGIN: observed live on 2026-08-26. `/orchestrate 394,384 --lit --fable` was invoked. Every sub-dispatch silently ran on its agent's frontmatter default model. No warning, no error -- the flag was accepted and ignored.\n\nVERIFIED DEFECT (checked directly against the source store at agent-system/, not a deploy artifact):\n  1. PARSING IS ALREADY CORRECT AND MUST NOT BE TOUCHED. scripts/parse-command-args.sh already handles all four model flags (see its lines 82 and 109-118) and exports MODEL_FLAG at line 179. The flag arrives intact. The gap is entirely downstream.\n  2. commands/orchestrate.md has NO model consumer. Its `## Options` table (around line 33) lists --lit, --dry-run, --allow-self-modifying, --allow-scope-collision, --continue-budget -- no model flag. Neither of its two Skill-delegation arg strings includes a model key:\n       :430  multi-task skill-orchestrate invocation (Step 4) -- threads lit_flag, allow_self_modifying, allow_scope_collision, continue_budget\n       :626  single-task STAGE 2 invocation -- threads lit_flag, continue_budget\n  3. skills/skill-orchestrate/SKILL.md: `grep -c model_flag` returns ZERO over 188,284 bytes. Neither single-task Stage 1's context parse nor Stage MT-1's context parse reads a model flag, and none of its 16 `subagent_type` dispatch sites passes a `model` parameter.\n  4. scripts/command-route-agent.sh and scripts/lib/manifest-routing-lib.sh: `grep -n \"MODEL_FLAG\\|model_flag\"` returns ZERO in both. Routing resolves agent NAMES by task type and effort flag only; model selection is not part of that ladder and should not be added to it. Do not attempt to fix this in the routing library.\n\nREFERENCE PATTERN -- MIRROR THIS, DO NOT INVENT A NEW ONE. /research already implements the complete pattern end to end, in commands/research.md:\n    :450-456   maps each flag to model_flag (--haiku/--sonnet/--opus/--fable), with an explicit null default documented as \"use agent's frontmatter default\"\n    :540       threads model_flag={model_flag} into the team Skill arg string\n    :544       threads model_flag={model_flag} into the single-agent Skill arg string\n    :547-552   instructs that when model_flag is set, the `model` parameter is passed to the Agent tool to override the agent's default; when null, the parameter is omitted entirely\nThe consuming half is in skills/skill-researcher/SKILL.md:187 (context-parse key) and :195 (the pass-as-model-parameter instruction). /plan and /implement follow the same shape. The Agent tool natively accepts a `model` parameter. Adopt this shape verbatim so /orchestrate is consistent with the other three lifecycle commands.\n\nSCOPE OF THIS TASK: commands/orchestrate.md and skills/skill-orchestrate/SKILL.md only. The hard engine and the documentation reconciliation are a separate follow-on task, which depends on the design decision recorded here.\n\nWORK ITEMS:\n  a. commands/orchestrate.md -- add the four-flag mapping and the null default (mirroring research.md:450-456); add the model flags to the `## Options` table; add model_flag={model_flag} to BOTH delegation arg strings at :430 and :626.\n  b. skills/skill-orchestrate/SKILL.md -- add the model_flag key to single-task Stage 1's context parse AND Stage MT-1's context parse; pass `model` at the dispatch sites per the decision below.\n\nDESIGN DECISIONS THIS TASK MUST SETTLE AND RECORD (do not leave implicit; the follow-on task consumes them):\n  (a) UNIFORM vs LIFECYCLE-ONLY. Does the model override apply to every dispatch an orchestration makes, or only to the lifecycle dispatches (research/plan/implement), leaving the auxiliary ones at their frontmatter defaults? The auxiliary sites in skill-orchestrate/SKILL.md are: the blocker-escalation fork (:1075), the reviser dispatches (:1089, :1136), and the drift-inspection fork (:1114). Argument for lifecycle-only: the auxiliary dispatches are diagnostic/meta work whose model choice is a deliberate frontmatter decision (reviser-agent is Opus by policy), and a user passing --haiku to speed up implementation probably does not intend to downgrade the reviser. Argument for uniform: predictability -- a flag that means \"run this orchestration on model X\" is easier to reason about than one with unstated exemptions. Decide, state the rationale, and make the behavior explicit in orchestrate.md's Options table either way.\n  (b) MULTI-TASK THREADING. How model_flag reaches Stage MT-4's three per-task dispatch loops: research (:2096), planner (:2103), implement (:2115). Each builds an explicit context object; model is a separate Agent-tool parameter, not a context field, so confirm whether it threads alongside subagent_type per-task or is resolved once at MT-1.\n  (c) HARD-MODE MT COVERAGE. Confirm (and record) that hard mode's multi-task half is covered for free by base delegation -- skill-orchestrate-hard/SKILL.md:1580 and :1687 both state that its multi-task stages are the base skill-orchestrate MT-1 through MT-5. If this holds, the follow-on task only needs to edit hard mode's 7 SINGLE-TASK dispatch sites. If inspection shows it does NOT hold, say so explicitly so the follow-on task is rescoped rather than silently under-delivering.\n\nDO NOT:\n  - Modify parse-command-args.sh. It is already correct.\n  - Add model selection to command-route-agent.sh or manifest-routing-lib.sh. That ladder resolves agent NAMES only; model is an orthogonal dimension passed at dispatch time.\n  - Introduce sticky model state in state.json. Model flags are per-invocation only, exactly like --hard and --lit.\n  - Edit skill-orchestrate-hard/SKILL.md or the claudemd merge source here -- those belong to the follow-on task.\n\nVERIFICATION BAR. (1) `/orchestrate N --fable` on a single task visibly dispatches its research/plan/implement agents on Fable rather than their frontmatter defaults. (2) The same holds for the other three flags. (3) `/orchestrate N,M --fable` (multi-task) threads the override through MT-4's per-task loops. (4) Omitting all model flags produces byte-identical dispatch behavior to today -- no `model` parameter emitted, frontmatter defaults intact. This no-flag regression check is the most important one: it is what proves the change is additive.\n\nRELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same defect CLASS (a flag parsed, accepted, and then silently dropped downstream) in the team-skills subsystem. Disjoint file scope; the two do not block each other. Worth reading its description for the shape of the fix, not for shared code.\n",
       "created": "2026-08-26T22:58:49Z",
-      "last_updated": "2026-09-01T13:14:53Z",
+      "last_updated": "2026-09-01T13:33:52Z",
       "next_artifact_number": 1,
       "dependencies": [],
       "artifacts": [
@@ -987,6 +987,11 @@
           "path": "specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md",
           "type": "report",
           "summary": "Confirms Stage 3.5 Dispatch Prep as the wiring point for model_flag, resolves all three required design decisions (lifecycle-only scoping, once-at-Stage-1/MT-1 threading, confirmed hard-mode MT coverage), and gives precise re-measured edit anchors in commands/orchestrate.md (4 insertion points, not 2) and skills/skill-orchestrate/SKILL.md."
+        },
+        {
+          "path": "specs/114_wire_model_flag_through_orchestrate/plans/01_wire-model-flag-orchestrate.md",
+          "type": "plan",
+          "summary": "5-phase plan threading model_flag from commands/orchestrate.md (8 sites, 4 dispatch insertion points) into skill-orchestrate Stage 1/MT-1, Stage 3.5 Dispatch Prep, and every lifecycle dispatch site as the Agent tool's model parameter."
         }
       ],
       "file_scope": [
@@ -1161,12 +1166,12 @@
     {
       "project_number": 120,
       "project_name": "retarget_hard_mode_tests_to_engine_branch",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.\n\nCONTEXT. Once the hard-mode contract-injection and state-machine logic land inside skill-orchestrate/SKILL.md as hard_mode-gated branches (rather than in the separate skill-orchestrate-hard/SKILL.md file), these 7 files' fixtures/assertions must be retargeted so their coverage is preserved rather than silently dropped when skill-orchestrate-hard is deleted: test-loop-guard-budget-override.sh, test-routing-resolution.sh, test-handoff-reader-parity.sh, test-loop-guard-staleness.sh, test-handoff-dispatch-identity.sh, test-resume-scan-nonconformance.sh, lint-contract-compliance.sh.\n\nWORK. For each file, update fixture paths and assertions to exercise skill-orchestrate/SKILL.md's hard_mode=true branch instead of skill-orchestrate-hard/SKILL.md. Verify each test still exercises the SAME underlying mechanism it did before (loop-guard budget, routing resolution, handoff reader parity, resume-scan nonconformance detection, contract compliance) -- this is a retarget, not a rewrite of intent. Run the full suite after retargeting and confirm no regression in what each test actually catches (a mutation check: temporarily reintroduce the bug each test guards against and confirm the retargeted test still fails).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/tests/**, agent-system/extensions/core/scripts/lint/** (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/02_baseline-and-audit-evidence.md (Finding 2, enumerated file set); reports/03_target-state-design.md (A4-iv).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-01T13:14:07Z",
+      "last_updated": "2026-09-01T13:33:07Z",
       "dependencies": [
         118,
         119
@@ -1185,6 +1190,11 @@
           "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md",
           "type": "report",
           "summary": "Per-file findings for all 7 hard-mode test/lint files: where each mechanism now lives inside skill-orchestrate/SKILL.md's hard_mode branches, what survives a mechanical retarget vs. what needs a logic rewrite, and a semantic-drift fix required in the loop-guard-budget-override test's Case 4."
+        },
+        {
+          "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md",
+          "type": "plan",
+          "summary": "8-phase plan retargeting all 7 hard-mode test/lint files from skill-orchestrate-hard/SKILL.md to skill-orchestrate/SKILL.md's hard_mode branches, including the Case 4 correctness fix, two comparison-premise rewrites, four planning-discovered defects, and a per-file mutation-check gate."
         }
       ],
       "session_id": "sess_1788267679_adbb09_120"
@@ -1259,12 +1269,12 @@
     {
       "project_number": 123,
       "project_name": "delete_team_mode_skills",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "=== REVISED 2026-09-01 (backlog streamline: carries residue of the abandoned team-lit task) ===\nADDITIONAL ACCEPTANCE CRITERION: before deleting, confirm the replacement path actually carries --lit -- skill-orchestrate's Stage 3.6 Team Fan-Out receives lit_flag among its inputs, and every teammate dispatch must include the resolved <literature-briefing> block (resolved ONCE by the dispatch-prep stage and injected into each teammate prompt; the interactive resolution directives must not fire once per teammate). This is the surviving obligation of an abandoned task that would have wired --lit through the three team skills being deleted here; deleting them without this check would silently re-open that defect on the new surface.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nDelete the three team-mode skills (skill-team-research, skill-team-plan, skill-team-implement).\n\nPRECONDITION (verify before starting). The shared team-mode fan-out stage inside skill-orchestrate must already be landed and verified working -- this task is pure deletion, and synthesis-agent is explicitly NOT touched (it is preserved unchanged; the fan-out logic being deleted here is the per-phase spawn/correlate mechanism, not the cross-teammate synthesis reader).\n\nWORK. Delete skills/skill-team-research/SKILL.md, skills/skill-team-plan/SKILL.md, skills/skill-team-implement/SKILL.md in full (directory removal, not just SKILL.md). Confirm a repo-wide grep for each deleted skill's name (excluding this task's own specs/ artifacts) returns zero hits, and confirm any command-to-skill routing table entry that named one of the three (if any survives from the pre-collapse routing model) is also removed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-team-research/, agent-system/extensions/core/skills/skill-team-plan/, agent-system/extensions/core/skills/skill-team-implement/ (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A5-i, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-09-01T13:14:18Z",
+      "last_updated": "2026-09-01T13:33:18Z",
       "dependencies": [
         122
       ],
@@ -1278,6 +1288,11 @@
           "path": "specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md",
           "type": "report",
           "summary": "Verifies task 122's precondition is met; evaluates the --lit/Stage 3.6 acceptance criterion (lit_flag reaches every teammate, but literature resolution runs once per teammate rather than once-and-shared -- a deliberate task-122 design choice, not a defect, since orchestrator_mode structurally forecloses the named interactive-firing risk); and maps the real deletion blast radius (18 source-store files beyond the 3 skill directories, including a test fixture and a stale synthesis-agent.md docstring)."
+        },
+        {
+          "path": "specs/123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md",
+          "type": "plan",
+          "summary": "8-phase deletion plan (4 waves, ~6.5h) removing the three team-mode skills plus 19 de-referencing edits across commands, manifest, docs, context patterns, and one test fixture; records three explicit decisions (--lit criterion accepted as a stated deviation, synthesis-agent docstring scoped to logic-only preservation, CONTRACT 5 discharged by preservation rather than sequencing)."
         }
       ],
       "session_id": "sess_1788267679_adbb09_123"
@@ -1338,12 +1353,12 @@
     {
       "project_number": 126,
       "project_name": "implement_orchestrate_phase_forcing_flags",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.\n\nCONTEXT. /orchestrate has no mechanism today to re-run a lifecycle phase that already produced an artifact (e.g. `/orchestrate NNN --research` to run an additional research round on a task already [PLANNED] or beyond). No increment mechanism exists for a forced re-plan or re-implement either: orchestrator-postflight.sh's Stage 7a next_artifact_number increment fires only on research (\"research only\"), and skill-base.sh's \"prev\" mode read (next_artifact_number - 1) assumes plan/implement always share the round research just opened.\n\nWORK. (1) Add --research/--plan/--implement flags to orchestrate.md's Options table and parse-command-args.sh, threading them into the delegation context as force_phases (e.g. [\"research\",\"plan\"]). (2) Extend skill-orchestrate's Stage 1b/2 phase-resolution logic to check force_phases FIRST: when set, run exactly the composed sequence (composition means \"stop after the last named phase\", not \"force both starting from the first\") instead of the status-derived phase; with no flag, resume-from-first-incomplete-phase (today's behavior) is unchanged. (3) Change orchestrator-postflight.sh's Stage 7a increment condition from \"phase == research\" to \"phase was force-invoked, any phase\" -- a forced phase always opens a new MM_ round (append, never replace), so the round-numbering convention already in use for research works identically for a forced plan or implement. (4) Add a monotonic-max clamp to the forced-phase status write: a forced --research on a task already at [PLANNED] or beyond must never regress status back to [RESEARCHED] -- the status write is skipped (report/artifact link still added) whenever the new value would be a regression.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md, agent-system/extensions/core/skills/skill-orchestrate/SKILL.md, agent-system/extensions/core/scripts/orchestrator-postflight.sh, agent-system/extensions/core/scripts/skill-base.sh, agent-system/extensions/core/scripts/parse-command-args.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A2, all four sub-questions).\n",
       "created": "2026-08-31T18:11:43Z",
-      "last_updated": "2026-09-01T13:15:03Z",
+      "last_updated": "2026-09-01T13:34:03Z",
       "dependencies": [
         117,
         122
@@ -1360,6 +1375,11 @@
           "path": "specs/126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md",
           "type": "report",
           "summary": "Confirms the flag/phase-resolution mechanics for WORK items 1-2 and 4, and identifies that orchestrator-postflight.sh (named for WORK item 3) has zero call sites in skill-orchestrate/SKILL.md, meaning /orchestrate never increments next_artifact_number today for any phase -- the real target is orchestrate-stage5-postflight.sh and Stage MT-4, likely converging on skill_postflight_update."
+        },
+        {
+          "path": "specs/126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md",
+          "type": "plan",
+          "summary": "7-phase, 5-wave, 9.5-hour plan implementing A2 phase-forcing flags on /orchestrate: flag surface, 8-site command threading, a new Stage 2b forced-phase queue ahead of the state-machine loop, and one combined postflight change covering both the artifact-round advance and the monotonic-max status clamp. Records the correction that orchestrator-postflight.sh is dead code for /orchestrate, resolves the artifact-numbering scope question as (a) bounded to single-task mode, and carries a binding 'Verification under a stale deploy' protocol for the deploy-first dependency resolution that would otherwise make every test in this task vacuous."
         }
       ],
       "session_id": "sess_1788267679_adbb09_126"
@@ -1387,7 +1407,7 @@
     {
       "project_number": 128,
       "project_name": "fix_h4_adversarial_gate_matcher",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1402,13 +1422,18 @@
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-01T13:13:56Z",
+      "last_updated": "2026-09-01T13:32:56Z",
       "session_id": "sess_1788267679_adbb09_128",
       "artifacts": [
         {
           "path": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
           "type": "report",
           "summary": "Confirms both H4 gate matcher failures under the deployed grep, provides two empirically-verified corrected patterns (numbering-tolerant heading, boundary-free table check), and inventories every migration site needed to port the gate into the base orchestrate engine."
+        },
+        {
+          "path": "specs/128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md",
+          "type": "plan",
+          "summary": "Seven-phase plan porting the H4 adversarial-verification gate into skill-orchestrate/SKILL.md with the corrected matcher, closing the base engine's residue notes, and recording the deliberate co-maintenance asymmetry in both engine files."
         }
       ]
     },
@@ -1441,7 +1466,7 @@
     {
       "project_number": 130,
       "project_name": "make_lake_build_guard_success_truthful",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1453,13 +1478,18 @@
         "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-01T13:14:30Z",
+      "last_updated": "2026-09-01T13:33:30Z",
       "session_id": "sess_1788267679_adbb09_130",
       "artifacts": [
         {
           "path": "specs/130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md",
           "type": "report",
           "summary": "Line-level fix points for Defect A (unvalidated post-`--` lake subcommand), Defect B (fingerprint blind to build scope, no audible replay signal), and Defect C (undocumented wait idiom), plus a mapping of acceptance criteria onto the existing 13-case-plus-mutation test harness's reusable scaffolding (FAKE_LAKE_COUNTER, exit-passthrough pattern, grep-based regression cases, scratch-copy sed mutation pattern)."
+        },
+        {
+          "path": "specs/130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md",
+          "type": "plan",
+          "summary": "Six-phase plan fixing lake-build-guard.sh's two false-pass defects (unvalidated subcommand passthrough, scope-blind result sharing) plus the missing wait-idiom documentation, and rewriting the header's FAMILY CONVENTIONS block for the dependent sibling guard."
         }
       ]
     },
@@ -1485,7 +1515,7 @@
     {
       "project_number": 133,
       "project_name": "fix_orchestrate_deploy_pending_annotation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation",
       "description": "=== REVISED 2026-09-01 (backlog streamline: absorbs the defect-class registration task) ===\nCOMBINED SCOPE. This task now also carries the full scope of the abandoned sibling registration task as PART 1; the TASK_DIR binding fix below is PART 2. The two were split for phase sizing but are small, same-area pieces of one incident; the dependency on the sibling is removed.\n\nPART 1 -- REGISTER THE DEFECT CLASS. Register a new --defect-class in the system-defect vocabulary so a documented observation marker that silently fails to land -- because of a caller/callee variable-binding mismatch -- can be recorded to specs/events.jsonl at all. Today it cannot: the recorder correctly rejects any unsanctioned class name, and none of the thirteen existing classes covers this shape. Edit agent-system/extensions/core/scripts/system-defect-record.sh and agent-system/extensions/core/context/patterns/system-defect-discrimination.md. The closed enum is hard-coded in a case statement at system-defect-record.sh:161-170; the discrimination doc's class table occupies lines 79-91; the literal count word \"thirteen\" appears in prose that must be updated in step (at minimum the usage comment at :16, the error message at :167, and the doc's header/prose around the table). The class MUST be registered in BOTH the doc table AND the recorder validator in the same change -- registering in only one place reproduces the silent-rejection failure this work exists to close. Candidate name (weigh, do not rubber-stamp): AMBIENT_BINDING_MISMATCH -- confirm it names the MECHANISM rather than the motivating instance, reads correctly alongside the existing thirteen, and does not overlap an existing class; an alternative framing centered on the unreached observability marker is a legitimate competing option; record the judgment either way. Precedent: additive registration without a detector is an accepted state (several classes are marked \"not currently computed anywhere\"). NON-GOALS for Part 1: no automated detector; no restructuring or renumbering of the existing classes.\n\nORDERING WITHIN THE TASK: land Part 1 first, then Part 2, then record the motivating incident to specs/events.jsonl under the new class -- the recording that originally failed (exit 1, \"invalid --defect-class\") is the natural end-to-end verification that both parts work.\n=== ORIGINAL DESCRIPTION (PART 2) FOLLOWS ===\nFix a substantive reporting defect: under /orchestrate, the deploy-pending annotation that `skill_postflight_update` is documented to record never lands, because the annotation block is guarded on an ambient environment variable the orchestrate caller never sets.\n\nCANONICAL SOURCE. Edit `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`, `agent-system/extensions/core/scripts/skill-base.sh`, and `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.\n\nVERIFIED CURRENT STATE (confirmed by direct inspection; the research phase should not need to re-derive this).\n- `skill-base.sh:199` sets `TASK_DIR=\"specs/${PADDED_NUM}_${PROJECT_NAME}\"`, but only inside the skill task-context loader.\n- `orchestrate-stage5-postflight.sh:55` binds the task directory ONLY as a lowercase positional, `task_dir=\"${4:-}\"`, and never sets or exports `TASK_DIR`.\n- That script calls `skill_postflight_update` at lines 111, 114, and 127.\n- The exit-6 annotation block inside `skill_postflight_update` is guarded at `skill-base.sh:536` on `[[ -n \"${TASK_DIR:-}\" && -f \"${TASK_DIR}/.return-meta.json\" ]]`.\n- Consequence: under /orchestrate that guard is ALWAYS false, so `deploy_pending` and `deploy_pending_reason` silently stay null on every deploy-pending refusal, while the `[deploy-check] deploy-pending: ...` line still prints. Observed directly on a real run; the deferral had to be diagnosed by hand.\n\nCONTRACT THIS DEFEATS. `context/patterns/regeneration-is-manual-only.md`, in its \"Automated Exception: The Postflight Completion-Deploy Gate\" section, states that a task refused under /orchestrate \"defers loudly (via the `deploy_pending` marker `skill_postflight_update` records into its `.return-meta.json`)\". skill-base.sh's own comment above the block calls it the \"D6 residual mitigation\" for exactly the /orchestrate reporting surface it fails to reach. The documentation describes behavior that does not occur.\n\nRECOMMENDATION FOR THE PLAN PHASE TO WEIGH, NOT A SETTLED DECISION. Two fixes are available: (a) export `TASK_DIR` at the orchestrate caller, or (b) thread the task directory into `skill_postflight_update` as an explicit parameter. Option (b) is recommended, because it removes the ambient env-var coupling rather than satisfying it -- the ambient coupling is the underlying fragility, and (a) leaves the same trap set for the next non-skill caller. The plan phase should weigh (b)'s cost: `skill_postflight_update` already takes an optional 5th argument (`phase_check_mode`), so a new parameter must not disturb that positional contract or the existing callers' byte-for-byte behavior. Record the judgment either way.\n\nCALLER AUDIT RESULT (already performed). The other `skill_postflight_update` callers are skill files -- `skill-web-implementation`, `skill-web-research`, `skill-epi-implement`, `skill-epi-research` -- which run inside the skill context where `skill-base.sh:199` has already set `TASK_DIR`. They are SAFE TODAY. `orchestrate-stage5-postflight.sh` is the current outlier, but the coupling remains latent for any future non-skill caller, which is the argument for option (b). Re-confirm this audit against the tree at implementation time rather than trusting it blindly.\n\nVERIFICATION REQUIREMENT. Add a regression test to `scripts/tests/test-skill-base-lifecycle.sh` asserting that on an exit-6 refusal, `deploy_pending` is true and `deploy_pending_reason` is non-null in the task's `.return-meta.json`. Note the existing test file's own comment (around line 25) recording that these lifecycle functions hardcode a bare relative path -- that constraint shapes how the test must set up its fixture.\n\nNON-GOALS. Do not change the completion-deploy gate's refusal logic or its exit-6 semantics. Do not alter what `update-task-status.sh` returns. Do not weaken the block's best-effort, non-blocking character: a failure to annotate `.return-meta.json` must still never escalate past a warning, since the authoritative outcome remains update-task-status.sh's own rc.",
@@ -1499,13 +1529,18 @@
         "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
       ],
       "created": "2026-09-01T12:21:17Z",
-      "last_updated": "2026-09-01T13:14:41Z",
+      "last_updated": "2026-09-01T13:33:41Z",
       "session_id": "sess_1788267679_adbb09_133",
       "artifacts": [
         {
           "path": "specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md",
           "type": "report",
           "summary": "Confirms Part 1 (defect-class registration sites, recommends AMBIENT_BINDING_MISMATCH) and Part 2 (TASK_DIR binding fix, recommends option-b threaded parameter) with a corrected finding on the doc's missing literal 'thirteen'."
+        },
+        {
+          "path": "specs/133_fix_orchestrate_deploy_pending_annotation/plans/01_fix-deploy-pending-annotation.md",
+          "type": "plan",
+          "summary": "Five-phase plan registering the AMBIENT_BINDING_MISMATCH defect class in both vocabulary sites, then threading the task directory into skill_postflight_update as an optional 6th positional to fix the /orchestrate deploy-pending annotation, with a regression test and an end-to-end events.jsonl recording."
         }
       ]
     }

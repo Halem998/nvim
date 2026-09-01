@@ -33,7 +33,7 @@ next_project_number: 134
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-114 [RESEARCHED] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
+114 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -41,17 +41,17 @@ next_project_number: 134
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
       └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-120 [RESEARCHED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
+120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
-123 [RESEARCHED] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
-126 [RESEARCHED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+123 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
+126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
-128 [RESEARCHED] — Repair the hard-mode H4 adversarial-verification gate, which curr
+128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-130 [RESEARCHED] — Make lake-build-guard.sh's success signal trustworthy. The script
-133 [RESEARCHED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
+130 [PLANNED] — Make lake-build-guard.sh's success signal trustworthy. The script
+133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
 
 ### Extensions
 
@@ -90,11 +90,12 @@ next_project_number: 134
 ## Tasks
 
 ### 133. Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md]
+- **Plan**: [133_fix_orchestrate_deploy_pending_annotation/plans/01_fix-deploy-pending-annotation.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: absorbs the defect-class registration task) ===
 COMBINED SCOPE. This task now also carries the full scope of the abandoned sibling registration task as PART 1; the TASK_DIR binding fix below is PART 2. The two were split for phase sizing but are small, same-area pieces of one incident; the dependency on the sibling is removed.
@@ -185,11 +186,12 @@ NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do no
 ---
 
 ### 130. Stop lake-build-guard.sh reporting passes for builds it did not run
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [130_make_lake_build_guard_success_truthful/reports/01_lake-build-guard-truthful-success.md]
+- **Plan**: [130_make_lake_build_guard_success_truthful/plans/01_lake-build-guard-truthful-success.md]
 
 **Description**: Make lake-build-guard.sh's success signal trustworthy. The script currently reports a pass in two independent situations where no such build happened, which defeats the standing verification gate that every hard-mode implementation phase depends on. Observed live during a successful /orchestrate --hard run; recorded as evt_1788246598349_q1AwUZ and evt_1788260467365_9bSvdb.
 
@@ -276,11 +278,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 128. Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 119
 - **Research**: [128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md]
+- **Plan**: [128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md]
 
 **Description**: Repair the hard-mode H4 adversarial-verification gate, which currently burns a full extra research dispatch on every hard-mode run by failing against reports that genuinely conform. Observed live on a successful /orchestrate --hard run in a consumer repo; recorded as evt_1788245094839_eybEyC, class HOOK_REGEX_BOUNDARY_DEFECT.
 
@@ -353,11 +356,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 126. Implement orchestrate phase forcing flags
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 122
 - **Research**: [126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md]
+- **Plan**: [126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md]
 
 **Description**: Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.
 
@@ -412,11 +416,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 123. Delete team mode skills
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122
 - **Research**: [123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md]
+- **Plan**: [123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: carries residue of the abandoned team-lit task) ===
 ADDITIONAL ACCEPTANCE CRITERION: before deleting, confirm the replacement path actually carries --lit -- skill-orchestrate's Stage 3.6 Team Fan-Out receives lit_flag among its inputs, and every teammate dispatch must include the resolved <literature-briefing> block (resolved ONCE by the dispatch-prep stage and injected into each teammate prompt; the interactive resolution directives must not fire once per teammate). This is the surviving obligation of an abandoned task that would have wired --lit through the three team skills being deleted here; deleting them without this check would silently re-open that defect on the new surface.
@@ -476,11 +481,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 120. Retarget hard mode tests to engine branch
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119
 - **Research**: [120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md]
+- **Plan**: [120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md]
 
 **Description**: Retarget the 7 hard-mode test/lint files to skill-orchestrate's hard_mode branch.
 
@@ -805,11 +811,12 @@ VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode singl
 ---
 
 ### 114. Wire model-flag threading through /orchestrate and the base orchestrate engine
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md]
+- **Plan**: [114_wire_model_flag_through_orchestrate/plans/01_wire-model-flag-orchestrate.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: retargeted at the consolidated engine) ===
 STALE ANCHORS: the verified-defect line numbers and dispatch-site inventory below predate the landed consolidation work (dispatch-prep stage, hard-contracts injection, hard-mode state-machine migration, team fan-out): skill-orchestrate/SKILL.md has since grown from 188,284 to ~268,000 bytes and gained a dispatch-prep stage invoked once per dispatch. Re-measure; do not trust the line numbers.

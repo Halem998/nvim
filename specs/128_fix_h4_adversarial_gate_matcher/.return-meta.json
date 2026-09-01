@@ -1,34 +1,26 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
       "type": "report",
       "path": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
-      "summary": "Confirms both H4 gate matcher failures under the deployed grep, provides two empirically-verified corrected patterns (numbering-tolerant heading, boundary-free table check), and inventories every migration site needed to port the gate into the base orchestrate engine."
-    }
-  ],
-  "next_steps": "Run /plan 128 to create an implementation plan for the matcher fix and the H4 gate migration into skill-orchestrate/SKILL.md.",
-  "metadata": {
-    "session_id": "sess_1788267679_adbb09",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
-  },
-  "memory_candidates": [
-    {
-      "content": "The deployed grep on this system is ugrep 7.8.4. Its POSIX/DFA -E engine mis-evaluates a \\b word-boundary anchor when it occurs downstream of an earlier \\b-anchored subexpression separated by a variable-width run like [^|]* -- every fragment matches alone but the composed pattern doesn't. Two fixes both work empirically: drop the \\b entirely (safe when surrounding structural delimiters like | already do the discriminating), or add -P to force the PCRE2 engine which evaluates the composition correctly. Prefer dropping \\b to avoid a new engine-flag dependency, unless boundary precision is load-bearing.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["ugrep", "word-boundary", "regex-portability", "grep -P", "PCRE2", "compositional-failure"]
+      "summary": "Confirms both H4 gate matcher failures under the deployed grep, provides two empirically-verified corrected patterns, and inventories every migration site needed to port the gate into the base orchestrate engine."
     },
     {
-      "content": "This repo's two orchestrate engine files (skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md) use an explicit 'Asymmetry decision (recorded, not acted on)' comment convention when a fix or feature is deliberately applied to only one of the two files instead of mirrored to both. Reuse this convention (grep for the phrase in skill-orchestrate/SKILL.md for a worked example) whenever a co-maintenance contract's escape clause is invoked instead of dual-editing.",
-      "category": "PATTERN",
-      "source_artifact": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["co-maintenance", "orchestrate-engines", "asymmetry-decision", "hard-mode", "documentation-convention"]
+      "type": "plan",
+      "path": "specs/128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md",
+      "summary": "Seven-phase plan porting the H4 adversarial-verification gate into skill-orchestrate/SKILL.md with the corrected matcher, closing the base engine's residue notes, and recording the deliberate co-maintenance asymmetry in both engine files."
     }
-  ]
+  ],
+  "next_steps": "Run /implement 128 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1788267679_adbb09",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 3,
+    "dependency_waves": [[1], [2], [3], [4, 5, 6], [7]]
+  },
+  "memory_candidates": []
 }
