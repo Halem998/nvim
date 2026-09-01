@@ -1,7 +1,7 @@
 # Implementation Plan: Implement orchestrate phase forcing flags
 
 - **Task**: 126 - Implement orchestrate phase forcing flags
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9.5 hours
 - **Dependencies**: Task 117, Task 122 (both `completed`)
 - **Research Inputs**: `specs/126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md`
@@ -259,30 +259,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Flag surface in the shared argument parser [NOT STARTED]
+### Phase 1: Flag surface in the shared argument parser [COMPLETED]
 
 - **Goal:** `/orchestrate --research --plan` produces one canonical, ordered, comma-separated
   `FORCE_PHASES_FLAG` export, with no collateral damage to any other command's `FOCUS_PROMPT`.
 
 - **Tasks:**
-  - [ ] Audit first, edit second: run a repo-wide search for existing occurrences of `--research`,
+  - [x] Audit first, edit second: run a repo-wide search for existing occurrences of `--research`,
         `--plan`, and `--implement` appearing as *focus-prompt text* (as opposed to as slash-command
         names or as documented flags of other commands) across `agent-system/extensions/**`,
         `.claude/**` docs, and `specs/**` examples. Record the count and each hit's disposition in
         the phase's commit message. If any live call site would be broken by the new strip rules,
-        STOP and report rather than proceeding.
-  - [ ] In `scripts/parse-command-args.sh`, add `FORCE_PHASES_FLAG` to the header's
+        STOP and report rather than proceeding. *(completed)*
+  - [x] In `scripts/parse-command-args.sh`, add `FORCE_PHASES_FLAG` to the header's
         "Exported Variables" comment block, documented in the same style as `CONTINUE_BUDGET_FLAG`
         (what it is, that it is `/orchestrate`-only, that it is composable, that its order is
-        canonical lifecycle order not token order).
-  - [ ] In "Step 4: Scan for flags", initialize `FORCE_PHASES_FLAG=""` alongside the other
-        default-false initializations.
-  - [ ] Append the three detection blocks in canonical lifecycle order, each appending its phase
+        canonical lifecycle order not token order). *(completed)*
+  - [x] In "Step 4: Scan for flags", initialize `FORCE_PHASES_FLAG=""` alongside the other
+        default-false initializations. *(completed)*
+  - [x] Append the three detection blocks in canonical lifecycle order, each appending its phase
         name to the accumulating comma-separated string. Follow the file's existing
-        `if [[ "$remaining" =~ --flag ]]; then ... fi` idiom exactly.
-  - [ ] In "Step 5", add `--research`, `--plan`, and `--implement` to the `sed` strip chain so they
-        never survive into `FOCUS_PROMPT`.
-  - [ ] Add `FORCE_PHASES_FLAG` to the trailing `export` statement.
+        `if [[ "$remaining" =~ --flag ]]; then ... fi` idiom exactly. *(completed)*
+  - [x] In "Step 5", add `--research`, `--plan`, and `--implement` to the `sed` strip chain so they
+        never survive into `FOCUS_PROMPT`. *(completed)*
+  - [x] Add `FORCE_PHASES_FLAG` to the trailing `export` statement. *(completed)*
 
 - **Timing:** 1 hour
 
@@ -311,33 +311,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Status-rank helpers in the status-vocabulary library [NOT STARTED]
+### Phase 2: Status-rank helpers in the status-vocabulary library [COMPLETED]
 
 - **Goal:** a reusable, sourced predicate answering "would this transition regress the task's
   lifecycle position?", with no existing behavior touched.
 
 - **Tasks:**
-  - [ ] In `scripts/lib/status-vocabulary.sh`, add `STATUS_VOCABULARY_LIFECYCLE_RANK`, a `declare -A`
+  - [x] In `scripts/lib/status-vocabulary.sh`, add `STATUS_VOCABULARY_LIFECYCLE_RANK`, a `declare -A`
         map over the linear-progress subset of the closed enum:
         `not_started=0, researching=1, researched=2, planning=3, planned=4, implementing=5,
         pr_ready=6, completed=7`. Deliberately omit `blocked`, `partial`, `abandoned`, and
         `expanded` — per `rules/state-management.md`'s permissive model these are non-terminal
         exception states or terminal states that live outside the linear rank, and the clamp
-        concerns only the ordinary lifecycle-progress axis.
-  - [ ] Add `status_vocabulary_rank <status>`, echoing the rank or an empty string when the status
-        is unranked.
-  - [ ] Add `status_vocabulary_would_regress <current> <target>`, returning 0 (yes, regresses) only
+        concerns only the ordinary lifecycle-progress axis. *(completed)*
+  - [x] Add `status_vocabulary_rank <status>`, echoing the rank or an empty string when the status
+        is unranked. *(completed)*
+  - [x] Add `status_vocabulary_would_regress <current> <target>`, returning 0 (yes, regresses) only
         when BOTH statuses are ranked AND `rank(target) <= rank(current)`; returning 1 in every
         other case, including when either side is unranked. This "unranked means the clamp does not
         apply" rule is the deliberate, minimal choice: a forced phase on a `partial` or `blocked`
-        task writes its status exactly as it does today.
-  - [ ] Document the rank map's source in a header comment: the valid-transition diagram in
+        task writes its status exactly as it does today. *(completed)*
+  - [x] Document the rank map's source in a header comment: the valid-transition diagram in
         `context/standards/status-markers.md`. Note explicitly that `pr_ready` is included at rank 6
         (it sits on the linear axis between `implementing` and `completed`) even though the
-        transition diagram's research-cited ordering stopped at `completed`.
-  - [ ] Confirm the library's existing self-verifying consumer-discovery comment
+        transition diagram's research-cited ordering stopped at `completed`. *(completed)*
+  - [x] Confirm the library's existing self-verifying consumer-discovery comment
         (`grep -rl 'status-vocabulary.sh' agent-system/extensions`) still describes reality and needs
-        no edit.
+        no edit. *(completed)*
 
 - **Timing:** 45 minutes
 

@@ -36,6 +36,12 @@
 #                    Defect B's explicit, operator-typed override authorizing a fresh
 #                    work-cycle budget after MAX_CYCLES exhaustion, per-invocation only --
 #                    never inferred automatically)
+#   FORCE_PHASES_FLAG — comma-separated subset of "research,plan,implement", or "" (default;
+#                    /orchestrate-only). Composable: any combination of --research/--plan/
+#                    --implement may be passed together. Canonicalized to lifecycle order
+#                    (research, plan, implement) regardless of the order the flags were typed
+#                    on the command line -- "--plan --research" and "--research --plan" both
+#                    yield "research,plan".
 #   FOCUS_PROMPT   — remaining text after all recognized flags stripped
 #
 # Downstream dependencies:
@@ -95,6 +101,7 @@ parse_command_args() {
   ALLOW_SELF_MODIFYING_FLAG="false"
   ALLOW_SCOPE_COLLISION_FLAG="false"
   CONTINUE_BUDGET_FLAG="false"
+  FORCE_PHASES_FLAG=""
 
   if [[ "$remaining" =~ --team ]]; then
     TEAM_MODE="true"
@@ -154,6 +161,15 @@ parse_command_args() {
   if [[ "$remaining" =~ --continue-budget ]]; then
     CONTINUE_BUDGET_FLAG="true"
   fi
+  if [[ "$remaining" =~ --research ]]; then
+    FORCE_PHASES_FLAG="${FORCE_PHASES_FLAG:+$FORCE_PHASES_FLAG,}research"
+  fi
+  if [[ "$remaining" =~ --plan ]]; then
+    FORCE_PHASES_FLAG="${FORCE_PHASES_FLAG:+$FORCE_PHASES_FLAG,}plan"
+  fi
+  if [[ "$remaining" =~ --implement ]]; then
+    FORCE_PHASES_FLAG="${FORCE_PHASES_FLAG:+$FORCE_PHASES_FLAG,}implement"
+  fi
 
   # Step 5: Strip all recognized flags to produce FOCUS_PROMPT
   FOCUS_PROMPT=$(echo "$remaining" \
@@ -175,6 +191,9 @@ parse_command_args() {
     | sed 's/--allow-self-modifying//g' \
     | sed 's/--allow-scope-collision//g' \
     | sed 's/--continue-budget//g' \
+    | sed 's/--research//g' \
+    | sed 's/--plan//g' \
+    | sed 's/--implement//g' \
     | xargs)
 
   # Step 6: Validate — at least one task number is required
@@ -183,7 +202,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE TEAM_SIZE_EXPLICIT EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE TEAM_SIZE_EXPLICIT EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"

@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Status-rank helpers in the status-vocabulary library",
+  "started_at": "2026-09-01T00:10:00Z",
+  "last_updated": "2026-09-01T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add STATUS_VOCABULARY_LIFECYCLE_RANK map, status_vocabulary_rank, status_vocabulary_would_regress, header docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/status-vocabulary.sh"]},
+    {"id": 2, "description": "Confirm consumer-discovery grep comment still accurate", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "All four new-function verification cases pass by sourcing the source-store copy directly. Deployed-tree test-status-vocabulary.sh still passes (enum unchanged), recorded as a deployed-copy regression check per the stale-deploy protocol."
+}

@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Flag surface in the shared argument parser",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Audit repo-wide for existing --research/--plan/--implement focus-prompt collateral before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add FORCE_PHASES_FLAG header docs, init, detection blocks, strip rules, export", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/parse-command-args.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Audit found zero live hits of --research/--plan/--implement as focus-prompt text across agent-system/extensions/core/{commands,scripts,skills,context,docs,merge-sources}. Only hits were in specs/ task-description JSON text (not parsed by parse-command-args.sh) and slash-command names elsewhere. Scope Hypothesis confirmed."
+}
