@@ -1,7 +1,7 @@
 ---
 description: Create implementation plan for a task
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, Edit
-argument-hint: TASK_NUMBERS [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
+argument-hint: TASK_NUMBERS [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -24,8 +24,6 @@ When multiple task numbers are provided, the command enters multi-task mode (see
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--team` | Enable multi-agent parallel planning with multiple teammates | false |
-| `--team-size N` | Number of planning teammates to spawn (2-3) | 2 |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
 | `--hard` | High-effort mode: deeper reasoning, more thorough analysis | false |
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
@@ -36,13 +34,12 @@ When multiple task numbers are provided, the command enters multi-task mode (see
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based planning | false |
 | `--roadmap` | Include ROADMAP.md review/update phases in plan | false |
 
-When `--team` is specified, planning is delegated to `skill-team-plan` which spawns multiple planning agents generating alternative plans in parallel. Each teammate produces a plan candidate, and the lead synthesizes findings into a final plan with trade-off analysis.
-
-**Note**: Team mode requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. If unavailable, gracefully degrades to single-agent planning.
+For parallel multi-agent planning, use `/orchestrate`'s team fan-out mode, which routes through
+`skill-orchestrate`'s Stage 3.6/3.6a.
 
 ## Anti-Bypass Constraint
 
-**PROHIBITION**: You MUST NOT write plan artifacts directly using Write or Edit tools. All plan files MUST be created by invoking the appropriate skill (skill-planner or skill-team-plan) via the Skill tool.
+**PROHIBITION**: You MUST NOT write plan artifacts directly using Write or Edit tools. All plan files MUST be created by invoking the appropriate skill (skill-planner) via the Skill tool.
 
 **Why**: Direct writes bypass format enforcement (validate-artifact.sh), produce non-conforming artifacts missing required metadata fields and sections, and circumvent the delegation chain that ensures quality. A PostToolUse hook monitors all Write/Edit operations to artifact paths and will flag violations with corrective context.
 
@@ -90,9 +87,8 @@ parse_task_args() {
 |-------|-------------|----------------|------|
 | `7` | `[7]` | `` | single |
 | `7, 22-24, 59` | `[7, 22, 23, 24, 59]` | `` | multi |
-| `7 --team` | `[7]` | `--team` | single |
-| `7, 22-24 --team` | `[7, 22, 23, 24]` | `--team` | multi |
-| `42 --team --team-size 3` | `[42]` | `--team --team-size 3` | single |
+| `7 --hard` | `[7]` | `--hard` | single |
+| `7, 22-24 --hard` | `[7, 22, 23, 24]` | `--hard` | multi |
 
 **Dispatch decision**:
 
@@ -425,24 +421,9 @@ from a gate-in refactor, not a defect.
 
 ### STAGE 1.5: PARSE FLAGS
 
-**Parse arguments to determine team mode, effort level, and model override.**
+**Parse arguments to determine effort level and model override.**
 
-1. **Extract Team Options**
-   Check args for team flags:
-   - `--team` -> `team_mode = true`
-   - `--team-size N` -> `team_size = N` (clamp 2-3)
-
-   If no team flag found: `team_mode = false`, `team_size = 2`
-
-2. **Validate Team Size**
-   ```bash
-   # Clamp team_size to valid range (2-3 for planning)
-   team_size=${team_size:-2}
-   [ "$team_size" -lt 2 ] && team_size=2
-   [ "$team_size" -gt 3 ] && team_size=3
-   ```
-
-3. **Extract Effort Flags**
+1. **Extract Effort Flags**
    Check remaining args for effort flags:
    - `--fast` -> `effort_flag = "fast"` (low-effort mode: lighter reasoning)
    - `--hard` -> `effort_flag = "hard"` (high-effort mode: deeper reasoning)
@@ -450,7 +431,7 @@ from a gate-in refactor, not a defect.
    If multiple are provided, last one wins.
    If none: `effort_flag = null` (normal effort)
 
-4. **Extract Model Flags**
+2. **Extract Model Flags**
    Check remaining args for model flags:
    - `--haiku` -> `model_flag = "haiku"` (use Haiku model)
    - `--sonnet` -> `model_flag = "sonnet"` (use Sonnet model)
@@ -460,19 +441,19 @@ from a gate-in refactor, not a defect.
    If multiple are provided, last one wins.
    If none: `model_flag = null` (use agent's frontmatter default: opus for planner/meta-builder/reviser; sonnet for general-purpose agents)
 
-5. **Extract Clean Flag**
+3. **Extract Clean Flag**
    Check remaining args for memory retrieval suppression:
    - `--clean` -> `clean_flag = true` (skip automatic memory retrieval)
 
    If not present: `clean_flag = false`
 
-6. **Extract Lit Flag**
+4. **Extract Lit Flag**
    Check remaining args for literature mode:
    - `--lit` -> `lit_flag = true` (literature-based task: paper-to-code, spec-to-implementation)
 
    If not present: `lit_flag = false`
 
-7. **Extract Roadmap Flag**
+5. **Extract Roadmap Flag**
    Check remaining args for roadmap phase injection:
    - `--roadmap` -> `roadmap_flag = true` (add ROADMAP.md review/update phases to plan)
 
@@ -484,13 +465,7 @@ from a gate-in refactor, not a defect.
 
 **EXECUTE NOW**: After STAGE 1.5 completes, immediately invoke the Skill tool.
 
-**Team Mode Routing** (when `--team` flag present):
-
-If `team_mode == true`:
-- Route to `skill-team-plan`
-- Pass `team_size` parameter
-
-**Extension Routing** (when `--team` flag NOT present):
+**Extension Routing**:
 
 Resolve the skill through the single canonical router, `command-route-skill.sh` — this command
 does not hand-roll its own manifest loop. STAGE 1.5 parses `--hard`/`--fast` into the prose
@@ -525,18 +500,11 @@ skill_name="$SKILL_NAME"
 
 **Skill Selection Logic**:
 ```
-if team_mode:
-  skill_name = "skill-team-plan"
-else:
-  skill_name = {extension routing lookup} OR "skill-planner"
+skill_name = {extension routing lookup} OR "skill-planner"
 ```
 
 **Invoke the Skill tool NOW** with:
 ```
-# For team mode:
-skill: "skill-team-plan"
-args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} team_size={team_size} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} roadmap_flag={roadmap_flag} lit_flag={lit_flag}"
-
 # For extension-routed skill (e.g., skill-founder-plan):
 skill: "{skill_name from extension routing}"
 args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} roadmap_flag={roadmap_flag} lit_flag={lit_flag}"
