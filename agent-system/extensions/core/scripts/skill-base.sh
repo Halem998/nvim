@@ -488,7 +488,10 @@ skill_validate_task_artifacts() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7: Update status to completed variant
 # Usage: skill_postflight_update "$task_number" "$operation" "$session_id" "$status" \
-#          ["$phase_check_mode"] ["$positional_6_reserved"] ["$status_clamp_mode"]
+#          ["$phase_check_mode"] ["$task_dir_override"] ["$status_clamp_mode"]
+# Argument 6 (optional): task_dir_override -- the task directory to use for the exit-6
+#          deploy-pending annotation block, instead of the ambient ${TASK_DIR:-}. Defaults to
+#          ${TASK_DIR:-} when absent or empty, so every existing 4-arg/5-arg caller is unchanged.
 # Only updates state when status is a success value (researched/planned/implemented)
 # Calls extension hook: hooks.postflight (after status update, non-blocking)
 #
@@ -513,13 +516,16 @@ skill_validate_task_artifacts() {
 # must run under a scratchpad harness carrying the source-store copy, or resolution will silently
 # reach the deployed (old) copy that lacks status_vocabulary_would_regress.
 #
-# Positional 6 is DELIBERATELY NOT DEFINED HERE -- reserved for a sibling task's own
-# `task_dir_override` parameter. This function reads ONLY position 7; it never reads, assigns, or
-# renumbers position 6. NOT TOUCHED by this addition (stated explicitly so a later reader can see
-# the boundary was deliberate): the `phase_check_args` array and its empty-array expansion, the
-# `_postflight_rc` capture and its final `return` line, the entire rc-6 deploy-pending block, the
-# `skill_run_extension_hook` call, the `_events_append_observable` call, and the non-success `*)`
-# arm below.
+# Optional 6th argument: `task_dir_override`. Absent or empty (every existing 4-arg and 5-arg
+# call site, byte-for-byte) falls back to the ambient `${TASK_DIR:-}`, preserving today's exact
+# behavior. When supplied, it is used instead of the ambient variable inside the exit-6
+# deploy-pending annotation block below, so a non-skill caller that never runs
+# `skill_validate_input` (and therefore never has `TASK_DIR` set) can still reach that block --
+# this is how `/orchestrate`'s own postflight call sites reach it. NOT TOUCHED by this addition
+# (stated explicitly so a later reader can see the boundary was deliberate): the `phase_check_args`
+# array and its empty-array expansion, the `_postflight_rc` capture and its final `return` line,
+# the `skill_run_extension_hook` call's own `"${TASK_DIR:-}"` argument, the `_events_append_observable`
+# call, and the non-success `*)` arm below.
 skill_postflight_update() {
   local task_number="$1"
   local operation="$2"
@@ -536,6 +542,11 @@ skill_postflight_update() {
   if [[ -n "$phase_check_mode" ]]; then
     phase_check_args=(--phase-check="$phase_check_mode")
   fi
+  # Optional 6th positional: task_dir_override. Defaults to the ambient ${TASK_DIR:-} so every
+  # existing 4-arg/5-arg call site resolves identically to before. Exists so non-skill callers
+  # (which never run skill_validate_input, and therefore never have TASK_DIR set) can still reach
+  # the exit-6 deploy-pending annotation block below.
+  local _task_dir="${6:-${TASK_DIR:-}}"
   local _t0
   _t0=$(date +%s.%N)
   local _postflight_rc=0
@@ -586,15 +597,15 @@ skill_postflight_update() {
   # the authoritative outcome is already update-task-status.sh's own rc.
   if [[ "$_postflight_rc" -eq 6 ]]; then
     echo "[deploy-check] deploy-pending: task ${task_number} postflight refused by the completion-deploy gate (exit 6) — modified_files overlap agent-system/extensions/** and the deploy is stale."
-    if [[ -n "${TASK_DIR:-}" && -f "${TASK_DIR}/.return-meta.json" ]]; then
+    if [[ -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
       local _dp_tmp
       _dp_tmp="$(mktemp)"
       if jq '. + {deploy_pending: true, deploy_pending_reason: "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"}' \
-        "${TASK_DIR}/.return-meta.json" > "$_dp_tmp" 2>/dev/null; then
-        mv "$_dp_tmp" "${TASK_DIR}/.return-meta.json"
+        "${_task_dir}/.return-meta.json" > "$_dp_tmp" 2>/dev/null; then
+        mv "$_dp_tmp" "${_task_dir}/.return-meta.json"
       else
         rm -f "$_dp_tmp" 2>/dev/null
-        echo "WARNING: [skill-base] failed to record deploy_pending reason into ${TASK_DIR}/.return-meta.json" >&2
+        echo "WARNING: [skill-base] failed to record deploy_pending reason into ${_task_dir}/.return-meta.json" >&2
       fi
     fi
   fi

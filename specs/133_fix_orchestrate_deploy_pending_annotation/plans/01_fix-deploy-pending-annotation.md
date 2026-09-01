@@ -245,36 +245,36 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add the optional 6th `task_dir_override` parameter to `skill_postflight_update` [NOT STARTED]
+### Phase 2: Add the optional 6th `task_dir_override` parameter to `skill_postflight_update` [COMPLETED]
 
 - **Goal:** Remove the ambient-variable coupling at its root by giving
   `skill_postflight_update` an explicit, optional task-directory argument that defaults to
   today's ambient value, leaving all 12 existing call sites behaviorally unchanged.
 
 - **Tasks:**
-  - [ ] Re-locate `skill_postflight_update` in
+  - [x] Re-locate `skill_postflight_update` in *(completed)*
         `agent-system/extensions/core/scripts/skill-base.sh` by function name (not line number)
         and read its current body; confirm the `phase_check_mode="${5:-}"` /
         `phase_check_args` block and the `if [[ "$_postflight_rc" -eq 6 ]]` block are present as
         described in this plan. If a sibling task has already altered the function, reconcile
         against the tree and re-check CONTRACT 1 before proceeding.
-  - [ ] Add `local _task_dir="${6:-${TASK_DIR:-}}"` immediately after the closing `fi` of the
+  - [x] Add `local _task_dir="${6:-${TASK_DIR:-}}"` immediately after the closing `fi` of the *(completed)*
         `phase_check_args` block and before `local _t0`, with a short comment documenting that
         this is the optional 6th positional, that it defaults to the ambient `TASK_DIR` so every
         existing 4-arg and 5-arg caller is unchanged, and that it exists so non-skill callers
         (which never run `skill_validate_input` and therefore never have `TASK_DIR` set) can
         reach the annotation block.
-  - [ ] Extend the `# Usage: skill_postflight_update "$task_number" "$operation" "$session_id"
+  - [x] Extend the `# Usage: skill_postflight_update "$task_number" "$operation" "$session_id" *(completed)*
         "$status"` comment above the function to document arguments 5 and 6, naming argument 6 as
         optional and stating its `${TASK_DIR:-}` default.
-  - [ ] Inside the `if [[ "$_postflight_rc" -eq 6 ]]` block **only**, replace each `${TASK_DIR:-}`
+  - [x] Inside the `if [[ "$_postflight_rc" -eq 6 ]]` block **only**, replace each `${TASK_DIR:-}` *(completed)*
         / `${TASK_DIR}` reference with `${_task_dir}`: the guard condition
         `[[ -n "${TASK_DIR:-}" && -f "${TASK_DIR}/.return-meta.json" ]]`, the `jq` input path, the
         `mv` destination path, and the WARNING message's path interpolation.
-  - [ ] Leave the `skill_run_extension_hook "postflight" ... "${TASK_DIR:-}"` line that follows
+  - [x] Leave the `skill_run_extension_hook "postflight" ... "${TASK_DIR:-}"` line that follows *(completed)*
         the block **unchanged** (see Decisions Recorded).
-  - [ ] Confirm no other function in `skill-base.sh` was touched.
-  - [ ] `bash -n agent-system/extensions/core/scripts/skill-base.sh` passes.
+  - [x] Confirm no other function in `skill-base.sh` was touched. *(completed)*
+  - [x] `bash -n agent-system/extensions/core/scripts/skill-base.sh` passes. *(completed)*
 
 - **Timing:** 30 minutes
 
@@ -320,16 +320,16 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Pass `task_dir` at the three `/orchestrate` call sites [NOT STARTED]
+### Phase 3: Pass `task_dir` at the three `/orchestrate` call sites [COMPLETED]
 
 - **Goal:** Make the `/orchestrate` postflight path actually reach the annotation block by
   forwarding the task directory it already has bound.
 
 - **Tasks:**
-  - [ ] Re-locate the three `skill_postflight_update` calls in
+  - [x] Re-locate the three `skill_postflight_update` calls in *(completed)*
         `agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh` by their
         surrounding branch text (the research, plan, and implement branches), not by line number.
-  - [ ] Research branch: append `"$task_dir"` as the 6th argument. Because positional 5
+  - [x] Research branch: append `"$task_dir"` as the 6th argument. Because positional 5 *(completed)*
         (`phase_check_mode`) is not passed at this site, an explicit empty 5th argument `""` must
         be inserted before it so positional 6 lands in position 6 —
         `skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$task_dir"`.
@@ -337,16 +337,16 @@ Phases within the same wave can execute in parallel.
         `phase_check_mode="${5:-}"` yields the empty string either way, and the
         `if [[ -n "$phase_check_mode" ]]` guard leaves `phase_check_args` empty, so no
         `--phase-check` flag is passed.
-  - [ ] Plan branch: same treatment.
-  - [ ] Implement branch: this site already passes `"warn"` as the 5th argument, so append
+  - [x] Plan branch: same treatment. *(completed)*
+  - [x] Implement branch: this site already passes `"warn"` as the 5th argument, so append *(completed)*
         `"$task_dir"` directly as the 6th —
         `skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$task_dir"`.
-  - [ ] Confirm `task_dir` is in scope at all three sites (bound as `task_dir="${4:-}"` in the
+  - [x] Confirm `task_dir` is in scope at all three sites (bound as `task_dir="${4:-}"` in the *(completed)*
         script's arg-parsing preamble) and that the script still never sets or exports a variable
         named `TASK_DIR` — the fix removes the dependency rather than satisfying it.
-  - [ ] Confirm the deliberate non-call site (the branch whose comment reads `Deliberately NO
+  - [x] Confirm the deliberate non-call site (the branch whose comment reads `Deliberately NO *(completed)*
         skill_postflight_update call`) is untouched.
-  - [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh` passes.
+  - [x] `bash -n agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh` passes. *(completed)*
 
 - **Timing:** 30 minutes
 
