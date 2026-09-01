@@ -11,8 +11,8 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,124,129,133,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,48,75,76,89,90,104,105,109,112,125,127,135,136 | 29,74,87,91,102,108,121,124,133 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,124,129,134,135,137,138 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,48,75,76,89,90,104,105,109,112,125,127,136 | 29,74,87,91,102,108,121,124 | core-agent-system, extensions, literature |
 | 3 | 50,88,107 | 48,87,104,127 | core-agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,9 +43,8 @@ next_project_number: 139
   └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-133 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
-  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
+135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 
 ### Extensions
@@ -287,7 +286,7 @@ VERIFICATION. At minimum: `bash -n` on extracted blocks; a behavioral smoke test
 ---
 
 ### 133. Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
