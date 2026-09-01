@@ -261,14 +261,14 @@ actual hit list before declaring the phase done; do not assume the count still h
 
 ---
 
-### Phase 3: Retarget the index-entries.json load triggers [NOT STARTED]
+### Phase 3: Retarget the index-entries.json load triggers [COMPLETED]
 
 **Goal**: Ensure no context file loses its route to being loaded when the three command names stop
 existing as load triggers.
 
 **Tasks**:
 
-- [ ] Enumerate every `load_when.commands` array in
+- [x] Enumerate every `load_when.commands` array in
       `agent-system/extensions/core/index-entries.json` containing `/research`, `/plan`, or
       `/implement`. Six were found at plan time:
       - `patterns/multi-task-operations.md` — `["/research","/plan","/implement"]`
@@ -277,21 +277,25 @@ existing as load triggers.
       - `standards/git-staging-scope.md` — `["/orchestrate","/research","/errors","/implement","/plan"]`
       - `standards/git-workflow-narrative.md` — `["/implement"]`
       - `standards/error-recovery-strategies.md` — `["/implement"]`
-- [ ] For each entry, remove the three dead command names.
-- [ ] For each entry whose surviving array would be **empty or would no longer include the
+      *(completed: re-enumeration via jq confirmed exactly these six, no seventh)*
+- [x] For each entry, remove the three dead command names. *(completed)*
+- [x] For each entry whose surviving array would be **empty or would no longer include the
       command that now performs that work**, add `/orchestrate`. This is required for
       `patterns/multi-task-operations.md`, `standards/git-workflow-narrative.md`, and
       `standards/error-recovery-strategies.md` (each would otherwise be left with an empty
       trigger list and become unreachable), and for `standards/status-markers.md` (which would
-      keep only `/task`, losing its lifecycle-phase trigger entirely).
-- [ ] `patterns/task-lock.md` and `standards/git-staging-scope.md` already list `/orchestrate`;
-      prune only.
-- [ ] Validate JSON well-formedness (`jq . index-entries.json > /dev/null`) and run
+      keep only `/task`, losing its lifecycle-phase trigger entirely). *(completed)*
+- [x] `patterns/task-lock.md` and `standards/git-staging-scope.md` already list `/orchestrate`;
+      prune only. *(completed)*
+- [x] Validate JSON well-formedness (`jq . index-entries.json > /dev/null`) and run
       `bash agent-system/extensions/core/scripts/validate-context-index.sh` if it accepts a
       source-store invocation; otherwise defer that check to Phase 6's post-deploy run and say so.
-- [ ] Note in the summary that `patterns/multi-task-operations.md`'s *content* still describes
+      *(completed: jq parses cleanly; validate-context-index.sh refuses source-store invocation
+      by design (documented contingency), deferred to Phase 6)*
+- [x] Note in the summary that `patterns/multi-task-operations.md`'s *content* still describes
       multi-task syntax for the three deleted commands. Retargeting its trigger is in scope;
       rewriting its body is not — record it as the highest-priority item in Phase 7's inventory.
+      *(completed: noted in progress file, to be carried into the Phase 7 inventory and summary)*
 
 **Timing**: 0.75 hours
 

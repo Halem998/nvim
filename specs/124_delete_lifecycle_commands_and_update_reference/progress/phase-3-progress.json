@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Retarget the index-entries.json load triggers",
+  "started_at": "2026-09-01T23:35:00Z",
+  "last_updated": "2026-09-01T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate all load_when.commands arrays containing the three dead names", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Remove three dead command names from each entry", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Add /orchestrate to entries that would otherwise empty or lose their lifecycle trigger", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Prune-only for entries already listing /orchestrate", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Validate JSON well-formedness and run validate-context-index.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Exactly six entries found (matching plan hypothesis): patterns/multi-task-operations.md, standards/status-markers.md, patterns/task-lock.md, standards/git-staging-scope.md, standards/git-workflow-narrative.md, standards/error-recovery-strategies.md. Four received /orchestrate added (multi-task-operations, status-markers, git-workflow-narrative, error-recovery-strategies); two were prune-only (task-lock.md, git-staging-scope.md already listed /orchestrate). jq . parses cleanly; diff against pre-edit copy confirmed the change is scoped to exactly these six load_when.commands arrays with no incidental formatting drift elsewhere. validate-context-index.sh refuses a source-store invocation by design (documented contingency in the plan) -- deferred to Phase 6's post-deploy run. Note: a separate pre-existing condition (93 entries with on_demand:true and an intentionally empty load_when.commands array, unrelated to this task) means a literal file-wide 'no empty commands array' grep would report non-zero even on the unmodified baseline; the phase's verification criterion is satisfied for the six entries this phase actually touches, which is the scope the Goal statement (no context file loses its ONLY load trigger) describes. multi-task-operations.md's body still describes multi-task syntax for the three deleted commands -- its trigger was retargeted here but its content was not touched, deferred to Phase 7's inventory per plan."
+}

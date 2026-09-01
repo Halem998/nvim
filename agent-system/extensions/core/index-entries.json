@@ -1141,9 +1141,7 @@
         "agents": [],
         "task_types": [],
         "commands": [
-          "/research",
-          "/plan",
-          "/implement"
+          "/orchestrate"
         ]
       }
     },
@@ -1935,8 +1933,7 @@
         "task_types": [],
         "commands": [
           "/task",
-          "/plan",
-          "/implement"
+          "/orchestrate"
         ]
       }
     },
@@ -2983,10 +2980,7 @@
       "load_when": {
         "agents": [],
         "commands": [
-          "/research",
           "/refresh",
-          "/plan",
-          "/implement",
           "/orchestrate"
         ]
       }
@@ -3036,10 +3030,7 @@
         ],
         "commands": [
           "/orchestrate",
-          "/research",
-          "/errors",
-          "/implement",
-          "/plan"
+          "/errors"
         ]
       }
     },
@@ -3132,7 +3123,7 @@
           "general-implementation-hard-agent"
         ],
         "commands": [
-          "/implement"
+          "/orchestrate"
         ]
       }
     },
@@ -3159,7 +3150,7 @@
           "general-implementation-hard-agent"
         ],
         "commands": [
-          "/implement"
+          "/orchestrate"
         ]
       }
     },
