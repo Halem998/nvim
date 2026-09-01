@@ -1,34 +1,86 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md",
-      "summary": "Confirms the flag/phase-resolution mechanics for WORK items 1-2 and 4, and identifies that orchestrator-postflight.sh (named for WORK item 3) has zero call sites in skill-orchestrate/SKILL.md, meaning /orchestrate never increments next_artifact_number today for any phase -- the real target is orchestrate-stage5-postflight.sh and Stage MT-4, likely converging on skill_postflight_update."
+      "type": "plan",
+      "path": "specs/126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md",
+      "summary": "7-phase, 5-wave, 9.5-hour plan implementing A2 phase-forcing flags on /orchestrate: flag surface, 8-site command threading, a new Stage 2b forced-phase queue ahead of the state-machine loop, and one combined postflight change covering both the artifact-round advance and the monotonic-max status clamp. Records the correction that orchestrator-postflight.sh is dead code for /orchestrate, resolves the artifact-numbering scope question as (a) bounded to single-task mode, and carries a binding 'Verification under a stale deploy' protocol for the deploy-first dependency resolution that would otherwise make every test in this task vacuous."
     }
   ],
-  "next_steps": "Run /plan 126 to create implementation plan; the plan must resolve the (a)/(b) scope decision on whether fixing the pre-existing next_artifact_number gap is in-scope for this task.",
+  "next_steps": "Run /implement 126 to execute the plan. Two constraints dominate: Phase 5 touches skill-base.sh at positional 7 ONLY and must re-read the landed signature first (a sibling owns positional 6); and Phases 2/5/7 must follow the plan's stale-deploy protocol -- never deploy to make a test pass, never reorder an existing suite's resolution.",
   "metadata": {
     "session_id": "sess_1788267679_adbb09_126",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 3,
-    "delegation_path": ["orchestrator", "skill-orchestrate", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ],
+    "phase_count": 7,
+    "estimated_hours": 9.5,
+    "dependency_waves": [
+      [
+        1,
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        6
+      ],
+      [
+        7
+      ]
+    ]
   },
   "memory_candidates": [
     {
-      "content": "orchestrator-postflight.sh's header comment describes a shared research/plan/implement postflight pipeline, but a repo-wide grep shows it is called only from skill-implementer/SKILL.md (the plain /implement command). skill-orchestrate/SKILL.md never calls it, in either single-task or multi-task mode -- confirmed independently by an existing comment in context/patterns/batch-orchestration-guardrails.md's own reference table. /orchestrate's real single-task postflight path is orchestrate-stage5-postflight.sh (called from Stage 5's 'Shared postflight tail'), and its multi-task path is Stage MT-4 -- both converge on skill_postflight_update/skill_link_artifacts in skill-base.sh. Before editing orchestrator-postflight.sh to change /orchestrate behavior, verify via grep that the target file is actually in /orchestrate's call graph -- task descriptions that name it for an /orchestrate-affecting change may be wrong.",
+      "content": "When a task's design report names a specific file as the site for a behavioral change, verify by grep that the file is actually in the target command's call graph BEFORE planning against it. Concrete instance: orchestrator-postflight.sh's Stage 7a increments next_artifact_number and its header describes a shared research/plan/implement postflight, but it is called only from skill-implementer/SKILL.md (plain /implement). skill-orchestrate/SKILL.md never calls it. /orchestrate's real postflight path is orchestrate-stage5-postflight.sh (single-task, Stage 5's 'Shared postflight tail') and Stage MT-4 (multi-task), both converging on skill_postflight_update/skill_link_artifacts in skill-base.sh. Editing the wrongly-named file would pass a superficial review -- the named file did change in the way described -- while changing nothing about the intended command's behavior. The general lesson: a plan that inherits a target-file name from a design report should treat that name as a hypothesis, and the grep confirming it is cheap.",
       "category": "INSIGHT",
-      "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md",
+      "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md",
       "confidence": 0.9,
-      "suggested_keywords": ["orchestrator-postflight.sh", "skill-orchestrate", "next_artifact_number", "postflight", "dead-code", "orchestrate-stage5-postflight.sh"]
+      "suggested_keywords": [
+        "design-report-premise",
+        "call-graph-verification",
+        "orchestrator-postflight.sh",
+        "orchestrate-stage5-postflight.sh",
+        "dead-code",
+        "target-file-hypothesis"
+      ]
     },
     {
-      "content": "skill-orchestrate/SKILL.md's single-task, non-team-mode Agent dispatch context tables (Stage 4 state handlers) never include an artifact_number field -- that field is only threaded through the Stage 3.6 Team Fan-Out context shape. general-research-agent.md documents reading artifact_number 'from delegation context' with no described fallback, so a non-team /orchestrate research dispatch has no documented way to learn its round number today.",
+      "content": "Pattern for planning a change to a file that concurrent sibling tasks also edit: partition by POSITIONAL SLOT and by STAGE/REGION rather than by file. Concrete instance from skill-base.sh's skill_postflight_update (signature: 1 task_number, 2 operation, 3 session_id, 4 status, 5 phase_check_mode): one task claims positional 6, another claims positional 7 and adds ONLY its own `local x=\"${7:-}\"` line, never reading or renumbering 6. A positional gap is harmless in bash regardless of landing order, so the two changes compose without a merge conflict and without an ordering dependency. The same partitioning works for a large prose SKILL.md: assign each concurrent task its own new stage heading plus append-only bullets in shared lists, and have it reference sibling-owned handler bodies by heading pointer rather than editing them. Referencing a sibling-owned section is not a collision; only editing it is.",
       "category": "PATTERN",
-      "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["artifact_number", "skill-orchestrate", "dispatch context", "team fan-out", "next_artifact_number"]
+      "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "concurrent-edit-partitioning",
+        "positional-slot-ownership",
+        "skill_postflight_update",
+        "shared-file-contract",
+        "append-only-bullets",
+        "batch-alignment"
+      ]
+    },
+    {
+      "content": "Deploy-first dependency resolution silently invalidates tests for source-store-only edits. In a repo where .claude/ is a gitignored deploy artifact regenerated from agent-system/extensions/**, most loaders resolve deploy-tree-first with a source-store fallback: test-skill-base-lifecycle.sh and test-status-vocabulary.sh both try $REPO_ROOT/.claude/... before $SCRIPT_DIR/..; update-task-status.sh does the same for its lib; skill-base.sh sources lib/common.sh via ${SKILL_REPO_ROOT}/.claude/ first; and orchestrate-stage5-postflight.sh sources skill-base.sh cwd-relative from .claude/ first. Because the deployed copy always exists, editing only the source store means every one of these keeps loading the OLD code -- a new test then fails spuriously or, worse, passes while exercising nothing. Critically this is a CHAIN: sourcing the source-store entry point is not enough, because its own internal sources resolve deploy-first too, so a partial fix yields 'command not found' on the new function rather than a clean signal. The fix is a scratchpad harness carrying source-store copies of every edited file (not just the entry point) plus deployed copies of everything else. Two anti-patterns to refuse: deploying in order to make a test pass (destroys the signal the test exists to give, and regeneration is a manual user-owned operation), and reordering an existing suite's resolution (the deploy-first order is deliberate -- the deployed tree is what actually runs). Note the order is not even uniform: generate-todo.sh and validate-state.sh resolve SCRIPT_DIR-first, so never assume a direction without checking the specific loader.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "deploy-first-resolution",
+        "stale-deploy",
+        "source-store-deploy-boundary",
+        "vacuous-tests",
+        "scratchpad-harness",
+        "test-skill-base-lifecycle.sh"
+      ]
     }
   ]
 }
