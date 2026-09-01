@@ -611,25 +611,25 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 6: Wire the forced signal through the Stage 5 postflight tail [NOT STARTED]
+### Phase 6: Wire the forced signal through the Stage 5 postflight tail [COMPLETED]
 
 - **Goal:** `force_invoked` and the resolved `artifact_number` actually reach the code written in
   Phases 4 and 5.
 
 - **Tasks:**
-  - [ ] In `skill-orchestrate/SKILL.md` Stage 5's "Shared postflight tail", extend the
+  - [x] In `skill-orchestrate/SKILL.md` Stage 5's "Shared postflight tail", extend the
         `orchestrate-stage5-postflight.sh` invocation to pass `"$force_invoked"` as the 20th
         positional argument, and add a short note that the argument is optional and that omitting it
-        preserves the pre-change behavior.
-  - [ ] Confirm `force_invoked` is in scope at that call site (set by Stage 3's 3c on every cycle,
-        both branches) and initialized to `"false"` in Stage 2b so no cycle can read it unset.
-  - [ ] Confirm `ARTIFACT_NUMBER` is in scope at every Stage 4 dispatch site, set by
-        `resolve_cycle_artifact_number()` in 3c before the handler runs.
-  - [ ] Trace and record the full end-to-end chain in a short note in Stage 2b:
+        preserves the pre-change behavior. *(completed)*
+  - [x] Confirm `force_invoked` is in scope at that call site (set by Stage 3's 3c on every cycle,
+        both branches) and initialized to `"false"` in Stage 2b so no cycle can read it unset. *(completed)*
+  - [x] Confirm `ARTIFACT_NUMBER` is in scope at every Stage 4 dispatch site, set by
+        `resolve_cycle_artifact_number()` in 3c before the handler runs. *(completed)*
+  - [x] Trace and record the full end-to-end chain in a short note in Stage 2b:
         `parse-command-args.sh` -> `commands/orchestrate.md` (8 sites) -> Stage 1 `force_phases` ->
         Stage 2b `force_queue` -> Stage 3 3c `forced_phase`/`force_invoked`/`ARTIFACT_NUMBER` ->
         Stage 4 handler `context` -> Stage 5 tail -> `orchestrate-stage5-postflight.sh` positional
-        20 -> clamp (positional 7 of `skill_postflight_update`) and artifact-round advance.
+        20 -> clamp (positional 7 of `skill_postflight_update`) and artifact-round advance. *(completed)*
 
 - **Timing:** 1 hour
 

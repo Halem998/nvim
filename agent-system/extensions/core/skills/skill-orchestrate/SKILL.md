@@ -508,6 +508,11 @@ user typo, and deserves a loud failure rather than a silent skip.
 
 ```bash
 force_queue=()
+# Initialized here, unconditionally, so no cycle can ever read force_invoked unset — Stage 3's
+# 3c reassigns it explicitly on every cycle (both the terminal-check and status-derived branches
+# set it to "false"; the forced-dispatch branch sets it to "true"), but this Stage 2b default is
+# the belt-and-braces floor for the very first read, before Stage 3's loop has run even once.
+force_invoked="false"
 if [ -n "${force_phases:-}" ]; then
   IFS=',' read -ra _force_phases_split <<< "$force_phases"
   for _fp in "${_force_phases_split[@]}"; do
@@ -586,6 +591,16 @@ jq --arg remaining "$force_phases_remaining" \
 forcing flag was passed), this stage is a no-op: `force_invoked` is `false` on every cycle, and
 every downstream path (Stage 3's 3c, Stage 4's dispatch, Stage 5's postflight tail) behaves
 byte-for-byte as it did before this stage existed.
+
+**End-to-end chain (A2, recorded once here for a future reader tracing the whole feature):**
+`parse-command-args.sh` (flag detection, canonical-order accumulation) → `commands/orchestrate.md`
+(8 threading sites) → this skill's Stage 1 `force_phases` bullet → this Stage 2b's `force_queue` →
+Stage 3's 3c (`forced_phase` / `force_invoked` / `resolve_cycle_artifact_number()` →
+`ARTIFACT_NUMBER`) → Stage 4's handler `context` object (carries `artifact_number:
+$ARTIFACT_NUMBER`, per this file's Stage 4 preamble sentence) → Stage 5's "Shared postflight
+tail" → `orchestrate-stage5-postflight.sh` positional 20 (`force_invoked`) → the monotonic-max
+clamp (positional 7 of `skill_postflight_update`) and the artifact-round-advance block, both in
+that script.
 
 ### Stage 3: State Machine Loop
 
@@ -2374,13 +2389,18 @@ fi
 # mitigation for the state-swallowing risk: a script boundary must never silently absorb an
 # orchestrator loop-control transition.
 if [ "$have_outcome" = "true" ]; then
+  # Positional 20 (force_invoked, A2) is OPTIONAL — omitting it preserves the pre-A2 behavior
+  # exactly (no clamp, no forced-dispatch artifact-round advance). Passed here as "$force_invoked",
+  # set every cycle by Stage 3's 3c (both branches) and floor-initialized to "false" in Stage 2b,
+  # so it is always in scope at this call site regardless of which 3c branch ran this cycle.
   stage5_postflight_json=$(bash .claude/scripts/orchestrate-stage5-postflight.sh \
     "$task_number" "$session_id" "$TASK_TYPE" "$TASK_DIR" "$dispatch_status" \
     "$phases_completed" "$phases_total" "$plan_markers_verified" \
     "$handoff_artifact_path" "$handoff_artifact_type" "$handoff_artifact_summary" \
     "[orchestrate]" "skill-orchestrate/SKILL.md:stage-5-tier-c" \
     "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" "" \
-    "${dispatch_start_ts:-9999999999}" "$handoff_file" "$loop_guard_file" "${cycle_count:-0}")
+    "${dispatch_start_ts:-9999999999}" "$handoff_file" "$loop_guard_file" "${cycle_count:-0}" \
+    "${force_invoked:-false}")
   offschema_dispatch_status=$(echo "$stage5_postflight_json" | jq -r '.offschema_dispatch_status')
 
   # Off-schema halt — consumed HERE, after the script's own artifact linking has already run,

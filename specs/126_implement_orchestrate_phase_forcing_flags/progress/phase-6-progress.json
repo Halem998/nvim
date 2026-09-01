@@ -1,0 +1,13 @@
+{
+  "phase": 6,
+  "phase_name": "Wire the forced signal through the Stage 5 postflight tail",
+  "started_at": "2026-09-01T02:10:00Z",
+  "last_updated": "2026-09-01T02:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend Shared postflight tail's orchestrate-stage5-postflight.sh call to pass force_invoked as positional 20; floor-initialize force_invoked=\"false\" in Stage 2b; add end-to-end chain trace note to Stage 2b", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Verified the Stage 5 tail call site now passes exactly 20 positional arguments (counted by hand against the script's documented usage). force_invoked is in scope at that call site because Stage 2b floor-initializes it to \"false\" and Stage 3's 3c reassigns it explicitly on every cycle (all three branches). Scoped diff confirms only 3 hunks (Stage 2b floor-init, Stage 2b chain note, Stage 5 tail call site) -- Stage MT-4's own skill_postflight_update calls are untouched."
+}
