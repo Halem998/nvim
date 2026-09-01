@@ -65,7 +65,7 @@ next_project_number: 132
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
-131 [NOT STARTED] — Make /tag produce releases that a release workflow's preflight wi
+131 [IMPLEMENTING] — Make /tag produce releases that a release workflow's preflight wi
 
 ### Extensions
 
@@ -97,10 +97,13 @@ next_project_number: 132
 ## Tasks
 
 ### 131. Tag annotated and changelog preflight
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [131_tag_annotated_and_changelog_preflight/reports/01_tag-annotated-and-changelog-preflight.md]
+- **Plan**: [131_tag_annotated_and_changelog_preflight/plans/01_tag-annotated-changelog-preflight.md]
+- **Summary**: [131_tag_annotated_and_changelog_preflight/summaries/01_tag-annotated-changelog-preflight-summary.md]
 
 **Description**: Make /tag produce releases that a release workflow's preflight will actually accept. Two independent gaps in skill-tag currently emit tags that fail a standard preflight gate, and both were hit consecutively on a real release, costing four failed release runs before the artifact published.
 

@@ -1,5 +1,5 @@
 {
-  "status": "implemented",
+  "status": "partial",
   "artifacts": [
     {
       "type": "summary",
@@ -19,8 +19,25 @@
     "session_id": "sess_1788263174_541420",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
-    "phases_total": 6
+    "phases_total": 6,
+    "cycles_used": 3,
+    "final_state": "implementing",
+    "detected_defects": [
+      {
+        "task": 131,
+        "defect_class": "DEPLOY_PENDING_MARKER_NOT_RECORDED",
+        "attributed_source_path": "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+        "detecting_site": "skill-orchestrate/SKILL.md:stage-5-postflight-deploy-gate",
+        "cycle": 0,
+        "detail": "deploy_pending annotation reads env TASK_DIR; caller binds only positional task_dir, so the marker never lands",
+        "record_result": null
+      }
+    ]
   }
 }
