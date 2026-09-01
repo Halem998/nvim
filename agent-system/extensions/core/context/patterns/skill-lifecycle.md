@@ -3,7 +3,7 @@
 ## Overview
 
 Every lifecycle skill (`skill-researcher`, `skill-planner`, `skill-implementer`, their `--hard`
-variants, the team skills, and every extension's `skill-{domain}-research` /
+variants, and every extension's `skill-{domain}-research` /
 `skill-{domain}-implementation`) is a self-contained workflow that owns its complete lifecycle in
 one skill invocation:
 
@@ -260,9 +260,10 @@ Each skill instance runs **independently** with its own preflight, delegation, p
 fields.
 
 **Multi-task vs. team mode** (orthogonal dimensions): multi-task invokes one skill instance per
-task; team mode (`--team`) has a single team skill spawn multiple agents for *one* task. Combined
-(`/research 7, 22 --team`), each task routes to the team skill, producing `N_tasks * team_size`
-total agents.
+task, on `/research`, `/plan`, and `/implement`. Team mode (`--team`) is `skill-orchestrate`'s
+internal Stage 3.6/3.6a fan-out on `/orchestrate` only, spawning multiple agents for a single
+task. `--team` is not accepted by `/research`, `/plan`, or `/implement`, so there is no combined
+multi-task-plus-team mode on those three commands.
 
 ---
 

@@ -192,25 +192,27 @@ baseline header and proceed — the baseline file, not the report, is authoritat
 
 ---
 
-### Phase 2: Repair `context/patterns/skill-lifecycle.md` [NOT STARTED]
+### Phase 2: Repair `context/patterns/skill-lifecycle.md` [COMPLETED]
 
 **Goal**: Remove the two assertions that the deleted per-command team skills are a live category
 of lifecycle skill.
 
 **Tasks**:
-- [ ] Locate the roster line by anchored grep for `their \`--hard\`\s*$` / `the team skills` in
+- [x] Locate the roster line by anchored grep for `their \`--hard\`\s*$` / `the team skills` in
   `agent-system/extensions/core/context/patterns/skill-lifecycle.md` (hypothesised line 6).
-- [ ] Drop `the team skills, ` from the lifecycle-skill roster. Do not substitute a replacement
+  *(completed)*
+- [x] Drop `the team skills, ` from the lifecycle-skill roster. Do not substitute a replacement
   clause — `skill-orchestrate`'s team fan-out is a stage inside one skill, not a member of this
-  roster, and adding it would misdescribe the roster's own subject.
-- [ ] Locate the `**Multi-task vs. team mode**` paragraph by anchored grep (hypothesised lines
-  262-264).
-- [ ] Rewrite it to state: multi-task invokes one skill instance per task; team mode is
+  roster, and adding it would misdescribe the roster's own subject. *(completed)*
+- [x] Locate the `**Multi-task vs. team mode**` paragraph by anchored grep (hypothesised lines
+  262-264). *(completed: confirmed at lines 262-264)*
+- [x] Rewrite it to state: multi-task invokes one skill instance per task; team mode is
   `skill-orchestrate`'s internal Stage 3.6/3.6a fan-out on `/orchestrate` only, and `--team` is
   not accepted by `/research`, `/plan`, or `/implement`. Delete the
   `/research 7, 22 --team` combined example and the `N_tasks * team_size` arithmetic, both of
-  which describe a routing model that no longer exists.
-- [ ] Confirm no task-number reference was introduced (this file is outside `specs/**`).
+  which describe a routing model that no longer exists. *(completed)*
+- [x] Confirm no task-number reference was introduced (this file is outside `specs/**`).
+  *(completed: 0 hits)*
 
 **Timing**: 0.4 hours
 
