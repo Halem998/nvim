@@ -79,6 +79,10 @@ Read from delegation context:
   [ "$team_size_eff" -lt 2 ] && team_size_eff=2
   [ "$team_size_eff" -gt 4 ] && team_size_eff=4
   ```
+- `force_phases` (default `""`) — threaded from the command's composable `--research`/`--plan`/
+  `--implement` flags (A2). Single-task-only. Consumed by Stage 2b below, which splits it into
+  the ordered forced-phase queue the state machine loop's Stage 3 sub-step 3c checks first, ahead
+  of status-derived dispatch. Never forwarded to any admission-gate script.
 
 **Hard-mode state-machine migration — acceptance checklist.** Each behavior below is reproduced
 in this engine behind `$hard_mode`, mapped to the stage that now implements it:
@@ -488,6 +492,101 @@ question, left open by this migration: the detector's presence here is scoped to
 and extending it to base mode would be a distinct, future decision requiring its own rationale —
 not something this task settles by porting the hard-only region.
 
+### Stage 2b: Forced-Phase Queue Initialization
+
+Runs once, after Stage 2 (Loop Guard Initialization) and before Stage 3's loop opens. This is the
+functional target for what this stage's originating task description called "Stage 1b/2" —
+`Stage 1b` (above) is agent routing, not phase selection; this stage is where `force_phases` (A2)
+actually resolves into a queue the state machine loop consumes.
+
+**Build the ordered queue.** Split the `force_phases` string (Stage 1, default `""`) on commas
+into an ordered bash array, validating each entry against the closed set `{research, plan,
+implement}` and failing loudly on anything else — `force_phases` is minted only by
+`parse-command-args.sh`'s own canonical-lifecycle-order accumulation (see this stage's
+originating plan's Phase 1), so an invalid entry here means a corrupted delegation context, not a
+user typo, and deserves a loud failure rather than a silent skip.
+
+```bash
+force_queue=()
+if [ -n "${force_phases:-}" ]; then
+  IFS=',' read -ra _force_phases_split <<< "$force_phases"
+  for _fp in "${_force_phases_split[@]}"; do
+    case "$_fp" in
+      research|plan|implement)
+        force_queue+=("$_fp")
+        ;;
+      *)
+        echo "[orchestrate] ERROR: force_phases contains an invalid entry '${_fp}' (expected one of: research, plan, implement). This should be unreachable from parse-command-args.sh's own accumulation — treating as a corrupted delegation context." >&2
+        exit 1
+        ;;
+    esac
+  done
+fi
+```
+
+**Phase-to-handler map (prose, referenced by heading — never inlined).** A popped `force_queue`
+entry dispatches the SAME Stage 4 handler body the status-derived path would use for the
+equivalent status, by pointer:
+
+| Forced phase | Stage 4 handler (by heading) |
+|---|---|
+| `research` | State: not_started or not started |
+| `plan` | State: researched |
+| `implement` | State: planned or implementing |
+
+Referencing one of these handlers is a pointer, not an edit — it does not collide with the
+sibling task that owns these handler bodies (see this stage's originating plan's Cross-task
+composition table).
+
+**`resolve_cycle_artifact_number()`.** Named function, defined once here, called from Stage 3's
+3c on every cycle that dispatches a phase (forced or status-derived). Wraps
+`skill_read_artifact_number` — itself entirely UNCHANGED by this stage — choosing `mode` and
+`artifact_dir` from the phase about to run: `mode="current"`/`artifact_dir="reports/"` for a
+research cycle, `mode="prev"` with the matching directory for a plan or implement cycle (planner
+and implementer share the round research opened, per `skill_read_artifact_number`'s own existing
+`"prev"` semantics).
+
+```bash
+resolve_cycle_artifact_number() {
+  local phase="$1"  # "research" | "plan" | "implement"
+  local mode artifact_dir
+  case "$phase" in
+    research)
+      mode="current"
+      artifact_dir="reports/"
+      ;;
+    plan)
+      mode="prev"
+      artifact_dir="plans/"
+      ;;
+    implement)
+      mode="prev"
+      artifact_dir="summaries/"
+      ;;
+  esac
+  skill_read_artifact_number "$task_number" "$PADDED_NUM" "$PROJECT_NAME" "$artifact_dir" "$mode"
+  # Exports ARTIFACT_NUMBER / ARTIFACT_PADDED — consumed by Stage 4's preamble sentence below,
+  # which every handler's `context` object then additionally carries as
+  # `artifact_number: $ARTIFACT_NUMBER`.
+}
+```
+
+**Observability write (never authoritative, never gates admission).** Record the still-pending
+forced phases in the loop guard, in the same jq-write style Stage 3's 3b already uses against
+`loop_guard_file`:
+
+```bash
+force_phases_remaining=$(IFS=,; echo "${force_queue[*]:-}")
+jq --arg remaining "$force_phases_remaining" \
+  '.force_phases_remaining = $remaining' \
+  "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+```
+
+**Empty-queue invariant.** When `force_queue` is empty (the overwhelmingly common case — no
+forcing flag was passed), this stage is a no-op: `force_invoked` is `false` on every cycle, and
+every downstream path (Stage 3's 3c, Stage 4's dispatch, Stage 5's postflight tail) behaves
+byte-for-byte as it did before this stage existed.
+
 ### Stage 3: State Machine Loop
 
 **Entry reconcile (once per invocation, never per-cycle)**: before the state machine loop opens,
@@ -595,7 +694,66 @@ if [ "${hard_mode:-false}" = "true" ]; then
 fi
 ```
 
-**3c. Dispatch by state** (see State Handlers in Stage 4)
+**3c. Dispatch by state.** A three-way, STRICTLY ORDERED decision, replacing the former plain
+"dispatch by state" pointer. Order matters and is stated here as a requirement, not left
+implicit — a forced phase NEVER overrides a terminal state, and `force_queue` (Stage 2b's
+per-cycle parse of `force_phases`) takes priority over status-derived dispatch whenever it is
+non-empty. One unified decision (shown as a
+single flowing `if`/`elif`/`else` below, not three independently-fenced fragments, so the
+control flow stays syntactically whole):
+
+1. **Terminal check, first.** If `current_status` is `completed`, `abandoned`, or `expanded`, run
+   the existing terminal-state handler UNCHANGED (see State: `completed` / States: `abandoned`,
+   `expanded` in Stage 4) — a forced phase never overrides a terminal state. If `force_queue` is
+   non-empty when this branch is taken, emit a loud named refusal FIRST, citing
+   `rules/state-management.md`'s "Cannot transition from terminal states".
+2. **Else if `force_queue` is non-empty**: pop its head into `forced_phase`, set
+   `force_invoked=true` for this cycle, resolve the artifact round via
+   `resolve_cycle_artifact_number "$forced_phase"` (Stage 2b), and execute the Stage 4 handler
+   Stage 2b's phase-to-handler map names for `forced_phase` — by pointer, exactly as written
+   there, never inlined.
+3. **Else**: set `force_invoked=false`, derive `cycle_phase` from `current_status` (the same
+   research/plan/implement grouping the Stage 4 handler headings already use — `not_started`/
+   `not started`/`researching` → `research`; `researched`/`planning` → `plan`; `planned`/
+   `implementing`/`partial` → `implement`; every other status, including `blocked` and unknown
+   states, dispatches no agent and resolves no artifact number), call
+   `resolve_cycle_artifact_number "$cycle_phase"` only when `cycle_phase` is non-empty, and
+   dispatch by state exactly as today.
+
+```bash
+if [[ "$current_status" == "completed" || "$current_status" == "abandoned" || "$current_status" == "expanded" ]]; then
+  if [ "${#force_queue[@]}" -gt 0 ]; then
+    echo "[orchestrate] REFUSED: task $task_number is in terminal state [$current_status] — forced phase(s) '${force_queue[*]}' cannot run. Cannot transition from terminal states (rules/state-management.md). Running the existing terminal-state handler below unchanged; no forced dispatch occurs this cycle." >&2
+  fi
+  force_invoked=false
+  # Fall through to the existing terminal-state handler for $current_status, unchanged
+  # (see State: `completed` / States: `abandoned`, `expanded` in Stage 4).
+elif [ "${#force_queue[@]}" -gt 0 ]; then
+  forced_phase="${force_queue[0]}"
+  force_queue=("${force_queue[@]:1}")
+  force_invoked=true
+  resolve_cycle_artifact_number "$forced_phase"
+  # Dispatch the Stage 2b-mapped Stage 4 handler for $forced_phase, by pointer.
+else
+  force_invoked=false
+  cycle_phase=""
+  case "$current_status" in
+    not_started|"not started"|researching) cycle_phase="research" ;;
+    researched|planning) cycle_phase="plan" ;;
+    planned|implementing|partial) cycle_phase="implement" ;;
+  esac
+  if [ -n "$cycle_phase" ]; then
+    resolve_cycle_artifact_number "$cycle_phase"
+  fi
+  # Dispatch by state exactly as today (see State Handlers in Stage 4).
+fi
+```
+
+**Forced-sequence-exhausted terminal condition.** After the cycle whose popped `forced_phase` left
+`force_queue` empty completes its Stage 5 postflight, the loop STOPS — it does NOT fall through to
+status-derived dispatch. This is checked and applied at Stage 7 (Loop Guard Update), routed
+through the same `EXIT (...)` reporting idiom the existing MAX_CYCLES/MAX_INFRA_FAILURES terminal
+conditions use, so the run's own summary names it.
 
 ---
 
@@ -1085,6 +1243,12 @@ always.
 ---
 
 ### Stage 4: State Handlers
+
+**Every handler's `context` object below additionally carries `artifact_number: $ARTIFACT_NUMBER`**,
+resolved this cycle by Stage 2b's `resolve_cycle_artifact_number()` (called from Stage 3's 3c
+before the handler below runs). Stated once here, exactly as the `team_mode` fork paragraph below
+is stated once and referenced by every later occurrence rather than restated — no individual
+handler's `context` table row is edited to add this field.
 
 #### State: `not_started` or `not started`
 
@@ -2443,6 +2607,18 @@ jq --arg state "$current_status" \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
 ```
 
+**Forced-sequence-exhausted (A2 — checked first, ahead of the MAX_INFRA_FAILURES/MAX_CYCLES
+checks below).** If this cycle's 3c popped `force_queue` (`force_invoked` is `true`) AND
+`force_queue` is now empty, the composed `--research`/`--plan`/`--implement` sequence is
+exhausted. STOP here — do not fall through to status-derived dispatch on a subsequent cycle:
+
+```
+if [ "${force_invoked:-false}" = "true" ] && [ "${#force_queue[@]}" -eq 0 ]; then
+  echo "[orchestrate] Forced-phase sequence complete for task $task_number (last forced phase: $forced_phase). Stopping — the composed --research/--plan/--implement sequence does not fall through to status-derived dispatch."
+  EXIT (success)
+fi
+```
+
 If MAX_INFRA_FAILURES reached (infra_failures >= MAX_INFRA_FAILURES):
 
 ```
@@ -2584,6 +2760,11 @@ Read from delegation context:
   `context/patterns/multi-task-operations.md`'s cost-warning), so this value never gates a Stage
   MT-4 dispatch fork. When `team_mode` is `"true"`, emit one notice per batch, once, here:
   `echo "[orchestrate] NOTICE: --team is accepted and ignored in multi-task mode — no per-task teammate fan-out will occur" >&2`.
+- `force_phases` (default `""`) — read here for DIAGNOSTICS ONLY, on the identical terms
+  `team_mode` is above. Multi-task mode has no per-task phase-forcing consumption today (deferred
+  — see Phase 7's filed defect in this stage's originating plan); this value never gates a Stage
+  MT-4 dispatch fork. When `force_phases` is non-empty, emit one notice per batch, once, here:
+  `echo "[orchestrate] NOTICE: --research/--plan/--implement (force_phases=${force_phases}) are accepted and ignored in multi-task mode — no per-task phase forcing will occur" >&2`.
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was

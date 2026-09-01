@@ -416,43 +416,43 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Forced-phase resolution stage in skill-orchestrate [NOT STARTED]
+### Phase 4: Forced-phase resolution stage in skill-orchestrate [COMPLETED]
 
 - **Goal:** a `force_phases`-first override that runs the composed sequence and then terminates,
   implemented ahead of the state-machine loop without touching any sibling-owned stage or handler
   body.
 
 - **Tasks:**
-  - [ ] Stage 1 (Input Validation): add ONE bullet parsing `force_phases` (default `""`) from the
+  - [x] Stage 1 (Input Validation): add ONE bullet parsing `force_phases` (default `""`) from the
         delegation context, appended to the end of the existing bullet list. Do not reorder existing
-        bullets. State that it is single-task-only and consumed by Stage 2b.
-  - [ ] Stage MT-1 (Parse Multi-Task Context): add ONE bullet parsing `force_phases` for
+        bullets. State that it is single-task-only and consumed by Stage 2b. *(completed)*
+  - [x] Stage MT-1 (Parse Multi-Task Context): add ONE bullet parsing `force_phases` for
         DIAGNOSTICS ONLY, and emit a once-per-batch accepted-and-ignored notice when non-empty,
         copying the existing `team_mode` notice's exact shape and rationale style. This is the
         precedented mechanism for a single-task-only flag reaching MT mode; it makes the deferral
-        loud instead of silent.
-  - [ ] Add a new `### Stage 2b: Forced-Phase Queue Initialization`, placed after Stage 2 (Loop
-        Guard Initialization) and immediately before `### Stage 3: State Machine Loop`. It must:
-    - [ ] Split `force_phases` into an ordered `force_queue` array, validating each entry against
-          the closed set `{research, plan, implement}` and failing loudly on any other value.
-    - [ ] Define the phase-to-handler map as prose: `research` -> the Stage 4
+        loud instead of silent. *(completed)*
+  - [x] Add a new `### Stage 2b: Forced-Phase Queue Initialization`, placed after Stage 2 (Loop
+        Guard Initialization) and immediately before `### Stage 3: State Machine Loop`. It must: *(completed)*
+    - [x] Split `force_phases` into an ordered `force_queue` array, validating each entry against
+          the closed set `{research, plan, implement}` and failing loudly on any other value. *(completed)*
+    - [x] Define the phase-to-handler map as prose: `research` -> the Stage 4
           `#### State: not_started` handler body; `plan` -> the Stage 4 `#### State: researched`
           handler body; `implement` -> the Stage 4 `#### State: planned or implementing` handler
           body. Reference each by heading, never inline a copy. (Referencing the `researched`
           handler is a pointer, not an edit — it does not collide with the sibling that owns that
-          handler's body.)
-    - [ ] Define the named function `resolve_cycle_artifact_number()`, which calls
+          handler's body.) *(completed)*
+    - [x] Define the named function `resolve_cycle_artifact_number()`, which calls
           `skill_read_artifact_number "$task_number" "$PADDED_NUM" "$PROJECT_NAME" "$artifact_dir"
           "$mode"` with `mode="current"` and `artifact_dir="reports/"` for a research cycle, and
           `mode="prev"` with the matching directory for plan/implement cycles, exporting
           `ARTIFACT_NUMBER`/`ARTIFACT_PADDED`. Note explicitly that `skill_read_artifact_number`'s
-          own logic is unchanged by this task.
-    - [ ] Write `force_phases_remaining` into the loop-guard JSON for observability only, in the
+          own logic is unchanged by this task. *(completed)*
+    - [x] Write `force_phases_remaining` into the loop-guard JSON for observability only, in the
           same jq-write style Stage 3's 3b already uses. State that it is never authoritative and
-          never gates admission.
-    - [ ] State the empty-queue invariant explicitly: when `force_queue` is empty, this stage is a
-          no-op and every downstream path behaves byte-for-byte as it does today.
-  - [ ] Stage 3, sub-step 3c ("Dispatch by state"): rewrite as a two-branch decision. Order matters
+          never gates admission. *(completed)*
+    - [x] State the empty-queue invariant explicitly: when `force_queue` is empty, this stage is a
+          no-op and every downstream path behaves byte-for-byte as it does today. *(completed)*
+  - [x] Stage 3, sub-step 3c ("Dispatch by state"): rewrite as a two-branch decision. Order matters
         and must be stated as an ordering requirement, not left implicit:
     1. If `current_status` is terminal (`completed`, `abandoned`, `expanded`), run the existing
        terminal handler unchanged — a forced phase NEVER overrides a terminal state. On a non-empty
@@ -462,20 +462,20 @@ Phases within the same wave can execute in parallel.
        `force_invoked=true` for this cycle, call `resolve_cycle_artifact_number()`, and execute the
        Stage 4 handler the map names — by pointer, exactly as written.
     3. Else: set `force_invoked=false`, call `resolve_cycle_artifact_number()`, and dispatch by
-       state exactly as today.
-  - [ ] Add the forced-sequence-exhausted terminal condition: after the cycle whose popped phase
+       state exactly as today. *(completed)*
+  - [x] Add the forced-sequence-exhausted terminal condition: after the cycle whose popped phase
         left `force_queue` empty completes its Stage 5 postflight, the loop STOPS. It does not fall
         through to status-derived dispatch. Route this through the existing terminal-condition
-        reporting so the run's summary names it.
-  - [ ] Add ONE sentence to Stage 4's preamble (under the `### Stage 4: State Handlers` heading,
+        reporting so the run's summary names it. *(completed)*
+  - [x] Add ONE sentence to Stage 4's preamble (under the `### Stage 4: State Handlers` heading,
         before the first `#### State:` section) stating that every handler's `context` object
         additionally carries `artifact_number: $ARTIFACT_NUMBER`, resolved by Stage 2b's
         `resolve_cycle_artifact_number()`. This is the "stated fully here; every later occurrence
         references this paragraph" idiom the file's own `team_mode` fork paragraph already
-        establishes, and it delivers P3 without editing a single handler body.
-  - [ ] Add a short note recording that the task description's "Stage 1b/2" phrasing does not name a
+        establishes, and it delivers P3 without editing a single handler body. *(completed)*
+  - [x] Add a short note recording that the task description's "Stage 1b/2" phrasing does not name a
         phase-selection site — `Stage 1b` is agent routing — and that this stage is the functional
-        target instead.
+        target instead. *(completed)*
 
 - **Timing:** 2 hours
 
