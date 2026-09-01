@@ -1,15 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 124,
+  "session_id": "sess_1788304786_edca9f_124",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "orchestrator_mode": true,
+  "dispatch_seq": 1,
   "artifacts": [
     {
-      "path": "specs/124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md",
-      "type": "report",
-      "summary": "Verifies deletion preconditions: (a) Stage 3.5 Dispatch Prep rehome and (b) both blocking defects are resolved, but (c) /orchestrate phase-forcing flags are not implemented."
+      "type": "plan",
+      "path": "specs/124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md",
+      "summary": "7-phase, 5-wave, 5.25-hour plan deleting the three lifecycle command files and de-registering them from manifest.json in one atomic commit, reconciling merge-sources/claudemd.md end to end, retargeting six index-entries.json load_when bindings (three would otherwise become unreachable), retiring three vacuous test guards, pruning stale deploy artifacts, and inventorying the ~76-file out-of-scope reference surface."
     }
   ],
-  "blockers": [
-    "Task 126 (orchestrate phase-forcing flags) is not_started; the --research/--plan/--implement replacement spelling this task must document does not exist yet."
+  "phase_count": 7,
+  "estimated_hours": 5.25,
+  "dependency_waves": [[1], [2, 3], [4], [5, 6], [7]],
+  "memory_candidates": [
+    {
+      "content": "When deleting a command/skill/agent file from the agent-system source store, four companion edits are structurally required and are not found by a literal-name grep for the file's own name: (1) the extension manifest.json provides.* array entry, which check-extension-docs.sh fails on as 'manifest entry missing on disk' -- this makes manifest edit + file deletion one indivisible atomic commit, never two; (2) index-entries.json load_when.commands bindings, where any context file left with an EMPTY trigger array becomes silently unreachable -- enumerate every binding and assert a surviving trigger per entry, adding the replacement entry point where the array would empty; (3) static-guard test cases that reference the deleted path and degrade to a SKIPPED branch rather than failing, becoming permanently vacuous while still reporting as run; (4) stale deployed copies under .claude/, which a default deploy-headless.sh resync copies-without-pruning, tripping the deployed-orphan lint rule -- only --wipe prunes. Run audit-deletion-references.sh for the glob/pattern-prose and reachability axes that literal grep structurally cannot reach.",
+      "category": "PATTERN",
+      "source_artifact": "specs/124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deletion-blast-radius", "manifest-deregistration", "index-entries-load-when", "atomic-batch-commit", "deploy-orphan-pruning", "vacuous-test-guard"]
+    }
   ],
-  "completion_summary": "Deletion must not proceed until phase-forcing flags land (Task 126).",
-  "modified_files": []
+  "next_steps": "Run /implement 124 to execute the plan"
 }

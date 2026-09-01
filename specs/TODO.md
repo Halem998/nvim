@@ -36,7 +36,7 @@ next_project_number: 139
 121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-124 [PLANNING] — Delete /research, /plan, /implement commands and update the CLAUD
+124 [PLANNED] — Delete /research, /plan, /implement commands and update the CLAUD
   └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
     └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
@@ -598,11 +598,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 124. Delete lifecycle commands and update reference
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 68, Task 81, Task 114, Task 117, Task 126
 - **Research**: [124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md]
+- **Plan**: [124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md]
 
 **Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
 

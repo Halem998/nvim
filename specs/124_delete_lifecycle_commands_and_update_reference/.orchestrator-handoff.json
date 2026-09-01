@@ -1,0 +1,21 @@
+{
+  "dispatch_seq": 1,
+  "task_number": 124,
+  "phase": "plan",
+  "status": "planned",
+  "session_id": "sess_1788304786_edca9f_124",
+  "agent_type": "planner-agent",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md",
+      "summary": "7-phase, 5-wave, 5.25-hour deletion plan for the three lifecycle command files with full companion-edit coverage."
+    }
+  ],
+  "phase_count": 7,
+  "estimated_hours": 5.25,
+  "dependency_waves": [[1], [2, 3], [4], [5, 6], [7]],
+  "blocked": false,
+  "notes": "Research report's blocking verdict on precondition (c) is STALE and superseded: task 126 landed the --research/--plan/--implement phase-forcing flags, verified present in both the source store and the deployed .claude/ tree at plan time. All three preconditions now satisfied; deletion may proceed. Plan adds four companion-edit surfaces the report did not cover: manifest.json de-registration (atomic with deletion), six index-entries.json load_when bindings (three context files would otherwise lose their only trigger), three vacuous static test guards, and stale deploy-artifact pruning.",
+  "next_steps": "Run /implement 124 to execute the plan"
+}
