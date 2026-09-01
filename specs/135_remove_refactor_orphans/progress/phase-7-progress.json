@@ -1,0 +1,26 @@
+{
+  "phase": 7,
+  "phase_name": "Build the reusable deletion-reference detector",
+  "started_at": "2026-09-01T20:41:00Z",
+  "last_updated": "2026-09-01T20:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create audit-deletion-references.sh (three-pass detector) and declare it in manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/audit-deletion-references.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "grep -rniE -- \"$v\" \"$EXT_DIR\" --include=\"*.md\" ... (options placed after --)",
+      "result": "failed",
+      "reason": "-- disabled option parsing for everything after it, so --include flags were treated as literal path args, causing grep to exit 2 and silently under-count Pass 2 hits to 0"
+    }
+  ],
+  "handoff_count": 0
+}

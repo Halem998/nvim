@@ -89,6 +89,7 @@
     ],
     "scripts": [
       "assess-repo-health.sh",
+      "audit-deletion-references.sh",
       "census-count.sh",
       "check-consumer-freshness.sh",
       "check-deploy-freshness.sh",

@@ -477,16 +477,17 @@ signal to stop and re-read, not to proceed.
 
 ---
 
-### Phase 7: Build the reusable deletion-reference detector [NOT STARTED]
+### Phase 7: Build the reusable deletion-reference detector [COMPLETED]
 
 **Goal**: Leave the sweep's method behind in re-runnable form, so the next artifact deletion
 (the hard-engine skill removal, on exactly this pattern) can run it instead of re-deriving it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/audit-deletion-references.sh` accepting one or
+- [x] Create `agent-system/extensions/core/scripts/audit-deletion-references.sh` accepting one or
   more deleted artifact names:
   `bash audit-deletion-references.sh skill-team-research skill-team-plan skill-team-implement`.
-- [ ] Implement three passes, each printing a labelled, separately-countable section:
+  *(completed; deviation noted below on the script's own internal example text)*
+- [x] Implement three passes, each printing a labelled, separately-countable section:
   1. **Literal-name grep** — each supplied name, verbatim, across `agent-system/extensions/`.
   2. **Wildcard-expanded grep** — for each name, derive and search stem variants
      (`{name}-*`, `*-{name}`, and the common-prefix stem, e.g. `skill-team` from
@@ -497,19 +498,32 @@ signal to stop and re-read, not to proceed.
      `check-extension-docs.sh` / `generate-context-line-counts.sh --check` reachability and
      `line_count` checks rather than reimplementing them, and surface their findings under this
      script's own heading.
-- [ ] Print a **triage checklist** — one line per hit, with file, line, and matched text — and a
+  *(completed: all three passes implemented and verified against a live no-longer-existent
+  target (the three deleted skill-team-* names, 0 hits post-sweep) and a live still-existing
+  target (`skill-orchestrate-hard`, 117 literal + 419 wildcard hits, confirming both passes
+  actually find real content) — see verification below)*
+- [x] Print a **triage checklist** — one line per hit, with file, line, and matched text — and a
   closing note stating plainly that reachability and pattern-prose auditing catch disjoint defect
   classes: a file can be perfectly reachable (valid index row, live `load_when` binding) while
-  its content is entirely dead, so hits require reading, not a pass/fail verdict.
-- [ ] Exit 0 when hits are found (hits are candidates, not failures); exit non-zero only on a
-  usage error (no arguments) or a missing dependency.
-- [ ] Add a header comment stating: this is an **on-demand** script, deliberately NOT part of the
+  its content is entirely dead, so hits require reading, not a pass/fail verdict. *(completed)*
+- [x] Exit 0 when hits are found (hits are candidates, not failures); exit non-zero only on a
+  usage error (no arguments) or a missing dependency. *(completed)*
+- [x] Add a header comment stating: this is an **on-demand** script, deliberately NOT part of the
   standing lint suite, because false positives on the prose axis would make it too noisy to run
-  unattended; invoke it from the task that performs a deletion.
-- [ ] Declare `audit-deletion-references.sh` in `agent-system/extensions/core/manifest.json`'s
-  `provides.scripts` array, in alphabetical position.
-- [ ] Contains no task-number references (the script and its comments are deliverables outside
-  `specs/**`).
+  unattended; invoke it from the task that performs a deletion. *(completed)*
+- [x] Declare `audit-deletion-references.sh` in `agent-system/extensions/core/manifest.json`'s
+  `provides.scripts` array, in alphabetical position. *(completed: between assess-repo-health.sh
+  and census-count.sh)*
+- [x] Contains no task-number references (the script and its comments are deliverables outside
+  `specs/**`). *(completed: 0 hits)*
+
+**Deviation**: the script's own usage example and internal comments were written using a generic
+placeholder (`old-artifact-a`, etc.) rather than the literal `skill-team-research`/
+`skill-team-plan`/`skill-team-implement` names, discovered mid-phase to be necessary: with the
+literal names in its own source, the script became a permanent 4-hit Pass-2 self-reference
+against itself (its own usage/comment text matching the `skill-team` stem), which would have
+made Phase 8's "confirm it now reports zero hits" closing check permanently fail. Behavior is
+unaffected — this only changes illustrative text, not logic.
 
 **Timing**: 1.2 hours
 
