@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Retarget test-handoff-dispatch-identity.sh",
+  "started_at": "2026-09-01T19:37:00Z",
+  "last_updated": "2026-09-01T19:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Single-file extraction, collapse iteration", "status": "done", "note": "SKILL_FILE single path; case loop collapsed (no hard_mode iteration needed); run_case calls made directly with engine_label=merged", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]},
+    {"id": 2, "description": "Inspect region for hard_mode reads and decide fixture count", "status": "done", "note": "Inspected merged file lines 2238-2317 (Staleness gate through dispatch-seq-gate:end): zero hard_mode reads. Added a runtime grep -q 'hard_mode' guard on the extracted region that errors loudly if this assumption ever becomes false, rather than relying solely on a static comment.", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]},
+    {"id": 3, "description": "Confirm append_detected_defect stub-by-name mechanism binds", "status": "done", "note": "Confirmed at merged file lines 2234-2235; the merged file even carries an explicit comment there naming this test file's stub-and-eval technique", "files_touched": []},
+    {"id": 4, "description": "Update header comment for merged engine Stage 5", "status": "done", "note": "Header now describes single skill-orchestrate/SKILL.md Stage 5 target and explains the gate is unconditional shared code", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]},
+    {"id": 5, "description": "Confirm no skill-orchestrate-hard string remains", "status": "done", "note": "grep -c returns 0; also updated a trailing negative-control note that referenced 'both SKILL.md files'", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

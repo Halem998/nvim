@@ -350,26 +350,32 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 6: Retarget `test-handoff-dispatch-identity.sh` [NOT STARTED]
+### Phase 6: Retarget `test-handoff-dispatch-identity.sh` [COMPLETED]
 
 - **Goal:** Collapse the dual-file extract-and-diff to a single-file extraction, converting
   "these two copies agree" into "this one region behaves correctly", without weakening what the
   test detects.
 - **Tasks:**
-  - [ ] Replace `BASE_SKILL`/`HARD_SKILL` with a single merged-engine target and update the
-    existence preflight loop and the `for pair in "base:..." "hard:..."` iteration.
-  - [ ] Inspect the extracted combined staleness/`dispatch_seq` region for any read of
+  - [x] Replace `BASE_SKILL`/`HARD_SKILL` with a single merged-engine target and update the
+    existence preflight loop and the `for pair in "base:..." "hard:..."` iteration. *(completed:
+    single `SKILL_FILE`; case loop collapsed to direct `run_case` calls with a fixed "merged"
+    label)*
+  - [x] Inspect the extracted combined staleness/`dispatch_seq` region for any read of
     `$hard_mode` or a `hard_mode`-derived variable. If none exists, run the region once. If any
     exists, run it under both `hard_mode=true` and `hard_mode=false`. Record which branch was
     taken and why in a comment — the research pass did not fully verify this and it must not be
-    assumed either way.
-  - [ ] Confirm the `append_detected_defect` stub-by-name mechanism still binds: the merged file
+    assumed either way. *(completed: no `hard_mode` read found by inspection; a runtime
+    `grep -q 'hard_mode'` check on the extracted region backs this up mechanically at every run,
+    not just as a static comment claim — region runs once)*
+  - [x] Confirm the `append_detected_defect` stub-by-name mechanism still binds: the merged file
     keeps that helper as a locally-named function specifically so this test's stub-and-`eval`
-    technique works. Do not rename or inline it in the test.
-  - [ ] Update the header comment, which currently describes the gate as living in the hard
+    technique works. Do not rename or inline it in the test. *(completed: confirmed at lines
+    2234-2235 of the merged file, including an explicit in-file comment there naming this test)*
+  - [x] Update the header comment, which currently describes the gate as living in the hard
     engine's Stage 5, to describe the merged engine's Stage 5 and to note the gate is
-    unconditional shared code rather than `hard_mode`-gated.
-  - [ ] Confirm no `skill-orchestrate-hard` string remains in the file.
+    unconditional shared code rather than `hard_mode`-gated. *(completed)*
+  - [x] Confirm no `skill-orchestrate-hard` string remains in the file. *(completed: grep -c
+    returns 0)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1
 - **Verification Tier:** local

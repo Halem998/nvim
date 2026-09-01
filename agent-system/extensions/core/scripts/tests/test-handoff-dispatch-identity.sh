@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # test-handoff-dispatch-identity.sh - Regression suite for Defect A: the orchestrator-minted
-# `dispatch_seq` identity gate wired into both skill-orchestrate/SKILL.md's and
-# skill-orchestrate-hard/SKILL.md's Stage 5, immediately after the pre-existing mtime staleness
-# check. Reproduces the observed failure mode -- a woken predecessor's late handoff write whose
-# mtime falls INSIDE the successor's dispatch window, defeating an mtime-only gate -- and asserts
-# the dispatch_seq comparison rejects it where mtime alone would have accepted it. See
-# context/patterns/dispatch-report-not-termination.md for the shared root-cause model this test
-# proves closed, and context/standards/orchestrator-runtime-files.md's "Readers MUST check
-# freshness" rationale for why mtime alone is insufficient.
+# `dispatch_seq` identity gate wired into skill-orchestrate/SKILL.md's Stage 5, immediately after
+# the pre-existing mtime staleness check. Reproduces the observed failure mode -- a woken
+# predecessor's late handoff write whose mtime falls INSIDE the successor's dispatch window,
+# defeating an mtime-only gate -- and asserts the dispatch_seq comparison rejects it where mtime
+# alone would have accepted it. See context/patterns/dispatch-report-not-termination.md for the
+# shared root-cause model this test proves closed, and
+# context/standards/orchestrator-runtime-files.md's "Readers MUST check freshness" rationale for
+# why mtime alone is insufficient. The gate is UNCONDITIONAL, shared code in the merged engine
+# (no `hard_mode` read anywhere in the extracted region -- confirmed by inspection, not assumed;
+# see the single-fixture-run note below), so this suite runs the extracted region once, not once
+# per `hard_mode` value.
 #
 # Structural model: scripts/tests/test-loop-guard-staleness.sh (sentinel-region extraction via
 # awk, mktemp -d workdir with an EXIT trap, pass()/fail()/info() helpers with integer counters,
 # exit 0 all-pass / 1 any-fail / 2 environment error, bash -n / bash -u structural checks before
-# the behavioral cases). Extends that model to TWO engines: every case below runs against BOTH
-# skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md's extracted regions, asserting
-# identical verdicts -- this is a second, executable layer of the parity guarantee
-# test-handoff-reader-parity.sh's byte-equality assertion already provides mechanically.
+# the behavioral cases).
 #
 # system-defect-record.sh side-effect avoidance: the extracted region calls
 # `bash .claude/scripts/system-defect-record.sh ...` via a RELATIVE path. This suite deliberately
@@ -37,15 +37,12 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 fi
 
-BASE_SKILL="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
-HARD_SKILL="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+SKILL_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 
-for f in "$BASE_SKILL" "$HARD_SKILL"; do
-  if [[ ! -f "$f" ]]; then
-    echo "ERROR: required file not found: $f" >&2
-    exit 2
-  fi
-done
+if [[ ! -f "$SKILL_FILE" ]]; then
+  echo "ERROR: required file not found: $SKILL_FILE" >&2
+  exit 2
+fi
 
 PASSED=0
 FAILED=0
@@ -75,32 +72,36 @@ extract_combined_region() {
   ' "$file"
 }
 
-# Exactly one occurrence of each sentinel in each live file.
-for f in "$BASE_SKILL" "$HARD_SKILL"; do
-  bcount=$(grep -c "$BEGIN_MARKER" "$f")
-  ecount=$(grep -c "$END_MARKER" "$f")
-  label="$(basename "$(dirname "$(dirname "$f")")")/$(basename "$f")"
-  if [[ "$bcount" -eq 1 ]]; then
-    pass "Exactly one '${BEGIN_MARKER}' marker in $label"
-  else
-    fail "Expected exactly one '${BEGIN_MARKER}' marker in $label, found ${bcount}"
-  fi
-  if [[ "$ecount" -eq 1 ]]; then
-    pass "Exactly one '${END_MARKER}' marker in $label"
-  else
-    fail "Expected exactly one '${END_MARKER}' marker in $label, found ${ecount}"
-  fi
-done
+# Exactly one occurrence of each sentinel in the merged file.
+bcount=$(grep -c "$BEGIN_MARKER" "$SKILL_FILE")
+ecount=$(grep -c "$END_MARKER" "$SKILL_FILE")
+if [[ "$bcount" -eq 1 ]]; then
+  pass "Exactly one '${BEGIN_MARKER}' marker in skills/SKILL.md"
+else
+  fail "Expected exactly one '${BEGIN_MARKER}' marker in skills/SKILL.md, found ${bcount}"
+fi
+if [[ "$ecount" -eq 1 ]]; then
+  pass "Exactly one '${END_MARKER}' marker in skills/SKILL.md"
+else
+  fail "Expected exactly one '${END_MARKER}' marker in skills/SKILL.md, found ${ecount}"
+fi
 
-base_region="$(extract_combined_region "$BASE_SKILL")"
-hard_region="$(extract_combined_region "$HARD_SKILL")"
+region="$(extract_combined_region "$SKILL_FILE")"
 
-if [[ -z "$base_region" ]]; then
-  echo "ERROR: could not extract combined staleness/dispatch_seq region from $BASE_SKILL" >&2
+if [[ -z "$region" ]]; then
+  echo "ERROR: could not extract combined staleness/dispatch_seq region from $SKILL_FILE" >&2
   exit 2
 fi
-if [[ -z "$hard_region" ]]; then
-  echo "ERROR: could not extract combined staleness/dispatch_seq region from $HARD_SKILL" >&2
+
+# hard_mode read check (recorded, not assumed): the extracted region contains no read of
+# $hard_mode or any hard_mode-derived variable anywhere in its body (grep-confirmed against the
+# region below before this suite was authored against the merged engine). The dispatch_seq gate
+# and the staleness check above it are both unconditional, shared code in the merged file. This
+# suite therefore runs the region ONCE, not once per hard_mode value -- unlike
+# test-loop-guard-budget-override.sh's sibling suite, whose extracted region DOES read hard_mode
+# and correctly runs twice for that reason.
+if printf '%s\n' "$region" | grep -q 'hard_mode'; then
+  echo "ERROR: extracted region unexpectedly reads hard_mode -- this suite's single-fixture-run assumption is now false; add a second hard_mode=true run before trusting this suite's coverage." >&2
   exit 2
 fi
 
@@ -121,29 +122,26 @@ append_detected_defect() {
 '
 
 # =====================================================================
-# bash -n: each extracted region must be independently syntax-clean once the stub function and
+# bash -n: the extracted region must be independently syntax-clean once the stub function and
 # fixture inputs are prepended.
 # =====================================================================
-for pair in "base:$BASE_SKILL:$base_region" "hard:$HARD_SKILL:$hard_region"; do
-  label="${pair%%:*}"; rest="${pair#*:}"; file="${rest%%:*}"; region="${rest#*:}"
-  syntax_file="$WORKDIR/syntax-${label}.sh"
-  {
-    echo '#!/usr/bin/env bash'
-    echo 'handoff_file="/tmp/fixture/.orchestrator-handoff.json"'
-    echo 'dispatch_start_ts=0'
-    echo 'dispatch_seq=1'
-    echo 'task_number=1'
-    echo 'session_id="sess_fixture"'
-    echo 'loop_guard_file="/tmp/fixture/.orchestrator-loop-guard"'
-    printf '%s\n' "$append_detected_defect_def"
-    printf '%s\n' "$region"
-  } > "$syntax_file"
-  if bash -n "$syntax_file" 2>"$WORKDIR/syntax-${label}.err"; then
-    pass "Extracted region ($label engine) is bash -n clean"
-  else
-    fail "Extracted region ($label engine) failed bash -n: $(cat "$WORKDIR/syntax-${label}.err")"
-  fi
-done
+syntax_file="$WORKDIR/syntax.sh"
+{
+  echo '#!/usr/bin/env bash'
+  echo 'handoff_file="/tmp/fixture/.orchestrator-handoff.json"'
+  echo 'dispatch_start_ts=0'
+  echo 'dispatch_seq=1'
+  echo 'task_number=1'
+  echo 'session_id="sess_fixture"'
+  echo 'loop_guard_file="/tmp/fixture/.orchestrator-loop-guard"'
+  printf '%s\n' "$append_detected_defect_def"
+  printf '%s\n' "$region"
+} > "$syntax_file"
+if bash -n "$syntax_file" 2>"$WORKDIR/syntax.err"; then
+  pass "Extracted region is bash -n clean"
+else
+  fail "Extracted region failed bash -n: $(cat "$WORKDIR/syntax.err")"
+fi
 
 # ── Region execution harness ────────────────────────────────────────────────────────────────────
 # Runs an extracted region (base or hard) in a subshell against a fixture handoff file, with cwd
@@ -227,44 +225,46 @@ run_case() {
   fi
 }
 
-for pair in "base:$base_region" "hard:$hard_region"; do
-  engine_label="${pair%%:*}"; region="${pair#*:}"
+# Single fixture run against the merged engine (see the hard_mode read check above: the region
+# has no hard_mode-conditional behavior, so there is exactly one engine surface to exercise here,
+# not a base/hard pair).
+engine_label="merged"
 
-  # =====================================================================
-  # Case 1: dispatch_seq matches the current cycle's minted value, mtime inside the window.
-  # Expected: ACCEPTED (handoff_stale=false).
-  # =====================================================================
-  run_case "case1-match" "$engine_label" "$region" 5 5 0 "false" 'dispatch_seq match'
+# =====================================================================
+# Case 1: dispatch_seq matches the current cycle's minted value, mtime inside the window.
+# Expected: ACCEPTED (handoff_stale=false).
+# =====================================================================
+run_case "case1-match" "$engine_label" "$region" 5 5 0 "false" 'dispatch_seq match'
 
-  # =====================================================================
-  # Case 2 (THE LOAD-BEARING CASE): dispatch_seq is a PREDECESSOR's value (a still-live
-  # predecessor's late write), mtime inside the successor's dispatch window -- reproducing the
-  # observed 6-second-overlap failure shape. mtime alone would ACCEPT this (mtime_offset=0, i.e.
-  # written "just now", well inside the window); only the dispatch_seq comparison rejects it.
-  # Expected: REJECTED (handoff_stale=true), stderr names DISPATCH_SEQ MISMATCH.
-  # =====================================================================
-  run_case "case2-mismatch-inside-window" "$engine_label" "$region" 4 5 0 "true" 'DISPATCH_SEQ MISMATCH'
+# =====================================================================
+# Case 2 (THE LOAD-BEARING CASE): dispatch_seq is a PREDECESSOR's value (a still-live
+# predecessor's late write), mtime inside the successor's dispatch window -- reproducing the
+# observed 6-second-overlap failure shape. mtime alone would ACCEPT this (mtime_offset=0, i.e.
+# written "just now", well inside the window); only the dispatch_seq comparison rejects it.
+# Expected: REJECTED (handoff_stale=true), stderr names DISPATCH_SEQ MISMATCH.
+# =====================================================================
+run_case "case2-mismatch-inside-window" "$engine_label" "$region" 4 5 0 "true" 'DISPATCH_SEQ MISMATCH'
 
-  # =====================================================================
-  # Case 3: old mtime (git-restoration hazard) -- handoff predates the dispatch window by a wide
-  # margin, regardless of dispatch_seq. Expected: REJECTED by the RETAINED mtime check, before
-  # the dispatch_seq comparison is even reached (handoff_stale is already true).
-  # =====================================================================
-  run_case "case3-old-mtime" "$engine_label" "$region" 5 5 3600 "true" 'STALE HANDOFF'
+# =====================================================================
+# Case 3: old mtime (git-restoration hazard) -- handoff predates the dispatch window by a wide
+# margin, regardless of dispatch_seq. Expected: REJECTED by the RETAINED mtime check, before
+# the dispatch_seq comparison is even reached (handoff_stale is already true).
+# =====================================================================
+run_case "case3-old-mtime" "$engine_label" "$region" 5 5 3600 "true" 'STALE HANDOFF'
 
-  # =====================================================================
-  # Case 4: handoff has no dispatch_seq field at all (writer predates the contract). mtime is
-  # inside the window. Expected: WARN, NOT rejected -- handoff_stale stays false.
-  # =====================================================================
-  run_case "case4-absent" "$engine_label" "$region" "" 5 0 "false" 'WARN: handoff has no dispatch_seq field'
-done
+# =====================================================================
+# Case 4: handoff has no dispatch_seq field at all (writer predates the contract). mtime is
+# inside the window. Expected: WARN, NOT rejected -- handoff_stale stays false.
+# =====================================================================
+run_case "case4-absent" "$engine_label" "$region" "" 5 0 "false" 'WARN: handoff has no dispatch_seq field'
 
 # =====================================================================
 # Negative-control note (not automated): temporarily reverting the dispatch_seq gate (commenting
-# out the `elif [ "$handoff_dispatch_seq" != ... ]` branch in both SKILL.md files) makes Case 2
-# fail, since only that branch's mismatch check distinguishes it from Case 1. This was verified
-# manually during authoring per the plan's Phase 7 verification bullet and is not re-verified on
-# every run (would require mutating the source files mid-suite).
+# out the `elif [ "$handoff_dispatch_seq" != ... ]` branch in skill-orchestrate/SKILL.md) makes
+# Case 2 fail, since only that branch's mismatch check distinguishes it from Case 1. This was
+# verified manually during authoring and is not re-verified on every run (would require mutating
+# the source file mid-suite) -- this same mutation is exercised mechanically, with a required
+# revert and a clean-tree check, by this task's own Phase 8.
 # =====================================================================
 
 # =====================================================================
