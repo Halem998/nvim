@@ -98,20 +98,26 @@ in this engine behind `$hard_mode`, mapped to the stage that now implements it:
 | H6 per-target churn counters | Stage 5b | after Stage 5's own `phases_completed` assignment (D7) |
 | H5 three-strikes divergence-audit dispatch | Stage 5b | same stage as H6, on `new_target_churn >= 3` |
 | Stage 5a / Stage 5b mutual exclusion | Stage 5a (gate), Stage 5b (heading) | exactly one reachable per `hard_mode` value |
+| H4 adversarial-verification gate | Stage 4, `#### State: researched` and `#### State: planning` | both handlers forked on `$hard_mode`; corrected matcher, not the source engine's |
 
-**Not migrated**: the `researched`-state adversarial verification gate (H4) — see the residue
-note immediately below. Everything else in the source engine's state-machine logic (H1/H5/H6/the
-burnout breaker, plus the loop-guard/churn-state plumbing they depend on) is now reproduced here.
+Everything in the source engine's state-machine logic (H1/H4/H5/H6/the burnout breaker, plus the
+loop-guard/churn-state plumbing they depend on) is now reproduced here.
 
-**Hard-mode residue not yet migrated**: the `researched`-state adversarial verification gate
-(H4) — the `#### State: researched` handler in the `-hard` engine and its `adversarial_verified`
-state variable, set at three separate sites and driving a verify-then-re-dispatch loop before
-planning — has NOT been ported into this engine's `researched` handler below. This is a
-deliberate, recorded scope decision, not an oversight: it is a structurally independent residue
-(its own state variable, its own re-dispatch loop, a different handler than the four behaviors
-this engine does reproduce) and remains the one still-unmigrated piece of hard-mode
-state-machine logic. A future removal of the `-hard` engine must account for this gate
-separately; its absence here is not evidence it was folded in elsewhere in this file.
+**H4 adversarial-verification gate — now ported.** See the acceptance-checklist row above. Two
+scope boundaries are worth recording so a future reader is not misled the way this file's own
+former residue note once misled: (a) the gate is hard-mode-gated only — base mode
+(`$hard_mode = false`) is unchanged; (b) the gate is NOT present on the multi-task path (Stage
+MT-3 / MT-4), mirroring the `-hard` source engine, whose own multi-task path has no H4 gate
+either — this is a migration boundary carried over from the source engine, not an omission
+introduced here.
+
+**Asymmetry decision (recorded, "recorded not acted on" style)**: the H4 gate's corrected matcher
+— the two `grep` patterns landed in the `researched` and `planning` handlers above — was landed
+ONLY in this engine's ported copy, deliberately. The `-hard` engine's own copy of the gate
+retains its original, known-false-negative patterns unchanged, because that engine is scheduled
+for deletion by a separate, downstream engine-deletion task, and mirroring the fix there would
+create a second site to maintain for a file about to be removed, with no correctness benefit. See
+that file's own matching asymmetry note at its `researched` handler.
 
 Resolve from `specs/state.json`:
 ```bash

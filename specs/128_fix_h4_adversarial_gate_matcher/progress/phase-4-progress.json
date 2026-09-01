@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Close out the base engine's migration notes and record the asymmetry there",
+  "started_at": "2026-09-01T01:05:00Z",
+  "last_updated": "2026-09-01T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add H4 row to acceptance-checklist table", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Rewrite 'Not migrated' paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Replace 'Hard-mode residue not yet migrated' paragraph with short ported note", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Add Asymmetry decision note", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

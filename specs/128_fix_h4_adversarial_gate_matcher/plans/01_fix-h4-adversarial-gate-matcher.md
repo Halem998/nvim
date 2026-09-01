@@ -389,34 +389,34 @@ insertions in this one file. Do not retroactively widen it.
 
 ---
 
-### Phase 4: Close out the base engine's migration notes and record the asymmetry there [NOT STARTED]
+### Phase 4: Close out the base engine's migration notes and record the asymmetry there [COMPLETED]
 
 **Goal**: Make the base engine's own documentation true: H4 is now migrated, the residue note no
 longer describes reality, and the deliberate asymmetry with the `-hard` engine is on the record.
 
 **Tasks**:
 
-- [ ] Re-locate the acceptance-checklist table under the heading text
+- [x] Re-locate the acceptance-checklist table under the heading text
       `**Hard-mode state-machine migration — acceptance checklist.**`. Add a row for the H4
       adversarial-verification gate alongside the existing H1/H5/H6 rows, in the table's own
       `| Behavior | Stage | Notes |` style, naming Stage 4's `researched`/`planning` handlers as
       the implementing stage.
-- [ ] Re-locate the paragraph beginning verbatim `**Not migrated**: the \`researched\`-state
+- [x] Re-locate the paragraph beginning verbatim `**Not migrated**: the \`researched\`-state
       adversarial verification gate (H4) — see the residue note immediately below.` Rewrite it so
       it no longer claims H4 is unmigrated. The following sentence — "Everything else in the source
       engine's state-machine logic ... is now reproduced here" — must be adjusted too, since H4 is
       no longer an exception to that "everything else".
-- [ ] Re-locate the full paragraph beginning verbatim `**Hard-mode residue not yet migrated**: the
+- [x] Re-locate the full paragraph beginning verbatim `**Hard-mode residue not yet migrated**: the
       \`researched\`-state adversarial verification gate (H4)` and ending
       `...its absence here is not evidence it was folded in elsewhere in this file.` Replace it
       with a short note recording that the gate is now ported, pointing at the acceptance-checklist
       row rather than restating the gate's mechanics.
-- [ ] In that replacement note, record the two deliberate scope boundaries so the next reader is
+- [x] In that replacement note, record the two deliberate scope boundaries so the next reader is
       not misled the way the original residue note's unowned "account for this gate separately"
       request misled: (a) the gate is hard-mode-gated only, base mode unchanged; (b) the gate is
       NOT present on the multi-task path, mirroring the `-hard` source engine, which has no
       multi-task H4 gate either — this is a migration boundary, not an omission.
-- [ ] Add an `**Asymmetry decision (recorded, ...)**` note in this file's existing convention —
+- [x] Add an `**Asymmetry decision (recorded, ...)**` note in this file's existing convention —
       copy the shape of the existing `loop-guard-staleness` example, which begins
       `**Asymmetry decision (recorded, "recorded not acted on" style)**:`. Content: the corrected
       matcher was landed only in this engine's ported copy, deliberately, because the `-hard`
