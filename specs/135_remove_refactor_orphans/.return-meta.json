@@ -1,10 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+      "summary": "8-phase orphan sweep: team-wave-helpers.md and its index row removed, 4 --team stale-prose repair sites fixed, index-entries.json line_count restored, a reusable audit-deletion-references.sh detector added, and a fully-explained pre/post baseline diff with no unjustified new findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Executed the 8-phase orphan-removal sweep left behind by the orchestrate-engine consolidation: removed context/reference/team-wave-helpers.md and its index row, repaired 4 stale-prose sites incorrectly asserting --team is a flag on /research/plan/implement (skill-lifecycle.md, multi-task-operations.md, README.md, rules/artifact-formats.md), fixed the inverted Dispatch Model Comparison table row, restored index-entries.json line_count consistency, and added a reusable audit-deletion-references.sh detector (declared in manifest.json) for the next artifact deletion. The final gate diff traced all 7 new post-sweep findings to expected, self-resolving pre-redeploy source-vs-deployed drift caused by this sweep's own legitimate source-store edits, with none unexplained."
+  },
+  "modified_files": [
+    "specs/135_remove_refactor_orphans/plans/01_orphan-sweep-removal.md",
+    "specs/135_remove_refactor_orphans/baseline-pre-sweep.txt",
+    "specs/135_remove_refactor_orphans/baseline-pre-sweep-findings.txt",
+    "specs/135_remove_refactor_orphans/baseline-post-sweep.txt",
+    "specs/135_remove_refactor_orphans/baseline-post-sweep-findings.txt",
+    "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/reference/team-wave-helpers.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/audit-deletion-references.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When capturing multi-command diagnostic baselines (verify-deploy.sh + several other gate scripts) into ONE output file, never run a slow command in the background while separately appending other commands' output to the SAME target file in the foreground -- the background process's stdout flushes race with the foreground appends and interleave at arbitrary byte boundaries, scrambling the file's structure (though no content is lost, just reordered/split). This bit twice in a row on the same task (verify-deploy.sh's nested run-all.sh call is slow enough, ~2-3 min, to overlap with several subsequent foreground command captures). Fix: either wait for the slow background command's completion notification before writing anything else to the same file, or capture each command to its own temp file and assemble the final file in one non-concurrent pass at the end -- the latter is safer and was the actual fix applied here.",
+      "category": "PATTERN",
+      "source_artifact": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["baseline-capture", "concurrent-write", "file-interleaving", "background-process", "verify-deploy"]
+    },
+    {
+      "content": "In this repo, editing agent-system/extensions/** source-store files without an accompanying redeploy of .claude/ will cause verify-deploy.sh's gate5 (manifest-driven verify.lua parity: 'Content differs from source' / 'Missing scripts') and gate13 (whole-tree orphan detection: 'ghost index row' / 'orphan file') to newly FAIL, alongside check-extension-docs.sh's existing 'deployed rule content drift' / 'core script never deployed' findings. This is expected and self-resolving on the next redeploy, NOT a regression -- do not chase it or attempt to fix it by touching .claude/ (which the source-store-deploy-boundary rule forbids). When a meta task's plan requires a 'no NEW findings' baseline diff, explicitly trace and justify these source-vs-deployed drift findings by name rather than treating them as blockers.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source-store-deploy-boundary", "verify-deploy", "gate5", "gate13", "pre-redeploy-drift"]
+    },
+    {
+      "content": "In bash, `grep -rniE -- \"$pattern\" \"$dir\" --include=\"*.md\"` silently breaks: the `--` end-of-options marker disables option parsing for everything AFTER it, so `--include=...` flags placed after `--` are treated as literal positional path arguments (which don't exist), causing grep to exit 2 (not the expected 0/1) even when real matches exist elsewhere -- this can silently zero out a count computed via `if hits=\"$(grep ...)\"; then ...; fi`, since the nonzero exit takes the else branch. Fix: place all `--include`/`--exclude` flags BEFORE the `--` marker: `grep -rniE --include=\"*.md\" -- \"$pattern\" \"$dir\"`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["grep", "bash", "double-dash", "include-flag", "option-parsing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788287299_e65079",
     "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }

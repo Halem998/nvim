@@ -1,7 +1,7 @@
 # Implementation Plan: Task #135
 
 - **Task**: 135 - Sweep for and remove artifacts orphaned by the orchestrate-engine consolidation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.7 hours
 - **Dependencies**: 114, 120, 123, 126, 128, 130, 133 (all complete — the tree being swept is final)
 - **Research Inputs**: `specs/135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md`
