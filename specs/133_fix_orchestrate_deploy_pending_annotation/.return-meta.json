@@ -1,10 +1,63 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "partial",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/133_fix_orchestrate_deploy_pending_annotation/summaries/01_fix-deploy-pending-annotation-summary.md",
+      "summary": "Phases 1-4 complete (class registration, task_dir_override parameter, call-site updates, regression test); Phase 5 (events.jsonl recording) blocked by deploy-root-guard.sh and left partial with a documented one-command follow-up."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/133_fix_orchestrate_deploy_pending_annotation/handoffs/phase-5-handoff-20260901T010000Z.md",
+      "summary": "Current state and the exact follow-up command needed to complete Phase 5 once a deploy has occurred."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Registered AMBIENT_BINDING_MISMATCH in both vocabulary sites and fixed skill_postflight_update's exit-6 deploy-pending annotation to use an explicit task_dir_override parameter instead of an ambient TASK_DIR the /orchestrate caller never set; all three call sites updated and covered by a new regression test (28/28 passing against the source-store edit). Recording the motivating incident to events.jsonl (Phase 5) is blocked by deploy-root-guard.sh until a deploy occurs, and is left partial rather than worked around."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A script that sources deploy-root-guard.sh (structural check: its own on-disk directory must end in /.claude or /.opencode) is NOT invocable from the agent-system source store, and PROJECT_ROOT for such scripts is typically derived as a fixed N levels above the script's own location (no git-rev-parse fallback) -- so there is no way to satisfy the guard from anywhere other than the real deployed tree while still writing to the real repo root. When a task's Non-Goals forbid deploying, any phase requiring one of these guarded scripts to actually run (not just be edited) is structurally blocked until a deploy occurs naturally; do not attempt a fake .claude-shaped directory workaround, and do not hand-edit the deployed copy or its output file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/133_fix_orchestrate_deploy_pending_annotation/summaries/01_fix-deploy-pending-annotation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "source-store", "deploy-first", "structural-guard", "PROJECT_ROOT"]
+    },
+    {
+      "content": "To remove an ambient-environment-variable coupling from a shared lifecycle function without breaking existing callers: add a new optional trailing positional parameter with a default that falls back to the ambient variable (local _x=\"${N:-${AMBIENT:-}}\"), then substitute the ambient reference for the new local ONLY inside the specific block that needed decoupling. Every existing call site (fewer/no args) resolves identically to before; only new callers that pass the explicit argument get the decoupled behavior. This is a strictly additive, backward-compatible fix pattern for 'guard reads an ambient variable some callers never set' defects.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/133_fix_orchestrate_deploy_pending_annotation/summaries/01_fix-deploy-pending-annotation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["ambient-variable", "optional-parameter", "backward-compatible", "positional-argument", "decoupling"]
+    },
+    {
+      "content": "When adapting a fixture-driven bash test's overlap+STALE deploy-gate technique into a sibling suite, verify the sibling's own fixture-builder actually creates the task directory (mkdir -p specs/NNN_name) before writing .return-meta.json into it -- a missing directory causes a silent redirect failure, an absent .return-meta.json, and the gate falls through to a LATER, unrelated exit code (e.g. exit 3 from a missing plan file) instead of the intended exit 6, which is a confusing failure mode to debug from the exit code alone.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/133_fix_orchestrate_deploy_pending_annotation/progress/phase-4-progress.json",
+      "confidence": 0.7,
+      "suggested_keywords": ["fixture-testing", "deploy-gate", "bash-redirect", "mkdir-p", "test-debugging"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788287299_e65079",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 5
+  },
+  "partial_progress": {
+    "stage": "phase_5_deploy_root_guard_blocker",
+    "details": "Phases 1-4 complete and verified (28/28 regression cases passing against the source-store edit via a scratchpad harness). Phase 5 (recording the motivating incident to specs/events.jsonl) is blocked because system-defect-record.sh requires the DEPLOYED copy to satisfy deploy-root-guard.sh, and the deployed copy is stale; deploying is prohibited by this plan's own Non-Goals. See handoff for the exact one-command follow-up.",
+    "handoff_path": "specs/133_fix_orchestrate_deploy_pending_annotation/handoffs/phase-5-handoff-20260901T010000Z.md",
+    "phases_completed": 4,
+    "phases_total": 5
   }
 }

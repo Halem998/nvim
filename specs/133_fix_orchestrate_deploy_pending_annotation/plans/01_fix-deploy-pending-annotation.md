@@ -640,28 +640,31 @@ sibling task editing this same function (CONTRACT 4).
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on all three modified shell scripts.
-- [ ] `grep -n "AMBIENT_BINDING_MISMATCH"` returns hits in both the recorder and the
+- [x] `bash -n` passes on all three modified shell scripts. *(completed: also re-checked on the
+      4th shell script this phasing added, test-skill-base-lifecycle.sh)*
+- [x] `grep -n "AMBIENT_BINDING_MISMATCH"` returns hits in both the recorder and the *(completed)*
       discrimination doc — never in only one.
-- [ ] Zero occurrences of "thirteen" remain in `system-defect-record.sh`.
-- [ ] The discrimination doc's Signal A instance table has 14 data rows.
-- [ ] `grep -rn "skill_postflight_update" agent-system/extensions/` still returns 12 call sites;
+- [x] Zero occurrences of "thirteen" remain in `system-defect-record.sh`. *(completed)*
+- [x] The discrimination doc's Signal A instance table has 14 data rows. *(completed)*
+- [x] `grep -rn "skill_postflight_update" agent-system/extensions/` still returns 12 call sites; *(completed: verified via git diff --stat scope instead of a literal count -- the plan's own bare grep pattern also matches prose/doc mentions and test files, making a literal "12" ambiguous; git diff --stat over the whole repo confirms only skill-base.sh and orchestrate-stage5-postflight.sh changed among files referencing this function, so every other site is unmodified)*
       the 9 non-orchestrate sites are absent from the diff.
-- [ ] `grep -n "TASK_DIR" agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh`
+- [x] `grep -n "TASK_DIR" agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh` *(completed)*
       returns zero matches.
-- [ ] `test-skill-base-lifecycle.sh` exits 0 with the three new Group 4 cases passing (or the
+- [x] `test-skill-base-lifecycle.sh` exits 0 with the three new Group 4 cases passing (or the *(completed: via the source-store scratchpad harness -- 28 passed, 0 failed; the deployed-suite route correctly exits 2 against the stale deployed copy, which is the harness sanity check working as designed)*
       documented source-store harness route, if the deployed tree is stale — record which).
-- [ ] The new harness sanity check runs first and exits 2 on a stale `skill-base.sh`, rather than
+- [x] The new harness sanity check runs first and exits 2 on a stale `skill-base.sh`, rather than *(completed)*
       emitting a `[FAIL]` line or a bare "command not found".
-- [ ] The summary reports the deployed-suite result and the source-store harness result
+- [x] The summary reports the deployed-suite result and the source-store harness result *(completed)*
       **separately**, and does not present a green deployed-suite run as evidence about the
       source-store edit.
-- [ ] The suite's specs/-contamination guard reports no delta against its baseline.
-- [ ] `test-postflight-deploy-gate.sh` remains unmodified (`git diff --stat` shows no entry).
+- [x] The suite's specs/-contamination guard reports no delta against its baseline. *(completed)*
+- [x] `test-postflight-deploy-gate.sh` remains unmodified (`git diff --stat` shows no entry). *(completed)*
 - [ ] `system-defect-record.sh --defect-class AMBIENT_BINDING_MISMATCH ...` exits 0 and appends a
-      `jq`-parseable line to `specs/events.jsonl`.
-- [ ] No file under `.claude/**` was written.
-- [ ] No task-number reference appears in any changed file outside `specs/**`.
+      `jq`-parseable line to `specs/events.jsonl`. *(deviation: deferred -- see the plan's "Phase 5
+      blocker" note; blocked by deploy-root-guard.sh, not by this task's own code)*
+- [x] No file under `.claude/**` was written. *(completed)*
+- [x] No task-number reference appears in any changed file outside `specs/**`. *(completed: grep
+      confirmed no "task 133" additions in any of the five modified source-store files)*
 
 ## Artifacts & Outputs
 
