@@ -44,7 +44,7 @@ next_project_number: 139
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
-135 [RESEARCHED] — Find and remove the orphans left behind by the orchestrate-engine
+135 [PLANNED] — Find and remove the orphans left behind by the orchestrate-engine
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 
 ### Extensions
@@ -202,11 +202,12 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 ---
 
 ### 135. Sweep for and remove artifacts orphaned by the orchestrate-engine consolidation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 114, Task 120, Task 123, Task 126, Task 128, Task 130, Task 133
 - **Research**: [135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md]
+- **Plan**: [135_remove_refactor_orphans/plans/01_orphan-sweep-removal.md]
 
 **Description**: Find and remove the orphans left behind by the orchestrate-engine consolidation refactor. Runs only after every task in that refactor has completed, so the tree it sweeps is final.
 
