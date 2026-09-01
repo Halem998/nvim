@@ -12,7 +12,7 @@ next_project_number: 135
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,120,126,128,133,134 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,104,105,109,112,121,124,129 | 29,74,87,102,108,120,126,128 | core-agent-system, extensions, literature |
+| 2 | 30,44,75,76,89,104,105,109,112,121,124,129,135 | 29,74,87,102,108,120,126,128,133 | core-agent-system, extensions, literature |
 | 3 | 48,90,107,125,127 | 104,121,124 | core-agent-system, literature |
 | 4 | 50,88 | 48,87,127 | core-agent-system |
 
@@ -37,6 +37,7 @@ next_project_number: 135
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
       └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine
 126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
@@ -44,10 +45,13 @@ next_project_number: 135
     └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
     └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
+  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
 128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
+  └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 
 ### Extensions
@@ -85,6 +89,44 @@ next_project_number: 135
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
 ## Tasks
+
+### 135. Sweep for and remove artifacts orphaned by the orchestrate-engine consolidation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 114, Task 120, Task 123, Task 126, Task 128, Task 130, Task 133
+
+**Description**: Find and remove the orphans left behind by the orchestrate-engine consolidation refactor. Runs only after every task in that refactor has completed, so the tree it sweeps is final.
+
+WHY THIS EXISTS -- A DETECTION-METHOD GAP, NOT A MISSED FILE. The team-mode-skill deletion de-referenced its blast radius by grepping the source store for the deleted skills' literal NAMES. That method is structurally incapable of finding a file that refers to a deleted artifact through a GLOB or PATH PATTERN rather than a literal name. One confirmed instance escaped exactly that way and was flagged during implementation but left out of scope: `agent-system/extensions/core/context/reference/team-wave-helpers.md`, roughly 400 lines, now describing helpers for skills that no longer exist. The file is not the point. The point is that the same blind spot applies to every other glob- or pattern-referencing file in the tree, and nobody has looked.
+
+DO NOT simply delete the one known file and close this task. That reproduces the original error at a smaller scale. The deliverable is a SEARCH whose method can find what a name-grep cannot, plus the removals or repairs that search justifies.
+
+DETECTION METHODS TO WEIGH (choose and record; the list is a starting point, not a specification):
+  - Reachability: walk `index.json` / `index-entries.json` / `manifest.json` and each command, skill, and agent file, building the set of files actually reachable; anything under `context/`, `docs/`, or `reference/` outside that set is an orphan candidate.
+  - Dangling-reference scan, the inverse direction: every path-like string in a doc that resolves to nothing on disk. This catches text pointing at deleted artifacts even when the artifact name never appears literally.
+  - Glob/pattern reference audit: find files referring to siblings by wildcard (`skill-team-*`, `skills/*/SKILL.md`, and similar) and resolve each pattern against the current tree, since these are precisely the references a name-grep cannot see.
+  - Test-fixture path audit: fixtures that read a file by path and silently SKIP when it is absent. One such fixture was already found degrading to a permanent silent SKIP rather than failing -- a green suite testing nothing. Assume there are others.
+
+SCOPE. Orphans of every kind the sweep surfaces: unreferenced context/reference/docs files, stale `index-entries.json` rows, routing or manifest entries naming deleted artifacts, fixtures pointing at deleted paths, and prose describing retired mechanisms as though they were live. Removal is the default; repair is correct where the file documents a mechanism that still exists under a new owner (several such files were rewritten rather than deleted during the consolidation -- follow that precedent).
+
+NON-GOALS AND THE FALSE-POSITIVE BAR. A file is not an orphan merely because nothing references it yet -- newly added context intended for on-demand loading is legitimately unreferenced, and `index.json` tier labels are documentation while `load_when` arrays are the real mechanism. Every proposed removal needs a stated reason that distinguishes "nothing points here because the thing it documents is gone" from "nothing points here yet". When the two cannot be told apart, leave the file and record the ambiguity rather than guessing. Do not restructure or rename surviving files; this is a removal sweep, not a reorganization.
+
+FILE SCOPE IS DELIBERATELY BROAD. A sweep cannot declare its footprint in advance, and it must not run concurrently with edits to the tree it is sweeping -- the broad declaration is what makes the orchestrator serialize it correctly against other work.
+
+RE-RUNNABILITY. The hard-engine deletion is a separate, later piece of work that will orphan more files on the same pattern. Leave behind whatever the sweep produces in reusable form -- a script, or a documented procedure precise enough to re-run -- rather than a one-off manual pass. If a reusable detector is produced, note whether it belongs in the standing lint suite.
+
+ACCEPTANCE:
+  - The confirmed instance above is resolved (removed, or repaired with a stated reason).
+  - The search method is documented and its results enumerated: every candidate found, and for each, removed / repaired / kept-with-reason.
+  - No dangling references are introduced by the removals: the four lints, `run-all.sh`, and `check-task-references.sh` stay green, and `verify-deploy.sh` gains no NEW findings against a pre-sweep baseline (three failures are known pre-existing -- baseline first, then compare).
+  - `index-entries.json` stays internally consistent; a line-count defect of exactly this kind was introduced and caught during the consolidation.
+  - The sweep is reproducible by a later reader without redoing the analysis.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/** -- the deployed tree is a regenerated artifact.
+DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
+
+---
 
 ### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
 - **Status**: [NOT STARTED]
