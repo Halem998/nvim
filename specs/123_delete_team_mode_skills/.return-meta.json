@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md",
+      "summary": "Verifies task 122's precondition is met; evaluates the --lit/Stage 3.6 acceptance criterion (lit_flag reaches every teammate, but literature resolution runs once per teammate rather than once-and-shared -- a deliberate task-122 design choice, not a defect, since orchestrator_mode structurally forecloses the named interactive-firing risk); and maps the real deletion blast radius (18 source-store files beyond the 3 skill directories, including a test fixture and a stale synthesis-agent.md docstring)."
+    }
+  ],
+  "next_steps": "Run /plan 123 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788267679_adbb09_123",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In skill-orchestrate's Stage 3.6 Team Fan-Out, Stage 3.5 Dispatch Prep (memory retrieval + --lit literature-briefing resolution) is deliberately called once PER TEAMMATE inside the spawn loop, not once and shared -- this is documented design intent (task 122 research report Decision 5), not an oversight. It is safe under orchestrator_mode=true because the shared lit-stage4a-flow.md's interactive AskUserQuestion branches are structurally unreachable whenever orchestrator_mode is true (the deterministic [lit:auto] autonomous fallback always applies instead), so repeated per-teammate resolution cannot trigger repeated interactive prompts -- it is merely redundant subprocess/search work, not a correctness bug.",
+      "category": "PATTERN",
+      "source_artifact": "specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-orchestrate", "Stage 3.6", "team fan-out", "lit_flag", "orchestrator_mode", "literature-briefing"]
+    },
+    {
+      "content": "When a task's WORK section says 'delete skill X, grep for zero hits', do a repo-wide grep for the skill's own name across the source store BEFORE scoping the plan -- deletion tasks in this repo routinely under-scope their own blast radius (commands' routing dispatch code, agent docstrings referencing the skill by name, manifest.json's flat provides.skills array, context/patterns prose, and test fixtures that read the file path directly all count as hits and must be resolved for the zero-hits acceptance criterion to actually pass).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deletion task", "repo-wide grep", "blast radius", "acceptance criterion", "manifest.json"]
+    }
+  ]
+}
