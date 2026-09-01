@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md",
+      "summary": "Confirms Part 1 (defect-class registration sites, recommends AMBIENT_BINDING_MISMATCH) and Part 2 (TASK_DIR binding fix, recommends option-b threaded parameter) with a corrected finding on the doc's missing literal 'thirteen'."
+    }
+  ],
+  "next_steps": "Run /plan 133 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788267679_adbb09_133",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  },
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/context/patterns/system-defect-discrimination.md, the Signal A instance count is never spelled out as a literal word in the document's own prose (no 'thirteen' anywhere) -- only system-defect-record.sh's comment/error-message use that literal. The doc instead narrates its class-count growth across separate paragraphs ('ten pre-existing instances', 'a further three instances'). When registering a new defect class, add a new short paragraph following that existing two-paragraph narration pattern rather than searching for a count word to edit in place.",
+      "category": "PATTERN",
+      "source_artifact": "specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["system-defect-discrimination", "defect-class registration", "Signal A", "documentation pattern"]
+    },
+    {
+      "content": "skill_postflight_update (scripts/skill-base.sh) already has an optional 5th positional parameter (phase_check_mode, default empty string). Adding a further optional 6th positional parameter (e.g. task_dir_override, defaulting to ${TASK_DIR:-}) is a safe, additive way to remove an ambient-env-var dependency from a shared lifecycle function without disturbing any existing 4-arg or 5-arg caller -- a reusable pattern for de-coupling other guards in this file from ambient TASK_DIR/TASK_TYPE globals that only skill-context callers currently populate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill-base.sh", "skill_postflight_update", "TASK_DIR", "ambient binding", "additive parameter"]
+    }
+  ]
+}
