@@ -1,7 +1,7 @@
 ---
 description: Execute a task autonomously through its full lifecycle (research -> plan -> implement -> complete) without user confirmation between phases
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read
-argument-hint: TASK_NUMBERS [PROMPT]
+argument-hint: TASK_NUMBERS [PROMPT] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -39,6 +39,10 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--continue-budget` | Explicit, operator-typed authorization to continue past an exhausted `MAX_CYCLES` work-cycle budget. Never inferred automatically (not from `session_id`, not from mtime) — a genuinely exhausted budget without this flag refuses immediately with an honest message instead of silently no-op looping. See `context/standards/orchestrator-runtime-files.md`'s "`cycle_count` semantics and the budget-continuation override" section | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
+| `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches (blocker escalation, drift inspection, churn audit, plan revision) retain their frontmatter model | false |
+| `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
+| `--opus` | Use Opus model (highest quality, same as agent default) | false |
+| `--fable` | Use Fable model (claude-fable-5) | false |
 | `--team` | Team mode: fan out research/plan/implement dispatch across parallel teammates via `skill-orchestrate`'s Stage 3.6 (single-task mode only — see Constraints). Silently degrades to single-agent dispatch when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is unset | false |
 | `--team-size` | Explicit teammate count for `--team` (clamped 2-4). When omitted, the effective size is effort-aware: `3` baseline, `2` under `--fast`, `4` under `--hard` | `3` baseline / `2` under `--fast` / `4` under `--hard` |
 
@@ -56,7 +60,7 @@ command.
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 # Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG,
 #          ALLOW_SELF_MODIFYING_FLAG, ALLOW_SCOPE_COLLISION_FLAG, CONTINUE_BUDGET_FLAG,
-#          CLEAN_FLAG, EFFORT_FLAG, TEAM_MODE, TEAM_SIZE, TEAM_SIZE_EXPLICIT
+#          CLEAN_FLAG, EFFORT_FLAG, MODEL_FLAG, TEAM_MODE, TEAM_SIZE, TEAM_SIZE_EXPLICIT
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
 
@@ -81,6 +85,10 @@ also read here from the sourced parser and passed into the Skill delegation cont
 `clean_flag` and `effort_flag` — `clean_flag` suppresses `skill-orchestrate`'s own automatic
 memory retrieval (Stage 3.5), and `effort_flag` supplies reasoning-depth guidance, on the same
 terms `skill-researcher`/`skill-planner`/`skill-implementer` already consume these flags today.
+`MODEL_FLAG` (**default `""`**, not `null`) is read here from the sourced parser and passed into
+the Skill delegation context below as `model_flag`, selecting the model family for every
+lifecycle dispatch `skill-orchestrate` makes, on the same terms `clean_flag`/`effort_flag` are
+threaded.
 
 **Dry-run short-circuit** (checked immediately after `parse-command-args.sh` is sourced, and
 **before** the `len(TASK_NUMBERS)` branch below): `SESSION_ID` may be unset at this point — the
@@ -445,7 +453,7 @@ Invoke a single `skill-orchestrate` instance with all task context:
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
+  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
 ```
 
 The delegation context passed to the skill must include:
@@ -463,6 +471,7 @@ The delegation context passed to the skill must include:
   "continue_budget": "{CONTINUE_BUDGET_FLAG}",
   "clean_flag": "{CLEAN_FLAG}",
   "effort_flag": "{EFFORT_FLAG}",
+  "model_flag": "{MODEL_FLAG}",
   "team_mode": "{TEAM_MODE}",
   "team_size": "{TEAM_SIZE}",
   "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"
@@ -650,7 +659,7 @@ Invoke `skill-orchestrate` via the Skill tool:
 
 ```
 skill: "skill-orchestrate"
-args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
+args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
 ```
 
 The delegation context passed to the skill must include:
@@ -671,6 +680,7 @@ The delegation context passed to the skill must include:
   "continue_budget": "{CONTINUE_BUDGET_FLAG}",
   "clean_flag": "{CLEAN_FLAG}",
   "effort_flag": "{EFFORT_FLAG}",
+  "model_flag": "{MODEL_FLAG}",
   "team_mode": "{TEAM_MODE}",
   "team_size": "{TEAM_SIZE}",
   "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"

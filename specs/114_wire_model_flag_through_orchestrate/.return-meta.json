@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/114_wire_model_flag_through_orchestrate/plans/01_wire-model-flag-orchestrate.md",
-      "summary": "5-phase plan threading model_flag from commands/orchestrate.md (8 sites, 4 dispatch insertion points) into skill-orchestrate Stage 1/MT-1, Stage 3.5 Dispatch Prep, and every lifecycle dispatch site as the Agent tool's model parameter."
-    }
-  ],
-  "next_steps": "Run /implement 114 to execute the plan",
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1788267679_adbb09_114",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3,
-    "dependency_waves": [[1, 2], [3], [4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In skill-orchestrate/SKILL.md, the count of lifecycle dispatch sites is derivable mechanically rather than by hand: every site that needs a per-dispatch context change carries a 'Run **Stage 3.5: Dispatch Prep**' pointer line, so `grep -c 'Run \\*\\*Stage 3.5: Dispatch Prep\\*\\*'` yields the authoritative edit count (plan-time measure: 8 single-task Stage 4 tables + 3 Stage MT-4 per-task loops + 1 Stage 3.6 team fan-out spawn loop = 12). A hand-counted inventory in a research report for this file drifted by one (asserted 9 Stage 4 sites where re-measure found 8). For any future per-dispatch concern in this file, implement to the grep result, never to a prose-asserted count.",
-      "category": "PATTERN",
-      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/plans/01_wire-model-flag-orchestrate.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["skill-orchestrate", "dispatch-prep", "scope-hypothesis", "dispatch-site-count", "grep-derived-count"]
-    }
-  ]
+    "session_id": "sess_impl114",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
