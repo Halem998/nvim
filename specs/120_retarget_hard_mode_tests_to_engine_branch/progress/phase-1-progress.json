@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Anchor re-verification and baseline capture",
+  "started_at": "2026-09-01T18:30:00Z",
+  "last_updated": "2026-09-01T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm H4 gate landed in skill-orchestrate/SKILL.md hard_mode branch", "status": "done", "note": "Line 106: 'H4 adversarial-verification gate — now ported.' No 'Not migrated' residue note found. Ordering contract satisfied.", "files_touched": []},
+    {"id": 2, "description": "Record bare vs full sentinel comment counts for four sentinels", "status": "done", "note": "budget-continuation-override: bare 1/1, full 1/1 (match). loop-guard-staleness: bare 2/1, full 1/1 (DIVERGE, confirms plan hypothesis). dispatch-seq-gate: bare 1/1, full 1/1 (match). resume-scan-conformance-gate: bare 1/1, full 1/1 (match).", "files_touched": []},
+    {"id": 3, "description": "Confirm Stage 5 reader anchor comment occurs exactly once", "status": "done", "note": "Line 2370: '# `// \"\"` (not bare `.status`) so a handoff with a missing `status` field...' occurs once.", "files_touched": []},
+    {"id": 4, "description": "Confirm each Site A anchor occurs exactly once", "status": "done", "note": "phase_scan_inconclusive\" = \"true\": 1. elif [ -n \"$next_phase\" ]: 1. elif [ \"$last_skeleton\" = \"true\" ]: 1. All unique as hypothesized.", "files_touched": []},
+    {"id": 5, "description": "Confirm command-route-agent.sh call sites and branch membership", "status": "done", "note": "5 occurrences confirmed (line 149 doc mention, 159/161/163 call sites in base dispatch construction, 4505 doc mention). Branch membership (base vs H1 hard_mode-gated per-phase-dispatch) to be re-derived in Phase 7 when editing test-routing-resolution.sh Assert 3, since Phase 1 found the base-branch call sites only — the H1 per-phase-dispatch branch's own call site(s) were not separately isolated here and must be searched in Phase 7.", "files_touched": []},
+    {"id": 6, "description": "Locate last_skeleton=, follow_up_tasks=/follow_up_count=, blocker_target=/verbatim_goal= reads", "status": "done", "note": "last_skeleton= at line 1694/1698 (jq -r '.skeleton // false' on handoff_file, in Stage 4 hard_mode-gated per-phase-dispatch branch per plan). follow_up_tasks=/follow_up_count= at 1881-1882 (inlined .sorry_inventory[]?.follow_up_task filter, unconditional). blocker_target= at 2652, verbatim_goal= at 2671 (both jq -r on $handoff variable, unchanged read form).", "files_touched": []},
+    {"id": 7, "description": "Run all seven files as-is and record baseline pass/fail", "status": "done", "note": "ALL GREEN. test-loop-guard-budget-override.sh: 36 passed/0 failed. test-loop-guard-staleness.sh: 28/0. test-resume-scan-nonconformance.sh: 39/0. test-handoff-dispatch-identity.sh: 22/0. test-routing-resolution.sh: 19/0. test-handoff-reader-parity.sh: 19/0. lint-contract-compliance.sh: 24 passed/0 warnings/0 failed. Baseline: all seven pass today (before retarget); any Phase 8 regression is attributable to this work.", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

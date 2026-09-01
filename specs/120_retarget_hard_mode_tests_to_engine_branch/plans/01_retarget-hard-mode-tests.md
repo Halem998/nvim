@@ -1,7 +1,7 @@
 # Implementation Plan: Retarget Hard-Mode Tests to the Merged Engine's hard_mode Branch
 
 - **Task**: 120 - Retarget hard mode tests to engine branch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 118, 119 (both `[COMPLETED]`); plus the H4-gate-port task (batch Contract 5 — must land before Phase 1 runs; see "Ordering Contract" below)
 - **Research Inputs**: specs/120_retarget_hard_mode_tests_to_engine_branch/reports/01_retarget-hard-mode-tests.md
@@ -140,30 +140,42 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 1: Anchor re-verification and baseline capture [NOT STARTED]
+### Phase 1: Anchor re-verification and baseline capture [COMPLETED]
 
 - **Goal:** Confirm the H4 port has landed, re-locate every anchor by search in the current merged
   file, and record a baseline of which of the seven files pass today — so a Phase 8 failure can be
   attributed to the retarget rather than to pre-existing breakage.
 - **Tasks:**
-  - [ ] Confirm the H4 `researched`-state adversarial-verification gate is present in
+  - [x] Confirm the H4 `researched`-state adversarial-verification gate is present in
     `skill-orchestrate/SKILL.md`'s `hard_mode` branch and the file's residue note no longer lists
     it as "Not migrated". If it is still absent, stop and report — the ordering contract is unmet.
-  - [ ] For each of the four sentinels (`budget-continuation-override`, `loop-guard-staleness`,
+    *(completed: line 106 reads "H4 adversarial-verification gate — now ported."; no "Not
+    migrated" residue note found)*
+  - [x] For each of the four sentinels (`budget-continuation-override`, `loop-guard-staleness`,
     `dispatch-seq-gate`, `resume-scan-conformance-gate`) record two counts: the bare
     `<name>:begin` / `<name>:end` string count, and the full `# --- <name>:begin ---` /
     `# --- <name>:end ---` comment-form count. Note every name where the two differ.
-  - [ ] Confirm the Stage 5 reader anchor comment (``not bare `.status`) so a handoff with a
-    missing``) occurs exactly once.
-  - [ ] Confirm each Site A anchor of `test-resume-scan-nonconformance.sh`
+    *(completed: loop-guard-staleness diverges, bare_begin=2 vs full_begin=1; the other three
+    agree at 1/1)*
+  - [x] Confirm the Stage 5 reader anchor comment (``not bare `.status`) so a handoff with a
+    missing``) occurs exactly once. *(completed: line 2370, occurs once)*
+  - [x] Confirm each Site A anchor of `test-resume-scan-nonconformance.sh`
     (`phase_scan_inconclusive" = "true"`, `elif [ -n "$next_phase" ]`,
     `elif [ "$last_skeleton" = "true" ]`) occurs exactly once; record the counts.
-  - [ ] Confirm `command-route-agent.sh` call sites and note which fall inside the base
+    *(completed: all three occur exactly once)*
+  - [x] Confirm `command-route-agent.sh` call sites and note which fall inside the base
     dispatch-construction branch versus the `hard_mode`-gated per-phase-dispatch (H1) branch.
-  - [ ] Locate the merged file's `last_skeleton=` read, the `follow_up_tasks=`/`follow_up_count=`
+    *(completed: 5 occurrences total (lines 149, 159, 161, 163, 4505); 159/161/163 are the base
+    dispatch-construction call sites — Phase 7 re-derives the H1 hard-branch site(s) directly when
+    rewriting Assert 3)*
+  - [x] Locate the merged file's `last_skeleton=` read, the `follow_up_tasks=`/`follow_up_count=`
     derivation from `.sorry_inventory[]?.follow_up_task`, and the `blocker_target=` /
-    `verbatim_goal=` reads; record each one's exact assignment form.
-  - [ ] Run all seven files as-is and record pass/fail per file as the baseline.
+    `verbatim_goal=` reads; record each one's exact assignment form. *(completed: last_skeleton=
+    at 1694/1698; follow_up_tasks=/follow_up_count= at 1881-1882; blocker_target= at 2652,
+    verbatim_goal= at 2671)*
+  - [x] Run all seven files as-is and record pass/fail per file as the baseline. *(completed: all
+    seven pass — budget-override 36/0, staleness 28/0, resume-scan 39/0, dispatch-identity 22/0,
+    routing-resolution 19/0, reader-parity 19/0, lint-contract-compliance 24/0/0)*
 - **Timing:** 0.5 hours
 - **Depends on:** none
 - **Verification Tier:** local
