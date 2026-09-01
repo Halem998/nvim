@@ -1317,6 +1317,11 @@
           "path": "specs/123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md",
           "type": "plan",
           "summary": "8-phase deletion plan (4 waves, ~6.5h) removing the three team-mode skills plus 19 de-referencing edits across commands, manifest, docs, context patterns, and one test fixture; records three explicit decisions (--lit criterion accepted as a stated deviation, synthesis-agent docstring scoped to logic-only preservation, CONTRACT 5 discharged by preservation rather than sequencing)."
+        },
+        {
+          "path": "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+          "type": "summary",
+          "summary": ""
         }
       ],
       "session_id": "sess_1788267679_adbb09_123"

@@ -418,6 +418,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Dependencies**: Task 122
 - **Research**: [123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md]
 - **Plan**: [123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md]
+- **Summary**: [123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: carries residue of the abandoned team-lit task) ===
 ADDITIONAL ACCEPTANCE CRITERION: before deleting, confirm the replacement path actually carries --lit -- skill-orchestrate's Stage 3.6 Team Fan-Out receives lit_flag among its inputs, and every teammate dispatch must include the resolved <literature-briefing> block (resolved ONCE by the dispatch-prep stage and injected into each teammate prompt; the interactive resolution directives must not fire once per teammate). This is the surviving obligation of an abandoned task that would have wired --lit through the three team skills being deleted here; deleting them without this check would silently re-open that defect on the new surface.
