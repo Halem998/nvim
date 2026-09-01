@@ -11,9 +11,9 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,124,129,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,48,75,76,89,90,104,105,109,112,125,127,136 | 29,74,87,91,102,108,121,124 | core-agent-system, extensions, literature |
-| 3 | 50,88,107 | 48,87,104,127 | core-agent-system, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,48,51,53,72,74,87,90,91,100,102,103,106,108,110,111,113,121,125,129,134,137,138 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,50,75,76,89,104,105,109,112,127,136 | 29,48,74,87,91,102,108,121 | core-agent-system, extensions, literature |
+| 3 | 88,107 | 87,104,127 | core-agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,6 +23,8 @@ next_project_number: 139
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
@@ -30,18 +32,14 @@ next_project_number: 139
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
-  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+  └─ 127 [BLOCKED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-124 [PLANNED] — Delete /research, /plan, /implement commands and update the CLAUD
-  └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-    └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
-  └─ 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
+125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -533,7 +531,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 127. Collapse routing ladder to routing agents
-- **Status**: [NOT STARTED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124, Task 121
@@ -598,12 +596,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 124. Delete lifecycle commands and update reference
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 68, Task 81, Task 114, Task 117, Task 126
 - **Research**: [124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md]
 - **Plan**: [124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md]
+- **Summary**: [124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md]
 
 **Description**: Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.
 

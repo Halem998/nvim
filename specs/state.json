@@ -1343,12 +1343,12 @@
     {
       "project_number": 124,
       "project_name": "delete_lifecycle_commands_and_update_reference",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete /research, /plan, /implement commands and update the CLAUDE.md command reference.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The dispatch-prep stage rehoming memory retrieval and --lit resolution into skill-orchestrate must already be landed and verified working -- deleting these commands (and thereby orphaning the three lifecycle skills a later task deletes) before that rehome lands would make a currently-partial memory/--lit capability gap on /orchestrate total and permanent. Also verify the two BLOCKING defects are resolved first: the multi-task blocked-verdict discrimination defect, and the task-lock/session-registry heartbeat defect -- both would be entrenched at higher stakes once /orchestrate is the sole entry point.\n\nWORK. Delete commands/research.md (652 lines), commands/plan.md (677 lines), commands/implement.md (506 lines). commands/revise.md is explicitly NOT touched -- its plan-revision-with-reason and description-update-fallback behaviors have no /orchestrate phase-flag equivalent and remain a distinct command. Update merge-sources/claudemd.md's Command Reference table: remove the three rows for /research, /plan, /implement, and document /orchestrate NNN --research / --plan / --implement as their replacement spelling (this requires the phase-forcing-flags task to have landed, or to land in the same window -- confirm flag support exists on /orchestrate before removing the old commands' documentation, so the reference table is never briefly wrong).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/research.md, .../plan.md, .../implement.md, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-09-01T23:27:47Z",
+      "last_updated": "2026-09-01T23:55:24Z",
       "dependencies": [
         68,
         81,
@@ -1373,6 +1373,11 @@
           "path": "specs/124_delete_lifecycle_commands_and_update_reference/plans/01_lifecycle-command-deletion.md",
           "type": "plan",
           "summary": "7-phase, 5-wave deletion plan for the three lifecycle command files with full companion-edit coverage."
+        },
+        {
+          "path": "specs/124_delete_lifecycle_commands_and_update_reference/summaries/01_lifecycle-command-deletion-summary.md",
+          "type": "summary",
+          "summary": "Deletion of the three lifecycle command files with full companion-edit coverage; 7/7 phases."
         }
       ],
       "session_id": "sess_1788304786_edca9f_124"
@@ -1483,12 +1488,12 @@
     {
       "project_number": 127,
       "project_name": "collapse_routing_ladder_to_routing_agents",
-      "status": "not_started",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "=== REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===\nADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block (\"present:grant\" -> \"skill-grant:assemble\" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nCollapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.\n\nCONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.\n\nWORK. (1) Remove the routing and routing_hard blocks from every extension manifest that declares them, retaining only routing_agents (plus any extension-specific op like present's critique). (2) Retire command-route-skill.sh -- confirm no remaining caller (only the now-deleted /research, /plan, /implement, /revise-adjacent paths called it; /revise itself does not use this resolver and is unaffected). (3) Update context/guides/manifest-routing-schema.md to document the collapsed two-block model (down from four), including the completeness-lint contract re-scoped to check only routing_agents completeness against itself. (4) Re-scope lint-routing-wiring.sh's Checks A/C accordingly.\n\nDEPENDS ON both the command deletions (routing/skill-dispatch has no remaining caller) and the hard-mode file deletions (routing_hard/routing_agents_hard has no remaining caller) having already landed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19), agent-system/extensions/core/scripts/command-route-skill.sh, agent-system/extensions/core/context/guides/manifest-routing-schema.md, agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).\n",
       "created": "2026-08-31T18:11:43Z",
-      "last_updated": "2026-09-01T12:47:28Z",
+      "last_updated": "2026-09-01T23:28:21Z",
       "dependencies": [
         124,
         121
@@ -1498,7 +1503,8 @@
         "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
         "agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"
       ],
-      "artifacts": []
+      "artifacts": [],
+      "session_id": "sess_1788304786_edca9f_127"
     },
     {
       "project_number": 128,

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #124
 
 - **Task**: 124 - Delete /research, /plan, /implement commands and update the CLAUDE.md command reference
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.25 hours
 - **Dependencies**: Task 117, Task 68, Task 81, Task 126 (all `[COMPLETED]`)
 - **Research Inputs**: `specs/124_delete_lifecycle_commands_and_update_reference/reports/01_lifecycle-command-deletion-preconditions.md`
