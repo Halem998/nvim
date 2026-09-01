@@ -1,10 +1,10 @@
 # Implementation Summary: Task #133
 
 - **Task**: 133 - Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-09-01T00:00:00Z
-- **Completed**: N/A (Phase 5 partial)
-- **Effort**: ~1 hour
+- **Completed**: 2026-09-01T19:25:00Z
+- **Effort**: ~1.5 hours
 - **Dependencies**: None
 - **Artifacts**: plans/01_fix-deploy-pending-annotation.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -16,11 +16,14 @@ the recorder's validator and the discrimination doc's instance table), then fixe
 names: `skill_postflight_update`'s exit-6 deploy-pending annotation block was guarded on an
 ambient `TASK_DIR` environment variable that `/orchestrate`'s own postflight call sites never
 set, so `deploy_pending`/`deploy_pending_reason` never landed in `.return-meta.json` under
-`/orchestrate`. Phases 1-4 (registration, the new optional 6th parameter, the three call-site
-updates, and a regression test) are complete and verified. Phase 5 (recording the motivating
-incident to `specs/events.jsonl` as end-to-end proof) is blocked by a structural constraint
-(`deploy-root-guard.sh`) that this task's own Non-Goals ("do not deploy") correctly forbid
-working around; it is left `[PARTIAL]` with a documented one-command follow-up.
+`/orchestrate`. All five phases are now complete and verified. Phases 1-4 (registration, the new
+optional 6th parameter, the three call-site updates, and a regression test) were completed and
+committed in a prior dispatch. Phase 5 (recording the motivating incident to `specs/events.jsonl`
+as end-to-end proof) was initially blocked by a structural constraint (`deploy-root-guard.sh`)
+that this task's own Non-Goals ("do not deploy") correctly forbade working around in that
+dispatch; once a later `/orchestrate` cycle ran the sanctioned inter-cycle redeploy checkpoint
+and landed Phase 1's class registration in the deployed recorder, the deferred follow-up command
+was run to completion in this dispatch.
 
 ## What Changed
 
@@ -50,10 +53,11 @@ working around; it is left `[PARTIAL]` with a documented one-command follow-up.
   removes the ambient coupling at its root rather than satisfying it once more.
 - `skill_run_extension_hook`'s own `${TASK_DIR:-}` argument left unchanged (out of this task's
   narrow scope, per CONTRACT 4).
-- Phase 5 closed as `[PARTIAL]`, not `[COMPLETED WITH EXCLUSIONS]`: there is concrete, nameable
-  residual work (one recorder command, once deployed), which fails the exclusions marker's "no
-  residual work" admission condition and instead matches `PARTIAL`'s "deferred with a tracked
-  follow-up" semantics.
+- Phase 5 was closed as `[PARTIAL]` (not `[COMPLETED WITH EXCLUSIONS]`) in the dispatch that
+  discovered the blocker, since there was concrete, nameable residual work (one recorder
+  command, once deployed) at that time. In this dispatch, once the deploy occurred and the
+  follow-up command was run to a verified exit 0 with a well-formed `specs/events.jsonl` record,
+  Phase 5 was closed `[COMPLETED]`.
 
 ## Plan Deviations
 
@@ -64,20 +68,24 @@ working around; it is left `[PARTIAL]` with a documented one-command follow-up.
 - **Phase 4**: `write_deploy_gate_return_meta` required an added `mkdir -p` for the fixture task
   directory not present in `build_fixture_repo` (discovered via a failing exit-3-instead-of-6
   debugging pass; see `progress/phase-4-progress.json`).
-- **Phase 5** (tasks 5.2-5.4): deferred. `system-defect-record.sh` requires the DEPLOYED copy to
-  satisfy `deploy-root-guard.sh`'s structural check, and the deployed copy is stale (predates
-  this task's Phase 1 change). Closing this requires either deploying (prohibited by this plan's
-  own Non-Goals) or hand-authoring `.claude/**` (prohibited repo-wide). See the plan's own
-  "Phase 5 blocker" note and `progress/phase-5-progress.json`'s `approaches_tried` for the full
-  investigation, and its `follow_up_command` field for the exact command to run once unblocked.
+- **Phase 5** (tasks 5.2-5.4): initially deferred in a prior dispatch, because
+  `system-defect-record.sh` requires the DEPLOYED copy to satisfy `deploy-root-guard.sh`'s
+  structural check, and the deployed copy was then stale (predated this task's Phase 1 change).
+  Resolved in this dispatch: the orchestrator ran the sanctioned inter-cycle redeploy checkpoint
+  (`deploy-headless.sh`), the deployed copy now recognizes `AMBIENT_BINDING_MISMATCH`
+  (`grep -c` returns 2), and the recorded `follow_up_command` from
+  `progress/phase-5-progress.json` was run, exiting 0 and appending event_id
+  `evt_1788290690039_Ld0M8J` to `specs/events.jsonl`.
 
 ## Verification
 
 - Build: N/A (bash scripts) — `bash -n` passes on all four modified shell scripts.
 - Tests: A throwaway scratchpad harness sourcing the source-store `skill-base.sh` ran the full
   `test-skill-base-lifecycle.sh` suite including the three new Group 4 cases: **28 passed, 0
-  failed**. The real (deploy-first) suite correctly exits 2 against the currently-stale deployed
-  copy, via the new harness sanity check — this is the check working as designed, not a failure.
+  failed**. Phase 5's end-to-end recorder invocation against the now-redeployed
+  `.claude/scripts/system-defect-record.sh` exited 0 and produced a well-formed
+  `specs/events.jsonl` line (`tail`/`grep` + `jq .` verified: `event_type: "system_defect"`,
+  `defect_class: "AMBIENT_BINDING_MISMATCH"`, `task: 133`).
 - Files verified: Yes — `grep -n "AMBIENT_BINDING_MISMATCH"` hits both Phase 1 files; the
   discrimination doc's instance table has 14 data rows; `grep -rn "TASK_DIR"
   orchestrate-stage5-postflight.sh` returns zero matches; `git diff --stat` confined to the five
@@ -98,10 +106,7 @@ working around; it is left `[PARTIAL]` with a documented one-command follow-up.
 
 ## Follow-ups
 
-- Complete Phase 5: once a deploy has occurred (this task's own deploy-pending resolution, or a
-  later cycle), run the recorder command in `progress/phase-5-progress.json`'s
-  `follow_up_command` field and verify `tail -1 specs/events.jsonl | jq .` names
-  `AMBIENT_BINDING_MISMATCH`.
+- None. All five phases are complete and verified.
 
 ## References
 

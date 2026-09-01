@@ -1,7 +1,7 @@
 # Implementation Plan: Register the ambient-binding defect class and fix the deploy-pending annotation
 
 - **Task**: 133 - Register the ambient-binding defect class and fix the /orchestrate deploy-pending annotation
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/133_fix_orchestrate_deploy_pending_annotation/reports/01_fix-deploy-pending-annotation.md
@@ -508,7 +508,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Record the motivating incident under the new class [PARTIAL]
+### Phase 5: Record the motivating incident under the new class [COMPLETED]
 
 - **Goal:** Close the loop end-to-end by recording, to `specs/events.jsonl`, the exact incident
   whose recording previously failed with exit 1, "invalid --defect-class."
@@ -516,20 +516,19 @@ Phases within the same wave can execute in parallel.
 - **Tasks:**
   - [x] Read `agent-system/extensions/core/scripts/system-defect-record.sh`'s usage block to *(completed)*
         confirm the required flags and their current spellings before invoking it.
-  - [ ] Invoke the recorder with `--defect-class AMBIENT_BINDING_MISMATCH`, attributing the defect
+  - [x] Invoke the recorder with `--defect-class AMBIENT_BINDING_MISMATCH`, attributing the defect
         to `scripts/skill-base.sh` (the guard site) and/or
         `scripts/orchestrate-stage5-postflight.sh` (the caller site), with a description naming
         the mechanism: the exit-6 annotation guard read an ambient `TASK_DIR` that the
         `/orchestrate` caller never set, so the guard silently evaluated false and the documented
-        `deploy_pending` marker never landed. *(deviation: deferred — see "Phase 5 blocker" note
-        below this list; blocked by `deploy-root-guard.sh`, not by anything this task can fix
-        without violating its own Non-Goals)*
-  - [ ] Confirm the invocation exits **0** (previously exit 1) and that a corresponding record
-        appears in `specs/events.jsonl`. *(deviation: deferred to the follow-up recorder
-        invocation once a deploy occurs — see note below)*
-  - [ ] Confirm the recorder wrote a well-formed JSON line: `tail -1 specs/events.jsonl | jq .`
-        parses and the `defect_key`/detail carries the new class name. *(deviation: deferred,
-        same reason)*
+        `deploy_pending` marker never landed. *(completed: follow-up invocation after the
+        inter-cycle redeploy landed Phase 1's class registration in the deployed
+        `.claude/scripts/system-defect-record.sh`; event_id `evt_1788290690039_Ld0M8J`)*
+  - [x] Confirm the invocation exits **0** (previously exit 1) and that a corresponding record
+        appears in `specs/events.jsonl`. *(completed: exit 0, confirmed)*
+  - [x] Confirm the recorder wrote a well-formed JSON line: `tail -1 specs/events.jsonl | jq .`
+        parses and the `defect_key`/detail carries the new class name. *(completed: parses;
+        `defect_key: "AMBIENT_BINDING_MISMATCH:agent-system/extensions/core/scripts/skill-base.sh"`)*
 
 **Phase 5 blocker (discovered during implementation, not anticipated by the plan or its research
 report)**: `system-defect-record.sh` sources `deploy-root-guard.sh` (line 197, after argument
@@ -555,9 +554,14 @@ regenerate or deploy `.claude/`," and the repo-wide
 regardless of task. Neither prohibition is this task's to waive. This phase is therefore left
 `[PARTIAL]` rather than forced through a prohibited workaround or a hand-edited `events.jsonl`
 line (the plan's own Files-to-modify note for this phase states the file is "never hand-edited").
-See the phase-5 progress file and handoff for the exact follow-up command to run once a deploy
-has occurred (which this very task's Part 2 fix means will now be correctly reported as
-`deploy_pending` rather than silently deferred).
+**Resolved**: a later `/orchestrate` cycle ran the sanctioned inter-cycle redeploy checkpoint
+(`deploy-headless.sh`), regenerating `.claude/` from `agent-system/extensions/**` and landing
+Phase 1's `AMBIENT_BINDING_MISMATCH` class registration in the deployed
+`.claude/scripts/system-defect-record.sh` (verified via
+`grep -c AMBIENT_BINDING_MISMATCH .claude/scripts/system-defect-record.sh` returning 2). The
+follow-up command recorded in the phase-5 progress file's `follow_up_command` field was then run
+against the deployed copy, exiting 0 and appending event_id `evt_1788290690039_Ld0M8J` to
+`specs/events.jsonl` with `defect_class: "AMBIENT_BINDING_MISMATCH"` and `task: 133`.
 
 - **Timing:** 30 minutes
 
