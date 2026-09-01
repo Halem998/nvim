@@ -633,12 +633,14 @@ footprint-aware wave-computation logic is needed for tasks created together in t
   Stage MT-3 (step 4.5): before dispatching a wave/cycle with 2+ tasks, compare `file_scope`
   pairwise and defer the lower-priority task if an overlap has no `dependencies[]` edge.
 
-**Note on `--team`**: `/orchestrate` does not support `--team` (see "`--team` Flag Not
-Supported" above), so there is no `/orchestrate --team` footprint concern at the task level. The
-analogous `--team` footprint concern is a **within-task, phase-level** path — handled separately
-by `skill-team-implement.md`'s `infer_from_file_overlap(phase, phases)` (Phase 4 of the
-originating plan), which consumes the same shared `file-footprint-overlap.md` algorithm one
-level down (phases within a single task, not tasks within a batch).
+**Note on `--team`**: multi-task `/orchestrate` (this document's subject) does not support
+`--team` (see "`--team` Flag Not Supported" above), so there is no multi-task `/orchestrate
+--team` footprint concern at the task level. The analogous `--team` footprint concern at the
+**within-task, phase-level** used to be handled by the now-deleted per-mode team-implement
+skill's own `infer_from_file_overlap(phase, phases)`. That phase-level application is retired
+with no successor: single-task `skill-orchestrate`'s Stage 3.6a team fan-out does not run
+file-overlap inference at all — it derives teammate waves from the plan's own **Dependency
+Analysis** table, falling back to per-phase **Depends on**: fields.
 
 ### Failed Predecessor Handling
 

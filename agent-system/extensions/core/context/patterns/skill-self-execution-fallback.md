@@ -6,11 +6,14 @@ file is the SINGLE canonical Stage 5b block. It stays a prose `@`-import rather 
 `skill-base.sh` function because it is agent instructions directed at whichever agent is
 executing the skill — a "notice what you just did and write a file accordingly" directive — not
 shell logic with a fixed input/output contract. Before this block existed, some skills had no
-Stage 5b at all: the report found the team skills' degraded path ("Stage 4a: Fallback to Single
-Agent" in `skill-team-research`/`skill-team-plan`/`skill-team-implement`) re-delegates wholesale
-to a single-agent skill instead of writing return metadata itself, which means a team run that
-falls back produces **no** `.return-meta.json` of its own — the exact defect class this block
-exists to close. Every instruction below is DIRECT and EXECUTABLE prose — there is no bash fence
+Stage 5b at all: the report found that a skill whose degraded path re-delegates wholesale to a
+different skill instead of writing return metadata itself produces **no** `.return-meta.json` of
+its own — the exact defect class this block exists to close. (The original finding was the
+now-retired per-mode team skills' own "Stage 4a: Fallback to Single Agent" path. The surviving
+analog, `skill-orchestrate`'s Stage 3.6 team fan-out, avoids the defect by design: its own
+`fanout_degraded=true` path falls back to the SAME single-agent Agent-tool dispatch each
+non-team cycle already uses, not to a different skill, so the dispatched agent still writes its
+own metadata.) Every instruction below is DIRECT and EXECUTABLE prose — there is no bash fence
 to keep pseudocode out of, but the same "no vague hand-waving" bar applies: an importing skill
 must be able to follow this block's steps literally.
 

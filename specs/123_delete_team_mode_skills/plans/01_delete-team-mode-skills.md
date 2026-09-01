@@ -497,7 +497,7 @@ describes the replacement path truthfully.
 
 ---
 
-### Phase 6: De-reference `context/patterns/` and `context/standards/` [NOT STARTED]
+### Phase 6: De-reference `context/patterns/` and `context/standards/` [COMPLETED]
 
 **Goal**: Rewrite seven internal design/audit documents so they neither name the deleted skills nor
 assert something that stopped being true when the skills were removed.
@@ -506,32 +506,41 @@ These are the subtlest edits in the plan: several are audit tables and consumer 
 deleting a row and rewriting a row have different meanings.
 
 **Tasks**:
-- [ ] `context/patterns/context-protective-lead.md`: three compliance-table rows
+- [x] `context/patterns/context-protective-lead.md`: three compliance-table rows
       (`skill-team-research | Compliant | 0 | Refactored`, and the same for the other two). These
       record a completed audit of files that no longer exist — **remove the rows** rather than
       rewriting them, and check whether any surrounding count or total in that section must be
-      decremented to match.
-- [ ] `context/patterns/file-footprint-overlap.md`: the `**Phase-level**:` consumer bullet cites
+      decremented to match. *(completed: no adjacent count found to decrement)*
+- [x] `context/patterns/file-footprint-overlap.md`: the `**Phase-level**:` consumer bullet cites
       `skill-team-implement/SKILL.md` Stage 5's `infer_from_file_overlap(phase, phases)`. Planning
       established there is **no successor**: `skill-orchestrate` Stage 3.6a derives teammate waves
       from the plan's `**Dependency Analysis**` table, falling back to per-phase `**Depends on**:`
       fields — it does not run file-overlap inference. Rewrite the bullet to record that the
       phase-level application is **retired**, and say what replaced it (declared plan dependencies).
       Do not invent or port a successor. The canonical algorithm and the other three consumer
-      levels (task, lock-acquisition, batch-admission) are unaffected.
-- [ ] `context/patterns/multi-task-operations.md`: the same citation in prose form
+      levels (task, lock-acquisition, batch-admission) are unaffected. *(also fixed the "four
+      callers" opening sentence to "three active callers ... a fourth, phase-level, caller is
+      retired")*
+- [x] `context/patterns/multi-task-operations.md`: the same citation in prose form
       (`by skill-team-implement.md's infer_from_file_overlap(phase, phases)`). Apply the same
-      retirement wording; keep the two files consistent.
-- [ ] `context/patterns/skill-lifecycle.md`: the three skills are listed as team-mode variants that
+      retirement wording; keep the two files consistent. *(verified: both files now describe the
+      same retirement, no successor, per-phase Depends-on fields as the sole mechanism)*
+- [x] `context/patterns/skill-lifecycle.md`: the three skills are listed as team-mode variants that
       route their own lifecycle. Remove them from that list; if the surrounding sentence exists only
-      to describe team-mode variants, rewrite it to point at the fan-out stage instead.
-- [ ] `context/patterns/skill-self-execution-fallback.md`: the parenthetical naming the three skills'
+      to describe team-mode variants, rewrite it to point at the fan-out stage instead. *(removed
+      the bullet outright: skill-orchestrate already appears in this file's Autonomous-Loop
+      exclusion table above, so no duplicate pointer entry was needed)*
+- [x] `context/patterns/skill-self-execution-fallback.md`: the parenthetical naming the three skills'
       "Agent" fallback sections. Rewrite to name a surviving example, confirming by grep that the
-      example named actually contains the pattern being illustrated.
-- [ ] `context/patterns/task-lock.md`: the three names appear inside an inventory of skills showing
+      example named actually contains the pattern being illustrated. *(researched: no surviving
+      skill re-delegates wholesale to a DIFFERENT skill on its degraded path the way the deleted
+      team skills did; named skill-orchestrate's fanout_degraded=true path as the surviving analog
+      that avoids the defect by falling back to the same single-agent Agent-tool dispatch rather
+      than a different skill, confirmed via grep for fanout_degraded)*
+- [x] `context/patterns/task-lock.md`: the three names appear inside an inventory of skills showing
       "zero hand-rolled hits today". Remove the three names from the list and decrement any count
-      stated alongside it.
-- [ ] `context/standards/git-staging-scope.md`: the heading
+      stated alongside it. *(count corrected 14 -> 11)*
+- [x] `context/standards/git-staging-scope.md`: the heading
       `## Reference Template (proven, from --team skills)` and the sentence attributing the template
       to `skill-team-research` and `skill-team-implement`. The bash template itself is already
       inlined verbatim and needs no rescue — retitle the section and rewrite the attribution so it

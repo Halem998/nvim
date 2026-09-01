@@ -229,10 +229,6 @@ These skills manage task lifecycle transitions and follow the Stage-N skeleton a
 - skill-researcher / skill-researcher-hard (not_started/researched -> researching -> researched)
 - skill-planner / skill-planner-hard (researched -> planning -> planned)
 - skill-implementer / skill-implementer-hard (planned -> implementing -> completed)
-- skill-team-research, skill-team-plan, skill-team-implement (team-mode variants; route their
-  status transitions through `update-task-status.sh` the same way, with a real inline fallback
-  rather than a wholesale re-delegation on the degraded path — see
-  `@.claude/context/patterns/skill-self-execution-fallback.md`)
 - Every extension's `skill-{domain}-research` / `skill-{domain}-implementation` pair
 
 ### Non-Workflow Skills (Excluded from Pattern)

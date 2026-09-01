@@ -636,11 +636,10 @@ flags rather than hand-rolling their own `jq ... > tmp && mv` or `jq -n ... > fi
 grep result, not a permanent fact -- re-run the same searches before trusting them again):**
 
 - Every `specs/state.json` writer in `agent-system/extensions/core/**` now routes through
-  `state-write.sh`. The 14 skill files this note previously listed as still carrying hand-rolled
+  `state-write.sh`. The 11 skill files this note previously listed as still carrying hand-rolled
   write blocks (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
   `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`,
-  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
-  `skill-team-research`, `skill-todo`) each show zero hand-rolled hits today and call
+  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-todo`) each show zero hand-rolled hits today and call
   `state-write.sh` instead -- that claim was stale; a separate, already-completed effort had
   closed it before this section's own `--state-file`/`--init` work began. `commands/task.md` and
   `commands/todo.md` likewise carry zero hand-rolled `specs/state.json` or

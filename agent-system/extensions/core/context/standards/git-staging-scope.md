@@ -129,10 +129,10 @@ It is always acceptable to leave source-file changes uncommitted for the user to
 stage manually. It is never acceptable to reach for `git add -A` to "catch everything" — that
 silently pulls in unrelated concurrent-session changes.
 
-## Reference Template (proven, from `--team` skills)
+## Reference Template (canonical scoped-staging pattern)
 
-This is the exact working pattern already used by `skill-team-research` and
-`skill-team-implement` — reuse it verbatim rather than reinventing scoped staging:
+This is the canonical, proven scoped-staging pattern — reuse it verbatim rather than
+reinventing scoped staging:
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")

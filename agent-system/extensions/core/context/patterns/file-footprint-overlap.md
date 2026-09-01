@@ -73,8 +73,9 @@ compare across unrelated batches.
 
 ## Consumers
 
-This algorithm has four callers, at the task, phase, lock-acquisition, and batch-admission
-levels. As of the shared-library convergence, the lock-acquisition-level and batch-admission-level
+This algorithm has three active callers, at the task, lock-acquisition, and batch-admission
+levels (a fourth, phase-level, caller is retired — see below). As of the shared-library
+convergence, the lock-acquisition-level and batch-admission-level
 callers no longer carry two independent transcriptions of the algorithm — they SPLICE the ONE
 physical implementation at `.claude/scripts/lib/file-scope-overlap.sh`
 (`FILE_SCOPE_OVERLAP_JQ_DEFS`'s `norm`/`scopes_overlap_first` defs, and the bash
@@ -86,10 +87,13 @@ both source or splice the same file.
   `.claude/docs/reference/standards/multi-task-creation-standard.md` — runs this algorithm
   pairwise across a batch of proposed tasks' `file_scope` entries and auto-adds a serializing
   `dependencies[]` edge on overlap.
-- **Phase-level**: `skill-team-implement/SKILL.md` Stage 5's `infer_from_file_overlap(phase,
-  phases)` — runs this algorithm pairwise across a single task's phase list (using each phase's
-  declared or inferred file touch-set) to decide whether phases can execute in parallel or must
-  be serialized.
+- **Phase-level (retired)**: this level's caller, `infer_from_file_overlap(phase, phases)`, lived
+  only in the now-deleted per-mode team-implement skill's own Stage 5, and had no other caller.
+  `skill-orchestrate`'s Stage 3.6a team fan-out, which now serves parallel phase execution, does
+  not run file-overlap inference at all — it derives teammate waves from the plan's own
+  **Dependency Analysis** table, falling back to per-phase **Depends on**: fields. No successor
+  application of this algorithm exists at the phase level; a plan's declared dependencies are now
+  the sole mechanism deciding which phases may run in parallel.
 - **Lock-acquisition-level**: `.claude/scripts/task-lock.sh`'s `cmd_acquire`, via the shared
   `scopes_overlap()` function sourced from `lib/file-scope-overlap.sh` (lazily, on first use —
   see `task-lock.md` for why this sourcing is deferred rather than unconditional), checks the

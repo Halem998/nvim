@@ -242,14 +242,11 @@ This is the model all lead agents should follow.
 | Skill | Status | Violations Remaining | Notes |
 |-------|--------|---------------------|-------|
 | skill-orchestrate | Compliant | 0 | Reference implementation |
-| skill-team-research | Compliant | 0 | Refactored |
 | skill-researcher | Compliant | 0 | Refactored |
 | skill-planner | Compliant | 0 | Refactored |
 | skill-implementer | Compliant | 0 | Refactored |
 | skill-reviser | Compliant | 0 | Refactored |
 | skill-orchestrator | Compliant | 0 | Refactored (historical -- skill retired; this row is a point-in-time audit record, not a functional dependency) |
-| skill-team-plan | Compliant | 0 | Refactored |
-| skill-team-implement | Compliant | 0 | Refactored |
 | skill-neovim-research | Compliant | 0 | Verified clean |
 | skill-nix-research | Compliant | 0 | Verified clean |
 | skill-neovim-implementation | Compliant | 0 | Verified clean |

@@ -1,0 +1,56 @@
+{
+  "phase": 6,
+  "phase_name": "De-reference context/patterns/ and context/standards/",
+  "started_at": "2026-09-01T01:45:00Z",
+  "last_updated": "2026-09-01T02:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "context-protective-lead.md: remove 3 compliance rows",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/context-protective-lead.md"],
+      "note": "No adjacent count/total to decrement. Note: this file also carries a 'skill-orchestrator' row (a DIFFERENT, previously-retired skill) explicitly kept with a 'historical audit record' annotation -- the plan's own instruction for THIS phase's three rows was explicit removal, not that annotation pattern, so removal (not annotation) was followed per the binding instruction."
+    },
+    {
+      "id": 2,
+      "description": "file-footprint-overlap.md: retire phase-level consumer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]
+    },
+    {
+      "id": 3,
+      "description": "multi-task-operations.md: same retirement, prose form",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/multi-task-operations.md"],
+      "note": "Investigated this file's 'Note on --team: /orchestrate does not support --team' claim before editing -- confirmed it is a DIFFERENT, still-true claim (about multi-task-batch /orchestrate 7,22-24 ignoring --team per skill-orchestrate/SKILL.md line 2582-2586), not a contradiction of the single-task /orchestrate N --team fan-out described elsewhere in this task's edits. Left that framing alone; only replaced the skill-team-implement.md citation with retirement wording."
+    },
+    {
+      "id": 4,
+      "description": "skill-lifecycle.md: remove from variant list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/skill-lifecycle.md"]
+    },
+    {
+      "id": 5,
+      "description": "skill-self-execution-fallback.md: re-example",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md"]
+    },
+    {
+      "id": 6,
+      "description": "task-lock.md: remove from inventory, fix count",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]
+    },
+    {
+      "id": 7,
+      "description": "git-staging-scope.md: retitle + reattribute",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
