@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Declare --skip-changelog-check",
+  "started_at": "2026-09-01T11:57:56Z",
+  "last_updated": "2026-09-01T11:59:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend Command Syntax fenced block with --skip-changelog-check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 2, "description": "Add flags-table row for --skip-changelog-check", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 3, "description": "Add skip_changelog_check=false initializer and parse branch in Step 1", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-tag/SKILL.md"]},
+    {"id": 4, "description": "Verify substring-match parse order safety between the two --skip-*-check flags", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

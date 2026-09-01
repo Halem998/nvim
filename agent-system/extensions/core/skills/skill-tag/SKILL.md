@@ -14,7 +14,7 @@ Direct execution skill for creating and pushing semantic version tags to trigger
 ## Command Syntax
 
 ```
-/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check]
+/tag [--patch|--minor|--major] [--force] [--dry-run] [--skip-version-check] [--skip-changelog-check]
 ```
 
 | Flag | Description |
@@ -25,6 +25,7 @@ Direct execution skill for creating and pushing semantic version tags to trigger
 | `--force` | Skip confirmation prompt |
 | `--dry-run` | Show what would be done without executing |
 | `--skip-version-check` | Bypass a declared-version mismatch (still prints a loud warning naming both versions) |
+| `--skip-changelog-check` | Bypass a missing or empty CHANGELOG entry (still prints the full failure detail first) |
 
 ## Execution
 
@@ -38,6 +39,7 @@ increment="patch"  # default
 force=false
 dry_run=false
 skip_version_check=false
+skip_changelog_check=false
 
 if [[ "$*" == *"--minor"* ]]; then
   increment="minor"
@@ -53,6 +55,9 @@ if [[ "$*" == *"--dry-run"* ]]; then
 fi
 if [[ "$*" == *"--skip-version-check"* ]]; then
   skip_version_check=true
+fi
+if [[ "$*" == *"--skip-changelog-check"* ]]; then
+  skip_changelog_check=true
 fi
 ```
 
