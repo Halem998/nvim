@@ -12,12 +12,21 @@
 #   Assert 2 (agent existence): command-route-agent.sh resolves every declared pair to an agent
 #     name that names a real file under some extension's agents/ directory -- the check that
 #     makes the epi-resolves-to-nothing defect class impossible.
-#   Assert 3 (engine parity): skill-orchestrate and skill-orchestrate-hard both invoke
-#     command-route-agent.sh (structural parity, grepped from the SKILL.md sources) and their
-#     hard-mode resolution falls back to the extension's own standard (non-hard) routing_agents
-#     block on a routing_agents_hard miss -- via="hard-miss-standard-fallback" -- rather than
-#     discarding the declared domain agent, and only reaches the caller's generic hard default on
-#     a genuine total miss of both blocks.
+#   Assert 3 (intra-file branch coverage, since the base/hard engine merge): the merged
+#     skill-orchestrate/SKILL.md resolves each op's agent exactly ONCE, unconditionally, in Stage
+#     1b (command-route-agent.sh, >=3 calls for research/plan/implement) -- both the hard_mode-
+#     gated per-phase-dispatch (H1) branch and the base whole-plan dispatch branch then SHARE that
+#     one resolved variable ($IMPLEMENT_AGENT) rather than each re-invoking the resolver. A flat
+#     invocation count therefore cannot tell "both branches still dispatch" apart from "one
+#     branch's dispatch was silently deleted" -- Assert 3 below instead asserts $IMPLEMENT_AGENT
+#     is actually referenced as a dispatch target INSIDE each of the two branches individually,
+#     anchored on each branch's own unique heading text ("Hard branch: Per-Phase Dispatch (H1)" /
+#     "Base branch: whole-plan dispatch (unchanged)"). Separately, hard-mode agent resolution
+#     (command-route-agent.sh itself, exercised directly, not via the SKILL.md prose) still falls
+#     back to the extension's own standard (non-hard) routing_agents block on a routing_agents_hard
+#     miss -- via="hard-miss-standard-fallback" -- rather than discarding the declared domain
+#     agent, and only reaches the caller's generic hard default on a genuine total miss of both
+#     blocks.
 #   Assert 4 (precedence direction): a synthetic fixture where a non-core manifest and a
 #     core-named manifest both declare the same (op, task_type) confirms the non-core entry wins
 #     -- pinning first-match-wins against a regression to skill-orchestrate-hard's old
@@ -57,7 +66,6 @@ LIB_SRC="$EXT_ROOT/core/scripts/lib/manifest-routing-lib.sh"
 ROUTE_SKILL_SRC="$EXT_ROOT/core/scripts/command-route-skill.sh"
 ROUTE_AGENT_SRC="$EXT_ROOT/core/scripts/command-route-agent.sh"
 ORCH_SKILL="$EXT_ROOT/core/skills/skill-orchestrate/SKILL.md"
-ORCH_HARD_SKILL="$EXT_ROOT/core/skills/skill-orchestrate-hard/SKILL.md"
 
 PASSED=0
 FAILED=0
@@ -66,7 +74,7 @@ pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
-for f in "$LIB_SRC" "$ROUTE_SKILL_SRC" "$ROUTE_AGENT_SRC" "$ORCH_SKILL" "$ORCH_HARD_SKILL"; do
+for f in "$LIB_SRC" "$ROUTE_SKILL_SRC" "$ROUTE_AGENT_SRC" "$ORCH_SKILL"; do
   if [ ! -f "$f" ]; then
     echo "ERROR: expected file not found: $f" >&2
     exit 2
@@ -214,24 +222,61 @@ if [ "$assert2_failures" -eq 0 ]; then
 fi
 
 # =====================================================================
-# Assert 3: engine parity -- structural (both SKILL.md files invoke the same resolver script)
-# plus semantic (hard-mode never silently falls back to the standard block on a miss).
+# Assert 3: intra-file branch coverage (structural, resolution-site count + branch-aware dispatch
+# presence) plus semantic (hard-mode never silently falls back to the standard block on a miss).
 # =====================================================================
 echo ""
-echo "--- Assert 3: engine parity ---"
+echo "--- Assert 3: intra-file branch coverage ---"
 
 orch_calls=$(grep -c 'command-route-agent\.sh' "$ORCH_SKILL" 2>/dev/null || echo 0)
-orch_hard_calls=$(grep -c 'command-route-agent\.sh' "$ORCH_HARD_SKILL" 2>/dev/null || echo 0)
-if [ "$orch_calls" -ge 3 ] && [ "$orch_hard_calls" -ge 3 ]; then
-  pass "Assert 3 (structural): skill-orchestrate ($orch_calls) and skill-orchestrate-hard ($orch_hard_calls) both invoke command-route-agent.sh at least 3 times (research/plan/implement)"
+if [ "$orch_calls" -ge 3 ]; then
+  pass "Assert 3 (structural): skill-orchestrate ($orch_calls) invokes command-route-agent.sh at least 3 times (research/plan/implement, Stage 1b)"
 else
-  fail "Assert 3 (structural): expected >=3 command-route-agent.sh invocations in each SKILL.md, got orchestrate=$orch_calls, orchestrate-hard=$orch_hard_calls"
+  fail "Assert 3 (structural): expected >=3 command-route-agent.sh invocations in skill-orchestrate/SKILL.md, got $orch_calls"
 fi
 
-if grep -qE 'case "\$TASK_TYPE"|sed .s/\^skill-' "$ORCH_SKILL" "$ORCH_HARD_SKILL" 2>/dev/null; then
-  fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in an orchestrate SKILL.md"
+if grep -qE 'case "\$TASK_TYPE"|sed .s/\^skill-' "$ORCH_SKILL" 2>/dev/null; then
+  fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in skill-orchestrate/SKILL.md"
 else
-  pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in either orchestrate SKILL.md"
+  pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in skill-orchestrate/SKILL.md"
+fi
+
+# Branch-aware check (REPLACES the old cross-engine invocation-count comparison): assert the
+# Stage-1b-resolved $IMPLEMENT_AGENT variable is actually dispatched -- referenced inside a
+# `subagent_type` table row -- within BOTH the H1 hard branch and the base branch individually,
+# anchored on each branch's own unique heading text. A flat whole-file count of
+# command-route-agent.sh or IMPLEMENT_AGENT occurrences would pass even if one mode's dispatch
+# site were deleted entirely -- that is precisely the regression the old cross-engine comparison
+# used to catch, and a flat count would lose it.
+H1_HEADING='##### Hard branch: Per-Phase Dispatch (H1)'
+BASE_HEADING='##### Base branch: whole-plan dispatch (unchanged)'
+h1_heading_count=$(grep -cF "$H1_HEADING" "$ORCH_SKILL")
+base_heading_count=$(grep -cF "$BASE_HEADING" "$ORCH_SKILL")
+if [ "$h1_heading_count" -eq 1 ] && [ "$base_heading_count" -eq 1 ]; then
+  pass "Assert 3 (branch-aware): H1 branch heading and base branch heading each occur exactly once"
+else
+  fail "Assert 3 (branch-aware): expected exactly one occurrence each of the H1/base branch headings, got H1=$h1_heading_count base=$base_heading_count"
+fi
+
+h1_start=$(grep -nF "$H1_HEADING" "$ORCH_SKILL" | head -1 | cut -d: -f1)
+base_start=$(grep -nF "$BASE_HEADING" "$ORCH_SKILL" | head -1 | cut -d: -f1)
+base_end=$(awk -v start="${base_start:-0}" 'NR > start && /^#### State: / { print NR; exit }' "$ORCH_SKILL")
+if [ -n "${h1_start:-}" ] && [ -n "${base_start:-}" ] && [ -n "${base_end:-}" ] \
+   && [ "$h1_start" -lt "$base_start" ] && [ "$base_start" -lt "$base_end" ]; then
+  h1_body="$(sed -n "${h1_start},$((base_start - 1))p" "$ORCH_SKILL")"
+  base_body="$(sed -n "${base_start},$((base_end - 1))p" "$ORCH_SKILL")"
+  if grep -q 'IMPLEMENT_AGENT' <<< "$h1_body"; then
+    pass "Assert 3 (branch-aware): H1 hard branch dispatches \$IMPLEMENT_AGENT"
+  else
+    fail "Assert 3 (branch-aware): H1 hard branch does NOT reference \$IMPLEMENT_AGENT as a dispatch target"
+  fi
+  if grep -q 'IMPLEMENT_AGENT' <<< "$base_body"; then
+    pass "Assert 3 (branch-aware): base branch dispatches \$IMPLEMENT_AGENT"
+  else
+    fail "Assert 3 (branch-aware): base branch does NOT reference \$IMPLEMENT_AGENT as a dispatch target"
+  fi
+else
+  fail "Assert 3 (branch-aware): could not locate H1/base branch region boundaries (h1_start=${h1_start:-MISSING} base_start=${base_start:-MISSING} base_end=${base_end:-MISSING})"
 fi
 
 # Semantic: for task types with NO routing_agents_hard entry anywhere, hard-mode resolution must

@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
-# test-handoff-reader-parity.sh - Two-engine reader parity suite. Builds ONE shared
-# .orchestrator-handoff.json fixture, extracts the literal jq filter strings both
-# skill-orchestrate/SKILL.md's and skill-orchestrate-hard/SKILL.md's Stage 5 result-read blocks
-# actually ship, evaluates each against the shared fixture, and asserts the two engines produce
-# byte-identical filter strings AND identical extracted values for every field both read. The
-# hard engine additionally reading .skeleton, .sorry_inventory, .blockers[0].target, and
-# .blockers[0].verbatim_goal is an expected, allowlisted hard-only difference -- not a parity
-# failure -- and is asserted separately (extraction succeeds, values are sane) rather than
-# compared against the base engine, which never reads those fields at all.
+# test-handoff-reader-parity.sh - Single-engine reader presence/correctness suite for
+# skill-orchestrate/SKILL.md's Stage 5 result-read block (and the Stage 4 H1 / Stage 5b hard-only
+# reads it used to compare against a second file). Builds ONE shared
+# .orchestrator-handoff.json fixture, extracts the literal jq filter strings the merged engine
+# actually ships for each field, and asserts each filter is present and produces the expected
+# value against the shared fixture. This suite used to diff those same filter strings against a
+# SECOND file (skill-orchestrate-hard/SKILL.md) for byte-equality -- since the two engines were
+# merged into one `hard_mode`-gated file, that comparison premise no longer exists: with one
+# engine there is nothing left to diff against, so the checks below were converted from
+# extract-twice-and-compare to extract-once-and-verify, preserving every field/value assertion
+# the old comparison implied without the vacuous self-comparison.
 #
 # Structural model: scripts/tests/test-validate-handoff.sh / test-corroborate-phase-counts.sh
 # (mktemp -d workdir with an EXIT-trap cleanup, source-store-first candidate resolution for the
-# SKILL.md files under active development, pass()/fail()/info() helpers with integer counters,
+# SKILL.md file under active development, pass()/fail()/info() helpers with integer counters,
 # exit 0 all-pass / 1 any-fail / 2 environment error).
 #
 # Why extraction, not hand-copied jq: hand-copying the filter strings into this test would not
-# catch drift if a future editor changes one engine's Stage 5 read but not the other's -- the
-# whole point of "parity" is proving the two SHIPPED files agree, not that this test agrees with
-# itself. Extraction is anchored on stable, already-unique surrounding text (verified via
-# grep -c == 1 per file at authoring time) rather than raw line numbers, so it survives ordinary
-# prose edits elsewhere in either file.
+# catch drift if a future editor changes the engine's Stage 5 read without updating this test to
+# match -- the whole point of extraction is proving the SHIPPED file's actual filter still does
+# what this test expects, not that this test agrees with itself. Extraction is anchored on
+# stable, already-unique surrounding text (verified via grep -c == 1 at authoring time) rather
+# than raw line numbers, so it survives ordinary prose edits elsewhere in the file.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (a
 # required file was not found at any candidate path).
@@ -53,12 +55,8 @@ resolve_candidate() {
   return 1
 }
 
-BASE_SKILL="$(resolve_candidate "skills/skill-orchestrate/SKILL.md")" || {
+SKILL_FILE="$(resolve_candidate "skills/skill-orchestrate/SKILL.md")" || {
   echo "ERROR: skill-orchestrate/SKILL.md not found (source store or deploy tree)" >&2
-  exit 2
-}
-HARD_SKILL="$(resolve_candidate "skills/skill-orchestrate-hard/SKILL.md")" || {
-  echo "ERROR: skill-orchestrate-hard/SKILL.md not found (source store or deploy tree)" >&2
   exit 2
 }
 VALIDATOR_CANDIDATES=(
@@ -146,34 +144,45 @@ extract_jq_filter() {
     | grep -oP "jq -[rc] '\K[^']*(?=')"
 }
 
-# Anchor: the byte-identical comment immediately preceding both engines' Stage 5 dispatch_status
-# read. Verified unique (grep -c == 1) in both files at authoring time.
+# Anchor: the comment immediately preceding the merged engine's Stage 5 dispatch_status read.
+# Verified unique (grep -c == 1) in the merged file.
 ANCHOR='not bare `.status`) so a handoff with a missing'
 
-# Shared fields both engines' Stage 5 result-read block extract identically.
+# Fields the Stage 5 result-read block extracts. Each field's EXPECTED value is derived from the
+# shared fixture above by hand, once, at authoring time (not re-derived from the filter under
+# test -- that would make the assertion vacuous).
 SHARED_FIELDS=(dispatch_status dispatch_summary blockers next_hint phases_completed phases_total plan_markers_verified)
+declare -A SHARED_FIELD_EXPECTED=(
+  [dispatch_status]="implemented"
+  [dispatch_summary]="Completed all phases with one tracked strategic sorry and one historical blocker entry."
+  [blockers]='[{"phase":2,"target":"example-target.sh","verbatim_goal":"example verbatim goal text","what_was_tried":"attempted approach","why_it_failed":"reason it failed"}]'
+  [next_hint]="implement"
+  [phases_completed]="1"
+  [phases_total]="3"
+  [plan_markers_verified]="true"
+)
 
 for field in "${SHARED_FIELDS[@]}"; do
-  base_filter="$(extract_jq_filter "$BASE_SKILL" "$ANCHOR" "$field")"
-  hard_filter="$(extract_jq_filter "$HARD_SKILL" "$ANCHOR" "$field")"
-  if [[ -z "$base_filter" ]]; then
+  filter="$(extract_jq_filter "$SKILL_FILE" "$ANCHOR" "$field")"
+  if [[ -z "$filter" ]]; then
     fail "$field: could not extract jq filter from skill-orchestrate/SKILL.md"
     continue
   fi
-  if [[ -z "$hard_filter" ]]; then
-    fail "$field: could not extract jq filter from skill-orchestrate-hard/SKILL.md"
-    continue
-  fi
-  if [[ "$base_filter" != "$hard_filter" ]]; then
-    fail "$field: filter strings diverge -- base='$base_filter' hard='$hard_filter'"
-    continue
-  fi
-  base_val="$(jq -r "$base_filter" "$FIXTURE" 2>/dev/null)"
-  hard_val="$(jq -r "$hard_filter" "$FIXTURE" 2>/dev/null)"
-  if [[ "$base_val" == "$hard_val" ]]; then
-    pass "$field: identical filter ('$base_filter') and identical value ('$base_val') in both engines"
+  val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
+  expected="${SHARED_FIELD_EXPECTED[$field]}"
+  if [[ "$field" == "blockers" ]]; then
+    # blockers is a jq -c array; compare parsed JSON structurally, not as a raw string, so key
+    # ordering in the filter's own output can't cause a spurious mismatch.
+    val_c="$(jq -c "$filter" "$FIXTURE" 2>/dev/null)"
+    if [[ "$(jq -c -e --argjson a "$val_c" --argjson b "$expected" -n '$a == $b' 2>/dev/null)" == "true" ]]; then
+      pass "$field: filter ('$filter') present and produces the expected value against the shared fixture"
+    else
+      fail "$field: filter present but value diverges from expected -- got='$val_c' expected='$expected'"
+    fi
+  elif [[ "$val" == "$expected" ]]; then
+    pass "$field: filter ('$filter') present and produces the expected value ('$val') against the shared fixture"
   else
-    fail "$field: identical filter but divergent values -- base='$base_val' hard='$hard_val'"
+    fail "$field: filter present but value diverges -- got='$val' expected='$expected'"
   fi
 done
 
@@ -186,96 +195,114 @@ extract_continuation_block() {
     | tr -s ' \t' ' ' \
     | sed 's/^ *//;s/ *$//'
 }
-base_continuation="$(extract_continuation_block "$BASE_SKILL")"
-hard_continuation="$(extract_continuation_block "$HARD_SKILL")"
-if [[ -z "$base_continuation" || -z "$hard_continuation" ]]; then
-  fail "continuation: could not extract the multi-line jq -c block from one or both engines"
-elif [[ "$base_continuation" == "$hard_continuation" ]]; then
-  pass "continuation: identical multi-line dual-form-resolution jq block in both engines"
-  cont_val="$(jq -c "$base_continuation" "$FIXTURE" 2>/dev/null)"
+continuation_block="$(extract_continuation_block "$SKILL_FILE")"
+if [[ -z "$continuation_block" ]]; then
+  fail "continuation: could not extract the multi-line jq -c block from skill-orchestrate/SKILL.md"
+else
+  pass "continuation: multi-line dual-form-resolution jq block present"
+  cont_val="$(jq -c "$continuation_block" "$FIXTURE" 2>/dev/null)"
   if [[ "$cont_val" == *"phase-1-handoff-20260101T000000Z.md"* ]]; then
     pass "continuation: resolved value from shared fixture contains the expected handoff_path"
   else
     fail "continuation: resolved value unexpected: $cont_val"
   fi
-else
-  fail "continuation: multi-line blocks diverge between engines"
-  info "base: $base_continuation"
-  info "hard: $hard_continuation"
 fi
 
-# ── artifacts[0].{path,type,summary}: both engines read identically ────────────────────────────
+# ── artifacts[0].{path,type,summary}: presence + expected value against the shared fixture ─────
 ARTIFACT_ANCHOR='handoff_artifact_path=\$(echo "\$handoff" \| jq -r'\''\.artifacts\[0\]\.path'
+declare -A ARTIFACT_SUB_EXPECTED=(
+  [path]="specs/000_x/summaries/01_x-summary.md"
+  [type]="summary"
+  [summary]="Partial summary"
+)
 for sub in path type summary; do
   var="handoff_artifact_${sub}"
-  base_filter="$(grep -oP "${var}=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$BASE_SKILL" | head -1)"
-  hard_filter="$(grep -oP "${var}=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$HARD_SKILL" | head -1)"
-  if [[ -z "$base_filter" || -z "$hard_filter" ]]; then
-    fail "artifacts[0].$sub: could not extract from one or both engines"
+  filter="$(grep -oP "${var}=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+  if [[ -z "$filter" ]]; then
+    fail "artifacts[0].$sub: could not extract from skill-orchestrate/SKILL.md"
     continue
   fi
-  if [[ "$base_filter" != "$hard_filter" ]]; then
-    fail "artifacts[0].$sub: filter strings diverge -- base='$base_filter' hard='$hard_filter'"
-    continue
-  fi
-  base_val="$(jq -r "$base_filter" "$FIXTURE" 2>/dev/null)"
-  hard_val="$(jq -r "$hard_filter" "$FIXTURE" 2>/dev/null)"
-  if [[ "$base_val" == "$hard_val" ]]; then
-    pass "artifacts[0].$sub: identical filter and value ('$base_val') in both engines"
+  val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
+  expected="${ARTIFACT_SUB_EXPECTED[$sub]}"
+  if [[ "$val" == "$expected" ]]; then
+    pass "artifacts[0].$sub: filter present and produces the expected value ('$val') against the shared fixture"
   else
-    fail "artifacts[0].$sub: identical filter but divergent values -- base='$base_val' hard='$hard_val'"
+    fail "artifacts[0].$sub: filter present but value diverges -- got='$val' expected='$expected'"
   fi
 done
 
-# ── Hard-only allowlisted fields: extraction succeeds and produces sane values against the ─────
-# shared fixture. NOT compared against base -- base never reads these, by design (H5 divergence
-# audit routing and blocked-escalation blocker_desc are hard-mode-only concerns).
-hard_skeleton_filter="$(grep -oP "skeleton=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$HARD_SKILL" | head -1)"
-if [[ -n "$hard_skeleton_filter" ]]; then
-  val="$(jq -r "$hard_skeleton_filter" "$FIXTURE" 2>/dev/null)"
+# ── hard_mode-only allowlisted fields: extraction succeeds and produces the expected value ──────
+# against the shared fixture. NOT compared against a second engine -- there is only one engine
+# now, and these fields are never read on the base-mode path by design (H5 divergence audit
+# routing and blocked-escalation blocker_desc are hard_mode-only concerns).
+#
+# .skeleton is read as `last_skeleton` DIRECTLY FROM THE HANDOFF FILE (`jq -r '...' "$handoff_file"`),
+# not via the `echo "$handoff" | jq ...` form the SHARED_FIELDS above use, and it lives in Stage
+# 4's `hard_mode`-gated per-phase-dispatch (H1) branch -- NOT Stage 5, where it lived in the old
+# hard-only file. extract_jq_filter_from_file() matches that different read shape.
+extract_jq_filter_from_file() {
+  local file="$1" var="$2"
+  grep -oP "${var}=\\\$\\(jq -[rc] '\\K[^']*(?=' \"\\\$handoff_file\"\\))" "$file" | head -1
+}
+
+skeleton_filter="$(extract_jq_filter_from_file "$SKILL_FILE" "last_skeleton")"
+if [[ -n "$skeleton_filter" ]]; then
+  val="$(jq -r "$skeleton_filter" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "true" ]]; then
-    pass "hard-only allowlisted: .skeleton extracts 'true' from the shared fixture"
+    pass "hard_mode-only allowlisted: .skeleton (as last_skeleton, Stage 4 H1 branch) extracts 'true' from the shared fixture"
   else
-    fail "hard-only allowlisted: .skeleton unexpected value '$val'"
+    fail "hard_mode-only allowlisted: .skeleton (last_skeleton) unexpected value '$val'"
   fi
 else
-  fail "hard-only allowlisted: could not extract .skeleton filter from hard engine"
+  fail "hard_mode-only allowlisted: could not extract the last_skeleton filter from skill-orchestrate/SKILL.md"
 fi
 
-hard_sorry_filter="$(grep -oP "sorry_inventory=\\\$\(echo \"\\\$handoff\" \| jq -c '\K[^']*(?=')" "$HARD_SKILL" | head -1)"
-if [[ -n "$hard_sorry_filter" ]]; then
-  count="$(jq -c "$hard_sorry_filter" "$FIXTURE" 2>/dev/null | jq 'length')"
-  if [[ "$count" == "1" ]]; then
-    pass "hard-only allowlisted: .sorry_inventory extracts 1 entry from the shared fixture"
+# .sorry_inventory: the merged engine no longer assigns a bare `sorry_inventory=` variable -- it
+# inlines the `.sorry_inventory[]?.follow_up_task` filter directly into the `follow_up_tasks`/
+# `follow_up_count` derivation (same Stage 4 H1 branch, immediately after the `last_skeleton`
+# check above), and that code path runs unconditionally within the branch rather than behind a
+# second, inner hard_mode check. This is a presence-and-correctness check on that inlined filter
+# (via follow_up_tasks, which surfaces the fixture's one strategic sorry's follow_up_task="999"),
+# not a re-creation of the old bare-variable count check -- the field is still exercised, just
+# through its actual call site rather than a no-longer-existing intermediate variable.
+follow_up_tasks_filter="$(extract_jq_filter_from_file "$SKILL_FILE" "follow_up_tasks")"
+if [[ -n "$follow_up_tasks_filter" ]]; then
+  val="$(jq -r "$follow_up_tasks_filter" "$FIXTURE" 2>/dev/null)"
+  if [[ "$val" == "999" ]]; then
+    pass "hard_mode-only allowlisted: .sorry_inventory (inlined into follow_up_tasks, Stage 4 H1 branch) extracts follow_up_task='999' from the shared fixture"
   else
-    fail "hard-only allowlisted: .sorry_inventory unexpected count '$count'"
+    fail "hard_mode-only allowlisted: .sorry_inventory (follow_up_tasks) unexpected value '$val'"
   fi
 else
-  fail "hard-only allowlisted: could not extract .sorry_inventory filter from hard engine"
+  fail "hard_mode-only allowlisted: could not extract the follow_up_tasks filter (inlined .sorry_inventory read) from skill-orchestrate/SKILL.md"
 fi
 
-hard_blocker_target_filter="$(grep -oP "blocker_target=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$HARD_SKILL" | head -1)"
-if [[ -n "$hard_blocker_target_filter" ]]; then
-  val="$(jq -r "$hard_blocker_target_filter" "$FIXTURE" 2>/dev/null)"
+# .blockers[0].target / .blockers[0].verbatim_goal: SURVIVED UNCHANGED -- same variable names,
+# same `echo "$handoff" | jq -r '...'` read form as before, just retargeted to the merged file.
+# Both live in Stage 5b's `hard_mode`-gated H5/H6 churn-detection block (churn signature: no
+# progress this cycle despite a partial dispatch with blockers), not Stage 5 proper.
+blocker_target_filter="$(grep -oP "blocker_target=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+if [[ -n "$blocker_target_filter" ]]; then
+  val="$(jq -r "$blocker_target_filter" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example-target.sh" ]]; then
-    pass "hard-only allowlisted: .blockers[0].target extracts 'example-target.sh' from the shared fixture"
+    pass "hard_mode-only allowlisted: .blockers[0].target (Stage 5b H5/H6 churn detection) extracts 'example-target.sh' from the shared fixture"
   else
-    fail "hard-only allowlisted: .blockers[0].target unexpected value '$val'"
+    fail "hard_mode-only allowlisted: .blockers[0].target unexpected value '$val'"
   fi
 else
-  fail "hard-only allowlisted: could not extract .blockers[0].target filter from hard engine"
+  fail "hard_mode-only allowlisted: could not extract .blockers[0].target filter from skill-orchestrate/SKILL.md"
 fi
 
-hard_verbatim_goal_filter="$(grep -oP "verbatim_goal=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$HARD_SKILL" | head -1)"
-if [[ -n "$hard_verbatim_goal_filter" ]]; then
-  val="$(jq -r "$hard_verbatim_goal_filter" "$FIXTURE" 2>/dev/null)"
+verbatim_goal_filter="$(grep -oP "verbatim_goal=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+if [[ -n "$verbatim_goal_filter" ]]; then
+  val="$(jq -r "$verbatim_goal_filter" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example verbatim goal text" ]]; then
-    pass "hard-only allowlisted: .blockers[0].verbatim_goal extracts the expected text from the shared fixture"
+    pass "hard_mode-only allowlisted: .blockers[0].verbatim_goal (Stage 5b H5/H6 churn detection) extracts the expected text from the shared fixture"
   else
-    fail "hard-only allowlisted: .blockers[0].verbatim_goal unexpected value '$val'"
+    fail "hard_mode-only allowlisted: .blockers[0].verbatim_goal unexpected value '$val'"
   fi
 else
-  fail "hard-only allowlisted: could not extract .blockers[0].verbatim_goal filter from hard engine"
+  fail "hard_mode-only allowlisted: could not extract .blockers[0].verbatim_goal filter from skill-orchestrate/SKILL.md"
 fi
 
 # ── Every extracted field name must appear in the schema's properties (grep-audit lock-in) ─────
@@ -309,47 +336,18 @@ else
   fi
 fi
 
-# ── dispatch_seq Stage 5 gate parity (Defect A) ─────────────────────────────────────────────────
-# Extracts the `dispatch-seq-gate:begin`/`:end` sentinel region from both engines and asserts
-# byte-equality after normalizing the two known-allowed differences: the notice prefix
-# (`[orchestrate]` vs `[hard-orchestrate]`) and each engine's own self-attribution strings
-# (`skill-orchestrate/SKILL.md` vs `skill-orchestrate-hard/SKILL.md`). This is the mechanical
-# backstop for the "one-sided fix of the Stage 5 verbatim twin" recurring defect class named in
-# this file pair's own Risks & Mitigations: a future edit landing in only one engine fails this
-# assertion instead of silently diverging.
-extract_sentinel_region() {
-  local file="$1"
-  awk '/dispatch-seq-gate:begin/{flag=1} flag{print} /dispatch-seq-gate:end/{if(flag){exit}}' "$file"
-}
-
-base_gate="$(extract_sentinel_region "$BASE_SKILL")"
-hard_gate="$(extract_sentinel_region "$HARD_SKILL")"
-
-if [[ -z "$base_gate" ]]; then
-  fail "dispatch_seq gate: could not extract dispatch-seq-gate:begin/:end region from $BASE_SKILL"
-elif [[ -z "$hard_gate" ]]; then
-  fail "dispatch_seq gate: could not extract dispatch-seq-gate:begin/:end region from $HARD_SKILL"
-else
-  # Normalize hard-mode-only strings down to the base-mode spelling before comparing.
-  normalized_hard="$(sed -e 's/hard-orchestrate/orchestrate/g' -e 's/skill-orchestrate-hard/skill-orchestrate/g' <<< "$hard_gate")"
-  # The hard engine also carries exactly one extra cross-reference comment line, tagged with the
-  # HARD-MODE-TWIN-CROSS-REFERENCE marker, with no counterpart line in the base file (matching the
-  # pre-existing append_detected_defect cross-reference convention, which also lives only in the
-  # hard file) -- strip that single tagged line before comparing so this expected, allowlisted
-  # asymmetry does not register as drift.
-  normalized_hard_no_twin="$(grep -v 'HARD-MODE-TWIN-CROSS-REFERENCE' <<< "$normalized_hard")"
-  if [[ "$base_gate" == "$normalized_hard_no_twin" ]]; then
-    pass "dispatch_seq gate: base and hard Stage 5 gate blocks are byte-identical apart from the notice prefix, self-attribution strings, and the hard-only cross-reference comment"
-  else
-    fail "dispatch_seq gate: base and hard Stage 5 gate blocks diverge beyond the allowed prefix/attribution/cross-reference differences"
-    diff <(echo "$base_gate") <(echo "$normalized_hard_no_twin") || true
-  fi
-fi
+# dispatch_seq Stage 5 gate parity (Defect A) -- REMOVED. This block used to extract the
+# `dispatch-seq-gate:begin`/`:end` sentinel region from both engines and diff them for
+# byte-equality. With one merged engine, that comparison would extract the SAME region from the
+# SAME file twice and diff it against itself -- a vacuous, always-green no-op, not a real parity
+# check. The real coverage for this gate (including its dispatch_seq-mismatch behavioral cases,
+# not just a structural diff) already lives in test-handoff-dispatch-identity.sh, which exercises
+# the extracted region directly against fixtures. Removed deliberately here rather than left as a
+# silently-passing no-op.
 
 # ── Summary ──────────────────────────────────────────────────────────────────────────────────
-info "Base engine resolved to:  $BASE_SKILL"
-info "Hard engine resolved to:  $HARD_SKILL"
-info "Validator resolved to:    $VALIDATOR"
+info "Engine resolved to:    $SKILL_FILE"
+info "Validator resolved to: $VALIDATOR"
 echo ""
 echo "========================================"
 echo "test-handoff-reader-parity.sh Summary"

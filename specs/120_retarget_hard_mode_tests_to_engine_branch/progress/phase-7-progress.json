@@ -1,0 +1,22 @@
+{
+  "phase": 7,
+  "phase_name": "Rewrite test-routing-resolution.sh Assert 3 and test-handoff-reader-parity.sh",
+  "started_at": "2026-09-01T19:47:00Z",
+  "last_updated": "2026-09-01T20:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-routing-resolution.sh Assert 3 rewrite", "status": "done", "note": "ORCH_HARD_SKILL removed. Discovered command-route-agent.sh is invoked exactly once per op (Stage 1b), not per-branch as the plan text assumed -- adapted the branch-aware check to assert $IMPLEMENT_AGENT is dispatched inside each of the H1/base branches individually (anchored on their unique headings), preserving the same regression-catching property. Case-table/sed anti-pattern grep reduced to single file. Header comment updated. Mutation-verified: hardcoding the H1 branch's subagent_type value made the new check fail by name, then reverted. All 22 assertions pass.", "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 2, "description": "test-handoff-reader-parity.sh full rewrite", "status": "done", "note": "resolve_candidate collapsed to single SKILL_FILE. SHARED_FIELDS, continuation block, and artifacts[0].* triplet all converted extract-once with hand-derived expected values. skeleton rewritten via new extract_jq_filter_from_file() helper matching the file-read shape (last_skeleton, Stage 4 H1 branch). sorry_inventory kept via the inlined follow_up_tasks filter (not retired), mutation-verified. blocker_target/verbatim_goal retargeted with corrected Stage 5b framing. Vacuous dispatch_seq gate comparison block removed with a comment pointing to test-handoff-dispatch-identity.sh as the real coverage site. All 18 assertions pass.", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Assert 3 branch-aware check: assert command-route-agent.sh call sites exist both inside the base dispatch-construction branch and inside the H1 branch",
+      "type": "altered",
+      "reason": "Verified by inspection that command-route-agent.sh is invoked exactly once per op (research/plan/implement) in Stage 1b, unconditionally, before either branch -- not once per branch. Both branches share Stage 1b's single resolved $IMPLEMENT_AGENT variable rather than each re-invoking the resolver. Adapted the check to assert $IMPLEMENT_AGENT is referenced as a dispatch target inside each branch individually (anchored on each branch's own unique heading), which is the faithful equivalent for this file's actual structure and preserves the identical regression-catching property (confirmed by mutation test).",
+      "annotation": "*(completed with an adaptation, verified by inspection...)*"
+    }
+  ]
+}

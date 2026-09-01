@@ -389,7 +389,7 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 7: Rewrite `test-routing-resolution.sh` Assert 3 and `test-handoff-reader-parity.sh` [NOT STARTED]
+### Phase 7: Rewrite `test-routing-resolution.sh` Assert 3 and `test-handoff-reader-parity.sh` [COMPLETED]
 
 - **Goal:** Convert the two files whose "compare two engine files" premise no longer holds into
   single-file presence/correctness checks, preserving — and in one case strengthening — what each
@@ -397,46 +397,68 @@ files, so parallel execution creates no write conflict; all of them only *read*
 - **Tasks:**
   - **`test-routing-resolution.sh` (Assert 3 only; Asserts 1, 2, and 4 are manifest-driven and must
     not be touched):**
-    - [ ] Remove `ORCH_HARD_SKILL` and drop it from the file-existence preflight loop.
-    - [ ] Replace the `orch_calls` versus `orch_hard_calls` count-and-compare with a branch-aware
+    - [x] Remove `ORCH_HARD_SKILL` and drop it from the file-existence preflight loop.
+      *(completed)*
+    - [x] Replace the `orch_calls` versus `orch_hard_calls` count-and-compare with a branch-aware
       intra-file check: assert `command-route-agent.sh` call sites exist **both** inside the base
       dispatch-construction branch **and** inside the `hard_mode`-gated per-phase-dispatch (H1)
       branch, anchored on the H1 branch's own heading text. A flat whole-file count would pass even
       if one mode's dispatch sites were deleted entirely — that is precisely the regression the old
-      cross-engine comparison used to catch, and a flat count would lose it.
-    - [ ] Reduce the `case "$TASK_TYPE"` / `sed s/^skill-` anti-pattern grep to the single merged
-      file.
-    - [ ] Update the file's header comment, which describes Assert 3 as an engine-parity check, to
-      describe it as an intra-file branch-coverage check.
+      cross-engine comparison used to catch, and a flat count would lose it. *(completed with an
+      adaptation, verified by inspection: `command-route-agent.sh` is invoked exactly ONCE per op
+      (research/plan/implement) in Stage 1b, unconditionally, before either branch — NOT once per
+      branch as this task text assumes. Both branches instead share Stage 1b's single resolved
+      `$IMPLEMENT_AGENT` variable. The branch-aware check therefore asserts `$IMPLEMENT_AGENT` is
+      referenced as a dispatch target inside each branch individually — anchored on the
+      `##### Hard branch: Per-Phase Dispatch (H1)` / `##### Base branch: whole-plan dispatch
+      (unchanged)` headings, both confirmed unique — which is the faithful equivalent for this
+      file's actual structure and preserves the exact regression-catching property (a deleted
+      per-branch dispatch site fails loudly): confirmed by a mutation test that hardcoded the H1
+      branch's `subagent_type` value, which failed the new check by name, then reverted clean)*
+    - [x] Reduce the `case "$TASK_TYPE"` / `sed s/^skill-` anti-pattern grep to the single merged
+      file. *(completed)*
+    - [x] Update the file's header comment, which describes Assert 3 as an engine-parity check, to
+      describe it as an intra-file branch-coverage check. *(completed)*
   - **`test-handoff-reader-parity.sh` (the largest piece):**
-    - [ ] Collapse `resolve_candidate` usage to the single merged engine; drop `HARD_SKILL` and its
+    - [x] Collapse `resolve_candidate` usage to the single merged engine; drop `HARD_SKILL` and its
       resolution-failure branch, and update the trailing "Base engine resolved to / Hard engine
-      resolved to" info lines.
-    - [ ] Convert the `SHARED_FIELDS` loop from extract-twice-and-compare to extract-once: assert
+      resolved to" info lines. *(completed: single `SKILL_FILE`)*
+    - [x] Convert the `SHARED_FIELDS` loop from extract-twice-and-compare to extract-once: assert
       the filter is present and non-empty, then assert it produces the expected value against the
-      shared fixture. Keep the fixture and the `validate-handoff.sh` check unchanged.
-    - [ ] Apply the same conversion to the multi-line `continuation` dual-form-resolution block and
-      to the `artifacts[0].{path,type,summary}` triplet.
-    - [ ] Rewrite the `skeleton` extraction: the old `skeleton=$(echo "$handoff" | jq -r '...')`
+      shared fixture. Keep the fixture and the `validate-handoff.sh` check unchanged. *(completed:
+      per-field expected values derived by hand from the shared fixture, not re-derived from the
+      filter under test)*
+    - [x] Apply the same conversion to the multi-line `continuation` dual-form-resolution block and
+      to the `artifacts[0].{path,type,summary}` triplet. *(completed)*
+    - [x] Rewrite the `skeleton` extraction: the old `skeleton=$(echo "$handoff" | jq -r '...')`
       pattern no longer exists. The merged file reads it as a differently-named variable directly
       from the handoff file rather than from the already-loaded `$handoff` variable, and it lives
       in the Stage 4 `hard_mode`-gated per-phase-dispatch branch, not Stage 5. Update both the
-      extraction regex and the "where it lives" framing in the comments.
-    - [ ] Rewrite or retire the `sorry_inventory` assertion. The merged file no longer assigns a
+      extraction regex and the "where it lives" framing in the comments. *(completed: added
+      `extract_jq_filter_from_file()` matching the `VAR=$(jq -r 'FILTER' "$handoff_file")` shape;
+      extracts `last_skeleton`, confirmed against merged file lines 1694/1698, Stage 4 H1 branch)*
+    - [x] Rewrite or retire the `sorry_inventory` assertion. The merged file no longer assigns a
       `sorry_inventory=` variable; it inlines `.sorry_inventory[]?.follow_up_task` into the
       follow-up-task derivation, and that code path is now unconditional rather than
       `hard_mode`-gated. Remove it from the "hard-only, not compared to base" bucket. Prefer a
       single-file presence check on the inlined filter over deletion; delete only if the field is
-      demonstrably covered elsewhere, and say where.
-    - [ ] Retarget the `blocker_target` and `verbatim_goal` extractions to the merged file. These
+      demonstrably covered elsewhere, and say where. *(completed: kept, not retired — presence +
+      value check on the inlined filter via `follow_up_tasks`, asserting the fixture's
+      `follow_up_task="999"` is extracted; mutation-verified by corrupting the field name in the
+      merged file, which produced a named failure, then reverted clean)*
+    - [x] Retarget the `blocker_target` and `verbatim_goal` extractions to the merged file. These
       survived unchanged — same variable names, same read form — so no pattern changes are needed.
       Correct their comment framing to name the Stage 5b `hard_mode`-gated churn-detection block.
-    - [ ] **Remove the `dispatch_seq` gate base-versus-hard comparison block** (the sentinel-region
+      *(completed)*
+    - [x] **Remove the `dispatch_seq` gate base-versus-hard comparison block** (the sentinel-region
       extraction plus its `s/skill-orchestrate-hard/skill-orchestrate/g` normalization). With one
       engine it compares a file to itself and passes vacuously; the real coverage lives in
       `test-handoff-dispatch-identity.sh`. Leave a brief comment recording where that coverage now
-      lives so the removal does not read as an accidental deletion.
-    - [ ] Confirm no `skill-orchestrate-hard` string remains in either file.
+      lives so the removal does not read as an accidental deletion. *(completed)*
+    - [x] Confirm no `skill-orchestrate-hard` string remains in either file. *(completed: only a
+      historical/documentary mention remains in test-handoff-reader-parity.sh's own header comment
+      describing what the file used to compare against, per its own no-task-references-style
+      exemption for accurate historical description; zero live references)*
 - **Timing:** 2 hours
 - **Depends on:** 6
 - **Verification Tier:** local
