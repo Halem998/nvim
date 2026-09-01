@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md",
+      "summary": "Confirms Stage 3.5 Dispatch Prep as the wiring point for model_flag, resolves all three required design decisions (lifecycle-only scoping, once-at-Stage-1/MT-1 threading, confirmed hard-mode MT coverage), and gives precise re-measured edit anchors in commands/orchestrate.md (4 insertion points, not 2) and skills/skill-orchestrate/SKILL.md."
+    }
+  ],
+  "next_steps": "Run /plan 114 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788267679_adbb09_114",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "skill-orchestrate/SKILL.md has a single canonical 'Stage 3.5: Dispatch Prep' shared stage (invoked from every Stage 4 single-task dispatch site, every Stage MT-4 multi-task per-task loop, and the Stage 3.6 team fan-out spawn loop) that owns clean_flag/effort_flag/lit_flag/hard_mode handling for every research/plan/implement dispatch. Auxiliary diagnostic dispatches (drift inspection, churn/divergence audit, blocker escalation) deliberately do NOT call this stage and use raw Agent-tool invocations instead. Any new per-dispatch context concern (like a model override) should be wired into Stage 3.5 rather than each dispatch site individually, and doing so automatically scopes it to lifecycle dispatches only, excluding the auxiliary sites for free.",
+      "category": "PATTERN",
+      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-orchestrate", "dispatch-prep", "stage-3.5", "shared-stage", "orchestrate"]
+    },
+    {
+      "content": "commands/orchestrate.md threads command flags through BOTH a flat args: Skill-tool string AND a separate JSON delegation-context object at each of its two dispatch sites (multi-task and single-task) -- unlike commands/research.md, which only uses the flat args: string. When mirroring research.md's flag-threading pattern into orchestrate.md, remember to add the flag to both representations (4 insertion points across 2 dispatch sites), not just the args string.",
+      "category": "PATTERN",
+      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrate", "args-string", "delegation-context", "flag-threading"]
+    },
+    {
+      "content": "parse-command-args.sh's MODEL_FLAG defaults to the empty string \"\" (bash), not JSON null -- unlike commands/research.md's prose which frames the unset case as 'model_flag = null'. Downstream consumers threading MODEL_FLAG through orchestrate.md-style commands should treat empty string, not the literal token \"null\", as the not-set sentinel.",
+      "category": "CONFIG",
+      "source_artifact": "specs/114_wire_model_flag_through_orchestrate/reports/01_wire-model-flag-orchestrate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["parse-command-args", "MODEL_FLAG", "empty-string", "null-default"]
+    }
+  ]
+}
