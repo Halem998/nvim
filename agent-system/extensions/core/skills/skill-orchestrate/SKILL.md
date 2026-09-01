@@ -53,6 +53,27 @@ Read from delegation context:
   hard_mode="true"`. Consumed by Stage 3.5 Dispatch Prep's hard-mode contract injection below,
   and reserved for later conditional state-machine branches (churn/three-strikes counters, the
   burnout circuit breaker) that read this same boolean rather than re-deriving it.
+- `team_mode` (default: `"false"`), `team_size` (default: `2`), `team_size_explicit` (default:
+  `"false"`) — threaded from the command's `--team`/`--team-size` flags. Derive `team_size_eff`,
+  the effective per-cycle teammate count Stage 3.6 consumes, immediately here, per D2 of this
+  stage's originating plan: when `team_size_explicit` is `"true"`, `team_size_eff="$team_size"`;
+  otherwise apply the effort-aware default table — `3` baseline, `2` when `effort_flag` is
+  `"fast"`, `4` when `effort_flag` is `"hard"` — then clamp the result to the 2-4 range:
+
+  ```bash
+  team_mode="${team_mode:-false}"
+  team_size="${team_size:-2}"
+  team_size_explicit="${team_size_explicit:-false}"
+  if [ "$team_size_explicit" = "true" ]; then
+    team_size_eff="$team_size"
+  else
+    team_size_eff=3
+    [ "$effort_flag" = "fast" ] && team_size_eff=2
+    [ "$effort_flag" = "hard" ] && team_size_eff=4
+  fi
+  [ "$team_size_eff" -lt 2 ] && team_size_eff=2
+  [ "$team_size_eff" -gt 4 ] && team_size_eff=4
+  ```
 
 **Hard-mode state-machine migration — acceptance checklist.** Each behavior below is reproduced
 in this engine behind `$hard_mode`, mapped to the stage that now implements it:

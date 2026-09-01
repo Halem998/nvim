@@ -246,27 +246,29 @@ report any consumer not on that list before proceeding.
 
 ---
 
-### Phase 2: Command flags and skill-side input reading [NOT STARTED]
+### Phase 2: Command flags and skill-side input reading [COMPLETED]
 
 **Goal**: Accept `--team` / `--team-size` on `/orchestrate`, thread them to `skill-orchestrate`, and
 resolve the effective team size there.
 
 **Tasks**:
-- [ ] `commands/orchestrate.md` Options table: add a `--team` row (default `false`) and a
+- [x] `commands/orchestrate.md` Options table: add a `--team` row (default `false`) and a
       `--team-size` row (default: `3`, `2` under `--fast`, `4` under `--hard`; clamped 2-4).
-- [ ] `commands/orchestrate.md` Constraints: narrow the existing multi-task bullet per D5 — state
+      *(completed)*
+- [x] `commands/orchestrate.md` Constraints: narrow the existing multi-task bullet per D5 — state
       that `--team` applies to single-task mode only and is accepted-and-ignored with a notice in
       multi-task mode. Do not leave the flat "`--team` flag not supported" wording standing.
-- [ ] `commands/orchestrate.md` STAGE 0: add `TEAM_MODE`, `TEAM_SIZE`, `TEAM_SIZE_EXPLICIT` to the
+      *(completed)*
+- [x] `commands/orchestrate.md` STAGE 0: add `TEAM_MODE`, `TEAM_SIZE`, `TEAM_SIZE_EXPLICIT` to the
       documented exports comment and to the prose paragraph that already explains how
-      `CLEAN_FLAG`/`EFFORT_FLAG` are threaded.
-- [ ] `commands/orchestrate.md` STAGE 2 DELEGATE: add `team_mode={TEAM_MODE}
+      `CLEAN_FLAG`/`EFFORT_FLAG` are threaded. *(completed)*
+- [x] `commands/orchestrate.md` STAGE 2 DELEGATE: add `team_mode={TEAM_MODE}
       team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}` to the `args` string and the
-      three matching keys to the JSON delegation context.
-- [ ] `commands/orchestrate.md` MULTI-TASK DISPATCH: add the same three keys to its args/context
+      three matching keys to the JSON delegation context. *(completed)*
+- [x] `commands/orchestrate.md` MULTI-TASK DISPATCH: add the same three keys to its args/context
       **plus** one sentence stating they are carried for diagnostics and that multi-task mode does
-      not fan out per task.
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage 1: read `team_mode` (default `"false"`),
+      not fan out per task. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` Stage 1: read `team_mode` (default `"false"`),
       `team_size` (default `2`), `team_size_explicit` (default `"false"`); derive `team_size_eff`
       via the D2 rule — when `team_size_explicit` is `"true"` use `team_size`, else `3` baseline /
       `2` when `effort_flag` is `fast` / `4` when `effort_flag` is `hard` — then clamp to 2-4.

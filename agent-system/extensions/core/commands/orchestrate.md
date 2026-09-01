@@ -21,7 +21,9 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 
 ## Constraints
 
-- Multi-task mode uses dependency-aware wave dispatch. `--team` flag not supported.
+- Multi-task mode uses dependency-aware wave dispatch. `--team` is single-task only: in
+  multi-task mode it is accepted and ignored, with a loud notice, rather than compounding
+  per-task concurrency with per-task teammate fan-out.
 - No confirmation gates between lifecycle phases
 - Terminates automatically on success, MAX_CYCLES exceeded, MAX_INFRA_FAILURES exceeded (repeated Agent-tool transport/API failures — a distinct connectivity-vs-work-budget diagnosis), or unrecoverable blocker
 - In multi-task mode, failure in one task does not block other tasks in the same wave, but DOES block dependent tasks in later waves
@@ -37,6 +39,8 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--continue-budget` | Explicit, operator-typed authorization to continue past an exhausted `MAX_CYCLES` work-cycle budget. Never inferred automatically (not from `session_id`, not from mtime) — a genuinely exhausted budget without this flag refuses immediately with an honest message instead of silently no-op looping. See `context/standards/orchestrator-runtime-files.md`'s "`cycle_count` semantics and the budget-continuation override" section | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
+| `--team` | Team mode: fan out research/plan/implement dispatch across parallel teammates via `skill-orchestrate`'s Stage 3.6 (single-task mode only — see Constraints). Silently degrades to single-agent dispatch when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is unset | false |
+| `--team-size` | Explicit teammate count for `--team` (clamped 2-4). When omitted, the effective size is effort-aware: `3` baseline, `2` under `--fast`, `4` under `--hard` | `3` baseline / `2` under `--fast` / `4` under `--hard` |
 
 ## Anti-Bypass Constraint
 
@@ -52,9 +56,16 @@ command.
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 # Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG,
 #          ALLOW_SELF_MODIFYING_FLAG, ALLOW_SCOPE_COLLISION_FLAG, CONTINUE_BUDGET_FLAG,
-#          CLEAN_FLAG, EFFORT_FLAG
+#          CLEAN_FLAG, EFFORT_FLAG, TEAM_MODE, TEAM_SIZE, TEAM_SIZE_EXPLICIT
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
+
+`TEAM_MODE` (default `"false"`), `TEAM_SIZE` (default `2`), and `TEAM_SIZE_EXPLICIT` (default
+`"false"`) are read here from the sourced parser and passed into the Skill delegation context
+below as `team_mode`, `team_size`, and `team_size_explicit`, on the same terms
+`clean_flag`/`effort_flag` are threaded — `skill-orchestrate`'s own Stage 1 resolves the
+effort-aware effective team size from the three together (see that stage's `team_size_eff`
+derivation).
 
 `ALLOW_SELF_MODIFYING_FLAG` (default `"false"`) is read here from the sourced parser and passed
 into the Skill delegation context below as `allow_self_modifying`, alongside `lit_flag` — a
@@ -434,7 +445,7 @@ Invoke a single `skill-orchestrate` instance with all task context:
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG}"
+  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
 ```
 
 The delegation context passed to the skill must include:
@@ -451,9 +462,16 @@ The delegation context passed to the skill must include:
   "allow_scope_collision": "{ALLOW_SCOPE_COLLISION_FLAG}",
   "continue_budget": "{CONTINUE_BUDGET_FLAG}",
   "clean_flag": "{CLEAN_FLAG}",
-  "effort_flag": "{EFFORT_FLAG}"
+  "effort_flag": "{EFFORT_FLAG}",
+  "team_mode": "{TEAM_MODE}",
+  "team_size": "{TEAM_SIZE}",
+  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"
 }
 ```
+
+`team_mode`/`team_size`/`team_size_explicit` are carried here for diagnostics only: multi-task
+mode does not fan out per task (see Constraints above) — `skill-orchestrate` Stage MT-1 reads
+them solely to emit the accepted-and-ignored notice, never to spawn per-task teammate waves.
 
 The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state-${batch_session_id}.json`.
 
@@ -632,7 +650,7 @@ Invoke `skill-orchestrate` via the Skill tool:
 
 ```
 skill: "skill-orchestrate"
-args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG}"
+args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}"
 ```
 
 The delegation context passed to the skill must include:
@@ -652,7 +670,10 @@ The delegation context passed to the skill must include:
   "lit_flag": "{LIT_FLAG}",
   "continue_budget": "{CONTINUE_BUDGET_FLAG}",
   "clean_flag": "{CLEAN_FLAG}",
-  "effort_flag": "{EFFORT_FLAG}"
+  "effort_flag": "{EFFORT_FLAG}",
+  "team_mode": "{TEAM_MODE}",
+  "team_size": "{TEAM_SIZE}",
+  "team_size_explicit": "{TEAM_SIZE_EXPLICIT}"
 }
 ```
 
