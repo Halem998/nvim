@@ -1,43 +1,48 @@
-# Pre-sweep baseline captured at implementation time
-# Timestamp: 2026-09-01T19:56:36Z
+# Post-sweep baseline captured at implementation time
+# Timestamp: 2026-09-01T20:35:12Z
 #
-# Summary: verify-deploy.sh reports 3 of 27 checks FAILing (plus 1 WARN), all pre-existing and
-# unrelated to the team-mode-deletion orphan sweep this baseline exists to bound:
-#   1. check-extension-docs.sh (doc-lint) FAIL — 4 sub-findings: index-entries.json line_count
-#      drift on patterns/system-defect-discrimination.md (409 declared vs 420 actual; folded
-#      into Phase 6 of this sweep by plan-time decision), plus 3 scripts undeclared in
-#      manifest.json provides.scripts (test-state-write-large-payload.sh,
-#      tests/test-force-phases.sh, tests/test-roadmap-argv-ceiling.sh — all deferred, not caused
-#      by this sweep).
-#   2. validate-state.sh --deep FAIL — 2 unknown-field findings (abandon_reason,
-#      blocks_note on specific pre-existing project numbers) — confirmed pre-existing, unrelated.
-#   3. lint-state-writer-boundary.sh FAIL — 4 hand-rolled state.json write violations, all in
-#      scripts/tests/test-force-phases.sh (lines 261, 307, 317, 327) — deferred per plan Decision
-#      table, carried forward as a Phase 8 follow-up.
-#   4. (WARN, not counted in the 3-FAIL total) gate16: core still declares
-#      routing_hard/routing_agents_hard, migration pending — pre-existing, unrelated.
-# run-all.sh nested inside verify-deploy.sh (gate 8) is a known concurrency flake; the standalone
-# run captured separately below is authoritative and passed (58 passed, 0 failed, 0 skipped).
-# check-task-references.sh: 0 findings (clean). generate-context-line-counts.sh --check: exits 1
-# (same system-defect-discrimination.md drift as above, folded into Phase 6).
-# A companion machine-diffable FINDING-line capture (via --findings) lives in
-# baseline-pre-sweep-findings.txt (11 FINDING lines total), for a finer-grained Phase 8 diff.
+# Summary: verify-deploy.sh reports 6 of 27 checks FAILing (up from the Phase 1 baseline's 3).
+# All 3 additional FAILs are explained below and are NOT regressions caused by this sweep's
+# actual content changes -- they are the expected, self-resolving byproduct of correctly editing
+# agent-system/extensions/** (the binding source-store rule) without an accompanying redeploy
+# of .claude/, plus one recurrence of an already-documented pre-existing flake:
 #
-# This matches the research report's expectations closely: same 3 pre-existing baseline defects,
-# same 4 lint-state-writer-boundary violations, same system-defect-discrimination.md line_count
-# drift. No unexpected new failures observed at implementation time.
+#   NEW -- gate5 (manifest-driven verify.lua parity, 4 findings): "Content differs from source"
+#     for multi-task-operations.md, skill-lifecycle.md, artifact-formats.md, and "Missing
+#     scripts: audit-deletion-references.sh". These are exactly the 4 source files this sweep
+#     legitimately edited/added (Phases 2, 3, 5, 7) -- source now correctly differs from the
+#     stale deployed .claude/ tree, which self-resolves on the next redeploy. Confirmed via
+#     `verify-deploy.sh --findings --quiet`.
+#   NEW -- gate8 (run-all.sh nested inside verify-deploy.sh): FAIL. This is the SAME
+#     already-documented concurrency flake noted in the Phase 1 baseline header and the plan's
+#     own Testing & Validation section ("the nested-inside-verify-deploy.sh run is a known
+#     concurrency flake and does not count against acceptance"). The standalone run captured
+#     below (and also in the Phase 1 baseline) is authoritative: 58 passed, 0 failed, both times.
+#   NEW -- gate13 (whole-tree orphan detection, 2 findings): "ghost index row:
+#     reference/team-wave-helpers.md" and "orphan file: context/reference/team-wave-helpers.md".
+#     This gate also compares source against deployed. Phase 4 removed both the source file and
+#     its source index-entries.json row; the deployed .claude/ copies of both are untouched
+#     (correctly, per the source-store-deploy-boundary rule) until the next redeploy -- exactly
+#     the situation Phase 4's own Scope Hypothesis anticipated in writing: "hits under `.claude/`
+#     persist until the next redeploy and are not a defect."
 #
-# CORRECTION NOTE: the original raw capture interleaved verify-deploy.sh's background-process
-# output with several foreground command appends writing to this same file concurrently, which
-# scrambled the ordering of verify-deploy.sh's own section (its 16 checks landed split across
-# multiple points in the file, one fragment even lodging inside check-extension-docs.sh's [web]
-# block). No content was lost -- every line verify-deploy.sh printed was still present in the
-# file, just out of order. This has been corrected by reassembling the scattered fragments back
-# into one contiguous, correctly-ordered verify-deploy.sh section below, and removing the two
-# fragments that had landed inside other sections. All PASS/FAIL/WARN determinations above and
-# below are unchanged by this correction -- verified independently via direct standalone
-# invocations of each underlying tool during implementation, not solely from this file.
-
+# UNCHANGED from the Phase 1 baseline: gate3 (doc-lint, now 4 sub-findings -- the
+# system-defect-discrimination.md line_count drift is gone, fixed by Phase 6; the 3 undeclared
+# pre-existing/deferred scripts remain, plus one NEW ADVISORY-level [not FAIL-level] "core script
+# never deployed: audit-deletion-references.sh" note that does not add to the FAIL count), gate10
+# (validate-state.sh --deep, pre-existing, unrelated), gate12 (lint-state-writer-boundary.sh, 4
+# violations, deferred per plan Decision table), gate16 (WARN, not counted in the FAIL total,
+# pre-existing).
+#
+# check-task-references.sh: 0 findings (clean, unchanged). generate-context-line-counts.sh
+# --check: now exits 0 (CHECK PASSED) -- an IMPROVEMENT over the Phase 1 baseline's exit 1,
+# since Phase 6 corrected the one pre-existing line_count drift folded into this sweep.
+#
+# CORRECTION NOTE: as with the Phase 1 baseline file, the original raw capture interleaved
+# verify-deploy.sh's background-process output with several foreground command appends writing
+# to this same file concurrently. No content was lost -- reassembled into one contiguous,
+# correctly-ordered verify-deploy.sh section below; all PASS/FAIL/WARN determinations are
+# unchanged by this correction.
 
 ## bash .claude/scripts/verify-deploy.sh
 ```
@@ -67,14 +72,16 @@
 4. Task-reference lint (check-task-references.sh --quiet)
   [PASS] task-reference lint reports no findings
 5. Manifest-driven category parity + content-hash equality (verify.lua)
-  [PASS] declared-vs-deployed parity and content-hash equality (all loaded extensions)
+  [FAIL] manifest-driven verification reported 4 finding(s)
+         re-run without --quiet for detail: bash .claude/scripts/verify-deploy.sh
 
 6. Agent contracts lint (lint-agent-contracts.sh --verbose)
   [PASS] agent contracts lint reports no failures
 7. Routing wiring lint (lint-routing-wiring.sh --verbose)
   [PASS] routing wiring lint reports no failures
 8. Shell test suite runner (tests/run-all.sh)
-  [PASS] run-all.sh: all discovered suites passed
+  [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)
+         re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh
 
 9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
   [PASS] postflight boundary lint reports no failures (full corpus)
@@ -91,7 +98,8 @@
          re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose
 
 13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
-  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+  [FAIL] whole-tree orphan detection reported 2 finding(s)
+         re-run without --quiet for detail: bash agent-system/extensions/core/scripts/verify-deploy.sh; see context/patterns/deploy-orphan-detection.md
 
 14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
   [PASS] runtime-file tracking policy: all three checks passed
@@ -103,7 +111,7 @@
   [WARN] core still declares routing_hard/routing_agents_hard
          being replaced -- migrate to the hard_contracts manifest key (see context/guides/manifest-routing-schema.md)
 
-[verify-deploy] FAIL -- 3 of 27 check(s) failed
+[verify-deploy] FAIL -- 6 of 27 check(s) failed
 ```
 Exit code: 1
 
@@ -112,10 +120,13 @@ Exit code: 1
 Checking .claude/extensions/ documentation...
 
 [core]
+  script not deployed, skipping drift check: audit-deletion-references.sh
   FAIL: script file on disk NOT in provides.scripts: scripts/test-state-write-large-payload.sh
   FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-force-phases.sh
   FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-roadmap-argv-ceiling.sh
-  FAIL: Rule R: index-entries.json entry 'patterns/system-defect-discrimination.md' line_count mismatch: declared 409, actual 420
+  FAIL: deployed rule content drift (deployed != extension source): rules/artifact-formats.md
+  WARN: README.md older than manifest.json (possible drift)
+  ADVISORY: core script never deployed: scripts/audit-deletion-references.sh (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)
 
 [cslib]
   rule not deployed, skipping drift check: cslib.md
@@ -291,6 +302,20 @@ Checking .claude/extensions/ documentation...
 
 [project-wide]
   OK
+
+=====================================
+Core Deploy-Drift Advisory (informational -- does NOT affect the PASS/FAIL verdict below)
+=====================================
+  - core script never deployed: scripts/audit-deletion-references.sh (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)
+
+1 advisory item(s) found. Resolve by regenerating the deploy tree,
+either interactively (<leader>al -> 'Reload All', or 'Regenerate' for a full wipe+rebuild)
+or headlessly:
+    bash .claude/scripts/deploy-headless.sh
+Then confirm with: bash .claude/scripts/verify-deploy.sh
+Note: advisories naming an install-once file (root-files/settings.json) are NOT fixed by
+regenerating -- follow their instruction to add the entry to the merge source instead.
+Set STRICT_CORE_DEPLOY=1 to treat these as hard failures (e.g. post-regeneration verification).
 
 =====================================
 Summary
@@ -1380,10 +1405,34 @@ Exit code: 1
 
 ## bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check
 ```
-ERROR: generate-context-line-counts.sh must run from a deployed scripts/ tree (.claude/scripts/ or
-       .opencode/scripts/), not '/home/benjamin/.config/nvim/agent-system/extensions/core/scripts'.
-       This looks like the agent-system source store, where '../..' resolves to a
-       bogus repo root. Deploy first via <leader>al ('Reload All' / 'Regenerate') or
-       'bash scripts/deploy-headless.sh', then run the deployed copy.
+core: 143 entries, 143 exact, 0 mismatch, 0 null, 0 missing source
+cslib: 19 entries, 19 exact, 0 mismatch, 0 null, 0 missing source
+email: 10 entries, 10 exact, 0 mismatch, 0 null, 0 missing source
+epidemiology: 15 entries, 15 exact, 0 mismatch, 0 null, 0 missing source
+filetypes: 11 entries, 11 exact, 0 mismatch, 0 null, 0 missing source
+formal: 46 entries, 46 exact, 0 mismatch, 0 null, 0 missing source
+founder: 34 entries, 34 exact, 0 mismatch, 0 null, 0 missing source
+latex: 10 entries, 10 exact, 0 mismatch, 0 null, 0 missing source
+lean: 32 entries, 32 exact, 0 mismatch, 0 null, 0 missing source
+literature: 18 entries, 18 exact, 0 mismatch, 0 null, 0 missing source
+memory: 8 entries, 8 exact, 0 mismatch, 0 null, 0 missing source
+nix: 12 entries, 12 exact, 0 mismatch, 0 null, 0 missing source
+nvim: 24 entries, 24 exact, 0 mismatch, 0 null, 0 missing source
+present: 37 entries, 37 exact, 0 mismatch, 0 null, 0 missing source
+python: 6 entries, 6 exact, 0 mismatch, 0 null, 0 missing source
+slidev: 15 entries, 15 exact, 0 mismatch, 0 null, 0 missing source
+typst: 26 entries, 26 exact, 0 mismatch, 0 null, 0 missing source
+web: 24 entries, 24 exact, 0 mismatch, 0 null, 0 missing source
+z3: 5 entries, 5 exact, 0 mismatch, 0 null, 0 missing source
+
+=== Summary (check mode) ===
+Total entries checked: 495
+Exact match: 495
+Numeric mismatch: 0
+Null line_count: 0
+Missing source file: 0
+
+CHECK PASSED: all line_count values are exact
 ```
-Exit code: 1
+Exit code: 0
+

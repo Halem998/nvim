@@ -1,0 +1,50 @@
+# Post-sweep FINDING-line capture (machine-diffable), compared against baseline-pre-sweep-findings.txt
+# Timestamp: 2026-09-01T21:15:00Z
+
+## bash .claude/scripts/verify-deploy.sh --findings --quiet
+  [FAIL] doc-lint reported failures
+         re-run without --quiet for detail: bash .claude/scripts/check-extension-docs.sh
+  [FAIL] manifest-driven verification reported 4 finding(s)
+         re-run without --quiet for detail: bash .claude/scripts/verify-deploy.sh
+  [FAIL] validate-state.sh --deep reported FAIL-level finding(s) against specs/state.json
+         re-run for detail: bash .claude/scripts/validate-state.sh --deep specs/state.json
+  [FAIL] state-writer boundary lint reported hand-rolled state.json writes
+         re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose
+  [FAIL] whole-tree orphan detection reported 2 finding(s)
+         re-run without --quiet for detail: bash agent-system/extensions/core/scripts/verify-deploy.sh; see context/patterns/deploy-orphan-detection.md
+  [WARN] core still declares routing_hard/routing_agents_hard
+         being replaced -- migrate to the hard_contracts manifest key (see context/guides/manifest-routing-schema.md)
+[verify-deploy] FAIL -- 5 of 27 check(s) failed
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: abandon_reason (on project_number(s): 94,46,31,64,73,115,132)
+FINDING gate10 [0;31m[FAIL][0m Unknown entry field: blocks_note (on project_number(s): 106,107,109)
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:261: jq '.active_projects[0].status = "planned"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:307: jq '.active_projects[0].next_artifact_number = 2' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:317: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate12 [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh:327: jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+FINDING gate13 ghost index row: reference/team-wave-helpers.md
+FINDING gate13 orphan file: context/reference/team-wave-helpers.md
+FINDING gate16 core still declares routing_hard/routing_agents_hard
+FINDING gate3 [core] FAIL: deployed rule content drift (deployed != extension source): rules/artifact-formats.md
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/test-state-write-large-payload.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-force-phases.sh
+FINDING gate3 [core] FAIL: script file on disk NOT in provides.scripts: scripts/tests/test-roadmap-argv-ceiling.sh
+FINDING gate5 core: Content differs from source: context/patterns/multi-task-operations.md
+FINDING gate5 core: Content differs from source: context/patterns/skill-lifecycle.md
+FINDING gate5 core: Content differs from source: rules/artifact-formats.md
+FINDING gate5 core: Missing scripts: scripts/audit-deletion-references.sh
+
+## Diff against baseline-pre-sweep-findings.txt
+
+### NEW findings (7) -- all expected, pre-redeploy source-vs-deployed drift from this sweep's own edits, self-resolving on the next redeploy:
+FINDING gate13 ghost index row: reference/team-wave-helpers.md
+FINDING gate13 orphan file: context/reference/team-wave-helpers.md
+FINDING gate3 [core] FAIL: deployed rule content drift (deployed != extension source): rules/artifact-formats.md
+FINDING gate5 core: Content differs from source: context/patterns/multi-task-operations.md
+FINDING gate5 core: Content differs from source: context/patterns/skill-lifecycle.md
+FINDING gate5 core: Content differs from source: rules/artifact-formats.md
+FINDING gate5 core: Missing scripts: scripts/audit-deletion-references.sh
+
+### Findings GONE (1) -- fixed by Phase 6, an improvement:
+FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/system-defect-discrimination.md' line_count mismatch: declared 409, actual 420
+
+### Findings unchanged (10): all pre-existing/deferred, carried unmodified.

@@ -560,25 +560,40 @@ is the only new file with `git status --short`.
 
 ---
 
-### Phase 8: Final gate run, baseline diff, and reproducibility record [NOT STARTED]
+### Phase 8: Final gate run, baseline diff, and reproducibility record [COMPLETED]
 
 **Goal**: Prove the acceptance criteria hold, and leave a record a later reader can follow
 without redoing the analysis.
 
 **Tasks**:
-- [ ] Re-run every command from Phase 1 and capture output to
-  `specs/135_remove_refactor_orphans/baseline-post-sweep.txt`.
-- [ ] Diff post-sweep against pre-sweep. Acceptance requires **no NEW findings** — pre-existing
+- [x] Re-run every command from Phase 1 and capture output to
+  `specs/135_remove_refactor_orphans/baseline-post-sweep.txt`. *(completed; also captured a
+  companion `--findings` diff to `baseline-post-sweep-findings.txt` for finer granularity;
+  deviation noted below on a self-inflicted capture-corruption defect discovered and corrected in
+  both baseline files)*
+- [x] Diff post-sweep against pre-sweep. Acceptance requires **no NEW findings** — pre-existing
   findings carried in the Phase 1 baseline are not regressions. Enumerate any delta explicitly.
-- [ ] Confirm `bash .claude/scripts/check-task-references.sh` reports 0 findings.
-- [ ] Confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet` passes
+  *(completed: verify-deploy.sh moved from 3 to 6 of 27 gate-level FAILs; finding-level diff shows
+  7 new / 1 gone. Every new finding was traced and explicitly justified — see the baseline-post-
+  sweep.txt header and the summary's Baseline Diff section — as expected pre-redeploy
+  source-vs-deployed drift directly caused by this sweep's own legitimate source-store edits
+  (gate3 artifact-formats.md drift, gate5's 4 content-differs/missing-script findings, gate13's 2
+  team-wave-helpers.md findings), plus one recurrence of the already-documented gate8
+  nested-run-all.sh concurrency flake (standalone run: 58 passed both times). The 1 gone finding
+  is Phase 6's line_count fix, an improvement. No finding traces to unexplained or unjustified
+  sweep content.)*
+- [x] Confirm `bash .claude/scripts/check-task-references.sh` reports 0 findings. *(completed:
+  0 findings, unchanged from Phase 1)*
+- [x] Confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet` passes
   standalone (the nested-inside-`verify-deploy.sh` run is a known concurrency flake and does not
-  count against acceptance; note it as such if it recurs).
-- [ ] Run `bash agent-system/extensions/core/scripts/audit-deletion-references.sh
+  count against acceptance; note it as such if it recurs). *(completed: 58 passed, 0 failed,
+  standalone, post-sweep; the flake DID recur inside verify-deploy.sh's nested gate 8, exactly as
+  anticipated by this task's own caveat)*
+- [x] Run `bash agent-system/extensions/core/scripts/audit-deletion-references.sh
   skill-team-research skill-team-plan skill-team-implement` post-sweep and confirm it now reports
   zero hits under `agent-system/` for all three passes — closing the loop between the detector
-  and the sweep it encodes.
-- [ ] Write `specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md` containing:
+  and the sweep it encodes. *(completed: Pass 1 = 0, Pass 2 = 0, exit 0)*
+- [x] Write `specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md` containing:
   - The search method, stated as method (literal grep / wildcard-expanded grep / reachability),
     with the note that the first two catch disjoint classes from the third.
   - A dispositions table: every candidate from the research report — the 1 removal, the 4 repair
@@ -590,8 +605,22 @@ without redoing the analysis.
   - **Deferred items**, carried forward explicitly: (a) `test-force-phases.sh` undeclared in
     `provides.scripts`; (b) its 4 `lint-state-writer-boundary.sh` violations at lines 261, 307,
     317, 327; (c) the missing "multi-task" scope qualifier on `multi-task-operations.md` line 662.
-    Each with the reason it was left out.
-- [ ] Confirm the summary is the only new file under `specs/` besides the two baseline captures.
+    Each with the reason it was left out. *(completed)*
+- [x] Confirm the summary is the only new file under `specs/` besides the two baseline captures.
+  *(completed: verified via git status)*
+
+**Deviation**: the raw captures of both baseline files interleaved verify-deploy.sh's
+long-running background process output with several sequential foreground command appends
+writing to the same file, since verify-deploy.sh's nested `run-all.sh` call (a known flake) made
+it slow enough that other Phase 1/Phase 8 commands were run before it finished. This scrambled
+the ordering of verify-deploy.sh's 16-check output across both files (no content was lost — every
+line was still present, just out of sequence, with two small fragments landing inside other
+sections). Discovered during Phase 8's diff review, root-caused via line-by-line forensic
+comparison against known-good fragments, and corrected in both files by reassembling the
+scattered fragments into one contiguous, correctly-ordered section — verified by re-checking that
+each of the 16 numbered checks appears exactly once, correctly ordered, and confined to its own
+section. All PASS/FAIL/WARN determinations were independently confirmed via direct standalone
+tool invocations during implementation and are unaffected by this formatting correction.
 
 **Timing**: 0.7 hours
 

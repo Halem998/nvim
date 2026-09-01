@@ -1,0 +1,29 @@
+{
+  "phase": 8,
+  "phase_name": "Final gate run, baseline diff, and reproducibility record",
+  "started_at": "2026-09-01T21:04:00Z",
+  "last_updated": "2026-09-01T21:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run all Phase 1 gate commands post-sweep, diff against pre-sweep baseline, confirm check-task-references/run-all/detector, write summary with dispositions table and deferred items",
+      "status": "done",
+      "files_touched": [
+        "specs/135_remove_refactor_orphans/baseline-post-sweep.txt",
+        "specs/135_remove_refactor_orphans/baseline-post-sweep-findings.txt",
+        "specs/135_remove_refactor_orphans/baseline-pre-sweep.txt",
+        "specs/135_remove_refactor_orphans/summaries/01_orphan-sweep-summary.md"
+      ],
+      "note": "Discovered a self-inflicted concurrent-write interleaving defect in both baseline captures (verify-deploy.sh's background output racing with foreground appends to the same file). No content was lost; corrected both files by reassembling scattered fragments into one contiguous, correctly-ordered verify-deploy.sh section. Traced all 7 new post-sweep gate findings to expected, self-resolving pre-redeploy source-vs-deployed drift caused by this sweep's own legitimate edits, plus one recurrence of the already-documented gate8 concurrency flake -- none are unexplained regressions."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Running verify-deploy.sh in the background while sequentially appending other command outputs to the same target file",
+      "result": "failed",
+      "reason": "Caused byte-level interleaving corruption of the baseline capture files -- verify-deploy.sh's slow nested run-all.sh made its background write span long enough to race with several foreground appends to the same file"
+    }
+  ],
+  "handoff_count": 0
+}
