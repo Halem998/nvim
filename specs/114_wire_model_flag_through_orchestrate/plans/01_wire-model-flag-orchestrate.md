@@ -251,7 +251,7 @@ occurrence found, not the four this plan enumerated.
 
 ---
 
-### Phase 2: Add the `model_flag` context-parse bullet to Stage 1 and Stage MT-1 [NOT STARTED]
+### Phase 2: Add the `model_flag` context-parse bullet to Stage 1 and Stage MT-1 [COMPLETED]
 
 **Goal**: `skill-orchestrate` reads `model_flag` once per invocation, in both the single-task and
 multi-task entry stages, with the correct `""` default.

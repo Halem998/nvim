@@ -49,6 +49,11 @@ Read from delegation context:
   Stage 3.5 Dispatch Prep's automatic memory retrieval for every dispatch this invocation makes.
 - `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
   depth guidance to Stage 3.5 Dispatch Prep and to Stage 1b's agent routing below.
+- `model_flag` (default: `""`) — threaded from the command's `--haiku`/`--sonnet`/`--opus`/
+  `--fable` flags; selects the model family for every lifecycle dispatch this invocation makes.
+  Consumed by Stage 3.5 Dispatch Prep's model-override resolution below. The not-set sentinel is
+  the **empty string**, matching `parse-command-args.sh`'s `MODEL_FLAG=""` default — **not** the
+  literal token `null`, despite `commands/research.md`'s prose framing.
 - `hard_mode` — derived once, here, as `hard_mode="false"; [ "$effort_flag" = "hard" ] &&
   hard_mode="true"`. Consumed by Stage 3.5 Dispatch Prep's hard-mode contract injection below,
   and reserved for later conditional state-machine branches (churn/three-strikes counters, the
@@ -2539,6 +2544,12 @@ Read from delegation context:
   makes.
 - `effort_flag` (default: `""`) — threaded from the command's `--fast` flag; supplies reasoning-
   depth guidance to Stage 3.5 Dispatch Prep for every per-task dispatch this batch makes.
+- `model_flag` (default: `""`) — threaded from the command's `--haiku`/`--sonnet`/`--opus`/
+  `--fable` flags; selects the model family for every per-task dispatch this batch makes.
+  Resolved **once here** and passed unchanged into every Stage 3.5 call — never re-resolved per
+  task, and no per-task field is added to `mt_state_file`. The not-set sentinel is the **empty
+  string**, matching `parse-command-args.sh`'s `MODEL_FLAG=""` default — not the literal token
+  `null`.
 - `hard_mode` — derived once, here, as `hard_mode="false"; [ "$effort_flag" = "hard" ] &&
   hard_mode="true"`. Consumed by Stage 3.5 Dispatch Prep's hard-mode contract injection below,
   for every per-task dispatch this batch makes, and reserved for later conditional
