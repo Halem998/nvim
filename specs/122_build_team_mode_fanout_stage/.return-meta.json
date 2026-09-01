@@ -1,0 +1,29 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
+      "summary": "8-phase plan for the shared team-mode fan-out stage (Stage 3.6 skeleton + Stage 3.6a per-phase teammate-plan builder) in skill-orchestrate, plus --team/--team-size on orchestrate.md."
+    }
+  ],
+  "next_steps": "Run /implement 122 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1788220921_6485b3",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 9.5,
+    "dependency_waves": [[1],[2],[3],[4],[5],[6],[7],[8]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When collapsing N duplicated orchestration flows into one shared stage, check whether the duplicates actually share a shape before parameterizing. In this agent system the three team skills looked uniform but were not: research/plan spawn a FIXED named-role set with letter-suffixed artifact files, while implement spawns a DYNAMIC set keyed to plan phases in dependency waves, with real source-file ownership and an ad-hoc debugger role. The correct factoring is a shared skeleton (availability check, spawn, wait, collect, correlate, stage, clean up) plus a per-phase builder that returns a uniform teammate-tuple array; the skeleton never learns which phase produced the tuples. This mirrors the existing handler/dispatch-prep relationship, where per-status handlers differ in dispatch content but share one sub-call.",
+      "category": "PATTERN",
+      "source_artifact": "specs/122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["fan-out", "shared-stage-factoring", "team-mode", "orchestration", "skeleton-plus-builder"]
+    }
+  ]
+}

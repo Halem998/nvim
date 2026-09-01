@@ -6,7 +6,7 @@ next_project_number: 128
 
 ## Task Order
 
-*Updated 2026-08-31. Generated from state.json dependency graph.*
+*Updated 2026-09-01. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -54,7 +54,7 @@ next_project_number: 128
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 114 [NOT STARTED] — Wire model-flag support into /orchestrate: thread model_flag from
-122 [NOT STARTED] — Build the team-mode shared fan-out stage in skill-orchestrate.
+122 [IMPLEMENTING] — Build the team-mode shared fan-out stage in skill-orchestrate.
   └─ 72 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). The team-mode fol
   └─ 73 [NOT STARTED] — RESCOPE NOTE (task-116 audit, verdict RESCOPE). Same A5 team-mode
   └─ 123 [NOT STARTED] — Delete the three team-mode skills (skill-team-research, skill-tea
@@ -191,10 +191,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 122. Build team mode fanout stage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 119
+- **Research**: [122_build_team_mode_fanout_stage/reports/01_team-fanout-stage-research.md]
+- **Plan**: [122_build_team_mode_fanout_stage/plans/01_team-fanout-stage.md]
 
 **Description**: Build the team-mode shared fan-out stage in skill-orchestrate.
 
