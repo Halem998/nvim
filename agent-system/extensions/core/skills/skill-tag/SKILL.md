@@ -402,7 +402,7 @@ if [ "$dry_run" = true ]; then
   echo "=== DRY RUN MODE ==="
   echo ""
   echo "Would execute:"
-  echo "  git tag $new_version"
+  echo "  git tag -a $new_version -m <$tag_message_source>"
   echo "  git push origin $new_version"
   echo ""
   echo "No changes made."
@@ -452,13 +452,15 @@ echo ""
 echo "=== Creating Tag ==="
 echo ""
 
-# Create tag
-if ! git tag "$new_version"; then
+# Create annotated tag (not lightweight) -- required by the release preflight's
+# `[ "$(git cat-file -t "$TAG")" = "tag" ]` assertion. -a rather than -s: signing requires a
+# configured GPG key that is not universal across consuming repos.
+if ! git tag -a "$new_version" -m "$tag_message"; then
   echo "Error: Failed to create tag $new_version"
   exit 1
 fi
 
-echo "Created tag: $new_version"
+echo "Created annotated tag: $new_version"
 ```
 
 Push the tag to remote:

@@ -293,30 +293,33 @@ proceeding to Phase 3.
 
 ---
 
-### Phase 3: Annotated tag creation and truthful dry-run preview [NOT STARTED]
+### Phase 3: Annotated tag creation and truthful dry-run preview [COMPLETED]
 
 **Goal**: Close Gap 1 — replace lightweight tag creation with `git tag -a`, and update the
 dry-run preview in the same phase so the two can never be out of step.
 
 **Tasks**:
 
-- [ ] In Step 6 ("Create and Push Tag"), replace
+- [x] In Step 6 ("Create and Push Tag"), replace
       `if ! git tag "$new_version"; then` with
-      `if ! git tag -a "$new_version" -m "$tag_message"; then`.
-- [ ] Update the adjacent success line to state the tag kind:
-      `echo "Created annotated tag: $new_version"`.
-- [ ] In Step 5's dry-run block, replace `echo "  git tag $new_version"` with a form that names
+      `if ! git tag -a "$new_version" -m "$tag_message"; then`. *(completed)*
+- [x] Update the adjacent success line to state the tag kind:
+      `echo "Created annotated tag: $new_version"`. *(completed)*
+- [x] In Step 5's dry-run block, replace `echo "  git tag $new_version"` with a form that names
       the message source without dumping the full message body:
       ```bash
       echo "  git tag -a $new_version -m <$tag_message_source>"
       ```
-- [ ] Sweep the whole file for any other tag-creating invocation. The push command
+      *(completed)*
+- [x] Sweep the whole file for any other tag-creating invocation. The push command
       (`git push origin "$new_version"`), the existence probe (`git rev-parse "$new_version"`),
       the listing (`git tag -l 'v*'`), and the recovery hint (`git tag -d $new_version`) are all
-      correct as-is and must NOT be changed — only tag *creation* sites change.
-- [ ] Confirm the Step 6 error-recovery hint block still reads correctly for an annotated tag
+      correct as-is and must NOT be changed — only tag *creation* sites change. *(completed:
+      grep -n 'git tag' confirmed exactly 2 creation sites, both now use -a; list/delete sites
+      unchanged)*
+- [x] Confirm the Step 6 error-recovery hint block still reads correctly for an annotated tag
       (`git tag -d $new_version` deletes annotated tags identically — no change needed, but
-      confirm rather than assume).
+      confirm rather than assume). *(completed: confirmed by inspection, no change needed)*
 
 **Timing**: 0.4 hours
 
