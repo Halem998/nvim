@@ -194,22 +194,24 @@ files, so parallel execution creates no write conflict; all of them only *read*
 
 ---
 
-### Phase 2: Retarget `lint-contract-compliance.sh` (Checks C and D) [NOT STARTED]
+### Phase 2: Retarget `lint-contract-compliance.sh` (Checks C and D) [COMPLETED]
 
 - **Goal:** Point both hard-engine references in the lint script at the merged engine, so the
   script survives the later deletion of `skill-orchestrate-hard/SKILL.md`.
 - **Tasks:**
-  - [ ] In Check D's `check_d_convergence_policing`, change `skill_file` from
+  - [x] In Check D's `check_d_convergence_policing`, change `skill_file` from
     `$CORE_ROOT/skills/skill-orchestrate-hard/SKILL.md` to
-    `$CORE_ROOT/skills/skill-orchestrate/SKILL.md`.
-  - [ ] In Check C's tail block, change `orchestrate_skill` to the same merged path and update its
-    pass/fail message strings.
-  - [ ] Update all `log_pass`/`log_fail`/`log_info` message strings and the section header comment
+    `$CORE_ROOT/skills/skill-orchestrate/SKILL.md`. *(completed)*
+  - [x] In Check C's tail block, change `orchestrate_skill` to the same merged path and update its
+    pass/fail message strings. *(completed)*
+  - [x] Update all `log_pass`/`log_fail`/`log_info` message strings and the section header comment
     for both checks to say `skill-orchestrate` rather than `skill-orchestrate-hard`, including the
-    check-name line printed in the usage/summary block near the top of the file.
-  - [ ] Confirm the three convergence fields (`total_churn`, `target_churn`,
+    check-name line printed in the usage/summary block near the top of the file. *(completed)*
+  - [x] Confirm the three convergence fields (`total_churn`, `target_churn`,
     `adversarial_triggers`) are all found in the merged file by the unchanged `grep -qF` logic.
-  - [ ] Confirm no `skill-orchestrate-hard` string remains anywhere in the file.
+    *(completed: all three PASS)*
+  - [x] Confirm no `skill-orchestrate-hard` string remains anywhere in the file. *(completed:
+    reworded one historical comment that named the string literally; grep -c now returns 0)*
 - **Timing:** 0.5 hours
 - **Depends on:** 1
 - **Verification Tier:** local

@@ -9,7 +9,7 @@
 #   A. Hard agents reference their required contracts in Context References sections
 #   B. All 5 contract files exist and contain H-technique identifiers
 #   C. Each hard skill dispatches to the correct hard agent (SKILL.md wiring)
-#   D. skill-orchestrate-hard/SKILL.md contains convergence policing fields
+#   D. skill-orchestrate/SKILL.md contains convergence policing fields (hard_mode branch)
 #   E. general-implementation-hard-agent.md contains H2 vocabulary
 #   F. index-entries.json has at least one context entry per hard agent
 #
@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
       echo "  A. Hard agent contract @-references"
       echo "  B. Contract file existence and H-technique identifiers"
       echo "  C. Hard skill -> hard agent dispatch wiring"
-      echo "  D. Convergence policing fields in skill-orchestrate-hard"
+      echo "  D. Convergence policing fields in skill-orchestrate"
       echo "  E. H2 vocabulary in general-implementation-hard-agent"
       echo "  F. index-entries.json contract coverage for hard agents"
       echo ""
@@ -245,27 +245,29 @@ check_c_hard_skill_dispatch() {
     fi
   done
 
-  # skill-orchestrate-hard is a special case -- it dispatches to all hard agents
-  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate-hard/SKILL.md"
+  # skill-orchestrate dispatches to all hard agents via its hard_mode-gated per-phase-dispatch
+  # (H1) branch -- the mechanism formerly lived in a standalone hard-mode skill file, since
+  # merged into skill-orchestrate/SKILL.md.
+  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
   if [[ ! -f "$orchestrate_skill" ]]; then
-    log_fail "skill-orchestrate-hard: SKILL.md not found"
+    log_fail "skill-orchestrate: SKILL.md not found"
   else
-    log_pass "skill-orchestrate-hard: SKILL.md exists"
+    log_pass "skill-orchestrate: SKILL.md exists"
   fi
 }
 
 # ---------------------------------------------------------------------------
-# Check D: Convergence policing fields in skill-orchestrate-hard/SKILL.md
+# Check D: Convergence policing fields in skill-orchestrate/SKILL.md (hard_mode branch)
 # Churn state file must declare total_churn, target_churn, adversarial_triggers fields
 # ---------------------------------------------------------------------------
 check_d_convergence_policing() {
   echo ""
-  echo "--- Check D: Convergence policing fields in skill-orchestrate-hard ---"
+  echo "--- Check D: Convergence policing fields in skill-orchestrate ---"
 
-  local skill_file="$CORE_ROOT/skills/skill-orchestrate-hard/SKILL.md"
+  local skill_file="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
 
   if [[ ! -f "$skill_file" ]]; then
-    log_fail "skill-orchestrate-hard/SKILL.md not found -- skipping convergence checks"
+    log_fail "skill-orchestrate/SKILL.md not found -- skipping convergence checks"
     return
   fi
 
@@ -273,9 +275,9 @@ check_d_convergence_policing() {
 
   for field in "total_churn" "target_churn" "adversarial_triggers"; do
     if grep -qF "$field" "$skill_file" 2>/dev/null; then
-      log_pass "skill-orchestrate-hard: contains '$field' churn field"
+      log_pass "skill-orchestrate: contains '$field' churn field"
     else
-      log_fail "skill-orchestrate-hard: missing '$field' convergence policing field"
+      log_fail "skill-orchestrate: missing '$field' convergence policing field"
     fi
   done
 }
