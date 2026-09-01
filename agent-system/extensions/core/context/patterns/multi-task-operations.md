@@ -85,8 +85,8 @@ parse_task_args() {
 | `7` | `[7]` | `` | single |
 | `7, 22-24, 59` | `[7, 22, 23, 24, 59]` | `` | multi |
 | `7 focus on APIs` | `[7]` | `focus on APIs` | single |
-| `7, 22-24 --team` | `[7, 22, 23, 24]` | `--team` | multi |
-| `42 --team --team-size 3` | `[42]` | `--team --team-size 3` | single |
+| `7, 22-24 --hard` | `[7, 22, 23, 24]` | `--hard` | multi |
+| `42 --clean --lit` | `[42]` | `--clean --lit` | single |
 | `10-12, 15 --force` | `[10, 11, 12, 15]` | `--force` | multi |
 
 ---
@@ -105,7 +105,7 @@ len(task_numbers) == 1
 **Backward compatibility guarantees**:
 - Single task number (`/research 7`) behaves identically to current implementation
 - Single task with focus prompt (`/research 7 focus on APIs`) behaves identically
-- Single task with flags (`/research 7 --team`) behaves identically
+- Single task with flags (`/research 7 --hard`) behaves identically
 - Ranges that resolve to one task (`/research 7-7` or `/research 7,7,7`) use single-task flow
 
 ---
@@ -341,28 +341,18 @@ Skill results (text summaries):
 
 ---
 
-## 7. Interaction with --team Flag
+## 7. Team Mode Is Not a Flag Here
 
-Multi-task and team mode are orthogonal features:
-
-| Feature | Scaling Direction | Description |
-|---------|------------------|-------------|
-| Multi-task | Horizontal (across tasks) | Run same command on multiple tasks |
-| Team mode | Vertical (within a task) | Run multiple agents on a single task |
-
-**Combined usage** (`/research 7, 22, 24 --team`):
-- Each task gets its own team of agents
-- Total agents spawned: `N_tasks * team_size`
-- Example: 3 tasks with team_size=2 spawns 6 agents
-
-**Cost warning**: Combining multi-task with `--team` multiplies token usage. For N tasks with team_size T, expect approximately `N * T * single_task_cost`. Use with care.
+`--team` is not a flag on `/research`, `/plan`, or `/implement`, in single-task or multi-task
+form. There is no combined multi-task-plus-team mode on these commands. Team mode is
+`/orchestrate`'s flag, served by `skill-orchestrate`'s Stage 3.6/3.6a fan-out — see this
+document's own multi-task-`/orchestrate`-scoped "`--team` Flag Not Supported" section below for
+how `/orchestrate`'s own multi-task mode relates to it.
 
 ### Flag Compatibility Table
 
 | Flag | Multi-task behavior |
 |------|---------------------|
-| `--team` | Applied to ALL tasks in batch (each task gets team mode) |
-| `--team-size N` | Applied to ALL tasks uniformly |
 | `--force` | Applied to ALL tasks (bypasses status validation) |
 | Focus prompt | Applied to ALL tasks (same focus for each) |
 
@@ -529,7 +519,7 @@ This pattern is fully backward compatible with existing single-task usage:
 
 1. **Single task** (`/research 7`): `parse_task_args()` returns `[7]`, falls through to existing flow
 2. **Single task with focus** (`/research 7 focus on APIs`): Parser separates `7` from `focus on APIs`
-3. **Single task with flags** (`/research 7 --team`): Parser separates `7` from `--team`
+3. **Single task with flags** (`/research 7 --hard`): Parser separates `7` from `--hard`
 4. **Existing /task flags** (`/task --recover 343-345`): Unaffected -- different command with flag-based routing via `/task` command file
 
 No existing behavior changes. Multi-task mode activates only when multiple task numbers are detected in the argument string.
@@ -669,7 +659,7 @@ The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) 
 | Dispatch model | Pure parallel (all tasks at once) | Wave dispatch (topological order) |
 | Dependency awareness | None (each phase is independent) | Yes (intra-batch dependency graph) |
 | Failed task impact | No cross-task impact | Blocks direct dependents in later waves |
-| Team mode support | Yes (`--team` flag) | No |
+| Team mode support | No | Single-task only (`--team`) |
 | Batch session ID | Single ID, per-task suffix | Single ID, per-task suffix |
 | Per-task skill | Routed by task_type | Always `skill-orchestrate` |
 | Parallelism | All validated tasks simultaneously | Tasks within each wave simultaneously |

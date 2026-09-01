@@ -343,7 +343,7 @@ persist until the next redeploy and are not a defect).
 
 ---
 
-### Phase 5: Repair `context/patterns/multi-task-operations.md` [NOT STARTED]
+### Phase 5: Repair `context/patterns/multi-task-operations.md` [COMPLETED]
 
 **Goal**: Remove every claim that `--team` is a flag on `/research`/`/plan`/`/implement`, fix the
 inverted support-matrix row, and leave the file's already-correct `/orchestrate`-scoped `--team`
@@ -355,18 +355,21 @@ into those three commands' context on every multi-task invocation — a wrong cl
 dormant documentation, it is live context.
 
 **Tasks**:
-- [ ] **Before any edit**, snapshot lines 636-662 to a scratch file
+- [x] **Before any edit**, snapshot lines 636-662 to a scratch file
   (`sed -n '636,662p' > /tmp/…/mto-preserve.txt`). This range is the correctness anchor for this
-  phase's verification.
-- [ ] Fix the parsing-example table rows (hypothesised lines 88-89): replace the
+  phase's verification. *(completed)*
+- [x] Fix the parsing-example table rows (hypothesised lines 88-89): replace the
   `` `7, 22-24 --team` `` and `` `42 --team --team-size 3` `` rows with flag examples that are
   actually valid on these commands (e.g. `` `7, 22-24 --hard` `` and `` `42 --clean --lit` ``).
   Keep the table's shape — it illustrates parser behaviour, and the parser still accepts arbitrary
-  flag strings; only these two *examples* are misleading.
-- [ ] Fix the backward-compatibility bullet (hypothesised line 108): change the
-  `/research 7 --team` example to a flag these commands accept.
-- [ ] Fix the duplicate example (hypothesised line 532): same change.
-- [ ] Rewrite `## 7. Interaction with --team Flag` (hypothesised lines 344-371, ending before
+  flag strings; only these two *examples* are misleading. *(completed: confirmed at lines 88-89,
+  no drift from hypothesised numbers)*
+- [x] Fix the backward-compatibility bullet (hypothesised line 108): change the
+  `/research 7 --team` example to a flag these commands accept. *(completed: confirmed at line
+  108, no drift)*
+- [x] Fix the duplicate example (hypothesised line 532): same change. *(completed: confirmed at
+  line 532, no drift)*
+- [x] Rewrite `## 7. Interaction with --team Flag` (hypothesised lines 344-371, ending before
   `## 8. Batch Git Commit Format`) **in place, keeping the section number 7**. Do NOT delete the
   section and renumber 8-13: the numbering is externally cross-referenced by section name from
   `docs/architecture/batch-admit-schema.md` and `context/patterns/batch-orchestration-guardrails.md`,
@@ -381,15 +384,19 @@ dormant documentation, it is live context.
     `--force` and the focus-prompt row, and keep the **Not supported** note about per-task flags,
     which is still accurate.
   - Delete the cost-warning paragraph — it prices a combination that cannot be invoked.
-- [ ] Fix the Dispatch Model Comparison table's `Team mode support` row (hypothesised line 672).
+  *(completed: retitled "## 7. Team Mode Is Not a Flag Here"; confirmed the two cross-referencing
+  files cite Section 5a, not 7, so the rename is safe)*
+- [x] Fix the Dispatch Model Comparison table's `Team mode support` row (hypothesised line 672).
   It currently reads `` Yes (`--team` flag) `` for `/research, /plan, /implement` and `No` for
   `/orchestrate` — the exact inverse of reality. Correct it to `No` for the three lifecycle
   commands and, for the `/orchestrate` column, a value that does not contradict the
-  multi-task-scoped section above it: `` Single-task only (`--team`) ``.
-- [ ] Confirm no task-number reference was introduced.
+  multi-task-scoped section above it: `` Single-task only (`--team`) ``. *(completed: row shifted
+  to line 662 after Section 7's rewrite shortened the file by 10 lines; fixed at its actual
+  location)*
+- [x] Confirm no task-number reference was introduced. *(completed: 0 hits)*
 
 **Tasks — do not touch**:
-- [ ] Lines 636-643 (`**Note on `--team`**` paragraph) and lines 660-662
+- [x] Lines 636-643 (`**Note on `--team`**` paragraph) and lines 660-662
   (`### --team Flag Not Supported`) must survive byte-identical. They describe multi-task
   `/orchestrate`'s own lack of `--team` support — a different claim about a different command
   than the defect above. The report's stated risk is precisely that a repair pass conflates the
