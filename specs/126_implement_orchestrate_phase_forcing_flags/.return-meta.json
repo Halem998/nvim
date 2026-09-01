@@ -29,29 +29,55 @@
       "category": "PATTERN",
       "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/summaries/01_orchestrate-phase-forcing-flags-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["concurrent-edit-partitioning", "positional-slot-ownership", "skill_postflight_update", "SKILL.md-region-ownership", "scoped-git-diff-verification"]
+      "suggested_keywords": [
+        "concurrent-edit-partitioning",
+        "positional-slot-ownership",
+        "skill_postflight_update",
+        "SKILL.md-region-ownership",
+        "scoped-git-diff-verification"
+      ]
     },
     {
       "content": "A SKILL.md file in this codebase is prose-plus-bash DOCUMENTATION an agent follows procedurally turn-by-turn (each fenced bash block is something the agent executes via its own Bash tool across many separate tool calls) -- it is never literally concatenated and run as one script. But when authoring a multi-branch decision (an if/elif/else) inside such a file, write it as ONE single flowing fenced bash block, not three separately-fenced fragments with prose interleaved between an `if ... then` fragment and its `elif`/`else`/`fi` continuation. A split-fence if/elif/else leaves each individual fence syntactically incomplete, which breaks any later `bash -n` extraction test over that exact block (this repo has precedent for exactly this kind of extraction, e.g. test-loop-guard-budget-override.sh) even though the file itself is never executed as a whole. Prose bullets ABOVE the single fenced block can still narrate each branch's semantics at length; only the code itself needs to stay unified.",
       "category": "INSIGHT",
       "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/summaries/01_orchestrate-phase-forcing-flags-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["SKILL.md-authoring", "fenced-bash-block", "bash-n-extraction", "if-elif-else-unified", "orchestrate-skill-conventions"]
+      "suggested_keywords": [
+        "SKILL.md-authoring",
+        "fenced-bash-block",
+        "bash-n-extraction",
+        "if-elif-else-unified",
+        "orchestrate-skill-conventions"
+      ]
     },
     {
       "content": "To test a source-store-only edit in a repo where .claude/ is a gitignored deploy artifact regenerated from agent-system/extensions/**, build a scratchpad/fixture harness whose .claude/scripts/ tree is populated from the DEPLOYED tree for every non-edited dependency, then OVERLAID (overwritten) with the source-store copies of exactly the files under test, before pointing SKILL_REPO_ROOT and cwd at the fixture root. This is necessary because dependency chains are often multi-hop: sourcing a source-store entry point directly is not enough if that file's OWN internal `source lib/foo.sh` call still resolves deploy-first relative to SKILL_REPO_ROOT/cwd -- a partial fix (source-store entry point, deploy-first internals) produces a 'command not found' on a newly-added function rather than a clean pass/fail signal, which is the exact failure signature of a stale internal-dependency load. When authoring a NEW regression-suite file for such an edit, invert the deploy-first/source-store-fallback candidate order ONLY for the specific files under test (source-store first, deploy fallback) while keeping deploy-tree provenance for every unrelated fixture dependency -- and make the resolved absolute path of each inverted candidate an explicit, echoed assertion (never merely implicit) as the FIRST case in the suite, exiting 2 (environment error) rather than 1 (test failure) on a miss, since a wrong-copy load means the whole suite would silently validate the wrong code.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/126_implement_orchestrate_phase_forcing_flags/summaries/01_orchestrate-phase-forcing-flags-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["stale-deploy-hazard", "scratchpad-harness", "source-store-first-resolution", "harness-sanity-case", "multi-hop-dependency-chain", "SKILL_REPO_ROOT-override"]
+      "suggested_keywords": [
+        "stale-deploy-hazard",
+        "scratchpad-harness",
+        "source-store-first-resolution",
+        "harness-sanity-case",
+        "multi-hop-dependency-chain",
+        "SKILL_REPO_ROOT-override"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788279674_73e3df",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "skill-implementer", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "skill-implementer",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -567,6 +567,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Dependencies**: Task 117, Task 122
 - **Research**: [126_implement_orchestrate_phase_forcing_flags/reports/01_orchestrate-phase-forcing-flags.md]
 - **Plan**: [126_implement_orchestrate_phase_forcing_flags/plans/01_orchestrate-phase-forcing-flags.md]
+- **Summary**: [126_implement_orchestrate_phase_forcing_flags/summaries/01_orchestrate-phase-forcing-flags-summary.md]
 
 **Description**: Implement A2 phase-forcing flags (--research/--plan/--implement) on /orchestrate.
 
