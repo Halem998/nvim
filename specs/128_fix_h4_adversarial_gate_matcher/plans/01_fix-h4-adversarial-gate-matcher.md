@@ -1,7 +1,7 @@
 # Implementation Plan: Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
 
 - **Task**: 128 - Migrate the orphaned H4 adversarial-verification gate and repair its false-negative matcher
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 119 (hard-mode state-machine consolidation — already landed; this plan builds on the acceptance-checklist and residue notes it wrote)
 - **Research Inputs**: `specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md`
@@ -166,7 +166,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-establish the fixture matrix and confirm both corrected patterns [NOT STARTED]
+### Phase 1: Re-establish the fixture matrix and confirm both corrected patterns [COMPLETED]
 
 **Goal**: Before touching any engine file, reproduce the research's verification independently, so
 the patterns going into the engine are confirmed against the grep actually deployed on this
@@ -174,24 +174,24 @@ machine rather than trusted from a report.
 
 **Tasks**:
 
-- [ ] Confirm the deployed grep identity: `grep --version` (research recorded
+- [x] Confirm the deployed grep identity: `grep --version` (research recorded
       `ugrep 7.8.4 x86_64-pc-linux-gnu +sse2; -P:pcre2jit`). If it differs, STOP and report — the
       patterns below were verified against that engine specifically.
-- [ ] Create scratch fixture files (in the session scratchpad, NOT in the repository) covering
+- [x] Create scratch fixture files (in the session scratchpad, NOT in the repository) covering
       exactly these cases:
-  - [ ] `## 7. Adversarial Self-Verification` heading + canonical table header
+  - [x] `## 7. Adversarial Self-Verification` heading + canonical table header
         `| Claim | Source / counterexample | Verification method | Confidence |`
-  - [ ] `## 7.2. Adversarial Self-Verification` heading (the `N.N` form) + canonical table header
-  - [ ] Unnumbered `## Adversarial Self-Verification` heading + canonical table header
-  - [ ] No adversarial section at all
-  - [ ] Adversarial section present, but no claim/source/counterexample table
-  - [ ] Alternate already-supported header
+  - [x] `## 7.2. Adversarial Self-Verification` heading (the `N.N` form) + canonical table header
+  - [x] Unnumbered `## Adversarial Self-Verification` heading + canonical table header
+  - [x] No adversarial section at all
+  - [x] Adversarial section present, but no claim/source/counterexample table
+  - [x] Alternate already-supported header
         `| # | Claim under attack | Source / counterexample | Outcome |` (regression check — no
         previously-supported format may stop working)
-  - [ ] False-positive probe: prose reading
+  - [x] False-positive probe: prose reading
         `This section disclaims outsourced counterexamples informally, without a table.` under a
         valid heading, with no `|` characters anywhere
-- [ ] Run the two CORRECTED patterns against every fixture, as the literal combined shell
+- [x] Run the two CORRECTED patterns against every fixture, as the literal combined shell
       conditional the production gate uses (`grep -qE ... && grep -qiE ...`), against real files.
 
   Heading pattern (carry verbatim into the engine):
@@ -206,10 +206,10 @@ machine rather than trusted from a report.
   grep -qiE '\|[^|]*claim[^|]*\|[^|]*source[^|]*counterexample[^|]*\|' "$research_path"
   ```
 
-- [ ] Confirm the expected result for each row: PASS (no re-dispatch) for the three positive rows
+- [x] Confirm the expected result for each row: PASS (no re-dispatch) for the three positive rows
       and the regression row; FAIL (re-dispatch triggers) for the two negative rows; NOMATCH on
       the table check for the false-positive probe.
-- [ ] Record the actual command output for each row — it is the evidence Phase 7 re-checks
+- [x] Record the actual command output for each row — it is the evidence Phase 7 re-checks
       against.
 
 **Timing**: 0.4 hours

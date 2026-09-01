@@ -1,26 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/128_fix_h4_adversarial_gate_matcher/reports/01_fix-h4-adversarial-gate-matcher.md",
-      "summary": "Confirms both H4 gate matcher failures under the deployed grep, provides two empirically-verified corrected patterns, and inventories every migration site needed to port the gate into the base orchestrate engine."
-    },
-    {
-      "type": "plan",
-      "path": "specs/128_fix_h4_adversarial_gate_matcher/plans/01_fix-h4-adversarial-gate-matcher.md",
-      "summary": "Seven-phase plan porting the H4 adversarial-verification gate into skill-orchestrate/SKILL.md with the corrected matcher, closing the base engine's residue notes, and recording the deliberate co-maintenance asymmetry in both engine files."
-    }
-  ],
-  "next_steps": "Run /implement 128 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788267679_adbb09",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2], [3], [4, 5, 6], [7]]
-  },
-  "memory_candidates": []
+    "session_id": "sess_1788279674_73e3df",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
