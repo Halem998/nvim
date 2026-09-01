@@ -1,5 +1,5 @@
 ---
-next_project_number: 135
+next_project_number: 138
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 135
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,126,128,133,134 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,104,105,109,112,120,124,129 | 29,74,87,102,108,126,128 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,126,128,133,134,137 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,75,76,89,104,105,109,112,120,124,129,136 | 29,74,87,91,102,108,126,128 | core-agent-system, extensions, literature |
 | 3 | 48,90,107,121,125,135 | 104,120,124,126,133 | core-agent-system, literature |
 | 4 | 50,127 | 48,121,124 | core-agent-system |
 | 5 | 88 | 87,127 | core-agent-system |
@@ -33,8 +33,9 @@ next_project_number: 135
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
+  └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
+126 [IMPLEMENTING] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -52,6 +53,7 @@ next_project_number: 135
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
   └─ 135 [NOT STARTED] — Find and remove the orphans left behind by the orchestrate-engine (see above)
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
+137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 
 ### Extensions
 
@@ -88,6 +90,111 @@ next_project_number: 135
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
 ## Tasks
+
+### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: The lean extension's research and implementation agents have no artifact skeletons, so the artifacts they author fail validate-artifact.sh on required sections that their general-* counterparts get right by construction. Observed on a real completed task, not inferred.
+
+OBSERVED FAILURES (BimodalLogic task 507, gate-out validation output, 2026-09-01):
+  summaries/01_frame-level-validity-indexing-summary.md -> [FAIL] 6 error(s)
+      Missing required section: ## Overview, ## What Changed, ## Decisions, ## Impacts, ## Follow-ups, ## References
+      (4 metadata fields -- Started, Completed, Artifacts, Standards -- were auto-repaired to "TBD" placeholders)
+  reports/01_frameclass-indexed-validity.md -> [FAIL] 13 error(s), 1 warning
+      [WARN] Cannot auto-fix: no existing metadata lines found to anchor insertion
+The report case is the worse of the two: with zero conforming metadata lines present, validate-artifact.sh's --fix path has no anchor to insert against and gives up entirely. The artifact is left non-conforming with no repair path.
+
+ROOT CAUSE -- MISSING TEMPLATES, NOT MISBEHAVING AGENTS.
+extensions/core/agents/general-implementation-agent.md carries a full inline summary skeleton (around :468-482): the metadata block, the bracketed Status vocabulary spelled out ("Use `**Status**: [COMPLETED]` when every plan phase is done, `**Status**: [IN PROGRESS]` on a partial run, `**Status**: [BLOCKED]` when blocked, matching summary-format.md's declared vocabulary"), and the required sections. An agent handed that template produces a conforming artifact without needing to consult the format spec.
+The lean agents carry no such thing:
+  extensions/lean/agents/lean-implementation-agent.md  -- grep for summary-format / ## What Changed / ## Decisions / ## Impacts / ## Follow-ups / ## References returns ZERO hits (its own `## Overview` at :9 is the agent file's own document heading, not a template)
+  extensions/lean/agents/lean-research-agent.md        -- grep for report-format / ## Findings / ## Executive Summary / `**Task**:` returns ZERO hits
+The agents are behaving reasonably given what they were handed. The defect is the missing contract.
+
+AUTHORITATIVE REQUIREMENTS (from extensions/core/scripts/validate-artifact.sh, lines 19-44 -- transcribe from the script, do not retype from this description):
+  REPORT_METADATA   = Task, Started, Completed, Effort, Dependencies, Sources/Inputs, Artifacts, Standards
+  REPORT_SECTIONS   = Executive Summary, Context & Scope, Findings, Decisions, Recommendations
+  SUMMARY_METADATA  = Task, Status, Started, Completed, Artifacts, Standards
+  SUMMARY_SECTIONS  = Overview, What Changed, Decisions, Impacts, Follow-ups, References
+  SUMMARY_SECTIONS_OPTIONAL = Plan Deviations
+  Note the script's own comment: SUMMARY_SECTIONS is a required MINIMUM, not an exhaustive whitelist.
+The prose specs are extensions/core/context/formats/summary-format.md (its Example Skeleton section) and the report-format equivalent.
+
+WORK.
+(a) Add an inline summary skeleton to extensions/lean/agents/lean-implementation-agent.md, modelled on general-implementation-agent.md's, including the explicit bracketed-Status vocabulary sentence -- that sentence is why the general agent's summaries carry a well-formed Status line, and its absence is directly implicated in the sibling defect this task's peer covers.
+(b) Add an inline report skeleton to extensions/lean/agents/lean-research-agent.md covering REPORT_METADATA and REPORT_SECTIONS.
+(c) SWEEP the other extensions' agents for the same gap rather than assuming lean is the only one. Known candidates to CHECK (not assume defective): extensions/lean/agents/lean-implementation-hard-agent.md, lean-research-hard-agent.md, and the formal extension's research agents. Report what was checked and what was found, including negatives.
+(d) Where a skeleton already exists but is incomplete, prefer amending it over replacing it.
+
+EXPLICIT NON-GOAL. Do not weaken validate-artifact.sh's required-section lists to make existing non-conforming artifacts pass. The artifacts are wrong, not the validator. Task 136 is separately TIGHTENING that validator; a loosening here would fight it directly.
+
+ACCEPTANCE.
+  - A lean-language task run end to end produces a summary and a report that both pass validate-artifact.sh with zero errors and zero auto-repairs -- demonstrated on a real dispatch, not on a hand-written fixture.
+  - The sweep in (c) is reported with explicit negatives ("checked X, already conforming") so a later reader knows the search happened.
+  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/lean/).
+
+RELATED, NOT DUPLICATE. Task 13 (instrument_gate_out_auto_repair_reporting) covers REPORTING of auto-repair counts through command-gate-out.sh and skill-base.sh, and flags the silent-in-place-mutation hazard. It does not add any missing agent template. This task removes the need for those repairs at the source; 13 makes the repairs visible when they still happen. Both are worth having.
+
+PROVENANCE. Surfaced 2026-09-01 by gate-out validation during an /orchestrate 507 run in the BimodalLogic repo. The validation warnings are non-blocking, which is why this had gone unnoticed: the task completed successfully with two non-conforming artifacts on disk.
+
+---
+
+### 136. Stop implementation agents hand-writing the plan-level Status field, and make the validator catch it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 91
+
+**Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
+
+EVIDENCE (git history of a real plan file, BimodalLogic repo, specs/507_parameterize_validity_by_frameclass/plans/02_frame-level-validity-indexing.md):
+  bd68091cb  - **Status**: [NOT STARTED]     planner-agent, conforming
+  b35d5c043  - **Status**: [IMPLEMENTING]    lifecycle transition, conforming
+  463b00103  - **Status**: [IMPLEMENTING]    still conforming after phase 8
+  3d50e2583  - **Status**: COMPLETED         <-- lean-implementation-agent hand-edit, BRACKETS LOST
+  b7ccf6702  - **Status**: [COMPLETED]       manual orchestrator repair
+The malformed line is authored by an IMPLEMENTATION AGENT, not by any script and not by the planner. update-plan-status.sh cannot produce an unbracketed line (its sed both requires and writes brackets), and plan-format.md is correct and unambiguous (bracketed form specified at lines 6, 16, 372). The plan format file is NOT the defect.
+
+DEFECT 1 -- NO OWNERSHIP BOUNDARY IN AGENT CONTRACTS.
+Implementation agents are told, emphatically, to Edit PHASE HEADING markers in the plan file:
+  extensions/lean/agents/lean-implementation-agent.md:80   "**CRITICAL**: You MUST update phase status markers in the plan file at phase boundaries."
+  extensions/lean/agents/lean-implementation-agent.md:99   new_string: "### Phase {P}: {exact_phase_name} [COMPLETED]"
+  extensions/lean/agents/lean-implementation-agent.md:437  "**ALWAYS update plan file phase markers with Edit tool**"
+  extensions/lean/agents/lean-implementation-agent.md:450  (forbids) "Leave plan file with stale status markers"
+NOWHERE does any implementation-agent contract state that the plan-level metadata field `- **Status**:` is a DIFFERENT field with a DIFFERENT owner (update-plan-status.sh, driven by postflight via update-task-status.sh). An agent told "ALWAYS update plan file status markers" and "never leave stale status markers" generalizes from the phase headings to the metadata field -- which is exactly what happened -- and hand-typing loses the brackets.
+Verified absent by grep for `update-plan-status|plan-level status|metadata Status` across:
+  extensions/lean/agents/lean-implementation-agent.md          (zero hits)
+  extensions/lean/agents/lean-implementation-hard-agent.md     (zero hits)
+  extensions/core/agents/general-implementation-agent.md       (zero hits; its only `- **Status**: [COMPLETED]` at :476 is inside the SUMMARY template, a field the agent legitimately owns)
+Note the asymmetry worth preserving: the general agent's summary template DOES spell out the bracketed vocabulary inline ("Use `**Status**: [COMPLETED]` when every plan phase is done..."). The plan-level field has no equivalent statement anywhere.
+
+DEFECT 2 -- VALIDATOR CHECKS PRESENCE, NOT GRAMMAR.
+extensions/core/scripts/validate-artifact.sh:120-124 is the entire metadata check:
+  for field in "${metadata_fields[@]}"; do
+    if ! grep -qF "**${field}**:" "$artifact_path"; then ... log_error "Missing metadata field" ...
+It tests only that the substring `**Status**:` EXISTS. The bracketed-value grammar is never checked, for plans, reports, or summaries. Consequence, observed: the task-507 plan carrying `- **Status**: COMPLETED` validated as `[PASS] plan artifact is valid (0 warning(s))` while being unstampable by update-plan-status.sh. The validator is the layer that should have caught this before postflight did.
+
+WORK.
+(a) Add an explicit ownership boundary to every implementation-agent contract that instructs phase-marker editing. State that `- **Status**:` in the plan METADATA block is owned by update-plan-status.sh (invoked from update-task-status.sh postflight) and MUST NOT be hand-edited, and that the agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and checklist items. Apply to at minimum: extensions/lean/agents/lean-implementation-agent.md, extensions/lean/agents/lean-implementation-hard-agent.md, extensions/core/agents/general-implementation-agent.md, extensions/core/agents/general-implementation-hard-agent.md. SWEEP for other agents carrying phase-marker instructions (cslib-implementation-agent.md is a known candidate) rather than assuming the list above is complete.
+(b) Add a Status-line GRAMMAR check to validate-artifact.sh, so a non-conforming value is an error, not a pass. Must cover the three malformed shapes task 91 enumerates: missing brackets, trailing text after the closing bracket, missing `- ` prefix.
+(c) Decide whether the grammar check participates in --fix (in-place repair) or reports only. NOTE THE INTERACTION: task 13 (instrument_gate_out_auto_repair_reporting) is separately deciding whether --fix should remain in-place-mutating on the gate-out path at all. Do not silently add a new in-place mutation while that decision is open -- state the choice and its reasoning explicitly.
+
+DEPENDENCY ON 91 -- LOAD-BEARING, NOT ADMINISTRATIVE. Task 91's deliverable (b) decides the tolerance policy for trailing text after the closing bracket: either accept `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)` by rewriting only the bracketed token, or reject it as malformed. The validator grammar in (b) above must ENFORCE whatever 91 decides. Implementing this task first would hardcode a guess and then need reworking. Sequence behind 91.
+
+SCOPE BOUNDARY. This task does NOT touch update-plan-status.sh, update-task-status.sh, or context/formats/plan-format.md -- all three belong to task 91's file_scope. If documenting the ownership boundary in plan-format.md proves necessary, hand that edit to 91 rather than widening this task's scope into a file_scope collision.
+
+ACCEPTANCE.
+  - Every implementation agent carrying phase-marker instructions also carries the plan-level-Status ownership boundary; verified by grep, not by assumption.
+  - validate-artifact.sh rejects all three malformed Status shapes on a plan artifact and passes the conforming shape, consistent with 91's trailing-text policy.
+  - The --fix participation decision is stated in the summary with its reasoning, and is consistent with whatever task 13 concluded (or explicitly notes 13 as still open).
+  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/).
+
+PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the BimodalLogic repo, where the postflight status transition failed with "Failed to update status in .../plans/02_frame-level-validity-indexing.md" and the orchestrator repaired the line by hand. Consumer-side handling is task 91; this entry covers the producer and validator ends, which 91's file_scope excludes.
+
+---
 
 ### 135. Sweep for and remove artifacts orphaned by the orchestrate-engine consolidation
 - **Status**: [NOT STARTED]
@@ -441,7 +548,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 126. Implement orchestrate phase forcing flags
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 122
