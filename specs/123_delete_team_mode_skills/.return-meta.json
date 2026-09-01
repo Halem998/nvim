@@ -1,8 +1,72 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+      "summary": "Deleted the three team-mode skills as the final step of an 8-phase de-referencing pass across 22 file_scope entries; zero-hits acceptance criterion met, verify-deploy.sh's 3 remaining failures confirmed pre-existing and non-attributable, and all three plan-recorded decisions (--lit deviation, synthesis-agent one-line change, CONTRACT 5 preservation) discharged as specified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted skill-team-research, skill-team-plan, and skill-team-implement from the source store after de-referencing 19 other files (22-entry file_scope total); zero-hits grep confirmed over both the source store and the redeployed .claude/ tree, with run-all.sh (57/57), all four reference/routing lints, and check-task-references.sh all green. Fixed a real index-entries.json line_count drift this task introduced; the two other verify-deploy.sh failures (doc-lint, validate-state.sh --deep) were confirmed pre-existing and unrelated."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/synthesis-agent.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/context/formats/team-metadata-extension.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/reference/skill-agent-mapping.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+    "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "deploy-headless.sh's default mode is additive-only and detect-never-delete: after removing a skill/file from manifest.json's provides and deleting its source, a plain redeploy will NOT remove the now-orphaned copy already present in .claude/ -- verify-deploy.sh's whole-tree orphan detection (gate 13, find_orphans) will keep failing until a --wipe full destructive resync runs. --wipe is safe whenever .claude/ is gitignored/untracked (confirm via git check-ignore first). When a task deletes or renames a source-store file, plan for a --wipe redeploy as part of its own verification, not just the default resync.",
+      "category": "PATTERN",
+      "source_artifact": "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless.sh", "orphan detection", "find_orphans", "--wipe", "gitignore", "source-store-deploy-boundary"]
+    },
+    {
+      "content": "Editing prose/doc files under agent-system/extensions/<ext>/context/** changes their line counts, which silently desyncs agent-system/extensions/<ext>/index-entries.json's declared line_count field -- check-extension-docs.sh's Rule R (via verify-deploy.sh gate 3) then fails doc-lint. The sanctioned fix is `bash .claude/scripts/generate-context-line-counts.sh --write` (run from the DEPLOYED .claude/scripts/ tree, not the source store -- it errors if run from agent-system/extensions/core/scripts/ directly). Caution: this script recomputes ALL extensions' index-entries.json in one pass, so if any other extension has a pre-existing unrelated mismatch, --write will also 'fix' that file as a side effect outside the task's own file_scope -- check `git diff --stat` afterward and consider reverting any out-of-scope file before committing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count", "generate-context-line-counts.sh", "doc-lint", "check-extension-docs.sh"]
+    },
+    {
+      "content": "git-commit-scoped.sh cannot stage a pathspec that has already been fully staged for deletion (e.g. via a prior `git rm -r`) when the path no longer exists on disk: its V2 unmatched-pathspec safety gate checks `[ -e \"$p\" ] || git ls-files --error-unmatch -- \"$p\"`, and `git ls-files` (index-scoped) no longer lists a path once its removal is staged, so the check treats it as unmatched and V3 refuses the commit (zero positive pathspecs). Workaround for this one case: acquire/release the commit mutex directly via `task-lock.sh commit-acquire`/`commit-release` around a plain `git commit`, after confirming via `git diff --staged --stat` that only the intended deletions are staged.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-commit-scoped.sh", "git rm", "pathspec", "commit-acquire", "task-lock.sh", "staged deletion"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788267679_adbb09_123",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

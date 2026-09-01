@@ -1,7 +1,7 @@
 # Implementation Plan: Delete Team-Mode Skills
 
 - **Task**: 123 - Delete team mode skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 122 (completed)
 - **Research Inputs**: specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md
@@ -608,7 +608,7 @@ should be revisited.
 
 ---
 
-### Phase 8: Zero-hits verification and full gate run [IN PROGRESS]
+### Phase 8: Zero-hits verification and full gate run [COMPLETED]
 
 **Goal**: Prove the acceptance criterion mechanically, run the repository's gate set, and record
 Decisions 1-3 in the summary.
@@ -672,18 +672,21 @@ Decisions 1-3 in the summary.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh` exits 0
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh` exits 0
       with no `SKIP:` line.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 (or all failures shown
-      pre-existing).
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` reports 0 hits.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` exits 0.
-- [ ] `manifest.json` parses as valid JSON.
-- [ ] Repo-wide grep for the three skill names over `agent-system/` returns zero hits.
-- [ ] CONTRACT 5 gate: the model-flag reference region in `commands/research.md` is intact.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 (or all failures shown
+      pre-existing). *(completed: 57 passed, 0 failed, 0 skipped in two standalone re-runs; a
+      nested invocation inside verify-deploy.sh flaked once, demonstrated non-attributable)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh` exits 0.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` exits 0.
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` reports 0 hits.
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` exits 0. *(deviation: does NOT
+      exit 0 — 3 of 27 checks fail, all confirmed pre-existing/non-attributable to this task; see
+      summary Verification section for the per-failure evidence)*
+- [x] `manifest.json` parses as valid JSON.
+- [x] Repo-wide grep for the three skill names over `agent-system/` returns zero hits.
+- [x] CONTRACT 5 gate: the model-flag reference region in `commands/research.md` is intact.
 
 ## Artifacts & Outputs
 

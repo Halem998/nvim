@@ -11,7 +11,7 @@ next_project_number: 134
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,87,91,100,102,103,106,108,110,111,113,114,120,123,126,128,130,133 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,87,91,100,102,103,106,108,110,111,113,114,120,126,128,130,133 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,89,104,105,109,112,121,124,129 | 29,87,102,108,114,120,126,128,130 | core-agent-system, extensions, literature |
 | 3 | 48,75,76,90,107,125,127 | 74,104,121,124 | core-agent-system, extensions, literature |
 | 4 | 50,88 | 48,87,127 | core-agent-system |
@@ -44,7 +44,6 @@ next_project_number: 134
 120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
-123 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
 126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
@@ -416,7 +415,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 123. Delete team mode skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122

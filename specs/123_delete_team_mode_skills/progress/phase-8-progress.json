@@ -1,0 +1,27 @@
+{
+  "phase": 8,
+  "phase_name": "Zero-hits verification and full gate run",
+  "started_at": "2026-09-01T02:35:00Z",
+  "last_updated": "2026-09-01T14:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Zero-hits check over agent-system/", "status": "done", "files_touched": [], "note": "0 hits"},
+    {"id": 2, "description": "Redeploy and re-check .claude/", "status": "done", "files_touched": [], "note": "default deploy left 3 orphaned deployed SKILL.md files (additive-only, detect-never-delete); --wipe cleared them; 0 hits confirmed after"},
+    {"id": 3, "description": "Run verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"], "note": "found and fixed 8 real line_count mismatches (this task's edits); 3 of 27 failures remain, all pre-existing/non-attributable"},
+    {"id": 4, "description": "Run run-all.sh", "status": "done", "files_touched": [], "note": "57 passed, 0 failed, 0 skipped in two standalone runs; one flake observed only when nested inside a concurrent verify-deploy.sh invocation"},
+    {"id": 5, "description": "Run the four reference/routing lints", "status": "done", "files_touched": [], "note": "all four exit 0"},
+    {"id": 6, "description": "Confirm no hand-authored .claude/** files", "status": "done", "files_touched": [], "note": ".claude/ is entirely gitignored/untracked, structurally impossible"},
+    {"id": 7, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/123_delete_team_mode_skills/summaries/01_delete-team-mode-skills-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.verify-deploy",
+      "description": "verify-deploy.sh exit 0 requirement",
+      "type": "altered",
+      "reason": "3 of 27 checks fail; all confirmed pre-existing and non-attributable to this task (2 doc-lint findings from an unrelated prior commit, 1 validate-state.sh --deep finding on unrelated task entries, plus a demonstrated-flaky run-all.sh nested invocation). Reported explicitly rather than claimed clean.",
+      "annotation": null
+    }
+  ]
+}
