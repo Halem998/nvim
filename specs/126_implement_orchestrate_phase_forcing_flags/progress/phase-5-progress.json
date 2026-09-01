@@ -1,0 +1,14 @@
+{
+  "phase": 5,
+  "phase_name": "Combined postflight -- artifact-round advance and monotonic-max clamp",
+  "started_at": "2026-09-01T01:20:00Z",
+  "last_updated": "2026-09-01T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill_postflight_update: positional 7 status_clamp_mode, usage-comment extension, in-block clamp guard, status-vocabulary.sh resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "orchestrate-stage5-postflight.sh: positional 20 force_invoked, three clamp-threaded call sites, new artifact-round-advance block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Scope Hypothesis confirmed: positional 6 of skill_postflight_update is absent (no sibling landed yet) -- took the 'absent' branch, passing explicit \"\" at position 6 as a harmless placeholder gap. Verified via a scratchpad harness (source-store copies of the 4 task-edited files layered onto a copy of the deployed .claude/scripts tree, SKILL_REPO_ROOT pointed at the harness root, fixture specs/state.json with one task): (1) monotonic-max clamp skips the status write and returns rc 0 when the transition would regress; (2) clamp opt-out (no 7th arg) transitions normally; (3) plain 4-arg call behaves unchanged; (4) researched dispatch unconditionally advances next_artifact_number; (5) planned dispatch with force_invoked=false does NOT advance; (6) planned dispatch with force_invoked=true DOES advance (and the clamp independently skipped the status write in that same case, proving the two mechanisms compose correctly). Deployed-tree test-skill-base-lifecycle.sh still passes unmodified (22/22) -- a regression check on the deployed copy, not evidence about this phase's source-store edit. git status confirms scripts/orchestrator-postflight.sh and scripts/tests/test-skill-base-lifecycle.sh remain unmodified. All other skill_postflight_update call sites in the repo (skill-planner/SKILL.md, skill-planner-hard/SKILL.md, skill-orchestrate/SKILL.md's own Stage MT-4 references) remain at 4 or 5 arguments."
+}

@@ -487,7 +487,8 @@ skill_validate_task_artifacts() {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7: Update status to completed variant
-# Usage: skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
+# Usage: skill_postflight_update "$task_number" "$operation" "$session_id" "$status" \
+#          ["$phase_check_mode"] ["$positional_6_reserved"] ["$status_clamp_mode"]
 # Only updates state when status is a success value (researched/planned/implemented)
 # Calls extension hook: hooks.postflight (after status update, non-blocking)
 #
@@ -499,6 +500,26 @@ skill_validate_task_artifacts() {
 # LAST executed statement (the events-append call), never by update-task-status.sh's rc, so a
 # refusal was silently swallowed one layer up. The hook and events legs below still run
 # UNCONDITIONALLY regardless of this rc, exactly as before -- only the final `return` changed.
+#
+# Optional 7th argument: `status_clamp_mode` (A2's monotonic-max clamp). Absent or empty (every
+# existing 4-arg and 5-arg call site, byte-for-byte) preserves today's behavior exactly.
+# `"monotonic-max"` resolves scripts/lib/status-vocabulary.sh, maps the operation/status pair to
+# its resting state the same way update-task-status.sh's own map_status() does, compares it
+# against the task's CURRENT status via status_vocabulary_would_regress, and on a regression
+# SKIPS the update-task-status.sh invocation below with a named `[monotonic-max]` notice --
+# while still running the extension hook and the lifecycle event exactly as on any other path --
+# and returns 0 (a clamp skip is never a refusal code). This inherits the deploy-first hazard
+# this task's plan documents for scripts/lib/status-vocabulary.sh: a caller exercising this mode
+# must run under a scratchpad harness carrying the source-store copy, or resolution will silently
+# reach the deployed (old) copy that lacks status_vocabulary_would_regress.
+#
+# Positional 6 is DELIBERATELY NOT DEFINED HERE -- reserved for a sibling task's own
+# `task_dir_override` parameter. This function reads ONLY position 7; it never reads, assigns, or
+# renumbers position 6. NOT TOUCHED by this addition (stated explicitly so a later reader can see
+# the boundary was deliberate): the `phase_check_args` array and its empty-array expansion, the
+# `_postflight_rc` capture and its final `return` line, the entire rc-6 deploy-pending block, the
+# `skill_run_extension_hook` call, the `_events_append_observable` call, and the non-success `*)`
+# arm below.
 skill_postflight_update() {
   local task_number="$1"
   local operation="$2"
@@ -510,6 +531,7 @@ skill_postflight_update() {
   # byte-for-byte. The empty-array expansion pattern below is the same one already used by
   # reconcile-task-status.sh's dry_run_flag=() handling.
   local phase_check_mode="${5:-}"
+  local status_clamp_mode="${7:-}"
   local phase_check_args=()
   if [[ -n "$phase_check_mode" ]]; then
     phase_check_args=(--phase-check="$phase_check_mode")
@@ -517,9 +539,39 @@ skill_postflight_update() {
   local _t0
   _t0=$(date +%s.%N)
   local _postflight_rc=0
+  # Monotonic-max clamp (A2, opt-in via status_clamp_mode): resolve BEFORE the case statement so
+  # the skip decision is available to the case arm below. `_clamp_skip` defaults to false --
+  # every existing 4-arg/5-arg call site takes this branch and is completely unaffected.
+  local _clamp_skip=false
+  if [[ "$status_clamp_mode" == "monotonic-max" ]]; then
+    # Same two-candidate resolution order skill-base.sh's own lib/common.sh source (top of this
+    # file) already uses: SKILL_REPO_ROOT-qualified deployed path first, source-store-relative
+    # BASH_SOURCE fallback second. Do not invent a third order.
+    if [[ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/status-vocabulary.sh" ]]; then
+      source "${SKILL_REPO_ROOT}/.claude/scripts/lib/status-vocabulary.sh"
+    elif [[ -f "$(dirname "${BASH_SOURCE[0]}")/lib/status-vocabulary.sh" ]]; then
+      source "$(dirname "${BASH_SOURCE[0]}")/lib/status-vocabulary.sh"
+    fi
+    if declare -F status_vocabulary_would_regress >/dev/null 2>&1; then
+      local _clamp_current_status
+      _clamp_current_status=$(jq -r --argjson num "$task_number" \
+        '.active_projects[] | select(.project_number == $num) | .status // ""' \
+        specs/state.json 2>/dev/null)
+      if [[ -n "$_clamp_current_status" ]] && status_vocabulary_would_regress "$_clamp_current_status" "$status"; then
+        _clamp_skip=true
+        echo "[monotonic-max] task ${task_number}: forced ${operation} would regress status from '${_clamp_current_status}' to '${status}' — skipping the status write (artifact link, if any, is still applied by the caller)."
+      fi
+    else
+      echo "WARNING: [skill-base] status_clamp_mode=monotonic-max requested but status_vocabulary_would_regress is not resolvable (deploy-first stale-copy hazard?) — clamp not applied, status write proceeds normally." >&2
+    fi
+  fi
   case "$status" in
     researched|planned|implemented)
-      bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" || _postflight_rc=$?
+      if [[ "$_clamp_skip" == "true" ]]; then
+        :
+      else
+        bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" || _postflight_rc=$?
+      fi
       ;;
     *)
       echo "[skill-base] Non-success status '${status}' — postflight status update skipped"

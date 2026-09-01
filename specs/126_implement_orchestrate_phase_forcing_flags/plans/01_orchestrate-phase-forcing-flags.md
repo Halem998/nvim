@@ -498,74 +498,74 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Combined postflight — artifact-round advance and monotonic-max clamp [NOT STARTED]
+### Phase 5: Combined postflight — artifact-round advance and monotonic-max clamp [COMPLETED]
 
 - **Goal:** one forced-postflight code path that applies both the artifact-number advance and the
   status clamp under a single `force_invoked` condition, per the research report's recommendation
   to design WORK items (3) and (4) together.
 
 - **Tasks:**
-  - [ ] In `scripts/skill-base.sh`, `skill_postflight_update`: make exactly these three edits,
-        mirroring the precision the sibling task's own plan uses on the same function.
-    - [ ] **Edit 1 (one `local`)**: add `local status_clamp_mode="${7:-}"` immediately after the
-          existing `local phase_check_mode="${5:-}"` line. Add NOTHING at positional 6.
-    - [ ] **Edit 2 (usage-comment extension)**: extend the header `Usage:` line to show the new
+  - [x] In `scripts/skill-base.sh`, `skill_postflight_update`: make exactly these three edits,
+        mirroring the precision the sibling task's own plan uses on the same function. *(completed)*
+    - [x] **Edit 1 (one `local`)**: add `local status_clamp_mode="${7:-}"` immediately after the
+          existing `local phase_check_mode="${5:-}"` line. Add NOTHING at positional 6. *(completed)*
+    - [x] **Edit 2 (usage-comment extension)**: extend the header `Usage:` line to show the new
           trailing parameter, and add a paragraph documenting it: absent or empty preserves today's
           behavior exactly; `"monotonic-max"` resolves `scripts/lib/status-vocabulary.sh`, maps the
           `operation`/`status` pair to its resting state the same way `update-task-status.sh`'s
           `map_status()` does, compares it against the task's current status via
           `status_vocabulary_would_regress`, and on a regression SKIPS the `update-task-status.sh`
           invocation with a named `[monotonic-max]` notice while still running the extension hook
-          and the lifecycle event, returning 0.
-    - [ ] **Edit 3 (in-block)**: inside the existing `case "$status" in` success arm, guard the
+          and the lifecycle event, returning 0. *(completed)*
+    - [x] **Edit 3 (in-block)**: inside the existing `case "$status" in` success arm, guard the
           `update-task-status.sh` invocation on the clamp decision. Keep `_postflight_rc` semantics
-          intact — a clamp skip is rc 0, never a refusal code.
-    - [ ] **Not touched** (state this explicitly in the header comment, so a later reader can see
+          intact — a clamp skip is rc 0, never a refusal code. *(completed)*
+    - [x] **Not touched** (state this explicitly in the header comment, so a later reader can see
           the boundary was deliberate): positional 6 and its `${6:-}` read; the `phase_check_args`
           array and its empty-array expansion; the `_postflight_rc` capture and the `return
           "$_postflight_rc"` line; the entire rc-6 deploy-pending block; the
           `skill_run_extension_hook` call; the `_events_append_observable` call; the non-success
-          `*)` arm.
-  - [ ] Resolve `status-vocabulary.sh` inside `skill_postflight_update` using the file's OWN
+          `*)` arm. *(completed)*
+  - [x] Resolve `status-vocabulary.sh` inside `skill_postflight_update` using the file's OWN
         existing convention (`${SKILL_REPO_ROOT}`-qualified first, `$(dirname "${BASH_SOURCE[0]}")`
         fallback — the same two-candidate shape the existing `lib/common.sh` source at the top of
         `skill-base.sh` uses). Do not invent a third resolution order. Note in the comment that this
         inherits the deploy-first hazard documented in this plan's stale-deploy section, and that
-        the phase's own tests must therefore run under the scratchpad harness.
-  - [ ] Verify and state in that comment that every existing 4-arg and 5-arg call site is unchanged,
-        and that positional 6 is deliberately untouched.
-  - [ ] In `scripts/orchestrate-stage5-postflight.sh`, add positional **20**:
+        the phase's own tests must therefore run under the scratchpad harness. *(completed)*
+  - [x] Verify and state in that comment that every existing 4-arg and 5-arg call site is unchanged,
+        and that positional 6 is deliberately untouched. *(completed)*
+  - [x] In `scripts/orchestrate-stage5-postflight.sh`, add positional **20**:
         `force_invoked="${20:-false}"`. Document it in the file's `Usage:` header block. Leave the
         `if [ "$#" -lt 18 ]` guard and its usage-error string unchanged (the new argument is
-        optional).
-  - [ ] In that script's `case "$dispatch_status"` block, pass the clamp through on a forced
+        optional). *(completed)*
+  - [x] In that script's `case "$dispatch_status"` block, pass the clamp through on a forced
         dispatch. Positional arguments cannot be skipped, so reaching position 7 requires explicit
-        placeholders at 5 and 6:
-    - [ ] `researched` and `planned` arms currently pass **no** 5th argument. They gain
+        placeholders at 5 and 6: *(completed)*
+    - [x] `researched` and `planned` arms currently pass **no** 5th argument. They gain
           `"" "" "<clamp>"` at positions 5/6/7. The explicit `""` at position 5 is behaviorally
           identical to omitting it — `phase_check_mode="${5:-}"` and the `-n` guard both yield the
-          no-flag path — but it is required to reach 6 and 7 at all.
-    - [ ] The `implemented` arm keeps its existing `"warn"` at position 5 unchanged, and gains `""`
-          at 6 plus `<clamp>` at 7.
-    - [ ] `<clamp>` is `monotonic-max` when `force_invoked` is `"true"` and the empty string
-          otherwise, so an unforced cycle passes an empty 7th argument and takes the unchanged path.
-    - [ ] Do not change the `partial|failed|blocked` or Tier C arms — neither calls
-          `skill_postflight_update`.
-  - [ ] Add a new `## Artifact-round advance` block AFTER the existing artifact-linking block and
+          no-flag path — but it is required to reach 6 and 7 at all. *(completed)*
+    - [x] The `implemented` arm keeps its existing `"warn"` at position 5 unchanged, and gains `""`
+          at 6 plus `<clamp>` at 7. *(completed)*
+    - [x] `<clamp>` is `monotonic-max` when `force_invoked` is `"true"` and the empty string
+          otherwise, so an unforced cycle passes an empty 7th argument and takes the unchanged path. *(completed)*
+    - [x] Do not change the `partial|failed|blocked` or Tier C arms — neither calls
+          `skill_postflight_update`. *(completed)*
+  - [x] Add a new `## Artifact-round advance` block AFTER the existing artifact-linking block and
         BEFORE the off-schema halt decision. It advances `next_artifact_number` via
         `bash .claude/scripts/state-write.sh` with the jq transform already proven in
         `orchestrator-postflight.sh` Stage 7a, gated on:
         `dispatch_status == "researched"` (P1 — unconditional, this is the base gap being closed)
         OR (`force_invoked == "true"` AND `dispatch_status` in `{planned, implemented}`) (P2).
-        Non-blocking on failure, matching the warning style of the Stage 7a original.
-  - [ ] Add a header comment in that block recording WHY the advance lives here and not in
+        Non-blocking on failure, matching the warning style of the Stage 7a original. *(completed)*
+  - [x] Add a header comment in that block recording WHY the advance lives here and not in
         `skill_postflight_update`: `skill-researcher/SKILL.md` already performs its own inline
         increment and also calls `skill_postflight_update`, so folding it in would double-increment
         `/research`. This matches the convention `context/patterns/skill-postflight-flow.md` already
-        documents.
-  - [ ] Add a header comment recording that `orchestrator-postflight.sh` is NOT the site for this
+        documents. *(completed)*
+  - [x] Add a header comment recording that `orchestrator-postflight.sh` is NOT the site for this
         change, with the one-line reason (zero call sites in `skill-orchestrate/SKILL.md`), so the
-        next reader does not re-derive the wrong target.
+        next reader does not re-derive the wrong target. *(completed)*
 
 - **Timing:** 2 hours
 
