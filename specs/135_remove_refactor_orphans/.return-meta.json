@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md",
+      "summary": "Detection-method sweep for orphans left by the team-mode-skill deletion: 1 confirmed remove candidate, 2 confirmed repair candidates (one load-bearing, actively-injected doc with a factually inverted table row), 6 files checked and cleared as false positives, plus 4 adjacent baseline gate findings from a sibling task flagged for planning triage."
+    }
+  ],
+  "next_steps": "Run /plan 135 to create an implementation plan from these findings",
+  "metadata": {
+    "session_id": "sess_1788287299_e65079",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "When sweeping a repo for orphans left by a targeted deletion, reachability analysis (index-entries.json/index.json rows resolving to files on disk, load_when bindings) and glob/pattern-prose auditing (grepping for the deleted artifact's name expanded with wildcards, e.g. 'skill-team' not just the three literal skill names) catch disjoint defect classes. A file can be perfectly 'reachable' (valid index row, matching load_when.agents binding) while its content is entirely dead, because load_when governs injection mechanics, not content correctness. Reachability tooling (e.g. check-extension-docs.sh's line_count/undeclared-file checks) will report a fully clean tree while missing this; only reading files found via the pattern-prose grep catches it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orphan-detection", "reachability", "load_when", "dangling-references", "index-entries", "dead-content"]
+    },
+    {
+      "content": "This repo recycles task numbers across vault-archival epochs, so `git log --grep=\"task N\"` or `git log --oneline | grep \"task N\"` can silently mix commits from unrelated tasks that happened to reuse the same number in an earlier epoch. To scope a git history search to one specific task's actual work, anchor on a known commit hash from that task (e.g. its creation commit) and use a commit-range diff (`git log --diff-filter=D ... <anchor>..HEAD`) rather than grepping commit messages by task number alone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/135_remove_refactor_orphans/reports/01_orphan-sweep-findings.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-log", "task-number-recycling", "vault-epoch", "commit-scoping", "blast-radius"]
+    }
+  ]
+}
