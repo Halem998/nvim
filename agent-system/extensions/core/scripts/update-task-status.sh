@@ -417,7 +417,8 @@ fi
 # coverage, see scripts/tests/test-postflight-deploy-gate.sh). The
 # actual redeploy trigger lives exclusively at the two already-serialized call sites named in
 # context/patterns/regeneration-is-manual-only.md's carve-out (command-gate-out.sh's rc==6
-# branch for the single-task path; commands/implement.md Step 4 for the multi-task batch path) --
+# branch for the single-task path; skill-orchestrate/SKILL.md's Stage MT-3 step 7 inter-cycle
+# redeploy checkpoint for the multi-task batch path) --
 # never here, where multi-task /implement's parallel per-task dispatch would race the
 # fail-open specs/.deploy-lock mutex.
 #

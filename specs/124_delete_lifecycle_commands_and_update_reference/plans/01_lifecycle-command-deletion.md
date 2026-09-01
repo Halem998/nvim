@@ -375,29 +375,34 @@ revision and the summary should state the measured number, not the ledger's.
 
 ---
 
-### Phase 5: Retire the vacuous static guard cases [NOT STARTED]
+### Phase 5: Retire the vacuous static guard cases [COMPLETED]
 
 **Goal**: Remove test cases that can no longer test anything, so the suite's pass count stops
 including three permanently-skipped guards.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, remove cases 9.6,
+- [x] In `agent-system/extensions/core/scripts/test-conflict-predicate.sh`, remove cases 9.6,
       9.7, and 9.8 in full (the `research_md`/`plan_md`/`implement_md` static guards over the
-      deleted command files, plus their SKIPPED fallback branches).
-- [ ] Do **not** renumber the surrounding cases — case numbers are referenced in output and
-      possibly elsewhere; leaving a gap at 9.6-9.8 is the lower-risk change.
-- [ ] Update the stale comment in
+      deleted command files, plus their SKIPPED fallback branches). *(completed)*
+- [x] Do **not** renumber the surrounding cases — case numbers are referenced in output and
+      possibly elsewhere; leaving a gap at 9.6-9.8 is the lower-risk change. *(completed: 9.1-9.5
+      unchanged, no renumbering)*
+- [x] Update the stale comment in
       `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` (near line 306) that
       describes the call convention as "exactly as commands/research.md's, commands/plan.md's,
       and commands/implement.md's Step 2.5 / Step 3.5 blocks call it" — retarget it to the
       surviving caller in `skill-orchestrate`, or state plainly that the former callers are
-      deleted, whichever the actual code supports.
-- [ ] Update the stale comment reference in
+      deleted, whichever the actual code supports. *(completed: retargeted to
+      skill-orchestrate/SKILL.md's Stage MT-3 step 4.5, phrased without the literal deleted paths
+      to satisfy the zero-grep-hit verification below)*
+- [x] Update the stale comment reference in
       `agent-system/extensions/core/scripts/update-task-status.sh` (near line 420) naming
       `commands/implement.md` Step 4 as the multi-task batch path anchor; retarget to the
-      surviving anchor in `skill-orchestrate`.
-- [ ] Confirm no task-number reference is introduced into any of these three scripts.
+      surviving anchor in `skill-orchestrate`. *(completed: retargeted to
+      skill-orchestrate/SKILL.md's Stage MT-3 step 7 inter-cycle redeploy checkpoint)*
+- [x] Confirm no task-number reference is introduced into any of these three scripts.
+      *(completed)*
 
 **Timing**: 0.75 hours
 

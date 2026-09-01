@@ -303,8 +303,9 @@ echo ""
 
 # =============================================================================
 # Fixture for cases 7-11: Tier 1's two-pass mechanism, driven directly against
-# orchestrate-batch-admit.sh exactly as commands/research.md's, commands/plan.md's, and
-# commands/implement.md's Step 2.5 / Step 3.5 blocks call it. Two independent overlapping pairs
+# orchestrate-batch-admit.sh exactly as skill-orchestrate/SKILL.md's Stage MT-3 step 4.5 calls
+# it (the sole surviving multi-task caller, the three former lifecycle command files having
+# since been deleted). Two independent overlapping pairs
 # in their own file_scope namespace so the convergent (Case G) and non-convergent (Case H)
 # fixtures never interfere with each other.
 # =============================================================================
