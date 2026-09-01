@@ -1,5 +1,5 @@
 ---
-next_project_number: 131
+next_project_number: 132
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 131
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130 | -- | core-agent-system, literature, neovim |
+| 1 | 13,14,20,22,27,29,31,39,42,43,45,46,51,53,72,73,87,94,100,102,103,106,108,110,111,113,114,123,126,128,130,131 | -- | core-agent-system, literature, neovim |
 | 2 | 30,74,104,105,109,112,120,124,129 | 29,31,102,108,126,128,130 | core-agent-system, extensions, literature |
 | 3 | 75,76,107,121,125 | 74,104,120,124,128 | core-agent-system, extensions, literature |
 | 4 | 127 | 121,124 | core-agent-system |
@@ -65,6 +65,7 @@ next_project_number: 131
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 130 [NOT STARTED] — Make lake-build-guard.sh's success signal trustworthy. The script
+131 [NOT STARTED] — Make /tag produce releases that a release workflow's preflight wi
 
 ### Extensions
 
@@ -94,6 +95,34 @@ next_project_number: 131
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
 
 ## Tasks
+
+### 131. Tag annotated and changelog preflight
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Make /tag produce releases that a release workflow's preflight will actually accept. Two independent gaps in skill-tag currently emit tags that fail a standard preflight gate, and both were hit consecutively on a real release, costing four failed release runs before the artifact published.
+
+CANONICAL SOURCE. Edit `agent-system/extensions/core/skills/skill-tag/SKILL.md` and `agent-system/extensions/core/commands/tag.md`. Do NOT edit any repo's deployed `.claude/` copy -- it is a disposable artifact regenerated from this source store.
+
+GAP 1 -- LIGHTWEIGHT TAGS. SKILL.md's Step 6 creates the tag with `git tag "$new_version"` (line 361 at time of writing), which produces a LIGHTWEIGHT tag. A release workflow asserting `[ "$(git cat-file -t "$TAG")" = "tag" ]` rejects it. The dry-run output at line 310 prints the same lightweight form and must be updated in step with the real command so the preview does not misrepresent what will run. Switch to an annotated tag (`git tag -a`, or `-s` if signing is wanted) with a message. Decide and record where the message comes from: a sensible default is the version heading plus the CHANGELOG section for that version, which is exactly the content Gap 2 makes available; a bare `-m "$new_version"` is acceptable but should be a recorded choice, not a default reached by omission.
+
+GAP 2 -- NO CHANGELOG GATE. SKILL.md contains no occurrence of "changelog" at all. A release preflight commonly requires a non-empty `## [VERSION]` section in a CHANGELOG before publishing. /tag validates the declared package version (its Step 3.5, "Validate Version Consistency") but nothing else, so it happily creates and PUSHES a tag that preflight then rejects -- after the push, when the tag is already public and must be deleted and re-created to fix. Add a CHANGELOG check to Step 3.5's neighborhood, BEFORE the tag is created and pushed, mirroring the existing version-consistency check's structure: locate the changelog, require a `## [VERSION]` heading, require the section under it to be non-empty after whitespace stripping.
+
+DESIGN CONSTRAINTS, from how Step 3.5 already behaves and must continue to behave.
+- Run before Step 5's `--dry-run` early exit, so `--dry-run` reports the same verdict a real run would. Step 3.5 is explicitly documented as sitting there for this reason; the new check must not regress that.
+- Absence must be tolerated, not fatal. Step 3.5's "No declared package version found ... Skipping version-consistency check" is an informational outcome that proceeds normally. A repository with no CHANGELOG at all must behave the same way -- this skill is shared across repos and must not hard-require a file many of them do not have. Only a PRESENT changelog that is MISSING the version's entry is an error.
+- Provide an explicit override flag paralleling the existing `--skip-version-check`, and make it disclose rather than silence: that flag's documented contract is that it "suppresses the block, not the disclosure", printing the mismatch in full before the override warning so the transcript records what was overridden. Match that behavior exactly.
+- Changelog path should be discovered rather than hardcoded to one repo's layout (the motivating repo uses `code/CHANGELOG.md`, not a root-level one). Bounded-depth discovery excluding vendor/build directories, as the existing manifest discovery in Step 3.5 already does, is the established pattern to follow.
+
+ALSO UPDATE. `commands/tag.md` documents the workflow as a numbered list and a Requirements section; neither mentions annotated tags or a changelog. Both need to state the new behavior, or the command doc silently contradicts the skill.
+
+MOTIVATING EVIDENCE, so the fix is verified against a real gate rather than an imagined one. In the ModelChecker repository, `.github/workflows/release.yml`'s preflight job asserts, in order: tag version matches the declared package version; the changelog has a non-empty `## [VERSION]` entry; the tag is annotated AND reachable from origin/master; and the tagged copy of release.yml matches origin/master's. /tag satisfies only the first. Use that job as the reference contract when deciding what /tag should check. Note the third assertion also requires the branch to be pushed BEFORE the tag is pushed -- /tag's current Step 2 only verifies the branch is not BEHIND the remote, and does not require it to be fully pushed, so a tag created on unpushed commits passes /tag and fails preflight. Assess whether that is a third gap worth closing here or a separate concern, and record the judgment either way.
+
+NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do not add automatic CHANGELOG authoring -- the check verifies an entry exists, it does not write one. Do not couple this skill to any single repository's directory layout.
+
+---
 
 ### 130. Stop lake-build-guard.sh reporting passes for builds it did not run
 - **Status**: [NOT STARTED]
