@@ -1,0 +1,23 @@
+{
+  "status": "implemented",
+  "summary": "All 8 phases completed. Retargeted all seven hard-mode test/lint files from skill-orchestrate-hard/SKILL.md to skill-orchestrate/SKILL.md's hard_mode branches, fixed the pre-identified Case 4 guard_session_id correctness bug, rewrote the two comparison-premise files as single-engine presence/correctness checks, and closed two additional real gaps found during Phase 8's mandated mutation and before/after-deletion acceptance testing. All seven files plus lint-contract-compliance.sh pass individually, via the full suite, and both before and after simulated removal of skill-orchestrate-hard/SKILL.md.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+      "summary": "Full implementation summary covering all 8 phases, decisions, deviations, verification, and follow-ups."
+    },
+    {
+      "type": "plan",
+      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/plans/01_retarget-hard-mode-tests.md",
+      "summary": "8-phase implementation plan, all phases marked [COMPLETED]."
+    }
+  ],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "none",
+  "plan_markers_verified": true,
+  "dispatch_seq": 2
+}

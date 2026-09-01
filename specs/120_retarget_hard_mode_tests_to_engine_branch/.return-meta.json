@@ -1,9 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+      "summary": "All 8 phases completed: retargeted seven hard-mode test/lint files from skill-orchestrate-hard/SKILL.md to skill-orchestrate/SKILL.md's hard_mode branches, including two genuine rewrites, a Case 4 correctness fix, and a full mutation-check/before-after-deletion acceptance gate that surfaced and fixed two additional real gaps."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retargeted all seven hard-mode test/lint files to the merged skill-orchestrate/SKILL.md engine across 8 phases. Fixed the pre-identified Case 4 guard_session_id correctness bug, rewrote the two comparison-premise files (test-routing-resolution.sh Assert 3, test-handoff-reader-parity.sh) as single-engine presence/correctness checks, and closed two additional real gaps discovered during Phase 8's mandated mutation and before/after-deletion acceptance testing: a silent stub-by-name mutation-detection gap in test-handoff-dispatch-identity.sh, and a sibling-suite coupling that broke test-loop-guard-budget-override.sh's pass/fail status once skill-orchestrate-hard/SKILL.md is removed. All seven files, plus lint-contract-compliance.sh, pass individually, via the full test suite, and both before and after simulated removal of skill-orchestrate-hard/SKILL.md — the actual acceptance condition for the dependent deletion task."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When retargeting tests after two sibling SKILL.md files are merged into one hard_mode-gated file, do not assume a mechanism previously invoked separately per-engine (e.g. a resolver script call) is still duplicated per-branch in the merged file -- verify by inspection first. In one observed case, a resolver (command-route-agent.sh) that the old base/hard file pair each called separately was consolidated to a SINGLE unconditional call in the merged file's shared preamble (Stage 1b), with both hard_mode branches reading the same resolved variable rather than each re-invoking the resolver. A test written against the old per-engine-call assumption needs adapting to check the resolved variable's dispatch presence inside each branch instead, anchored on each branch's own unique heading text -- this preserves the identical regression-catching property (verified via mutation test) without asserting something that no longer exists.",
+      "category": "PATTERN",
+      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-retarget", "engine-merge", "resolver-consolidation", "branch-aware-check", "mutation-testing"]
+    },
+    {
+      "content": "A mutation check's own assumption (\"renaming/deleting X will make the test fail loudly\") is itself a claim that must be verified, not assumed -- a test's existing assertions may pattern-match only for their OWN expected substring's presence and never check for absence of unrelated noise (e.g. a bash \"command not found\" error on stderr from a broken stub-by-name mechanism), so a genuine regression can pass silently even though the mechanism it depends on (a stub function matching a production function's name) is structurally documented as load-bearing. Running the mutation check for real, not just trusting the file's own header comment claiming it's load-bearing, is what surfaces this class of gap -- and the fix is a small, targeted negative assertion (e.g. grep stderr for \"command not found\"), not a rewrite.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mutation-testing", "stub-by-name", "silent-failure", "test-verification", "negative-assertion"]
+    },
+    {
+      "content": "When a plan's acceptance test says a set of N target files must pass \"both before and after\" a related file's future deletion, actually simulate the deletion (temporary rename, not permanent) and re-run every target file, even when each file already passes independently against the current on-disk state. A target file can depend on an OUT-OF-SCOPE sibling suite (one you are not authorized to modify per the plan's own Non-Goals) whose own preflight independently requires the file being removed -- this coupling is invisible until the removal is actually simulated. The correct fix lives in the in-scope target file's own invocation of the sibling (a narrow, specifically-matched carve-out for that sibling's known, already-documented limitation), not in the out-of-scope sibling itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/120_retarget_hard_mode_tests_to_engine_branch/summaries/01_retarget-hard-mode-tests-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["acceptance-test", "before-after-deletion", "sibling-coupling", "scope-boundary", "simulated-removal"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788287299_e65079",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
