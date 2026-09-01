@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Regression test for the exit-6 annotation",
+  "started_at": "2026-09-01T00:20:00Z",
+  "last_updated": "2026-09-01T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add harness sanity check (exits 2 on stale skill-base.sh) plus deploy-gate fixture helpers and three new Group 4 cases (primary, regression-guard, non-blocking) to test-skill-base-lifecycle.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "write_deploy_gate_return_meta writing directly to specs/001_fixture_task/.return-meta.json without first creating the parent directory",
+      "result": "failed",
+      "reason": "build_fixture_repo (unlike test-postflight-deploy-gate.sh's own build_fixture_repo) does not pre-create a task directory, only specs/state.json -- the redirect silently failed, .return-meta.json never existed, and the deploy-check gate fell through to update_plan_file() with no plan file, producing exit 3 instead of the expected exit 6. Fixed by adding `mkdir -p \"$root/specs/001_fixture_task\"` inside write_deploy_gate_return_meta."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "evidence_routes": {
+    "deployed_suite": "bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh exits 2 with a named environment error identifying the stale deployed copy (.claude/scripts/skill-base.sh lacks _task_dir) -- this IS the expected, correct behavior of the new harness sanity check against a stale deploy, not a suite failure.",
+    "source_store_harness": "A throwaway scratchpad harness (copy of the suite with SKILL_BASE resolution and REPO_ROOT overridden to prefer agent-system/extensions/core/scripts/skill-base.sh, per the plan's Phase 4 note) ran the full suite including all three new exit-6 deploy-pending cases and the pre-existing 25: 28 passed, 0 failed, exit 0. This is the evidence for the source-store edit's correctness; the deployed-suite exit 2 above is not that evidence, it is confirmation the sanity check itself works."
+  }
+}

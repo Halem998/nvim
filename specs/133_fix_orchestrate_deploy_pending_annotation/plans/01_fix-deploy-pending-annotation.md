@@ -376,48 +376,48 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Regression test for the exit-6 annotation [NOT STARTED]
+### Phase 4: Regression test for the exit-6 annotation [COMPLETED]
 
 - **Goal:** Assert mechanically that on a genuine exit-6 refusal, `deploy_pending: true` and a
   non-null `deploy_pending_reason` land in the task's `.return-meta.json` when the task directory
   is supplied via the new 6th argument.
 
 - **Tasks:**
-  - [ ] Read `agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh`'s
+  - [x] Read `agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh`'s *(completed)*
         `build_fixture_repo` and `build_source_and_extensions` helpers and its "Case 1: overlap +
         STALE" case. Adapt the technique; do **not** modify that file.
-  - [ ] Add the new case(s) to `test-skill-base-lifecycle.sh`'s existing **Group 4**
+  - [x] Add the new case(s) to `test-skill-base-lifecycle.sh`'s existing **Group 4** *(completed)*
         (`skill_preflight_update` / `skill_postflight_update`), after the existing non-success-status
         case and before or alongside the implement-target case, following that group's existing
         `cd`-into-fixture discipline. Do **not** introduce a `SKILL_REPO_ROOT` override for these
         cases — the suite's own header records that these two functions hardcode the bare relative
         path `.claude/scripts/update-task-status.sh` and therefore require a full isolated fixture
         repo that the test `cd`s into.
-  - [ ] Extend that group's fixture (or build a sibling fixture in the same style) so
+  - [x] Extend that group's fixture (or build a sibling fixture in the same style) so *(completed)*
         `update-task-status.sh`'s completion-deploy gate genuinely returns 6: `modified_files`
         overlapping `agent-system/extensions/**` plus a fabricated `.claude-extensions.json` and
         throwaway source-store git repo producing `deploy_freshness_status: STALE`, exactly as
         `build_source_and_extensions` does.
-  - [ ] Place a `.return-meta.json` in the fixture task directory before the call.
-  - [ ] **Primary case**: call `skill_postflight_update <n> "implement" "<sess>" "implemented" ""
+  - [x] Place a `.return-meta.json` in the fixture task directory before the call. *(completed)*
+  - [x] **Primary case**: call `skill_postflight_update <n> "implement" "<sess>" "implemented" "" *(completed)*
         "<fixture task dir>"` with `TASK_DIR` **unset** in the environment (the `/orchestrate`
         condition). Assert: return code is 6; `.return-meta.json` gains `deploy_pending == true`;
         `deploy_pending_reason` is a non-null, non-empty string.
-  - [ ] **Regression-guard case**: with the 6th argument omitted and `TASK_DIR` exported to the
+  - [x] **Regression-guard case**: with the 6th argument omitted and `TASK_DIR` exported to the *(completed)*
         same fixture directory (the legacy skill-context path), assert the annotation still lands
         — proving the default `${6:-${TASK_DIR:-}}` preserves existing behavior.
-  - [ ] **Non-blocking case**: with neither the 6th argument nor `TASK_DIR` set, assert the
+  - [x] **Non-blocking case**: with neither the 6th argument nor `TASK_DIR` set, assert the *(completed)*
         function still returns 6 and does not error or crash — the block stays best-effort.
-  - [ ] Add a **harness sanity check that runs first and exits 2 (environment error) rather than
+  - [x] Add a **harness sanity check that runs first and exits 2 (environment error) rather than *(completed)*
         reporting a test failure**, matching the suite's existing exit-2 convention for "a
         required library/script was not found." It must assert, before any case executes, that
         the `skill-base.sh` actually sourced contains the Phase 2 change (`grep -q '_task_dir'`
         against `$SKILL_BASE`) and that `skill_postflight_update` is a defined function. A stale
         deployed copy must produce a named environment error naming the stale path — never a
         `[FAIL]` line, and never a bare "command not found."
-  - [ ] Confirm the suite's end-of-run contamination guard still reports no delta against
+  - [x] Confirm the suite's end-of-run contamination guard still reports no delta against *(completed)*
         `BASELINE_SPECS_STATUS` (the new cases must not touch the real `specs/` tree).
-  - [ ] Run the full suite and confirm exit 0, then record separately which of the two routes
+  - [x] Run the full suite and confirm exit 0, then record separately which of the two routes *(completed)*
         (deployed suite / source-store harness) produced the evidence for the new cases.
 
 - **Timing:** 1 hour 15 minutes

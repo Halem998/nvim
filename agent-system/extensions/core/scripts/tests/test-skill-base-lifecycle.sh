@@ -87,6 +87,28 @@ done
 # shellcheck disable=SC1090
 . "$SKILL_BASE"
 
+# ─── Harness sanity check: the task_dir_override (_task_dir) parameter added to
+# skill_postflight_update must be present in the SKILL_BASE actually sourced above, or the
+# exit-6 deploy-pending annotation cases in Group 4 below would silently exercise stale code and
+# either report a misleading [FAIL] or fail in a confusing "command not found" way. This runs
+# first, before any case executes, and exits 2 (environment error) rather than emitting a [FAIL]
+# line -- matching this suite's own exit-2 convention for "a required library/script was not
+# found." A stale deployed copy names its own path so the failure is actionable, not a bare
+# "command not found". ───────────────────────────────────────────────────────────────────────
+if ! grep -q '_task_dir' "$SKILL_BASE"; then
+  echo "ERROR: sourced skill-base.sh ($SKILL_BASE) does not contain the task_dir_override" >&2
+  echo "       change (grep for '_task_dir' found nothing) -- this is a STALE copy that" >&2
+  echo "       predates that change. The exit-6 deploy-pending annotation cases in Group 4" >&2
+  echo "       below cannot produce meaningful evidence against a stale copy. Re-deploy, or" >&2
+  echo "       run the dedicated source-store harness instead (see the implementation plan's" >&2
+  echo "       Phase 4 'Verification under a stale deploy' section)." >&2
+  exit 2
+fi
+if ! declare -F skill_postflight_update >/dev/null 2>&1; then
+  echo "ERROR: skill_postflight_update is not a defined function after sourcing $SKILL_BASE" >&2
+  exit 2
+fi
+
 PASSED=0
 FAILED=0
 
@@ -135,6 +157,46 @@ build_fixture_repo() {
     }
   ]
 }
+EOF
+}
+
+# ─── build_deploy_gate_source_repo <root>: fabricated .claude-extensions.json plus a throwaway
+# source-store stand-in repo with a committed "core" extension subdirectory, advanced past its
+# recorded head so update-task-status.sh's deploy-freshness comparison reports STALE for the
+# "core" extension. Adapted from test-postflight-deploy-gate.sh's build_source_and_extensions
+# helper (pattern source only -- that file is neither modified nor sourced here; the technique
+# is reimplemented locally, scoped to Group 4's exit-6 cases below). ───────────────────────────
+build_deploy_gate_source_repo() {
+  local root="$1"
+  local src_repo="$root/source-repo"
+  mkdir -p "$src_repo/agent-system/extensions/core/scripts"
+  git init -q "$src_repo"
+  git -C "$src_repo" config user.email "test@example.com"
+  git -C "$src_repo" config user.name "Test"
+  echo "v1" > "$src_repo/agent-system/extensions/core/scripts/foo.sh"
+  git -C "$src_repo" add agent-system/extensions/core/scripts/foo.sh
+  git -C "$src_repo" commit -q -m "initial"
+  local head_v1
+  head_v1="$(git -C "$src_repo" log -1 --format=%H -- agent-system/extensions)"
+  cat > "$root/.claude-extensions.json" << EOF
+{"version":"1.0.0","extensions":{"core":{"version":"1.0.0","source_dir":"${src_repo}/agent-system/extensions/core","source_git_head":"${head_v1}"}}}
+EOF
+  # Advance the source repo without updating the recorded head -> STALE.
+  echo "v2" > "$src_repo/agent-system/extensions/core/scripts/foo.sh"
+  git -C "$src_repo" add agent-system/extensions/core/scripts/foo.sh
+  git -C "$src_repo" commit -q -m "v2"
+}
+
+# ─── write_deploy_gate_return_meta <root>: a .return-meta.json whose modified_files overlaps
+# agent-system/extensions/**, so the completion-deploy gate's overlap+STALE predicate fires. ───
+write_deploy_gate_return_meta() {
+  local root="$1"
+  # build_fixture_repo above creates only specs/state.json, not a task directory (unlike
+  # build_source_and_extensions's caller, test-postflight-deploy-gate.sh's build_fixture_repo,
+  # which pre-creates specs/001_fixture_task/plans/). Create it here before writing into it.
+  mkdir -p "$root/specs/001_fixture_task"
+  cat > "$root/specs/001_fixture_task/.return-meta.json" << 'EOF'
+{"status": "implemented", "modified_files": ["agent-system/extensions/core/scripts/foo.sh"]}
 EOF
 }
 
@@ -381,6 +443,94 @@ else
 fi
 
 cd "$ORIG_PWD" || true
+
+# =====================================================================
+# Group 4 (exit-6 deploy-pending annotation): skill_postflight_update's task_dir_override
+# parameter (this task's own fix) must reach the exit-6 deploy-pending annotation block without
+# relying on the ambient TASK_DIR variable, which /orchestrate's own postflight call sites never
+# set. Each case builds its own isolated fixture root (overlap+STALE deploy-gate technique
+# adapted from test-postflight-deploy-gate.sh's Case 1 -- that file is not modified), cd's into
+# it (skill_postflight_update hardcodes the bare relative path, same discipline as the plain
+# Group 4 cases above), and restores $ORIG_PWD afterward. No SKILL_REPO_ROOT override is used.
+# =====================================================================
+info "=== skill_postflight_update (exit-6 deploy-pending annotation) ==="
+
+# --- Primary case: 6th positional supplied, TASK_DIR unset (the /orchestrate condition) ---
+DEPLOY_GATE_ROOT="$WORKDIR/deploy-gate-fixture"
+build_fixture_repo "$DEPLOY_GATE_ROOT"
+build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT"
+write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT"
+
+cd "$DEPLOY_GATE_ROOT" || { fail "could not cd into deploy-gate fixture repo (primary case)"; }
+unset TASK_DIR
+skill_postflight_update 1 "implement" "sess_test_deploygate_primary" "implemented" "" \
+  "specs/001_fixture_task" 2>"$WORKDIR/deploygate-primary-stderr.log"
+DG_PRIMARY_EXIT=$?
+cd "$ORIG_PWD" || true
+
+if [[ "$DG_PRIMARY_EXIT" -eq 6 ]]; then
+  pass "Primary case: exit-6 deploy-pending refusal reached (6th arg supplied, TASK_DIR unset)"
+else
+  fail "Primary case: expected exit 6, got $DG_PRIMARY_EXIT (see $WORKDIR/deploygate-primary-stderr.log)"
+fi
+DG_PRIMARY_PENDING="$(jq -r '.deploy_pending // "MISSING"' "$DEPLOY_GATE_ROOT/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
+if [[ "$DG_PRIMARY_PENDING" == "true" ]]; then
+  pass "Primary case: .return-meta.json gains deploy_pending == true"
+else
+  fail "Primary case: expected deploy_pending == true, got '$DG_PRIMARY_PENDING'"
+fi
+DG_PRIMARY_REASON="$(jq -r '.deploy_pending_reason // "MISSING"' "$DEPLOY_GATE_ROOT/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
+if [[ -n "$DG_PRIMARY_REASON" && "$DG_PRIMARY_REASON" != "MISSING" && "$DG_PRIMARY_REASON" != "null" ]]; then
+  pass "Primary case: deploy_pending_reason is a non-null, non-empty string"
+else
+  fail "Primary case: deploy_pending_reason missing/null/empty (got '$DG_PRIMARY_REASON')"
+fi
+
+# --- Regression-guard case: 6th arg omitted, TASK_DIR exported (the legacy skill-context path) ---
+DEPLOY_GATE_ROOT2="$WORKDIR/deploy-gate-fixture-legacy"
+build_fixture_repo "$DEPLOY_GATE_ROOT2"
+build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT2"
+write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT2"
+
+cd "$DEPLOY_GATE_ROOT2" || { fail "could not cd into deploy-gate fixture repo (legacy case)"; }
+export TASK_DIR="specs/001_fixture_task"
+skill_postflight_update 1 "implement" "sess_test_deploygate_legacy" "implemented" \
+  2>"$WORKDIR/deploygate-legacy-stderr.log"
+DG_LEGACY_EXIT=$?
+unset TASK_DIR
+cd "$ORIG_PWD" || true
+
+if [[ "$DG_LEGACY_EXIT" -eq 6 ]]; then
+  pass "Regression-guard case: exit-6 reached with 6th arg omitted, TASK_DIR exported (legacy path)"
+else
+  fail "Regression-guard case: expected exit 6, got $DG_LEGACY_EXIT (see $WORKDIR/deploygate-legacy-stderr.log)"
+fi
+DG_LEGACY_PENDING="$(jq -r '.deploy_pending // "MISSING"' "$DEPLOY_GATE_ROOT2/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
+if [[ "$DG_LEGACY_PENDING" == "true" ]]; then
+  pass "Regression-guard case: the default \${6:-\${TASK_DIR:-}} default still reaches the annotation block"
+else
+  fail "Regression-guard case: expected deploy_pending == true, got '$DG_LEGACY_PENDING'"
+fi
+
+# --- Non-blocking case: neither the 6th argument nor TASK_DIR is set -- still returns 6, never
+# errors or crashes (the annotation block stays best-effort). ---
+DEPLOY_GATE_ROOT3="$WORKDIR/deploy-gate-fixture-noannotation"
+build_fixture_repo "$DEPLOY_GATE_ROOT3"
+build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT3"
+write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT3"
+
+cd "$DEPLOY_GATE_ROOT3" || { fail "could not cd into deploy-gate fixture repo (non-blocking case)"; }
+unset TASK_DIR
+skill_postflight_update 1 "implement" "sess_test_deploygate_noannotation" "implemented" \
+  2>"$WORKDIR/deploygate-noannotation-stderr.log"
+DG_NOANNOTATION_EXIT=$?
+cd "$ORIG_PWD" || true
+
+if [[ "$DG_NOANNOTATION_EXIT" -eq 6 ]]; then
+  pass "Non-blocking case: still returns 6 with neither the 6th argument nor TASK_DIR set (no crash)"
+else
+  fail "Non-blocking case: expected exit 6, got $DG_NOANNOTATION_EXIT (see $WORKDIR/deploygate-noannotation-stderr.log)"
+fi
 
 # =====================================================================
 # Group 4 (implement-target case): skill_preflight_update against target_status="implement" with
