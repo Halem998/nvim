@@ -387,7 +387,7 @@ exactly 3 lines in `README.md`. Confirm with
 
 ---
 
-### Phase 4: Repair the test fixture in `test-lint-lifecycle-status-var.sh` [NOT STARTED]
+### Phase 4: Repair the test fixture in `test-lint-lifecycle-status-var.sh` [COMPLETED]
 
 **Goal**: Remove the deleted path from the lint test's real-tree regression guard without silently
 losing coverage, and correct the two comments that name it.
@@ -401,16 +401,19 @@ and `context/standards/status-markers.md`, which are already fixtures 1 and 2. T
 candidate to substitute.
 
 **Tasks**:
-- [ ] Confirm the above with `grep -rln 'STATE_STATUS' --include='*.md' --include='*.sh'
+- [x] Confirm the above with `grep -rln 'STATE_STATUS' --include='*.md' --include='*.sh'
       agent-system/extensions/core/` and check whether any candidate outside `scripts/lint/` and
-      `scripts/tests/` remains besides the two existing fixtures.
-- [ ] Remove the `REAL_TEAM_IMPLEMENT` variable assignment and its entry in the `for real_fixture`
+      `scripts/tests/` remains besides the two existing fixtures. *(completed: grep also surfaced
+      scripts/skill-base.sh:722, but it is a true-positive lint violation — not a legitimate
+      not-flagged candidate — confirmed by running the lint against it directly (exits 1, flags the
+      line). No substitute exists; plan's claim holds.)*
+- [x] Remove the `REAL_TEAM_IMPLEMENT` variable assignment and its entry in the `for real_fixture`
       loop, leaving two real fixtures.
-- [ ] Update the Case 5 comment (which names `skill-team-implement/SKILL.md` as one of the "real
+- [x] Update the Case 5 comment (which names `skill-team-implement/SKILL.md` as one of the "real
       legitimate uses") and the Case 6 comment (same) so each names only the files the case
       actually covers.
-- [ ] Leave the `[[ ! -f ]]` guard in place — it is an invocation-depth robustness guard, unrelated
-      to this deletion.
+- [x] Leave the `[[ ! -f ]]` guard in place — it is an invocation-depth robustness guard, unrelated
+      to this deletion. *(completed: guard untouched)*
 
 **Timing**: 0.5 hours
 

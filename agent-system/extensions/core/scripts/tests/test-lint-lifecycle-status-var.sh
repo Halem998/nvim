@@ -154,8 +154,7 @@ fi
 # Case 5 (structural control / false-positive guard): a bare $STATE_STATUS prose mention with no
 # co-occurring lifecycle-notify call token on the same line must NOT be flagged. This mirrors the
 # real legitimate uses this lint must never false-positive on: update-task-status.sh's own
-# internal map_status() assignment, status-markers.md's prose describing that mapping, and
-# skill-team-implement/SKILL.md's prose describing the same mapping.
+# internal map_status() assignment and status-markers.md's prose describing that mapping.
 # =====================================================================
 info "=== control case: bare \$STATE_STATUS prose mention, no lifecycle-notify token ==="
 
@@ -175,16 +174,15 @@ $(cat "$WORKDIR/control-out.txt")"
 fi
 
 # =====================================================================
-# Case 6 (real-tree regression guard): the actual update-task-status.sh, status-markers.md, and
-# skill-team-implement/SKILL.md legitimate uses must not be flagged when scanned directly.
+# Case 6 (real-tree regression guard): the actual update-task-status.sh and status-markers.md
+# legitimate uses must not be flagged when scanned directly.
 # =====================================================================
 info "=== real-tree false-positive guard: confirmed-legitimate files ==="
 
 REAL_UTS="$SCRIPT_DIR/../update-task-status.sh"
 REAL_STATUS_MARKERS="$SCRIPT_DIR/../../context/standards/status-markers.md"
-REAL_TEAM_IMPLEMENT="$SCRIPT_DIR/../../skills/skill-team-implement/SKILL.md"
 
-for real_fixture in "$REAL_UTS" "$REAL_STATUS_MARKERS" "$REAL_TEAM_IMPLEMENT"; do
+for real_fixture in "$REAL_UTS" "$REAL_STATUS_MARKERS"; do
   if [[ ! -f "$real_fixture" ]]; then
     info "SKIP: $real_fixture not found at this invocation depth (non-fatal, structural)"
     continue
