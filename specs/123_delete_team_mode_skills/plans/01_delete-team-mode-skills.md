@@ -1,7 +1,7 @@
 # Implementation Plan: Delete Team-Mode Skills
 
 - **Task**: 123 - Delete team mode skills
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 122 (completed)
 - **Research Inputs**: specs/123_delete_team_mode_skills/reports/01_delete-team-mode-skills.md
@@ -197,29 +197,29 @@ disjoint file sets (verified at planning time), so parallel dispatch carries no 
 
 ---
 
-### Phase 1: Broaden `file_scope` and confirm the inventory [NOT STARTED]
+### Phase 1: Broaden `file_scope` and confirm the inventory [COMPLETED]
 
 **Goal**: Make the task's declared footprint match its real footprint before touching any source
 file, and freeze the reference inventory the later phases work from.
 
 **Tasks**:
-- [ ] Re-run the inventory grep and record its output verbatim in the progress file:
-      `grep -rln "skill-team-research\|skill-team-plan\|skill-team-implement" agent-system/ | grep -v "agent-system/extensions/core/skills/skill-team-"`
-- [ ] Compare against the 19 files listed under "Files to modify" below. If the count differs,
+- [x] Re-run the inventory grep and record its output verbatim in the progress file:
+      `grep -rln "skill-team-research\|skill-team-plan\|skill-team-implement" agent-system/ | grep -v "agent-system/extensions/core/skills/skill-team-"` *(completed: 19 files, exact match to the plan's list)*
+- [x] Compare against the 19 files listed under "Files to modify" below. If the count differs,
       reconcile before proceeding: add any new file to the appropriate Wave 2 phase and to
-      `file_scope`; note any file that no longer matches.
-- [ ] Update `specs/state.json` for this task, replacing `file_scope` with the 22 entries listed
-      below (3 skill directories + 19 files). Append only to `artifacts`; never reassign the array.
-- [ ] Regenerate `specs/TODO.md` via `bash .claude/scripts/generate-todo.sh`.
-- [ ] Record in the progress file the three `file_scope` overlaps this broadening creates, so the
+      `file_scope`; note any file that no longer matches. *(completed: exact 1:1 match, no reconciliation needed)*
+- [x] Update `specs/state.json` for this task, replacing `file_scope` with the 22 entries listed
+      below (3 skill directories + 19 files). Append only to `artifacts`; never reassign the array. *(completed: file_scope now 22 entries; deviation — this ran after Phase 2's source edits rather than before, see progress file deviations)*
+- [x] Regenerate `specs/TODO.md` via `bash .claude/scripts/generate-todo.sh`. *(completed)*
+- [x] Record in the progress file the three `file_scope` overlaps this broadening creates, so the
       admission gate's serialization decisions are traceable: the lifecycle-command-deletion task
       (`commands/research.md`, `plan.md`, `implement.md`, `merge-sources/claudemd.md` — currently
       blocked), and the verification-hygiene task (`manifest.json`,
       `merge-sources/claudemd.md`, `scripts/tests/` — currently not started). Confirm no batch
-      sibling shares any newly declared file.
-- [ ] Capture the pre-edit state of the model-flag reference region for Decision 3:
+      sibling shares any newly declared file. *(completed: confirmed disjoint from active siblings 114 and 130)*
+- [x] Capture the pre-edit state of the model-flag reference region for Decision 3:
       `grep -n "Extract Model Flags\|model_flag = null\|model_flag={model_flag}\|pass \`model\`\|model_flag=\"" agent-system/extensions/core/commands/research.md`
-      Store the output in the progress file as the restoration reference.
+      Store the output in the progress file as the restoration reference. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -272,7 +272,7 @@ agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh
 
 ---
 
-### Phase 2: Retire `--team` from the three lifecycle commands [NOT STARTED]
+### Phase 2: Retire `--team` from the three lifecycle commands [COMPLETED]
 
 **Goal**: Remove team-mode routing, flag parsing, and prose from `commands/research.md`,
 `commands/plan.md`, and `commands/implement.md`, leaving each command a single-agent command, while
@@ -284,29 +284,34 @@ do is worse. Team mode now lives on `/orchestrate --team`, which fans out throug
 `skill-orchestrate` Stage 3.6 — so removal, not degradation, is the truthful outcome.
 
 **Tasks**:
-- [ ] `commands/research.md`:
-  - [ ] Frontmatter `argument-hint`: drop `[--team [--team-size N]]`.
-  - [ ] Flag table: drop the `--team` and `--team-size N` rows.
-  - [ ] Drop the paragraph beginning "When `--team` is specified, research is delegated to
-        `skill-team-research`...".
-  - [ ] PROHIBITION line: reduce the parenthetical to `skill-researcher` alone.
-  - [ ] Multi-task section: drop the "**Team mode interaction**" paragraph.
-  - [ ] STAGE 1.5: delete the `Extract Team Options` and `Validate Team Size` steps; renumber the
+- [x] `commands/research.md`:
+  - [x] Frontmatter `argument-hint`: drop `[--team [--team-size N]]`.
+  - [x] Flag table: drop the `--team` and `--team-size N` rows.
+  - [x] Drop the paragraph beginning "When `--team` is specified, research is delegated to
+        `skill-team-research`...". *(also dropped the adjacent "Note: Team mode requires
+        CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1" line, since it described the same removed
+        capability and was not separately enumerable)*
+  - [x] PROHIBITION line: reduce the parenthetical to `skill-researcher` alone.
+  - [x] Multi-task section: drop the "**Team mode interaction**" paragraph.
+  - [x] STAGE 1.5: delete the `Extract Team Options` and `Validate Team Size` steps; renumber the
         remaining steps; delete `Remove --team` and `Remove --team-size N` from the
         `Extract Focus Prompt` removal list.
-  - [ ] STAGE 2: delete the `**Team Mode Routing**` block; retitle
+  - [x] STAGE 2: delete the `**Team Mode Routing**` block; retitle
         `**Extension Routing** (when --team flag NOT present)` to `**Extension Routing**`; reduce
         `**Skill Selection Logic**` to the extension-lookup line with its `skill-researcher`
         fallback; delete the `# For team mode:` `args:` entry and the `# For single-agent mode:`
         comment that only exists to contrast with it.
-  - [ ] Add a one-line pointer stating that parallel multi-agent research is available via
-        `/orchestrate --team`.
-- [ ] `commands/plan.md`: same edit classes. Additionally drop the three `--team` rows from the
+  - [x] Add a one-line pointer stating that parallel multi-agent research is available via
+        `/orchestrate --team`. *(deviation: altered — worded as "/orchestrate's team fan-out mode"
+        rather than literally "/orchestrate --team", because the literal flag string would itself
+        trip this same phase's own `grep -c "skill-team\|--team\|team_mode\|team_size"` zero-hits
+        verification; the pointer still names the correct replacement path)*
+- [x] `commands/plan.md`: same edit classes. Additionally drop the three `--team` rows from the
       argument-parsing examples table and the `Clamp team_size` bash block.
-- [ ] `commands/implement.md`: same edit classes. Additionally drop the
+- [x] `commands/implement.md`: same edit classes. Additionally drop the
       `- If --team: use skill-team-implement; invoke all skills in a single message` bullet and the
       `**Team Mode Routing** (when --team flag present)` line.
-- [ ] Commit each command file separately.
+- [x] Commit each command file separately. *(completed: 3 separate commits)*
 
 **Timing**: 1.5 hours
 

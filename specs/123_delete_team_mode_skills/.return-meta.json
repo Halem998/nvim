@@ -1,29 +1,8 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md",
-      "summary": "8-phase deletion plan (4 waves, ~6.5h) removing the three team-mode skills plus 19 de-referencing edits across commands, manifest, docs, context patterns, and one test fixture; records three explicit decisions (--lit criterion accepted as a stated deviation, synthesis-agent docstring scoped to logic-only preservation, CONTRACT 5 discharged by preservation rather than sequencing)."
-    }
-  ],
-  "next_steps": "Run /implement 123 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1788267679_adbb09_123",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1], [2, 3, 4, 5, 6], [7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "The canonical directory-prefix file-overlap algorithm in context/patterns/file-footprint-overlap.md has four declared consumer levels (task, phase, lock-acquisition, batch-admission), but the PHASE-level consumer is retired: it lived only in skill-team-implement's Stage 5 infer_from_file_overlap(). skill-orchestrate's Stage 3.6a builds its teammate/wave set from the plan's own **Dependency Analysis** wave table, falling back to per-phase **Depends on**: fields -- it never infers phase dependencies from file overlap. Consequence for planning: a plan's declared dependency table IS the parallel-dispatch contract for team implement; an omitted or wrong Depends on field is not silently corrected by overlap analysis the way task-level file_scope collisions are.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/123_delete_team_mode_skills/plans/01_delete-team-mode-skills.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["file-footprint-overlap", "infer_from_file_overlap", "skill-orchestrate", "Stage 3.6a", "dependency analysis", "phase waves"]
-    }
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

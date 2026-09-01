@@ -33,7 +33,7 @@ next_project_number: 134
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-114 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
+114 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: retargeted at the con
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD
     └─ 48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
       └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -44,13 +44,13 @@ next_project_number: 134
 120 [PLANNED] — Retarget the 7 hard-mode test/lint files to skill-orchestrate's h
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
     └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
-123 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
+123 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: carries residue of th
 126 [PLANNED] — Implement A2 phase-forcing flags (--research/--plan/--implement) 
   └─ 124 [BLOCKED] — Delete /research, /plan, /implement commands and update the CLAUD (see above)
 128 [PLANNED] — Repair the hard-mode H4 adversarial-verification gate, which curr
   └─ 121 [NOT STARTED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill (see above)
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-130 [PLANNED] — Make lake-build-guard.sh's success signal trustworthy. The script
+130 [IMPLEMENTING] — Make lake-build-guard.sh's success signal trustworthy. The script
 133 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the defect-cl
 
 ### Extensions
@@ -186,7 +186,7 @@ NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do no
 ---
 
 ### 130. Stop lake-build-guard.sh reporting passes for builds it did not run
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -416,7 +416,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 123. Delete team mode skills
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 122
@@ -811,7 +811,7 @@ VERIFICATION BAR. (1) `/orchestrate N --hard --fable` dispatches hard-mode singl
 ---
 
 ### 114. Wire model-flag threading through /orchestrate and the base orchestrate engine
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
