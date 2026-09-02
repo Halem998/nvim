@@ -370,6 +370,12 @@ hits fall in the converted markdown.
   Class B — check the source page's OCR quality; running `ocrmypdf --force-ocr` on the affected
   pages and reconverting is the correct remedy, since a tier switch alone will not help.
 
+**`joyce_1999_foundations-causal-decision-theory` resolved example**: at implementation time this
+Class B document converted cleanly and passed the gate at 2 hits — both known math-notation false
+positives, zero genuine text-layer defects present — without any re-OCR having been performed;
+because its source PDF lives outside this repository's version control, a document's measured hit
+count reflects its text layer at measurement time, not a permanent property of the document.
+
 **No automatic tier selection exists or is intended.** The discriminator above requires
 inspecting where the post-conversion hits fall; it is not computable a priori from document
 metadata (page count, scan status, ingestion source), so a naive auto-select would regress Class B

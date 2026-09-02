@@ -1,0 +1,39 @@
+{
+  "phase": 7,
+  "phase_name": "Re-gate and refresh the stale corpus copy",
+  "started_at": "2026-09-02T07:00:00Z",
+  "last_updated": "2026-09-02T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Back up sources dir and index.json entries", "status": "done", "note": "~/Projects/Literature/backups/joyce_1999_foundations-causal-decision-theory_20260902T064713Z/", "files_touched": []},
+    {"id": 2, "description": "Run full gate against existing on-disk chunks, record measured count", "status": "done", "note": "2 hits, full gate PASSES on every check", "files_touched": []},
+    {"id": 3, "description": "Refresh corpus copy from corrected conversion", "status": "excluded", "files_touched": []},
+    {"id": 4, "description": "Re-run gate against refreshed copy", "status": "excluded", "files_touched": []},
+    {"id": 5, "description": "Re-run test-quality-gate-notation.sh after corpus write", "status": "done", "note": "no write occurred; re-ran for reconfirmation, unchanged (11/21)", "files_touched": []},
+    {"id": 6, "description": "Record pre/post-refresh counts and backup location", "status": "done", "files_touched": ["specs/104_resolve_glue_check_false_positive_class/phase7-corpus-regate.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Considered invoking literature-ingest.sh to regenerate the chunk set from a fresh conversion",
+      "result": "rejected",
+      "reason": "literature-ingest.sh and literature-convert.sh were under active uncommitted modification by a concurrent sibling task at measurement time; invoking mid-edit tooling would not be a deterministic mechanical step, and the existing content already passes the full gate so no quality benefit would result"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Refresh the corpus copy from Phase 3's corrected conversion",
+      "type": "skipped",
+      "reason": "No distinct corrected conversion exists (Phases 2-3 performed no re-OCR); the existing copy already passes the full gate; the ingest pipeline was under concurrent modification by a sibling task at measurement time. Bound applied per plan text.",
+      "annotation": "*(deviation: skipped — see Reasoned Exclusions)*"
+    },
+    {
+      "task_id": "7.4",
+      "description": "Re-run the gate against the refreshed on-disk copy",
+      "type": "skipped",
+      "reason": "No refresh was performed (see 7.3); the existing copy's gate result was already measured in objective 2.",
+      "annotation": "*(deviation: skipped — no refresh was performed; the existing copy already measures 2 and passes, see phase7-corpus-regate.md)*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Reconvert and confirm the gate now passes at 2 hits",
+  "started_at": "2026-09-02T06:45:00Z",
+  "last_updated": "2026-09-02T06:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reconvert into fresh scratch dir", "status": "done", "note": "same as Phase 1's measurement", "files_touched": []},
+    {"id": 2, "description": "Capture gate output, confirm not rejected", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-enumerate hits with context", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Diff post-fix hit list against Phase 1 baseline", "status": "excluded", "files_touched": []},
+    {"id": 5, "description": "Record confirmed post-fix count and surviving hit strings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Diff the post-fix hit list against Phase 1's baseline list",
+      "type": "skipped",
+      "reason": "No distinct pre-fix/post-fix pair exists to diff -- Phase 2 performed no re-OCR, so Phase 1's measurement IS the sole, current measurement.",
+      "annotation": "*(deviation: skipped — there is no distinct pre-fix/post-fix pair to diff; Phase 1's baseline measurement IS the only measurement, see Reasoned Exclusions)*"
+    }
+  ],
+  "handoff_count": 0
+}

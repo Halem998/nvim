@@ -1,7 +1,7 @@
 # Implementation Plan: Task #104
 
 - **Task**: 104 - Resolve glue-check false-positive class on math-heavy OCR'd scans
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 102 (completed)
 - **Research Inputs**: specs/104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md
@@ -147,7 +147,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline capture and defect localization [BLOCKED]
+### Phase 1: Baseline capture and defect localization [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Reproduce today's 4-hit gate rejection from the current source PDF, and identify which
 actual PDF pages carry the 2 genuine defects — replacing the unverified "pages 119 and 217" claim
@@ -182,8 +182,15 @@ with a measured mapping.
 
 **STOPPED per Scope Hypothesis below — see `baseline-measurement.md` for the full measurement and
 implication analysis.** Measured total is 2 (not 4); measured genuine-defect count is 0 (not 2).
-Phases 2-7 are held pending planner/requester guidance rather than continued under a falsified
-premise.
+Phases 2-3 were subsequently excluded (see their own `#### Reasoned Exclusions` records) and
+Phases 4-7 were retargeted to the verified narrative, per requester direction after this halt was
+reported.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Locate each genuine hit's PDF page and record its index (Task 1.5) | No genuine hit exists in the current document state to locate. Three independent measurements (fresh reconversion, existing 396-chunk corpus copy, raw unexempted regex scan) all report exactly 2 hits, both the known math-notation false positives, zero genuine defects — falsifying the plan's asserted 2-genuine/2-notation split before any page-localization work could be meaningful. | `specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md` |
 
 **Timing**: 0.75 hours
 
@@ -213,30 +220,31 @@ split changes which route is viable.
 
 ---
 
-### Phase 2: Targeted re-OCR of the confirmed defective pages [NOT STARTED]
+### Phase 2: Targeted re-OCR of the confirmed defective pages [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Produce a corrected PDF in which only the confirmed defective pages have been re-OCR'd,
 leaving every other page untouched.
 
 **Tasks**:
 - [ ] Back up the source PDF to a timestamped copy alongside it (file-level; this PDF is outside
-      this repo and not git-tracked, so git is not a rollback path for it).
+      this repo and not git-tracked, so git is not a rollback path for it). *(deviation: skipped — no defective pages exist to fix; see Reasoned Exclusions)*
 - [ ] Re-OCR only the confirmed pages into a **new output file**, never in place. Preferred form:
       `ocrmypdf --force-ocr --output-type pdf -l eng --pages <p1>,<p2> <input.pdf> <output.pdf>`
-      (unselected pages pass through unmodified).
+      (unselected pages pass through unmodified). *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] If `--pages` is unavailable or misbehaves in this `ocrmypdf` build, fall back to the
       explicit splice: extract each target page with `pdftk`, run
       `ocrmypdf --force-ocr --output-type pdf -l eng` on the single-page extract, and reassemble
-      with `pdftk` in original page order.
-- [ ] Verify the output PDF's page count equals the input's.
+      with `pdftk` in original page order. *(deviation: skipped — see Reasoned Exclusions)*
+- [ ] Verify the output PDF's page count equals the input's. *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Verify non-target pages are unchanged: compare `pdftotext` output for a sample of at least
       5 non-target pages (including the immediate neighbours of each target page) between backup
-      and output — they must be identical.
+      and output — they must be identical. *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Verify each target page's `pdftotext` output no longer contains its recorded corrupted
       string, and spot-check that the re-OCR recovered rather than degraded the text (the report
       cites a dropped closing curly quote and an accented "Reyni" as expected recoveries).
+      *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Swap the corrected PDF into the canonical source path only after the checks above pass,
-      keeping the backup.
+      keeping the backup. *(deviation: skipped — see Reasoned Exclusions)*
 
 **Timing**: 0.75 hours
 
@@ -245,34 +253,44 @@ leaving every other page untouched.
 **Verification Tier**: local
 
 **Files to modify**:
-- `/home/benjamin/Projects/Logos/Theory/specs/literature/joyce_1999_foundations-causal-decision-theory.pdf`
-  — the two confirmed defective pages re-OCR'd; a timestamped backup of the original retained
-  alongside it.
+- None. No re-OCR was performed and the source PDF was not touched — see Reasoned Exclusions.
 
 **Verification**:
-- Output page count == input page count.
-- Sampled non-target pages' extracted text is byte-identical to the backup's.
-- Each target page's recorded corrupted string is gone from that page's extracted text.
+- N/A — phase excluded in full.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Entire phase (backup, re-OCR, splice, verification, swap) | Phase 1's measurement falsified the premise this phase depends on: the source PDF already converts and passes the gate at 2 hits (both known math-notation false positives), with zero genuine text-layer defects present. Re-OCRing pages that carry no defects would be work performed to make a narrative true rather than to fix anything, and risks the plan's own documented risk of introducing new hits on currently-clean pages. Directed by the requester after Phase 1's halt was reported. | `specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md`; `handoffs/phase-1-handoff-20260902T063833Z.md` |
 
 ---
 
-### Phase 3: Reconvert and confirm the gate now passes at 2 hits [NOT STARTED]
+### Phase 3: Reconvert and confirm the gate now passes at 2 hits [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Establish, by measurement, that the corrected PDF converts to 2 hits — below the `>=3`
 reject threshold — with the 2 remaining hits being exactly the 2 known math-notation strings and
 no new hits anywhere.
 
 **Tasks**:
-- [ ] Reconvert the corrected PDF into a **fresh** scratch directory via `literature-convert.sh`
+- [x] Reconvert the corrected PDF into a **fresh** scratch directory via `literature-convert.sh`
       (default converter; do **not** set `LITERATURE_CONVERTER=fallback` — the fallback tier is
       documented to make this document worse, 4 -> 5).
-- [ ] Capture the gate output verbatim; confirm the document is no longer rejected.
-- [ ] Re-enumerate all hits with context using the same joined-chunk method as Phase 1.
+      *(completed: already performed as part of Phase 1's baseline measurement, since there was no
+      separate "corrected" PDF to reconvert — see Reasoned Exclusions)*
+- [x] Capture the gate output verbatim; confirm the document is no longer rejected.
+      *(completed: gate reports PASSED; the document was never rejected under the current source
+      PDF — see baseline-measurement.md)*
+- [x] Re-enumerate all hits with context using the same joined-chunk method as Phase 1.
+      *(completed: this IS Phase 1's enumeration — 2 hits, both math-notation)*
 - [ ] Diff the post-fix hit list against Phase 1's baseline list: the 2 genuine defects must be
       gone, the 2 notation hits must be present and unchanged, and there must be **zero** new
-      hits.
-- [ ] Record the confirmed post-fix count and the surviving hit strings in the task directory —
+      hits. *(deviation: skipped — there is no distinct pre-fix/post-fix pair to diff; Phase 1's
+      baseline measurement IS the only measurement, see Reasoned Exclusions)*
+- [x] Record the confirmed post-fix count and the surviving hit strings in the task directory —
       these are the exact figures Phases 4 and 5 will cite.
+      *(completed: 2 hits, `^s.P(S\A)u(0[A S])` and `f.I+i p*( YHr` — recorded in
+      baseline-measurement.md and cited by Phases 4-5 below)*
 
 **Timing**: 0.75 hours
 
@@ -284,10 +302,23 @@ no new hits anywhere.
 will therefore pass. Confirm by running the gate, not by inference from Phase 2's page-level
 checks. **If the count is 3 or higher, stop and report** rather than reaching for a gate change —
 routes (b) and (c) are closed, and the correct next move is re-examining the input (which pages,
-which OCR settings).
+which OCR settings). *(Resolved: the count IS 2, confirmed by Phase 1's measurement; the "if >= 3"
+branch never applies.)*
 
 **Files to modify**:
 - None (read-only measurement into a scratch directory).
+
+**Verification**:
+- Gate reports a passing result for the document. **(met — Phase 1 measurement)**
+- Post-fix hit count is 2. **(met — Phase 1 measurement)**
+- The 2 surviving hits are exactly the math-notation pair; the baseline diff shows no new hits.
+  **(met — there is only one measurement, not a diff of two; both hits ARE the notation pair)**
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Diff against a distinct pre-fix Phase 1 baseline (Task 3.4) | Phase 2 performed no re-OCR (see its own Reasoned Exclusions), so there is no separate "corrected PDF" for this phase to reconvert and diff against Phase 1's baseline. Phase 1's own measurement already IS the sole, current measurement of the document, at 2 hits — the exact figure this phase exists to confirm. A diff against itself would be vacuous. | `specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md` |
 
 **Verification**:
 - Gate reports a passing result for the document.
@@ -296,30 +327,38 @@ which OCR settings).
 
 ---
 
-### Phase 4: Additive docstring reconciliation in the gate module [NOT STARTED]
+### Phase 4: Additive docstring reconciliation in the gate module [COMPLETED]
 
 **Goal**: Record the resolution in `sentence_boundary_glue_count()`'s docstring by **appending** to
 the existing MIXED-documents paragraph, leaving the prohibition clause byte-identical.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/literature/scripts/literature_quality_gate.py`, locate the
+- [x] In `agent-system/extensions/literature/scripts/literature_quality_gate.py`, locate the
       MIXED-documents paragraph — the one ending in "...never widening this exemption further,
       tuning the threshold-3 cutoff, or a manual override." — and insert the new note **after**
       the existing `joyce_1999` 4-hits-to-5-on-fallback sentence and **before** the prohibition
-      clause.
-- [ ] The note must record: (a) that the document's two genuine hits were an artifact of the
+      clause. *(completed)*
+- [x] The note must record: (a) that the document's two genuine hits were an artifact of the
       original 2019 archive.org OCR text layer, and that targeted re-OCR of the two specific
       defective pages eliminates them, bringing the document to the Phase-3-confirmed count,
       safely under threshold, **with no gate change**; and (b) the two residual math-notation hits
       named as a second **deliberately unexempted, non-blocking class**, explicitly parallel to the
       arXiv subject-code precedent (`math.CT`, `math.AT`) already documented earlier in the same
       paragraph — accepted rather than pattern-matched away.
-- [ ] Cite the concrete count from Phase 3's record. Do not restate a number the plan predicted;
-      use the number that was measured.
-- [ ] Leave the prohibition clause textually untouched — route (a) widens no exemption, tunes no
+      *(deviation: altered — per requester direction after Phase 1's halt, the note records the
+      VERIFIED narrative instead: the document already converts to 2 hits with zero genuine
+      defects present, confirmed by both an exempted and a raw unexempted scan; no re-OCR was
+      performed or claimed. The arXiv-parallel framing for the 2 residual notation hits (b) is
+      unchanged from the plan.)*
+- [x] Cite the concrete count from Phase 3's record. Do not restate a number the plan predicted;
+      use the number that was measured. *(completed: cites 2, the number Phase 1/3 measured, and
+      names both exact strings)*
+- [x] Leave the prohibition clause textually untouched — route (a) widens no exemption, tunes no
       threshold, and applies no manual override, so the prohibition is *satisfied*, not narrowed.
-- [ ] No task-number reference anywhere in the added text (this file is outside `specs/**`).
-- [ ] Match the surrounding docstring's line width and prose voice.
+      *(completed: `git diff` confirms the prohibition line is byte-identical)*
+- [x] No task-number reference anywhere in the added text (this file is outside `specs/**`).
+      *(completed: verified via check-task-references.sh, 0 occurrences)*
+- [x] Match the surrounding docstring's line width and prose voice. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -340,23 +379,29 @@ the existing MIXED-documents paragraph, leaving the prohibition clause byte-iden
 
 ---
 
-### Phase 5: Guide pointer in the Converter Tier Selection section [NOT STARTED]
+### Phase 5: Guide pointer in the Converter Tier Selection section [COMPLETED]
 
 **Goal**: Cite the resolved example in the guide section that already documents re-OCR as the
 Class B remedy but carries no confirmed post-fix result.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/literature/context/guides/literature-organization.md`, inside
+- [x] In `agent-system/extensions/literature/context/guides/literature-organization.md`, inside
       the existing `## Converter Tier Selection` section, add one sentence naming
       `joyce_1999_foundations-causal-decision-theory` as a resolved Class B example with its
       measured before/after counts (4 -> the Phase-3-confirmed count) achieved by targeted
       page-level re-OCR, with no gate change.
-- [ ] Place it after the **Diagnostic procedure** bullets (which already prescribe
+      *(deviation: altered — per requester direction after Phase 1's halt, the added sentence
+      states the verified narrative instead: the document already converts cleanly and passes at
+      2 hits with zero genuine defects present, with no re-OCR having been performed. No "4 ->
+      2 via re-OCR" claim is made.)*
+- [x] Place it after the **Diagnostic procedure** bullets (which already prescribe
       `ocrmypdf --force-ocr` on the affected pages) and before the
-      "**No automatic tier selection exists or is intended.**" paragraph.
-- [ ] Keep the existing Class A/Class B table's `joyce_1999` cells intact — the 4 -> 5 fallback
+      "**No automatic tier selection exists or is intended.**" paragraph. *(completed)*
+- [x] Keep the existing Class A/Class B table's `joyce_1999` cells intact — the 4 -> 5 fallback
       figure there remains true and is the reason the tier switch is not the remedy.
-- [ ] No task-number reference (this file is outside `specs/**`).
+      *(completed: table untouched, confirmed via git diff)*
+- [x] No task-number reference (this file is outside `specs/**`). *(completed: verified via
+      check-task-references.sh, 0 occurrences)*
 
 **Timing**: 0.25 hours
 
@@ -376,21 +421,23 @@ Class B remedy but carries no confirmed post-fix result.
 
 ---
 
-### Phase 6: Regression gates and tripwire preservation [NOT STARTED]
+### Phase 6: Regression gates and tripwire preservation [COMPLETED]
 
 **Goal**: Prove nothing about the gate's behavior moved — the whole point of route (a).
 
 **Tasks**:
-- [ ] Run `agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh` and
+- [x] Run `agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh` and
       confirm all five fixtures match: `goodman_2024`=0, `bacon_a_case`=0, `bacon_dorr_2024`=0,
       and the two pinned over-exemption tripwires `hott_book_2013`=**exactly 11** and
-      `ahrens_north`=**exactly 21** (these must neither fall nor rise).
-- [ ] Run `bash agent-system/extensions/literature/scripts/literature-convert.sh --self-test` and
-      confirm every inline `gate_check()` fixture passes.
-- [ ] Confirm via `git diff` that no line inside `sentence_boundary_glue_count()`'s *body*, its
+      `ahrens_north`=**exactly 21** (these must neither fall nor rise). *(completed: all five pass;
+      hott_book_2013=11, ahrens_north=21)*
+- [x] Run `bash agent-system/extensions/literature/scripts/literature-convert.sh --self-test` and
+      confirm every inline `gate_check()` fixture passes. *(completed: all fixtures pass)*
+- [x] Confirm via `git diff` that no line inside `sentence_boundary_glue_count()`'s *body*, its
       exemption regex definitions, or the threshold constant changed — the only diff in the
-      module is docstring prose.
-- [ ] Confirm no file under `.claude/**` was modified.
+      module is docstring prose. *(completed: diff confined to docstring lines)*
+- [x] Confirm no file under `.claude/**` was modified. *(completed: `git status --porcelain .claude/`
+      is empty)*
 
 **Timing**: 0.5 hours
 
@@ -410,29 +457,34 @@ Class B remedy but carries no confirmed post-fix result.
 
 ---
 
-### Phase 7: Re-gate and refresh the stale corpus copy [NOT STARTED]
+### Phase 7: Re-gate and refresh the stale corpus copy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Resolve the adjacent-scope finding — measure the existing ungated 396-chunk corpus copy
 against the gate, then replace it with the corrected conversion so the corpus no longer holds the
 uncorrected OCR.
 
 **Tasks**:
-- [ ] Back up `~/Projects/Literature/sources/joyce_1999_foundations-causal-decision-theory/` (all
+- [x] Back up `~/Projects/Literature/sources/joyce_1999_foundations-causal-decision-theory/` (all
       chunks, `chunks.json`, `metadata.json`) and the document's `~/Projects/Literature/index.json`
-      entry before touching either.
-- [ ] Run `sentence_boundary_glue_count()` against the **existing on-disk** chunks (joined with
+      entry before touching either. *(completed:
+      `~/Projects/Literature/backups/joyce_1999_foundations-causal-decision-theory_20260902T064713Z/`)*
+- [x] Run `sentence_boundary_glue_count()` against the **existing on-disk** chunks (joined with
       `"\n\n"`) and record the measured count — this establishes whether the pre-gating ungated
       ingest actually carried the uncorrected defects, per the "no gate rejection becomes a silent
-      skip" criterion.
+      skip" criterion. *(completed: ran the FULL gate, not just the glue check — 2 hits, PASS on
+      every check; see phase7-corpus-regate.md)*
 - [ ] Refresh the corpus copy from Phase 3's corrected conversion: replace the chunk set and
       update the index entry's `chunk_count` (and any count-derived field that mechanically
-      follows) to match.
+      follows) to match. *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Re-run the gate against the refreshed on-disk copy and confirm it reports the Phase-3
-      count and passes.
-- [ ] Re-run `test-quality-gate-notation.sh` after the corpus write — it reads from this same
-      corpus tree, and the two pinned tripwires must still read exactly 11 and 21.
-- [ ] Record in the task directory: the pre-refresh measured count, the post-refresh count, and
-      the backup location.
+      count and passes. *(deviation: skipped — no refresh was performed; the existing copy already
+      measures 2 and passes, see phase7-corpus-regate.md)*
+- [x] Re-run `test-quality-gate-notation.sh` after the corpus write — it reads from this same
+      corpus tree, and the two pinned tripwires must still read exactly 11 and 21. *(completed: no
+      corpus write occurred, but re-ran anyway for reconfirmation — hott_book_2013=11,
+      ahrens_north=21, unchanged)*
+- [x] Record in the task directory: the pre-refresh measured count, the post-refresh count, and
+      the backup location. *(completed: `phase7-corpus-regate.md`)*
 
 **Bound**: if the refresh requires anything beyond a mechanical chunk-and-index replacement (e.g.
 re-deriving metadata, resolving `metadata_status: "unresolved"`, or building any reusable
@@ -457,44 +509,62 @@ would invalidate. If either assumption fails, apply the Bound above.
   updated (backed up first).
 
 **Verification**:
-- Backup exists and is complete before any write.
-- Post-refresh gate run over the on-disk copy reports the Phase 3 count and passes.
+- Backup exists and is complete before any write. **(met)**
+- Post-refresh gate run over the on-disk copy reports the Phase 3 count and passes. **(N/A — no
+  refresh performed; the existing, unmodified copy already measures 2 and passes the full gate)**
 - `test-quality-gate-notation.sh` still reports `hott_book_2013`=11 and `ahrens_north`=21 exactly.
+  **(met)**
 - `index.json` remains valid JSON (`jq . index.json` succeeds) and the entry's `chunk_count`
-  matches the on-disk chunk file count.
+  matches the on-disk chunk file count. **(met — unchanged, since no write occurred: 396 == 396)**
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Replace the chunk set from "Phase 3's corrected conversion" and update `chunk_count` (Task 7.3); re-run the gate against a refreshed copy (Task 7.4) | Phases 2-3 performed no re-OCR and produced no distinct "corrected conversion" to swap in — the existing on-disk copy already measures 2 hits and PASSES the full gate (column-interleaving, glue, page-coverage, ligature, dehyphenation, NUL, printable-ratio all clean), so a literal swap would replace passing content with near-identical passing content: churn with no quality benefit. Separately, the ingest pipeline this swap would invoke (`literature-ingest.sh`, `literature-convert.sh`) was under active, uncommitted modification by a concurrently-running sibling task at measurement time (later committed as "task 105 phase 2: distinct needs-OCR bucket in literature-ingest.sh"), so invoking it now would not be a deterministic "mechanical" step — it risks absorbing unrelated in-flight behavior this task has no basis to evaluate. Either reason alone triggers the Bound above ("anything beyond a mechanical chunk-and-index replacement stops and hands off"). | `specs/104_resolve_glue_check_false_positive_class/phase7-corpus-regate.md` |
 
 ---
 
 ## Testing & Validation
 
-- [ ] Fresh `literature-convert.sh` run over the re-OCR'd PDF passes the quality gate at 2 hits.
-- [ ] The 2 surviving hits are exactly the 2 known math-notation strings; zero new hits versus the
-      Phase 1 baseline.
-- [ ] `test-quality-gate-notation.sh`: all five fixtures match, with `hott_book_2013`=11 and
+- [x] Fresh `literature-convert.sh` run over the (unmodified) source PDF passes the quality gate
+      at 2 hits. *(altered: no re-OCR was performed — see Phase 1's baseline-measurement.md — but
+      the fresh-conversion check itself was run and passes)*
+- [x] The 2 surviving hits are exactly the 2 known math-notation strings; zero new hits versus the
+      Phase 1 baseline. *(there is only one baseline measurement, not a before/after pair; both
+      hits ARE the notation pair)*
+- [x] `test-quality-gate-notation.sh`: all five fixtures match, with `hott_book_2013`=11 and
       `ahrens_north`=21 exactly (neither falling nor rising) — run both before Phase 7's corpus
-      write and after it.
-- [ ] `literature-convert.sh --self-test`: all inline `gate_check()` fixtures pass.
-- [ ] `git diff` confirms `literature_quality_gate.py`'s only change is docstring prose — no change
+      write and after it. *(no corpus write occurred; ran three times total across Phases 6-7, all
+      identical: 11/21)*
+- [x] `literature-convert.sh --self-test`: all inline `gate_check()` fixtures pass.
+- [x] `git diff` confirms `literature_quality_gate.py`'s only change is docstring prose — no change
       to the function body, the exemption regexes, or the threshold.
-- [ ] The prohibition clause ("never widening this exemption further, tuning the threshold-3
+- [x] The prohibition clause ("never widening this exemption further, tuning the threshold-3
       cutoff, or a manual override") is byte-identical to its pre-task text.
-- [ ] No file under `.claude/**` is modified.
-- [ ] No task-number reference appears in any file changed outside `specs/**`.
+- [x] No file under `.claude/**` is modified.
+- [x] No task-number reference appears in any file changed outside `specs/**`.
 
 ## Artifacts & Outputs
 
-- Corrected source PDF (two pages re-OCR'd) at
-  `/home/benjamin/Projects/Logos/Theory/specs/literature/joyce_1999_foundations-causal-decision-theory.pdf`,
-  with a timestamped backup of the original alongside it.
+*(Actual outputs, per the exclusions recorded above — no re-OCR or corpus write occurred.)*
+
+- Source PDF at
+  `/home/benjamin/Projects/Logos/Theory/specs/literature/joyce_1999_foundations-causal-decision-theory.pdf`
+  — **unmodified**; no re-OCR was performed (see Phases 1-2's Reasoned Exclusions).
 - `agent-system/extensions/literature/scripts/literature_quality_gate.py` — additive docstring
-  closing note.
+  closing note recording the VERIFIED narrative (document already passes at 2 hits, zero genuine
+  defects, no re-OCR performed).
 - `agent-system/extensions/literature/context/guides/literature-organization.md` — one-sentence
-  resolved-example pointer in `## Converter Tier Selection`.
-- Refreshed corpus copy under `~/Projects/Literature/sources/joyce_1999_foundations-causal-decision-theory/`
-  plus the updated `index.json` entry (both backed up).
+  resolved-example pointer in `## Converter Tier Selection`, same verified narrative.
+- `specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md` — Phase 1's full
+  measurement and Scope Hypothesis falsification record.
+- `specs/104_resolve_glue_check_false_positive_class/phase7-corpus-regate.md` — Phase 7's full-gate
+  measurement of the existing corpus copy, backup record, and exclusion rationale.
+- `~/Projects/Literature/backups/joyce_1999_foundations-causal-decision-theory_20260902T064713Z/`
+  — Phase 7 backup of the (unmodified) corpus sources dir and index entries.
 - `specs/104_resolve_glue_check_false_positive_class/summaries/01_*-summary.md` — execution
-  summary recording the baseline hit list, the confirmed PDF page indices, the post-fix count, and
-  the Phase 7 pre/post-refresh measurements.
+  summary recording the falsified premise, the verified narrative, and the Phase 7 measurement.
 
 ## Rollback/Contingency
 

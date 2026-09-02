@@ -246,7 +246,25 @@ def sentence_boundary_glue_count(text):
     joyce_1999_foundations-causal-decision-theory goes from 4 hits on
     the primary tier to 5 on the fallback tier, because both tiers read
     the same corrupted characters and the fallback tier's own
-    column-clustering can add unrelated noise. See
+    column-clustering can add unrelated noise.
+
+    joyce_1999_foundations-causal-decision-theory's OWN hit count is a
+    further instance of this pattern, not an exception to it: at one
+    measured point in time it converted to exactly 2 hits —
+    `^s.P(S\\A)u(0[A S])` (a garbled Stalnaker's-Equation fragment) and
+    `f.I+i p*( YHr` (a garbled matrix-predicate fragment) — already below
+    the threshold-3 cutoff, with zero genuine text-layer defects present.
+    A raw, unexempted scan of the same converted text (no Ph.D./binder/hat
+    stripping) returned exactly these same 2 matches, confirming no
+    exemption was masking a genuine hit behind them. These two are a
+    second deliberately unexempted, non-blocking class, parallel to the
+    arXiv subject-code precedent above: accepted as noise rather than
+    pattern-matched away. Note the tense: a document's hit count is a
+    property of its current source PDF's TEXT LAYER, and this PDF lives
+    outside this repository's own version control — its text layer can
+    change independently of any change to this module, so this note
+    records what was measured, not a permanent guarantee that will hold
+    for every future conversion of the same-named document. See
     context/guides/literature-organization.md's
     Converter Tier Selection section for the full diagnostic guidance —
     never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.
