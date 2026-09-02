@@ -940,8 +940,8 @@ Track vault operations for output:
 ### 6. Git Commit
 
 Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
-implementation of path-scoped, mutex-serialized committing (never a bare `git add` + bare
-`git commit -m`). This archival operation legitimately spans many tasks' rows in one commit, so
+implementation of path-scoped, mutex-serialized committing (never a bare `git add` plus a bare
+`git commit`). This archival operation legitimately spans many tasks' rows in one commit, so
 `--honest-index-rows` (which flags OTHER tasks' rows unexpectedly swept into a single task-scoped
 commit) does not apply here:
 

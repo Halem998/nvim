@@ -136,8 +136,8 @@ a single end-of-dispatch commit.
 - Any other "green checkpoint"
 
 **Commit format** — via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
-implementation of path-scoped, mutex-serialized committing (never a bare `git add` + bare
-`git commit -m`):
+implementation of path-scoped, mutex-serialized committing (never a bare `git add` plus a bare
+`git commit`):
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N} phase {P}: {step description}" \
