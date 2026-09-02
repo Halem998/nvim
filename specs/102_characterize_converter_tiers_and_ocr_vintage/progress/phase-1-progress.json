@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Amend the docstring remedy claim",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm current text/line span of remedy sentence", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record prohibition clause as preserved invariant", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Replace remedy sentence with Class A/Class B framing", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature_quality_gate.py"]},
+    {"id": 4, "description": "Apply mechanical adjustments (em-dash connector, no quotes in guide reference)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature_quality_gate.py"]},
+    {"id": 5, "description": "Re-wrap prose to docstring width", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature_quality_gate.py"], "note": "The final prohibition-clause line was kept unwrapped (single physical line, ~95 chars including indent) rather than the file's usual ~72-column wrap, because the Phase 1 verification's grep -F check requires the entire clause on one line to match at all -- confirmed this holds even against the pre-edit original (0 matches there too). Documented as a deviation."},
+    {"id": 6, "description": "Confirm no backslash introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "Re-wrap the new prose to the file's existing ~72-column docstring width",
+      "type": "altered",
+      "reason": "The literal prohibition-clause text 'never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.' must sit on a single physical line for the Phase 1/Phase 4 grep -F invariant check to match (grep matches per-line; verified the pre-edit original also fails this same check when the clause is wrapped across two lines). Kept that one line unwrapped (~95 chars incl. indent) so the invariant check passes; all other new lines follow the ~68-col wrap.",
+      "annotation": "*(deviation: altered — final invariant-clause line left unwrapped so the grep -F check can match; ~95 chars vs. the usual ~72-col wrap)*"
+    }
+  ]
+}

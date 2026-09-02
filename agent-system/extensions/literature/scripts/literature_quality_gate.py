@@ -234,11 +234,22 @@ def sentence_boundary_glue_count(text):
     also carry a handful of arXiv subject-class citation codes (`math.CT`,
     `math.AT`) that incidentally match the raw pattern; these are a known,
     deliberately unexempted secondary class, not corruption, and not
-    blocking either document's correct rejection. The correct operator
-    remedy for a document like this is reconversion with
-    `LITERATURE_CONVERTER=fallback` (the path already proven for
-    bacon_dorr_2024_classicism) — never widening this exemption further,
-    tuning the threshold-3 cutoff, or a manual override.
+    blocking either document's correct rejection. Reconversion with
+    `LITERATURE_CONVERTER=fallback` is NOT a universal remedy for a
+    gate-rejected document — it fixes only defects the primary tier's
+    own markdown-structuring heuristics introduce (table misdetection
+    over dense back matter, as here and in
+    savage_1972_foundations-of-statistics; `<sup>`/`<sub>` footnote-span
+    space-dropping, as in bacon_dorr_2024_classicism). It does nothing
+    for — and can even slightly worsen — a defect already baked into the
+    source text layer (e.g. a poor-vintage OCR pass):
+    joyce_1999_foundations-causal-decision-theory goes from 4 hits on
+    the primary tier to 5 on the fallback tier, because both tiers read
+    the same corrupted characters and the fallback tier's own
+    column-clustering can add unrelated noise. See
+    context/guides/literature-organization.md's Converter Tier
+    Selection section for the full diagnostic guidance —
+    never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.
 
     Exemption is applied by stripping the exempted substrings first, THEN
     counting on what remains — not a negative lookbehind — since the

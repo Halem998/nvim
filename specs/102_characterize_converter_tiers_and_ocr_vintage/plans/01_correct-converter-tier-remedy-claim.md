@@ -1,7 +1,7 @@
 # Implementation Plan: Correct the falsified converter-tier remedy claim
 
 - **Task**: 102 - Characterize converter-tier behavior and correct the falsified universal-remedy claim
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md`
@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Amend the docstring remedy claim [NOT STARTED]
+### Phase 1: Amend the docstring remedy claim [COMPLETED]
 
 **Goal**: `sentence_boundary_glue_count()`'s docstring no longer asserts
 `LITERATURE_CONVERTER=fallback` is the universal remedy; it states the Class A / Class B
@@ -108,22 +108,22 @@ distinction and names the `joyce_1999` counterexample, while the prohibition cla
 verbatim.
 
 **Tasks**:
-- [ ] Confirm the current text and line span of the remedy sentence with
+- [x] Confirm the current text and line span of the remedy sentence with
       `grep -n "correct operator\|never widening" agent-system/extensions/literature/scripts/literature_quality_gate.py`
-      before editing (do not trust the plan's line numbers).
-- [ ] Record the exact prohibition clause as a preserved invariant:
-      `never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.`
-- [ ] Replace only the sentence beginning `The correct operator remedy for a document like this
+      before editing (do not trust the plan's line numbers). *(completed: confirmed at lines 237/240)*
+- [x] Record the exact prohibition clause as a preserved invariant:
+      `never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.` *(completed)*
+- [x] Replace only the sentence beginning `The correct operator remedy for a document like this
       is reconversion with ...` up to (but not including) the em dash that introduces the
-      prohibition clause, using the drop-in block from the research report's Recommendations §2.
-- [ ] Apply two mechanical adjustments to the report's proposed text: (a) keep the existing
+      prohibition clause, using the drop-in block from the research report's Recommendations §2. *(completed)*
+- [x] Apply two mechanical adjustments to the report's proposed text: (a) keep the existing
       em-dash connector `—` before `never widening` rather than the report's ASCII `--`, so the
       prohibition clause and its connector are unchanged; (b) render the guide reference without
       double quotes (e.g. `See context/guides/literature-organization.md's Converter Tier
       Selection section for the full diagnostic guidance`) to avoid introducing quote characters
-      into a non-raw `"""` docstring.
-- [ ] Re-wrap the new prose to the file's existing ~72-column docstring width.
-- [ ] Confirm no backslash was introduced into the docstring body.
+      into a non-raw `"""` docstring. *(completed)*
+- [x] Re-wrap the new prose to the file's existing ~72-column docstring width. *(deviation: altered — the final prohibition-clause line was left unwrapped (~95 chars incl. indent) rather than split across two lines, because the Phase 1/4 `grep -F` invariant check requires the whole clause on one physical line to match at all; confirmed the pre-edit original also fails that same check when wrapped. All other new lines follow the ~68-col wrap.)*
+- [x] Confirm no backslash was introduced into the docstring body. *(completed: verified via grep)*
 
 **Timing**: 40 minutes
 
