@@ -10,7 +10,7 @@
 #   $2 = task_type      : TASK_TYPE exported by command-gate-in.sh
 #                         May be simple ("neovim") or compound ("founder:deck")
 #   $3 = default_skill  : fallback if no extension routing found
-#                         e.g., "skill-researcher", "skill-planner", "skill-implementer"
+#                         e.g., "skill-epi-research", "skill-nix-research"
 #   $4 = effort_flag    : (optional) "hard" | "fast" | "" | unset
 #                         When "hard", hard-mode resolution runs against routing_hard.
 #

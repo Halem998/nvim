@@ -20,19 +20,21 @@ Load context on-demand when needed:
 ## Relationship to `orchestrator-postflight.sh`
 
 This skill is the **documentation front** for the commit-scope contract — it is not literally
-invoked as a runtime script from bash. The actual execution of task-scoped commits happens in:
+invoked as a runtime script from bash. `.claude/scripts/orchestrator-postflight.sh` is now an
+orphaned script with no live callers (confirmed by a repo-wide grep for actual invocation sites)
+— it was the shared postflight-commit execution site for the three base lifecycle skills before
+they were deleted. The actual execution of task-scoped commits happens today in:
 
-- `.claude/scripts/orchestrator-postflight.sh` Stage 9 — the single shared execution site for
-  `research`/`plan`/`implement` postflight commits, branching on `operation_type` for targeted
-  staging (never staging the entire working tree).
-- `.claude/skills/skill-implementer/SKILL.md` Stage 6b (per-phase progress commit) and Stage 9
-  (final "complete implementation" commit) — two additional inline sites that run independently
-  of `orchestrator-postflight.sh` for the `implement` operation.
-- `.claude/agents/general-implementation-agent.md`'s Phase Checkpoint Protocol (per-phase
-  commit) — the innermost, once-per-phase commit site.
+- `.claude/skills/skill-orchestrate/SKILL.md`'s own dispatch-loop commit sites (single-task
+  CHECKPOINT 3 and multi-task Stage MT-4 step 5.5) — the shared execution site for
+  `research`/`plan`/`implement` postflight commits, branching on outcome for targeted staging
+  (never staging the entire working tree).
+- `.claude/agents/general-implementation-agent.md`'s Green Sub-Step Commit (per-objective) and
+  Phase Checkpoint Protocol (per-phase commit) — the innermost, per-objective/per-phase commit
+  sites for `implement` dispatch.
 
-All four sites implement the same contract documented in `git-staging-scope.md`. This SKILL.md
-describes that contract and where it is enforced; it does not add a fifth execution path.
+Both sites implement the same contract documented in `git-staging-scope.md`. This SKILL.md
+describes that contract and where it is enforced; it does not add a third execution path.
 
 ## Trigger Conditions
 

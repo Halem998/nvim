@@ -820,8 +820,8 @@ if [ -z "$description" ]; then
 fi
 ```
 
-**Memory retrieval (Auto), skipped when `clean_flag` is true**: reproduces
-`skill-researcher`/`skill-planner`/`skill-implementer`'s own Stage 4a verbatim, except the 3rd
+**Memory retrieval (Auto), skipped when `clean_flag` is true**: reproduces the same Stage 4a
+memory-retrieval pattern every lifecycle skill shares, except the 3rd
 `memory-retrieve.sh` argument is selected by `phase`, preserving the existing per-phase asymmetry:
 
 | `phase` | 3rd `memory-retrieve.sh` argument |

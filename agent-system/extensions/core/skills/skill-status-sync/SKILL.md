@@ -17,7 +17,7 @@ Reference (do not load eagerly):
 
 **IMPORTANT**: This skill is for STANDALONE USE ONLY.
 
-Workflow skills (skill-researcher, skill-planner, skill-implementer, etc.) now handle their own preflight/postflight status updates inline. This eliminates the multi-skill halt boundary problem where Claude may pause between skill invocations.
+Workflow skills (skill-orchestrate, skill-reviser, skill-spawn, etc.) now handle their own preflight/postflight status updates inline. This eliminates the multi-skill halt boundary problem where Claude may pause between skill invocations.
 
 **Use this skill for**:
 - Manual task status corrections

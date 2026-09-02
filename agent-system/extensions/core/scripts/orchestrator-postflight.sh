@@ -61,9 +61,13 @@
 #   1 - Fatal: missing required arguments
 #
 # Downstream dependencies:
-#   - skill-researcher/SKILL.md calls this for Stages 6-9 (no git commit)
-#   - skill-planner/SKILL.md calls this for Stages 6-10
-#   - skill-implementer/SKILL.md calls this for Stages 8-10 only (inline Stages 6-7 handle rest)
+#   - Historical: the three base lifecycle skills (research/plan/implement) called this script
+#     for their postflight stages before they were deleted. No current caller invokes this
+#     script directly (skill-orchestrate handles research/plan/implement postflight inline via
+#     skill-base.sh instead) -- confirmed orphaned by a repo-wide grep for actual invocation
+#     sites (`bash .../orchestrator-postflight.sh` / `source .../orchestrator-postflight.sh`).
+#     Retained for reference; see skill-git-workflow/SKILL.md for the current commit-scope
+#     execution sites.
 
 set -euo pipefail
 
@@ -336,7 +340,8 @@ fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7: Update task status (postflight) — research and plan only
-# implement does this inline in skill-implementer before calling this script
+# implement did this inline in the now-deleted base lifecycle implement skill before calling
+# this script (historical; this script has no current caller — see the header comment)
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_status_update" = "true" ] && [ "$status" = "$success_status" ]; then
   echo "[postflight] Updating task status via update-task-status.sh..."

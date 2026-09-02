@@ -243,17 +243,18 @@ if [ -n "$handoff_artifact_path" ] && [ "$handoff_artifact_path" != "null" ]; th
 fi
 
 # ── Artifact-round advance (A2 P1/P2) ────────────────────────────────────────────────────────
-# WHY THIS SITE, not skill_postflight_update: skill-researcher/SKILL.md already performs its own
-# inline next_artifact_number increment AND also calls skill_postflight_update -- folding the
-# advance into skill_postflight_update itself would double-increment /research's own round. This
-# matches the convention context/patterns/skill-postflight-flow.md already documents ("An
-# importing skill that needs this increment keeps that one state-write.sh call inline"). This
-# script is /orchestrate-only, so it is the correct, single site for /orchestrate's own advance.
+# WHY THIS SITE, not skill_postflight_update: the base lifecycle research skill (since deleted)
+# used to perform its own inline next_artifact_number increment AND also call
+# skill_postflight_update -- folding the advance into skill_postflight_update itself would have
+# double-incremented that skill's own round. This matches the convention
+# context/patterns/skill-postflight-flow.md already documents ("An importing skill that needs
+# this increment keeps that one state-write.sh call inline"). This script is /orchestrate-only,
+# so it is the correct, single site for /orchestrate's own advance.
 #
 # WHY NOT scripts/orchestrator-postflight.sh: that script's Stage 7a already performs the
-# identical increment, but it has ZERO call sites in skill-orchestrate/SKILL.md -- it belongs to
-# the plain /implement command's postflight instead (skill-implementer/SKILL.md,
-# skill-git-workflow/SKILL.md), not /orchestrate. Editing it would be inert for this command. See
+# identical increment, but it has ZERO call sites in skill-orchestrate/SKILL.md and is now fully
+# orphaned (no live caller at all -- it belonged to the now-deleted base lifecycle skills'
+# postflight). Editing it would be inert for this command. See
 # this task's plan for the full correction record; do not re-derive this from scratch.
 #
 # Gate: fires on `researched` UNCONDITIONALLY (P1 -- closing the pre-existing "/orchestrate never

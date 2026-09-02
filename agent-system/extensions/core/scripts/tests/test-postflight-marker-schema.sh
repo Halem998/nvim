@@ -77,7 +77,7 @@ cd "$WORKDIR" || exit 2
 # =====================================================================
 info "=== skill_create_postflight_marker: exact key set ==="
 
-skill_create_postflight_marker "042" "fixture_task" "sess_1700000000_abc123" "skill-researcher" "research"
+skill_create_postflight_marker "042" "fixture_task" "sess_1700000000_abc123" "skill-reviser" "research"
 
 MARKER_FILE="specs/042_fixture_task/.postflight-pending"
 
@@ -133,7 +133,7 @@ else
   fail "session_id did not round-trip correctly"
 fi
 
-if [[ "$(jq -r '.skill' "$MARKER_FILE")" == "skill-researcher" ]]; then
+if [[ "$(jq -r '.skill' "$MARKER_FILE")" == "skill-reviser" ]]; then
   pass "skill round-trips correctly"
 else
   fail "skill did not round-trip correctly"
@@ -157,7 +157,7 @@ fi
 # =====================================================================
 info "=== task_number derivation (no leading zeros) ==="
 
-skill_create_postflight_marker "123" "fixture_task_2" "sess_1700000001_def456" "skill-planner" "plan"
+skill_create_postflight_marker "123" "fixture_task_2" "sess_1700000001_def456" "skill-spawn" "plan"
 MARKER_FILE_2="specs/123_fixture_task_2/.postflight-pending"
 if [[ "$(jq -r '.task_number' "$MARKER_FILE_2" 2>/dev/null)" == "123" ]]; then
   pass "task_number derivation handles a padded_num with no leading zeros (123 -> 123)"

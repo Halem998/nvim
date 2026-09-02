@@ -68,7 +68,7 @@ case $exit_code in
     ;;
   1)
     # Validation errors found
-    echo "{\"additionalContext\": \"ARTIFACT VALIDATION FAILED for ${artifact_type}: ${FILE}\\n${output}\\n\\nYou MUST delegate artifact creation to the appropriate skill (skill-planner, skill-researcher, skill-implementer) via the Skill tool. Direct artifact writes bypass format enforcement and produce non-conforming files. Fix the issues above or re-run the command with proper skill delegation.\"}"
+    echo "{\"additionalContext\": \"ARTIFACT VALIDATION FAILED for ${artifact_type}: ${FILE}\\n${output}\\n\\nYou MUST delegate artifact creation to skill-orchestrate (which dispatches planner-agent/general-research-agent/general-implementation-agent directly) via the Skill tool. Direct artifact writes bypass format enforcement and produce non-conforming files. Fix the issues above or re-run the command with proper skill delegation.\"}"
     # Deliverable 2(c): record this detection. Per D4, expected log-only (the artifact is under
     # specs/**; no writer identity is available at this PostToolUse hook) — that is correct
     # behavior, not a bug.

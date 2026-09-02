@@ -303,10 +303,9 @@ EXCLUDED_FILES=(
 
     # --- skills/ offenders: pending lifecycle SKILL.md migration, deferred pending the
     # core-collapse sequencing decision (see context/patterns/adoption-lint-conventions.md) ----
-    "core/skills/skill-implementer/SKILL.md"
+    # The three base lifecycle skills that used to be listed here have been deleted; their
+    # entries are removed rather than left dangling.
     "core/skills/skill-orchestrate/SKILL.md"
-    "core/skills/skill-planner/SKILL.md"
-    "core/skills/skill-researcher/SKILL.md"
     "core/skills/skill-reviser/SKILL.md"
     "core/skills/skill-status-sync/SKILL.md"
     "cslib/skills/skill-cslib-implementation-hard/SKILL.md"

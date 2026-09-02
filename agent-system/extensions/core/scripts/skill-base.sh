@@ -664,11 +664,12 @@ skill_propagate_memory_candidates() {
 # Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" ["$session_id"]
 #
 # Single shared implementation of the guarded completion-data write, replacing what were
-# previously three independently-maintained copies (skill-implementer, the deleted standalone
-# hard-mode implementer skill, and the orphaned orchestrator-postflight.sh Stage 7b). Every
-# caller — the plain /implement
-# producer path AND all four /orchestrate paths (base single-task, base multi-task Stage MT-4,
-# hard single-task, hard multi-task via inherited MT-4) — converges on this one function.
+# previously three independently-maintained copies (the base lifecycle implement skill, the
+# deleted standalone hard-mode implementer skill, and the orphaned orchestrator-postflight.sh
+# Stage 7b -- all three since deleted). Every
+# caller — general-implementation-agent's own producer path AND all four /orchestrate paths
+# (base single-task, base multi-task Stage MT-4, hard single-task, hard multi-task via inherited
+# MT-4) — converges on this one function.
 #
 # Guard semantics (unchanged from the prior three copies):
 #   - completion_summary is written only when non-empty.
@@ -778,7 +779,7 @@ skill_link_artifacts() {
 # lifecycle skill's Stage 8a hand-copies today (11 near-identical inline blocks pre-unification).
 # Guards on the notify script's presence, backgrounds the invocation, and never blocks --
 # exactly the shape every existing inline copy already shares (see e.g.
-# `skill-researcher/SKILL.md`'s "Stage 8a: Lifecycle TTS Notification").
+# `skill-reviser/SKILL.md`'s "Stage 8b: Lifecycle TTS Notification").
 skill_lifecycle_notify() {
   local state_status="$1"
   local lifecycle_script=".claude/scripts/lifecycle-notify.sh"

@@ -409,28 +409,34 @@ and after; post-edit must be empty.
 
 ---
 
-### Phase 8: Sweep core scripts, hooks, agents, and surviving skills [NOT STARTED]
+### Phase 8: Sweep core scripts, hooks, agents, and surviving skills [COMPLETED]
 
 **Goal**: Clear references in executable and contract-bearing core files.
 
 **Tasks**:
-- [ ] `hooks/validate-plan-write.sh` -- its error message tells an agent to delegate to a now-deleted
-      skill; retarget to `planner-agent` / `skill-orchestrate`.
-- [ ] `scripts/`: `command-route-skill.sh` (header comment example), `skill-base.sh`,
+- [x] `hooks/validate-plan-write.sh` -- its error message tells an agent to delegate to a now-deleted
+      skill; retarget to `planner-agent` / `skill-orchestrate`. *(completed)*
+- [x] `scripts/`: `command-route-skill.sh` (header comment example), `skill-base.sh`,
       `orchestrator-postflight.sh`, `orchestrate-stage5-postflight.sh`,
-      `lint/lint-contract-compliance.sh`, `lint/lint-task-lookup-adoption.sh`.
-- [ ] `scripts/tests/`: `test-postflight-marker-schema.sh` (fixture string values),
-      `test-resume-scan-nonconformance.sh`, `test-routing-resolution.sh`. Fixture strings are
-      opaque to the assertions, so substituting a surviving skill name must not change any
-      expected result -- run each touched test to confirm.
-- [ ] `agents/`: `general-research-agent.md`, `general-research-hard-agent.md`,
-      `general-implementation-agent.md`, `general-implementation-hard-agent.md`,
-      `planner-hard-agent.md`.
-- [ ] `skills/`: `skill-orchestrate/SKILL.md` (including the "reproduces skill-researcher/
+      `lint/lint-task-lookup-adoption.sh` (`lint/lint-contract-compliance.sh` had zero hits --
+      already clean). *(completed)*
+- [x] `scripts/tests/`: `test-postflight-marker-schema.sh` (fixture string values;
+      `test-resume-scan-nonconformance.sh` and `test-routing-resolution.sh` had zero hits --
+      already clean). Fixture strings are opaque to the assertions, so substituting a surviving
+      skill name must not change any expected result -- ran the touched test to confirm: 10
+      passed, 0 failed. *(completed)*
+- [x] `agents/`: `general-research-agent.md`, `general-implementation-agent.md`
+      (`general-research-hard-agent.md`, `general-implementation-hard-agent.md`,
+      `planner-hard-agent.md` do not exist -- confirmed via repo-wide grep that no
+      `skill-researcher-hard`/`skill-planner-hard`/`skill-implementer-hard` or their agent
+      counterparts exist anywhere in the source tree; removed by an earlier, unrelated task).
+      *(completed)*
+- [x] `skills/`: `skill-orchestrate/SKILL.md` (including the "reproduces skill-researcher/
       skill-planner/skill-implementer's own Stage 4a verbatim" comment),
-      `skill-orchestrate-hard/SKILL.md`, `skill-researcher-hard/SKILL.md`,
-      `skill-planner-hard/SKILL.md`, `skill-implementer-hard/SKILL.md`,
-      `skill-status-sync/SKILL.md`, `skill-git-workflow/SKILL.md`.
+      `skill-status-sync/SKILL.md`, `skill-git-workflow/SKILL.md`
+      (`skill-orchestrate-hard/SKILL.md`, `skill-researcher-hard/SKILL.md`,
+      `skill-planner-hard/SKILL.md`, `skill-implementer-hard/SKILL.md` do not exist -- same
+      finding as above). *(completed)*
 
 **Timing**: 1.5 hours
 

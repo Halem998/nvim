@@ -181,13 +181,15 @@ When Stage 3.5 detects context pressure, STOP starting new searches and execute,
    agents use — see `context-exhaustion-detection.md`'s "Handoff Writing Protocol").
 
 **Scoping Decision (Option A — chosen)**: This handoff is detection + clean-stop + a
-research-shaped partial-report handoff. It does NOT rely on or claim a `skill-researcher`
-continuation loop — none exists today (unlike `skill-implementer`'s `continuation_context` /
-`subagent-continuation-loop.md` consumer). The value is crash-avoidance plus a discoverable
-partial report that a fresh `/research N` invocation can build on, not automatic resume. Do NOT
+research-shaped partial-report handoff. It does NOT rely on or claim a `general-research-agent`
+continuation loop — none exists today (unlike `general-implementation-agent`'s
+`continuation_context` / `subagent-continuation-loop.md` consumer, which the now-deleted base
+lifecycle implement skill used to own before that responsibility moved to `skill-orchestrate`).
+The value is crash-avoidance plus a discoverable partial report that a fresh
+`/orchestrate N --research` invocation can build on, not automatic resume. Do NOT
 use `wrap-up.md`'s H9 schema or `.orchestrator-handoff.json` for research — that schema and its
 consumer allowlist are implementation-agent-only. A minimal prior-handoff consumer for
-`skill-researcher{,-hard}` (Option B, mirroring `subagent-continuation-loop.md`'s `is_successor`
+`general-research-agent` (Option B, mirroring `subagent-continuation-loop.md`'s `is_successor`
 shape) is a recommended follow-up task, not implemented here.
 
 **Defensive case, if this scoping decision is ever reversed**: should a future variant of this

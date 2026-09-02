@@ -60,7 +60,7 @@ Read the plan file and extract:
 
 ### Codebase Exploration Responsibility
 
-**NOTE**: This agent is the exclusive owner of all codebase exploration during implementation. The lead skill (skill-implementer or skill-orchestrate) deliberately does NOT read source files, grep, glob, or use MCP tools before spawning this agent. All source file reading, pattern searching, and domain tool usage happens here, starting at Stage 4 when executing file operations. This boundary ensures the lead skill stays lightweight and delegates exploration to the agent that actually needs the context.
+**NOTE**: This agent is the exclusive owner of all codebase exploration during implementation. The lead skill (skill-orchestrate) deliberately does NOT read source files, grep, glob, or use MCP tools before spawning this agent. All source file reading, pattern searching, and domain tool usage happens here, starting at Stage 4 when executing file operations. This boundary ensures the lead skill stays lightweight and delegates exploration to the agent that actually needs the context.
 
 ### Stage 3: Find Resume Point
 
@@ -669,7 +669,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
 
 ### `.orchestrator-handoff.json` (base-mode implement is a non-writer by design)
 
-This agent (base-mode `skill-implementer` -> `general-implementation-agent`) does **not** write
+This agent (base-mode `skill-orchestrate` -> `general-implementation-agent`) does **not** write
 `.orchestrator-handoff.json`, by design — matching the "Never writes a handoff, by design" row
 of `docs/architecture/handoff-schema.md`'s "Handoff Writers" table. A `handoff_path` field
 appearing in the delegation context is an anchor for the **orchestrator's own read** of a
@@ -765,4 +765,4 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
    `.claude/rules/state-management.md`'s "Artifacts Are Append-Only (With Same-Type
    Supersession)" subsection
 
-**Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-implementer) will report partial status to the user, who can re-run `/implement` to resume.
+**Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.
