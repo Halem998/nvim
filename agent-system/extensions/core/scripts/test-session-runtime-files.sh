@@ -9,10 +9,10 @@
 # -- the same isolation technique test-task-lock-reap.sh uses.
 #
 # Two of the six cases below (foreign-session detection, resume tolerance) assert against
-# instruction text in commands/orchestrate.md and skills/skill-orchestrate{,-hard}/SKILL.md
-# rather than executable code, because the session_id checks those cases cover live in markdown
-# instruction files, not a shell script. This is a known, explicitly recorded limitation (see the
-# plan's Per-phase contingency), not an oversight: the foreign-session-detection case combines a
+# instruction text in commands/orchestrate.md and skills/skill-orchestrate/SKILL.md rather than
+# executable code, because the session_id checks those cases cover live in markdown instruction
+# files, not a shell script. This is a known, explicitly recorded limitation (see the plan's
+# Per-phase contingency), not an oversight: the foreign-session-detection case combines a
 # faithful transcription of the check's logic (exercised here as real bash) with a companion grep
 # assertion that the live orchestrate.md still contains the actual comparison; the
 # resume-tolerance case is grep-only by nature, since "absence of a hard-fail construct" has no
@@ -20,9 +20,10 @@
 #
 # Runnable directly from the source store (this file's own location) or from a deployed
 # .claude/scripts/ copy -- either way it locates its sibling reap-session-runtime-files.sh and
-# the commands/orchestrate.md, skills/skill-orchestrate/SKILL.md,
-# skills/skill-orchestrate-hard/SKILL.md instruction files by relative path (scripts/, commands/,
-# skills/ are siblings under both agent-system/extensions/core/ and .claude/).
+# the commands/orchestrate.md and skills/skill-orchestrate/SKILL.md instruction files by relative
+# path (scripts/, commands/, skills/ are siblings under both agent-system/extensions/core/ and
+# .claude/). The loop-guard staleness check and the hard-mode churn-state check now both live in
+# this single merged engine file, since the standalone hard-mode orchestrate engine was deleted.
 #
 # Exit 0 when all cases PASS, exit 1 when any case FAILS.
 
@@ -61,7 +62,11 @@ if [ ! -f "$SCRIPT_DIR/reap-session-runtime-files.sh" ] || [ ! -f "$SCRIPT_DIR/l
 fi
 ORCHESTRATE_MD="$ROOT_DIR/commands/orchestrate.md"
 LOOP_GUARD_SKILL="$ROOT_DIR/skills/skill-orchestrate/SKILL.md"
-CHURN_SKILL="$ROOT_DIR/skills/skill-orchestrate-hard/SKILL.md"
+# The hard-mode churn-state write this suite exercises now lives in skill-orchestrate/SKILL.md
+# itself (the standalone hard-mode engine that used to own it was deleted), so CHURN_SKILL and
+# LOOP_GUARD_SKILL are the same file today. Kept as a separate variable (rather than collapsed
+# into LOOP_GUARD_SKILL at every call site below) so a future re-split remains a one-line change.
+CHURN_SKILL="$LOOP_GUARD_SKILL"
 for f in "$ORCHESTRATE_MD" "$LOOP_GUARD_SKILL" "$CHURN_SKILL"; do
   if [ ! -f "$f" ]; then
     echo "ERROR: expected instruction file not found: $f" >&2

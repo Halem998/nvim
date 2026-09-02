@@ -280,34 +280,41 @@ also references a target, retarget it in this phase rather than deferring.
 
 ---
 
-### Phase 3: Retarget the test scripts off the deletion targets [NOT STARTED]
+### Phase 3: Retarget the test scripts off the deletion targets [COMPLETED]
 
 **Goal**: Same as Phase 2, for the four test scripts that reference the targets by path or assert
 on hard-mode routing that Phase 4 removes.
 
 **Tasks**:
-- [ ] `scripts/tests/test-routing-resolution.sh` — the `for op_default in "research
+- [x] `scripts/tests/test-routing-resolution.sh` — the `for op_default in "research
       skill-researcher-hard" "plan skill-planner-hard" "implement skill-implementer-hard"` loop
       asserts hard-mode skill defaults for `general`/`meta`/`markdown`. After Phase 4 removes
       core's `routing_hard`, those pairs are gone by design. Remove or retarget the loop to assert
       the *new* correct behavior (hard mode on those task types resolves the standard skill).
-- [ ] `scripts/tests/test-routing-resolution.sh` — Assert 2/3/4's four
+      *(completed: removed, with a comment explaining Assert 1's mechanical matrix loop already
+      covers this and that command-route-skill.sh is no longer a live research/plan/implement
+      dispatch path)*
+- [x] `scripts/tests/test-routing-resolution.sh` — Assert 2/3/4's four
       `general-research-hard-agent` caller-default arguments: these pass the deleted agent name as
       `command-route-agent.sh`'s fallback default. Replace with `general-research-agent`, which is
-      what `skill-orchestrate` actually passes, and update the assertion messages.
-- [ ] `scripts/tests/test-resume-scan-nonconformance.sh` — `SITE_B_FILE` points at
+      what `skill-orchestrate` actually passes, and update the assertion messages. *(completed)*
+- [x] `scripts/tests/test-resume-scan-nonconformance.sh` — `SITE_B_FILE` points at
       `skill-implementer-hard/SKILL.md`. Retarget Site B to the engine's resume-scan site in
       `skill-orchestrate/SKILL.md`, or drop Site B and renumber, updating `SITE_LABEL` and the
-      header comment to match.
-- [ ] `scripts/test-session-runtime-files.sh` — `CHURN_SKILL` points at
+      header comment to match. *(completed: dropped Site B — skill-orchestrate/SKILL.md has only
+      one resume-scan gate region (Site A's), no second distinct site to retarget onto; A/C kept
+      as-is rather than relabeled)*
+- [x] `scripts/test-session-runtime-files.sh` — `CHURN_SKILL` points at
       `skill-orchestrate-hard/SKILL.md`. Retarget to `skill-orchestrate/SKILL.md`, which now owns
-      the churn-state write.
-- [ ] `scripts/tests/test-loop-guard-budget-override.sh` — its skip-guard greps for
+      the churn-state write. *(completed: CHURN_SKILL now aliases LOOP_GUARD_SKILL, same file)*
+- [x] `scripts/tests/test-loop-guard-budget-override.sh` — its skip-guard greps for
       `skill-orchestrate-hard/SKILL.md` and carries a three-line comment explaining that
       `test-session-runtime-files.sh` cannot run because its preflight requires that file. Once the
       previous bullet lands, the limitation is discharged: remove the skip-guard and the comment
-      so the suite actually runs.
-- [ ] Re-run all four and confirm no regression versus `.gate-baseline-before.txt`.
+      so the suite actually runs. *(completed: skip-guard removed; test-session-runtime-files.sh
+      now actually executes and passes)*
+- [x] Re-run all four and confirm no regression versus `.gate-baseline-before.txt`. *(completed:
+      all four exit 0, zero occurrences of the seven names remain in any of the four files)*
 
 **Timing**: 1.75 hours
 

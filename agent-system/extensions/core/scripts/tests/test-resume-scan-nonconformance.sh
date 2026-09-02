@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 # test-resume-scan-nonconformance.sh - Fixture-driven regression suite for the resume-scan
-# conformance gate wired into the hard-mode per-phase dispatch sites (skill-implementer-hard,
-# skill-orchestrate's hard_mode-gated per-phase-dispatch (H1) branch,
-# skill-lean-implementation-hard). Exercises the ordering contract
-# directly: PHASE_HEADING_ERE-filtered scans MUST run has_nonconforming_phase_headings over the
-# whole plan file first, or a non-conforming heading is silently invisible to the scan rather
-# than merely unmatched by it -- see scripts/lib/phase-heading-patterns.sh's "Ordering contract
-# for filtered scans" header note and context/formats/plan-format.md's "Canonical phase-heading
-# shape" subsection.
+# conformance gate wired into the hard-mode per-phase dispatch sites (skill-orchestrate's
+# hard_mode-gated per-phase-dispatch (H1) branch, skill-lean-implementation-hard). Exercises the
+# ordering contract directly: PHASE_HEADING_ERE-filtered scans MUST run
+# has_nonconforming_phase_headings over the whole plan file first, or a non-conforming heading is
+# silently invisible to the scan rather than merely unmatched by it -- see
+# scripts/lib/phase-heading-patterns.sh's "Ordering contract for filtered scans" header note and
+# context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
+#
+# Former Site B (the standalone core implementer-hard skill file) is REMOVED, not retargeted:
+# that file is deleted outright, and skill-orchestrate's own H1 hard branch (Site A) already
+# carries the resume-scan gate the deleted skill used to duplicate -- there is no second,
+# distinct gate site inside skill-orchestrate/SKILL.md to retarget Site B onto. Site A alone now
+# covers what Sites A and B together used to cover in core.
 #
 # Structural model: scripts/tests/test-phase-heading-patterns.sh (pass()/fail()/info() helpers,
 # PASSED/FAILED integer counters, exit 0 all-pass / 1 any-fail / 2 environment error,
 # deploy-tree-first then source-store-fallback library resolution).
 #
-# HONEST SCOPE LIMIT: the enclosing markdown fences in the three SKILL.md files below contain
+# HONEST SCOPE LIMIT: the enclosing markdown fences in the two SKILL.md files below contain
 # `Agent tool:` / `EXIT (...)` pseudo-syntax and are NOT valid bash -- this is pre-existing and
 # expected, not a defect this suite works around. This suite extracts and executes only the
 # sentinel-delimited `resume-scan-conformance-gate:begin`/`:end` regions (pure, executable bash),
@@ -64,12 +69,11 @@ if [[ -z "$LIB" ]]; then
   exit 2
 fi
 
-SITE_B_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
 SITE_A_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 SITE_C_FILE="$REPO_ROOT/agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
 SITE_D_FILE="$REPO_ROOT/agent-system/extensions/core/scripts/update-task-status.sh"
 
-for f in "$SITE_B_FILE" "$SITE_A_FILE" "$SITE_C_FILE" "$SITE_D_FILE"; do
+for f in "$SITE_A_FILE" "$SITE_C_FILE" "$SITE_D_FILE"; do
   if [[ ! -f "$f" ]]; then
     echo "ERROR: required file not found: $f" >&2
     exit 2
@@ -109,7 +113,7 @@ extract_region() {
   ' "$file"
 }
 
-# Note on the library sourcing line: at all three sites, `. .claude/scripts/lib/phase-heading-
+# Note on the library sourcing line: at both remaining sites, `. .claude/scripts/lib/phase-heading-
 # patterns.sh` sits immediately BEFORE the `resume-scan-conformance-gate:begin` marker (per the
 # canonical snippet -- see Phase 1 of the implementation plan), so it is deliberately NOT part of
 # the extracted region. Rather than textually rewriting an in-region sourcing line that does not
@@ -117,14 +121,13 @@ extract_region() {
 # region -- behaviorally identical (the region's own logic never re-sources the library), and
 # correct regardless of deploy-tree vs. source-store checkout since $LIB was already resolved
 # above.
-region_b="$(extract_region "$SITE_B_FILE" "Site B (skill-implementer-hard)")" || exit 2
 region_a="$(extract_region "$SITE_A_FILE" "Site A (skill-orchestrate)")" || exit 2
 region_c="$(extract_region "$SITE_C_FILE" "Site C (skill-lean-implementation-hard)")" || exit 2
 
 # =====================================================================
 # bash -n: every extracted region must be independently syntax-clean.
 # =====================================================================
-for pair in "B:$region_b" "A:$region_a" "C:$region_c"; do
+for pair in "A:$region_a" "C:$region_c"; do
   site="${pair%%:*}"
   region="${pair#*:}"
   script_file="$WORKDIR/syntax-${site}.sh"
@@ -189,12 +192,12 @@ EOF
 fixture_a_4c_line="$(grep -n '^### Phase 4C:' "$fixture_a" | head -1 | cut -d: -f1)"
 info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
 
-declare -A SITE_REGION=( [B]="$region_b" [A]="$region_a" [C]="$region_c" )
-declare -A SITE_BINDVAR=( [B]="plan_path" [A]="plan_path" [C]="plan_file" )
-declare -A SITE_RESULTVAR=( [B]="next_phase" [A]="next_phase" [C]="phase_number" )
-declare -A SITE_LABEL=( [B]="Site B (skill-implementer-hard)" [A]="Site A (skill-orchestrate)" [C]="Site C (skill-lean-implementation-hard)" )
+declare -A SITE_REGION=( [A]="$region_a" [C]="$region_c" )
+declare -A SITE_BINDVAR=( [A]="plan_path" [C]="plan_file" )
+declare -A SITE_RESULTVAR=( [A]="next_phase" [C]="phase_number" )
+declare -A SITE_LABEL=( [A]="Site A (skill-orchestrate)" [C]="Site C (skill-lean-implementation-hard)" )
 
-for site in B A C; do
+for site in A C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -257,7 +260,7 @@ Body text for phase 2.
 Body text for phase 3.
 EOF
 
-for site in B A C; do
+for site in A C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -308,7 +311,7 @@ Body text for phase 3.1.
 Body text for phase 4.
 EOF
 
-for site in B A C; do
+for site in A C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -328,20 +331,6 @@ done
 # =====================================================================
 # Structural assertions on the posture branches (pseudo-syntax; not executable).
 # =====================================================================
-
-# Site B: exit 1 guarded by phase_scan_inconclusive, precedes the cascade's first elif.
-site_b_guard_line=$(grep -n 'phase_scan_inconclusive" = "true"' "$SITE_B_FILE" | head -1 | cut -d: -f1)
-site_b_elif_line=$(grep -n '^[[:space:]]*elif \[' "$SITE_B_FILE" | head -1 | cut -d: -f1)
-if [[ -n "$site_b_guard_line" && -n "$site_b_elif_line" && "$site_b_guard_line" -lt "$site_b_elif_line" ]]; then
-  pass "Site B: phase_scan_inconclusive guard (line ${site_b_guard_line}) precedes the cascade's first elif (line ${site_b_elif_line})"
-else
-  fail "Site B: could not confirm phase_scan_inconclusive guard precedes the cascade's first elif (guard=${site_b_guard_line:-MISSING}, elif=${site_b_elif_line:-MISSING})"
-fi
-if sed -n "${site_b_guard_line},$((site_b_guard_line + 4))p" "$SITE_B_FILE" | grep -q 'exit 1'; then
-  pass "Site B: posture branch contains 'exit 1'"
-else
-  fail "Site B: posture branch does not contain 'exit 1' near line ${site_b_guard_line}"
-fi
 
 # Site A: EXIT (partial branch guarded by phase_scan_inconclusive, is the FIRST branch --
 # precedes both the next_phase test and the last_skeleton test.

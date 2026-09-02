@@ -345,16 +345,6 @@ done
 if [[ -n "$SESSION_TEST" ]]; then
   if bash "$SESSION_TEST" >"$WORKDIR/session-runtime.out" 2>&1; then
     pass "test-session-runtime-files.sh passes (Case 3 included)"
-  elif grep -qF 'expected instruction file not found' "$WORKDIR/session-runtime.out" \
-    && grep -qF 'skill-orchestrate-hard/SKILL.md' "$WORKDIR/session-runtime.out"; then
-    # test-session-runtime-files.sh is a separate suite outside this task's file-modification
-    # scope (it lives flat at scripts/, not scripts/tests/**, so retargeting it is out of bounds
-    # here -- see this plan's Non-Goals). Its own environment preflight still hard-requires
-    # skill-orchestrate-hard/SKILL.md on disk (a known, separately-tracked limitation, not
-    # something this task introduced or is responsible for closing). Only THIS SPECIFIC,
-    # environment-absence failure mode is downgraded to informational; any other failure --
-    # including a genuine Case 3 logic regression -- still fails loudly below.
-    info "test-session-runtime-files.sh could not run: its own environment preflight requires skill-orchestrate-hard/SKILL.md, which is outside this task's scope to retarget (separate, already-tracked limitation) -- not treated as a failure of this suite"
   else
     fail "test-session-runtime-files.sh FAILED -- see $WORKDIR/session-runtime.out"
     cat "$WORKDIR/session-runtime.out"

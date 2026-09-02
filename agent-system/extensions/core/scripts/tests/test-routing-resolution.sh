@@ -170,23 +170,17 @@ if [ "$assert1_failures" -eq 0 ]; then
   pass "Assert 1: all $STANDARD_COUNT standard + $HARD_COUNT hard pairs resolve to their manifest's declared skill"
 fi
 
-# Hard-mode on general/meta/markdown resolves the -hard skills (the defect implement.md's
-# missing 4th argument caused -- fixed in this task's Phase 2)
-for op_default in "research skill-researcher-hard" "plan skill-planner-hard" "implement skill-implementer-hard"; do
-  op=$(echo "$op_default" | cut -d' ' -f1)
-  expected=$(echo "$op_default" | cut -d' ' -f2)
-  for tt in general meta markdown; do
-    actual=$(
-      cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-        bash -c "source '$ROUTE_SKILL_SRC' '$op' '$tt' 'skill-x' 'hard' 2>/dev/null; echo \"\$SKILL_NAME\""
-    )
-    if [ "$actual" = "$expected" ]; then
-      pass "hard-mode $op/$tt resolves $expected"
-    else
-      fail "hard-mode $op/$tt expected $expected got $actual"
-    fi
-  done
-done
+# A former hardcoded loop asserting hard-mode general/meta/markdown resolution to the three
+# core -hard skills lived here. It is REMOVED, not retargeted, for two reasons: (1) it duplicated
+# coverage Assert 1's own mechanical matrix loop above already provides -- that loop is built
+# directly from each manifest's declared `routing_hard` block, so it naturally tracks whatever
+# core's `routing_hard` declares (today, or its absence once removed) without any hardcoded
+# pairing to maintain; (2) the skill-level resolver this loop exercised, command-route-skill.sh,
+# is no longer called by any live research/plan/implement dispatch site -- skill-orchestrate's
+# Stage 1b resolves AGENTS directly via command-route-agent.sh, not skills via
+# command-route-skill.sh, for those three ops. The one surviving command-route-skill.sh caller is
+# the epidemiology extension's /epi command, whose `epi` task type was never declared in any
+# `routing_hard` block and is therefore untouched by this removal.
 
 # =====================================================================
 # Assert 2: agent existence -- command-route-agent.sh resolves every declared routing_agents /
@@ -297,11 +291,11 @@ for tt in neovim nix; do
   expected="${_assert3_semantic_expected[$tt]}"
   hard_actual=$(
     cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
   )
   hard_trace=$(
     cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>&1 1>/dev/null"
+      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-agent' 'hard' 2>&1 1>/dev/null"
   )
   hard_via=$(echo "$hard_trace" | grep -o 'via=[a-zA-Z-]*' | tail -n 1 | cut -d= -f2)
   if [ "$hard_actual" = "$expected" ] && [ "$hard_via" = "hard-miss-standard-fallback" ]; then
@@ -315,12 +309,12 @@ done
 # default under hard mode -- the genuine total-miss rung, which no existing fixture exercises.
 _total_miss_actual=$(
   cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'zzz-unrouted-test-type' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'zzz-unrouted-test-type' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
 )
-if [ "$_total_miss_actual" = "general-research-hard-agent" ]; then
-  pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-hard-agent) -- the true total-miss rung"
+if [ "$_total_miss_actual" = "general-research-agent" ]; then
+  pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-agent) -- the true total-miss rung"
 else
-  fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-hard-agent'"
+  fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-agent'"
 fi
 
 # lean4 DOES have a routing_agents_hard entry, and it must differ from the standard entry
@@ -331,7 +325,7 @@ lean_std=$(
 )
 lean_hard=$(
   cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
 )
 if [ "$lean_std" = "lean-research-agent" ] && [ "$lean_hard" = "lean-research-hard-agent" ] && [ "$lean_std" != "$lean_hard" ]; then
   pass "Assert 3 (semantic): lean4 standard ($lean_std) and hard ($lean_hard) resolve to distinct, correctly-declared agents"

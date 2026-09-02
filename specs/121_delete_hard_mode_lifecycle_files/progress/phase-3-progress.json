@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Retarget the test scripts off the deletion targets",
+  "started_at": "2026-09-02T17:15:00Z",
+  "last_updated": "2026-09-02T17:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-routing-resolution.sh op_default loop removal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 2, "description": "test-routing-resolution.sh caller-default replacement", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 3, "description": "test-resume-scan-nonconformance.sh Site B removal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"]},
+    {"id": 4, "description": "test-session-runtime-files.sh CHURN_SKILL retarget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-session-runtime-files.sh"]},
+    {"id": 5, "description": "test-loop-guard-budget-override.sh skip-guard removal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 6, "description": "Re-run all four, confirm no regression vs baseline", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
