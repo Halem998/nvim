@@ -1,7 +1,7 @@
 # Implementation Plan: Task #103
 
 - **Task**: 103 - Fix fidelity audit chunk-only blindness, the absent-baseline majority, and the self-referential scan-source ratio
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None blocking. Non-blocking coordination: Task 102 (converter-tier characterization, orthogonal), Task 107 (OCR-misrecognition detector, [NOT STARTED] — do not duplicate).
 - **Research Inputs**: `specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md`
@@ -335,31 +335,41 @@ a single documented source of truth outside the script header.
 
 ---
 
-### Phase 5: Atomic corpus re-stamp and end-to-end acceptance [NOT STARTED]
+### Phase 5: Atomic corpus re-stamp and end-to-end acceptance [COMPLETED]
 
 **Goal**: The live corpus is re-stamped once, under the fully fixed script, and the task's stated
 acceptance criteria are demonstrated against real data.
 
 **Tasks**:
-- [ ] Confirm no `--write` has been run at any earlier point in this task. Re-run `--dry-run` from
-      the source-store path one final time and review the full population summary.
-- [ ] Record the pre-write population by value from `~/Projects/Literature/index.json` (the research
-      report's Appendix `jq` one-liner) so the changed set is attributable afterward.
-- [ ] Run `--write` **from the source-store path**
+- [x] Confirm no `--write` has been run at any earlier point in this task. Re-run `--dry-run` from
+      the source-store path one final time and review the full population summary. *(completed:
+      index.json mtime unchanged and no .bak files present before this phase, confirming no
+      prior --write)*
+- [x] Record the pre-write population by value from `~/Projects/Literature/index.json` (the research
+      report's Appendix `jq` one-liner) so the changed set is attributable afterward. *(completed)*
+- [x] Run `--write` **from the source-store path**
       (`agent-system/extensions/literature/scripts/literature-fidelity-audit.sh`), not from the
       `.claude/` deploy copy, which is stale until the user redeploys. Confirm the script's own
-      `index.json` backup was created before proceeding to verification.
-- [ ] Record the post-write population and diff it against the pre-write record.
-- [ ] Verify the 9 previously-false scan-source stamps are de-certified.
-- [ ] Verify the 10 orphaned `unverified_conversion` entries now carry real enum values (expected
-      self-heal, not a regression).
-- [ ] Re-run `literature-search.sh "deliberative stit"` without `--include-unverified` and confirm
+      `index.json` backup was created before proceeding to verification. *(completed: backup at
+      index.json.bak.20260902-052324, created and byte-verified by the script itself)*
+- [x] Record the post-write population and diff it against the pre-write record. *(completed: see
+      progress file verification_notes for the full 29-transition attribution)*
+- [x] Verify the 9 previously-false scan-source stamps are de-certified. *(completed and
+      exceeded: all 11 scan-flagged directories, including goldblatt_1989, now read
+      unverified_scan_source; zero remain verified_conversion)*
+- [x] Verify the 10 orphaned `unverified_conversion` entries now carry real enum values (expected
+      self-heal, not a regression). *(completed: zero unverified_conversion entries remain
+      anywhere in the corpus; all 10 now carry verified_conversion or no_source_pdf)*
+- [x] Re-run `literature-search.sh "deliberative stit"` without `--include-unverified` and confirm
       `horty_belnap_1995_deliberative-stit` still surfaces (this is the (b) acceptance check: the
-      fix must not have pushed the `no_source_pdf` majority into quarantine).
-- [ ] Run `literature-briefing.sh` against a document now stamped `unverified_scan_source` and
-      confirm the `[UNVERIFIED - provenance_fidelity: ...]` marker is emitted.
-- [ ] Note in the summary that `.claude/` remains stale until the user redeploys the extension;
-      redeployment is out of scope for this task.
+      fix must not have pushed the `no_source_pdf` majority into quarantine). *(completed: still
+      surfaces post-write)*
+- [x] Run `literature-briefing.sh` against a document now stamped `unverified_scan_source` and
+      confirm the `[UNVERIFIED - provenance_fidelity: ...]` marker is emitted. *(completed via a
+      throwaway single-entry sub-index for burgess_1982_i, deleted immediately after; marker
+      confirmed verbatim)*
+- [x] Note in the summary that `.claude/` remains stale until the user redeploys the extension;
+      redeployment is out of scope for this task. *(completed, noted here and in the summary)*
 
 **Timing**: 1 hour
 
@@ -392,16 +402,17 @@ proceed.
 
 ## Testing & Validation
 
-- [ ] `--dry-run` output after Phase 1 reproduces `burgess_1982_i` = 1.0982 and `goldblatt_1989` =
+- [x] `--dry-run` output after Phase 1 reproduces `burgess_1982_i` = 1.0982 and `goldblatt_1989` =
       1.0162 (the anti-double-count regression check).
-- [ ] `--dry-run` output after Phase 2 shows zero scan-source directories at `verified_conversion`.
-- [ ] TSV diff between the Phase 1 and Phase 2 dry runs moves only scan-source rows.
-- [ ] `bash -n` clean on all three edited shell scripts; the audit script's embedded Python parses
+- [x] `--dry-run` output after Phase 2 shows zero scan-source directories at `verified_conversion`.
+- [x] TSV diff between the Phase 1 and Phase 2 dry runs moves only scan-source rows.
+- [x] `bash -n` clean on all three edited shell scripts; the audit script's embedded Python parses
       (`--dry-run` running to completion is the check).
-- [ ] `unverified_scan_source` present in every consumer location where `unadjudicated` is present.
-- [ ] Post-`--write`: search returns results without `--include-unverified`; briefing emits the
+- [x] `unverified_scan_source` present in every consumer location where `unadjudicated` is present.
+- [x] Post-`--write`: search returns results without `--include-unverified`; briefing emits the
       unverified marker for a scan-source document.
-- [ ] No file under `.claude/**` was modified at any point.
+- [x] No file under `.claude/**` was modified at any point. *(confirmed via git log --name-only
+      across every commit this task made)*
 
 ## Artifacts & Outputs
 

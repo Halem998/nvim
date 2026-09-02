@@ -1,7 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 103,
   "session_id": "sess_1788323839_c3b8b4",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/summaries/01_fidelity-audit-chunk-scan-fixes-summary.md",
+      "summary": "All 5 phases completed: conditional chunk-counting fix, scan-source gate with new unverified_scan_source enum value, both consumers widened, governing prose updated (including a new provenance-fidelity.md), and the live corpus re-stamped via --write with all 11 false scan-source certifications de-certified and all 10 orphaned unverified_conversion entries self-healed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed literature-fidelity-audit.sh's chunk-only-directory blindness (conditional chunk counting), added a pdfinfo-gated unverified_scan_source enum value that de-certifies 11 false scan-source verified_conversion stamps, widened both retrieval consumers, updated governing prose (new provenance-fidelity.md), and re-stamped the live corpus atomically under the fixed script with zero unattributable changes."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+    "agent-system/extensions/literature/scripts/literature-search.sh",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/provenance-fidelity.md",
+    "agent-system/extensions/literature/context/project/literature/domain/literature-index.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When widening an enum guarded by fail-open allowlist consumers (e.g. a 'quarantine list' or a 'needs-marker case statement'), grep the FULL extension/module tree for every existing enum value string before assuming the two documented consumers are exhaustive -- a stale, orphaned value that matches NO current producer branch (e.g. a corpus field a prior script version wrote, that the current enum no longer includes) can silently bypass every fail-open check indefinitely, because 'not in the list' reads as 'fine' by construction. It self-heals the moment the producer re-runs and overwrites the stale value, but only if the producer is re-run -- until then it's a live, undetected authority gap. Verification pattern: after any --write-style re-stamp, diff pre/post state keyed by a stable id and confirm the orphaned value's count drops to exactly zero, not just that the new value's count is non-zero.",
+      "category": "PATTERN",
+      "source_artifact": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/summaries/01_fidelity-audit-chunk-scan-fixes-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["fail-open", "allowlist", "orphaned-enum-value", "quarantine", "provenance-fidelity", "silent-authority-gap"]
+    },
+    {
+      "content": "When verifying a --dry-run fix's 'no-op' claim against a corpus's currently-stamped live values, do NOT compare directly against the live stamps if there's any reason to suspect staleness (a prior script version, corpus churn since the last real write). Instead diff the FIXED script's output against the UNMODIFIED script's own output on the SAME current corpus snapshot -- this isolates the fix's true marginal effect from unrelated staleness and gives a clean, fully-attributable transition list (e.g. '158 transitions, all explained by exactly one code change') rather than a noisy diff contaminated by unrelated historical drift.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/summaries/01_fidelity-audit-chunk-scan-fixes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regression-verification", "dry-run-diff", "no-op-proof", "before-after-isolation", "stale-baseline"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788323839_c3b8b4",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
