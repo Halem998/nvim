@@ -1,7 +1,7 @@
 # Implementation Plan: Correct the falsified converter-tier remedy claim
 
 - **Task**: 102 - Characterize converter-tier behavior and correct the falsified universal-remedy claim
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md`
