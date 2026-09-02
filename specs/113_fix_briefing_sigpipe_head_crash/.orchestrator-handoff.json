@@ -1,15 +1,21 @@
 {
-  "dispatch_seq": 4,
-  "status": "planned",
-  "summary": "Created a 4-phase, 1.75-hour implementation plan for the repo-mode literature-briefing.sh SIGPIPE crash. Root cause confirmed at lines 238-241 and 245-247 (jq whole-object piped into head -1 under set -euo pipefail). Fix direction: jq -c 'first(.entries[] | select(...))' at both sites, removing head from the pipeline. Plan phases: (1) capture pre-fix baseline against the real Logos/Theory sub-index, (2) apply the two-site fix in the source store, (3) audit the 8 remaining head -1 sites, (4) end-to-end verification closing all four verification bars. Plan passes validate-artifact.sh --strict with 0 warnings.",
+  "dispatch_seq": 7,
+  "status": "implemented",
+  "summary": "Fixed the exit-141 SIGPIPE crash in literature-briefing.sh's repo mode by replacing two jq-into-head-1 pipelines (parent_entry lookup at the former :238-241 strict site and :245-247 fallback site) with jq -c 'first(.entries[] | select(...))', removing head from both pipelines. All 4 phases completed: Phase 1 captured a pre-fix baseline (live 141 reproduction against the real horty_2001_agency-and-deontic-logic entry, via a scratch harness built after discovering the plan's literal cd+absolute-path invocation cannot reach repo mode -- literature-briefing.sh resolves PROJECT_ROOT from its own on-disk location, not $PWD). Phase 2 applied the fix (bash -n clean, head -1 count 10->8, parent_entry structure intact at exactly 4 references, (.id // .doc_id) tolerance preserved). Phase 3 audited the remaining 8 head -1 sites and confirmed all are scalar-emitting (no further changes needed). Phase 4 re-ran the fixed script against the same real data: exit 0, 52/52 documents resolved including horty_2001, lit-coverage marker well-formed, second unrelated query also exits 0, deploy copy (.claude/scripts/literature-briefing.sh) confirmed untouched. Only agent-system/extensions/literature/scripts/literature-briefing.sh was modified.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md",
+      "summary": "Implementation summary: two-site jq -c 'first(...)' fix, pre/post-fix baseline diff, head -1 audit, and end-to-end verification against the real observed failing case."
+    },
     {
       "type": "plan",
       "path": "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md",
-      "summary": "4-phase plan for the jq/head -1 SIGPIPE fix in literature-briefing.sh."
+      "summary": "4-phase plan for the jq/head -1 SIGPIPE fix in literature-briefing.sh; all 4 phase headings now [COMPLETED]."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
+  "plan_markers_verified": true,
   "blockers": []
 }

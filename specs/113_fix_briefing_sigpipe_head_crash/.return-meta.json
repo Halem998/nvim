@@ -1,11 +1,39 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md",
+      "summary": "Implementation summary: two-site jq -c 'first(...)' fix for the SIGPIPE crash, pre/post-fix baseline diff, head -1 audit, and end-to-end verification against the real observed failing case."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the exit-141 SIGPIPE crash in literature-briefing.sh's repo mode by replacing two jq-into-head-1 pipelines with jq -c 'first(.entries[] | select(...))', closing all 4 verification bars against the real observed failing case (~/Projects/Logos/Theory's sub-index against the live global index, including the crash-triggering horty_2001_agency-and-deontic-logic entry)."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md",
+    "specs/113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md",
+    "specs/113_fix_briefing_sigpipe_head_crash/progress/phase-1-progress.json",
+    "specs/113_fix_briefing_sigpipe_head_crash/progress/phase-2-progress.json",
+    "specs/113_fix_briefing_sigpipe_head_crash/progress/phase-3-progress.json",
+    "specs/113_fix_briefing_sigpipe_head_crash/progress/phase-4-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shell script deployed per-repo as `<repo>/.claude/scripts/<name>.sh` (or similar) that resolves its own project root via `PROJECT_ROOT=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\"/../.. && pwd)\"` derives that root from the SCRIPT's own on-disk location, not from `$PWD`/the invoking shell's cwd. Invoking a copy of such a script from a different location (e.g. the source-store copy, by absolute path, after `cd`-ing into a target repo) does NOT make it operate against that target repo -- it silently resolves paths relative to wherever the invoked script file itself lives. This can produce a misleading empty/no-op result (e.g. 'sub-index missing, exit 0') that looks like a valid but uninteresting outcome rather than a broken test setup. When a plan instructs 'cd into repo X, then invoke script Y by absolute path' for a script with this resolution pattern, verify the resolution empirically first; if it doesn't reach the target code path, build an equivalent scratch harness that mirrors the real deploy directory shape (all sibling scripts + the target sub-index/data copied into a fake root at the same relative depth) rather than trusting the literal invocation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["script-dir", "project-root", "bash-source", "deploy-layout", "test-harness", "path-resolution"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788390027_14a27d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
   }
 }
