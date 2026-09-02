@@ -180,28 +180,28 @@ deferring it.
 
 ---
 
-### Phase 2: Distinct "needs OCR" bucket in literature-ingest.sh [NOT STARTED]
+### Phase 2: Distinct "needs OCR" bucket in literature-ingest.sh [COMPLETED]
 
 **Goal**: An image-only PDF is reported in its own summary bucket with its own counter and entry
 list, mirroring the existing exit-3 `GATE_FAILED` treatment, instead of the generic `FAILED`
 counter.
 
 **Tasks**:
-- [ ] Add an `OCR_NEEDED` counter and a `declare -a OCR_NEEDED_ENTRIES=()` array alongside the
+- [x] Add an `OCR_NEEDED` counter and a `declare -a OCR_NEEDED_ENTRIES=()` array alongside the
       existing `FAILED` / `GATE_FAILED` / `GATE_FAILED_ENTRIES` declarations.
-- [ ] In the per-file exit-code dispatch, insert a branch before the generic
+- [x] In the per-file exit-code dispatch, insert a branch before the generic
       `elif [ "$CONVERT_EXIT" -ne 0 ]` branch that matches exit 2 AND a stderr hit on Phase 1's
       distinctive marker. Exit 2 without the marker must continue to fall through to the generic
       hard-failure branch untouched.
-- [ ] Log the needs-OCR case distinctly (naming the file and the remedy command), accumulate the
+- [x] Log the needs-OCR case distinctly (naming the file and the remedy command), accumulate the
       entry, increment the counter, clean up the temp dir and stderr file, and `continue` —
       following the exit-3 branch's structure exactly.
-- [ ] Add a `Files needing OCR: $OCR_NEEDED` line to the final summary block, with an indented
+- [x] Add a `Files needing OCR: $OCR_NEEDED` line to the final summary block, with an indented
       entry list under it, mirroring the `Files quality-gate-failed:` block's shape and its
       explanatory parenthetical.
-- [ ] Update the all-files-failed aggregate message (currently reporting only gate-rejected and
+- [x] Update the all-files-failed aggregate message (currently reporting only gate-rejected and
       hard-failed counts) to include the needs-OCR count.
-- [ ] Check whether any other consumer parses the ingest summary (skill-literature, the audit
+- [x] Check whether any other consumer parses the ingest summary (skill-literature, the audit
       scripts, tests) and would be broken by a new summary line; adjust or note as needed.
 
 **Timing**: 1 hour

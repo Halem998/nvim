@@ -174,8 +174,10 @@ mkdir -p "$LITERATURE_DIR"
 PROCESSED=0
 FAILED=0
 GATE_FAILED=0
+OCR_NEEDED=0
 declare -a INGESTED_DOC_IDS=()
 declare -a GATE_FAILED_ENTRIES=()  # "file :: reason" for the final summary
+declare -a OCR_NEEDED_ENTRIES=()   # "file :: reason" for the final summary
 
 for source_file in "${SOURCE_FILES[@]}"; do
   log "Processing: $source_file"
@@ -234,6 +236,23 @@ print('yes' if existing else 'no')
     log "QUALITY GATE FAILED: $BASENAME — ${GATE_REASON#*QUALITY GATE FAILED: }"
     GATE_FAILED_ENTRIES+=("$source_file :: ${GATE_REASON#*QUALITY GATE FAILED: }")
     GATE_FAILED=$((GATE_FAILED + 1))
+    rm -rf "$TMP_MD_DIR"
+    rm -f "$CONVERT_STDERR_FILE"
+    continue
+  elif [ "$CONVERT_EXIT" -eq 2 ] && grep -q 'NO TEXT LAYER:' "$CONVERT_STDERR_FILE" 2>/dev/null; then
+    # Exit 2 is OVERLOADED (see literature-convert.sh's header): this branch
+    # keys off the distinctive `NO TEXT LAYER:` stderr marker (colon required
+    # — literature-convert.sh's bash-level generic failure line ALSO mentions
+    # the bare phrase "NO TEXT LAYER" in prose without a trailing colon, as an
+    # explanatory aside; matching without the colon false-positive-matched
+    # that line during verification), NEVER the bare exit code, so the
+    # primary-tier-unavailable exit-2 case (no marker) falls through to the
+    # generic hard-failure branch below untouched. Mirrors the exit-3 branch
+    # above exactly.
+    OCR_REASON=$(grep -m1 'NO TEXT LAYER:' "$CONVERT_STDERR_FILE" 2>/dev/null || echo "NO TEXT LAYER: (reason unavailable)")
+    log "NEEDS OCR: $BASENAME — ${OCR_REASON#*NO TEXT LAYER: }"
+    OCR_NEEDED_ENTRIES+=("$source_file :: ${OCR_REASON#*NO TEXT LAYER: }")
+    OCR_NEEDED=$((OCR_NEEDED + 1))
     rm -rf "$TMP_MD_DIR"
     rm -f "$CONVERT_STDERR_FILE"
     continue
@@ -491,8 +510,8 @@ PYEOF
 done
 
 if [ "$PROCESSED" -eq 0 ]; then
-  if [ "$GATE_FAILED" -gt 0 ]; then
-    log "All files failed to process (${GATE_FAILED} rejected by the conversion quality gate, ${FAILED} hard-failed)"
+  if [ "$GATE_FAILED" -gt 0 ] || [ "$OCR_NEEDED" -gt 0 ]; then
+    log "All files failed to process (${GATE_FAILED} rejected by the conversion quality gate, ${OCR_NEEDED} needing OCR, ${FAILED} hard-failed)"
   else
     log "All files failed to process"
   fi
@@ -565,6 +584,13 @@ echo "Files quality-gate-failed: $GATE_FAILED"
 if [ "$GATE_FAILED" -gt 0 ]; then
   echo "  (quality-gate-rejected files — NOT ingested, .rejected sibling written by literature-convert.sh):"
   for entry in "${GATE_FAILED_ENTRIES[@]}"; do
+    echo "  - ${entry}"
+  done
+fi
+echo "Files needing OCR: $OCR_NEEDED"
+if [ "$OCR_NEEDED" -gt 0 ]; then
+  echo "  (no extractable text layer — NOT ingested; re-run with LITERATURE_CONVERTER=ocr):"
+  for entry in "${OCR_NEEDED_ENTRIES[@]}"; do
     echo "  - ${entry}"
   done
 fi

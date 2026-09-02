@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Distinct \"needs OCR\" bucket in literature-ingest.sh",
+  "started_at": "2026-09-01T00:15:00Z",
+  "last_updated": "2026-09-01T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "OCR_NEEDED counter and array", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 2, "description": "Marker-discriminated exit-2 dispatch branch", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 3, "description": "Log/accumulate/cleanup/continue for needs-OCR case", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 4, "description": "Files needing OCR summary block", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 5, "description": "All-files-failed aggregate message update", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 6, "description": "Consumer audit for ingest summary parsing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "grep -q 'NO TEXT LAYER' without colon", "result": "failed", "reason": "false-positive-matched the Phase 1 bash-level generic all-converters-failed message, which also mentions the bare phrase in prose -- mis-bucketed the marker-free exit-2 case as needs-OCR"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
