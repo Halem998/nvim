@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Acceptance evidence and full-gate verification",
+  "started_at": "2026-09-02T23:55:00Z",
+  "last_updated": "2026-09-03T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build reduced-scale scratch fixture, run pre-fix and post-fix probe, record build_errors/status", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Stage+commit the move, re-run post-fix probe, assert two post-fix readings agree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm reverse direction: genuinely broken file still counted", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run full test-assess-repo-health.sh suite", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run validate-state.sh --deep against state.json with phantom_paths", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm sole production caller via grep -rln assess-repo-health agent-system/", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record Defect C already-closed-upstream confirmation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "First reduced-scale fixture had ALL structural candidates inside the moved/renamed directory (no untouched companion file)", "result": "failed", "reason": "Hit Phase 1's all-phantom degenerate branch on the pre-commit reading (build_errors: null, status: unknown) vs the post-commit reading's build_errors: 0/status: healthy -- these legitimately disagree because the degenerate branch's zero-candidate state isn't representative of a real repo, which always has other untouched structural files. Rebuilt the fixture with a companion untouched valid *.sh so total_candidates stays nonzero in both readings, producing a meaningful agree/disagree comparison."}
+  ],
+  "evidence": {
+    "reduced_scale_fixture": {
+      "pre_fix_probe_precommit": {"build_errors": 3, "status": "critical", "note": "no phantom_paths field existed pre-fix; 3 phantom index entries scored as real defects -- total inflation, matching the reported production shape"},
+      "post_fix_probe_precommit": {"build_errors": 0, "status": "healthy", "phantom_paths": 3},
+      "post_fix_probe_postcommit": {"build_errors": 0, "status": "healthy", "phantom_paths": 0},
+      "acceptance_check": "post-fix pre-commit and post-fix post-commit readings AGREE on build_errors (0) and status (healthy)",
+      "reverse_direction_check": {"build_errors": 1, "status": "critical", "phantom_paths": 1, "note": "a genuinely broken file plus an unrelated phantom entry -- broken file counted exactly once, phantom entry excluded"}
+    },
+    "full_suite": "24 passed, 0 failed",
+    "validate_state_deep": "exit 0, 0 failures, phantom_paths field accepted (WARN-only findings unrelated to the schema addition, from the synthetic fixture lacking a git worktree and sibling TODO.md)",
+    "sole_caller_confirmation": "grep -rln assess-repo-health agent-system/ returns: commands/todo.md (the only caller), manifest.json (file-copy registration, not a caller), assess-repo-health.sh itself, its test suite, and utility-scripts-inventory.md (self-reference/docs) -- confirms commands/todo.md is the sole production call site",
+    "defect_c_note": "Step 5A's --argjson MAX_ARG_STRLEN argument-length defect was verified closed upstream by the research pass (specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md) against the state-write.sh transparent-spill fix and its regression suites; deliberately untouched by this plan (see Non-Goals)",
+    "claude_boundary_check": "git status --short .claude/ returns empty (gitignored, untracked); git status --short outside agent-system/extensions/core/ and specs/ shows only pre-existing unrelated modifications present before this task began"
+  },
+  "handoff_count": 0
+}

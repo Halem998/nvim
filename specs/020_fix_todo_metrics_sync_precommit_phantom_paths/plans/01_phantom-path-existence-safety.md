@@ -1,7 +1,7 @@
 # Implementation Plan: Metrics sync measures a stale git index, inflating build_errors with phantom paths
 
 - **Task**: 20 - Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md
@@ -311,36 +311,47 @@ additional hit that concerns `/todo` must be updated and the correction recorded
 
 ---
 
-### Phase 4: Acceptance evidence and full-gate verification [NOT STARTED]
+### Phase 4: Acceptance evidence and full-gate verification [COMPLETED]
 
 **Goal**: Produce the explicit measured before/after evidence the task's acceptance criteria
 demand, and run the complete gate set.
 
 **Tasks**:
-- [ ] Build a scratch git fixture reproducing the reported failure shape at reduced scale: commit a
+- [x] Build a scratch git fixture reproducing the reported failure shape at reduced scale: commit a
       set of tracked `*.sh`/`*.json` files under a directory, then `mv` that directory without
       staging. Run the **pre-fix** probe (from `git show` of the parent commit, or a saved copy)
       and the **post-fix** probe against the identical tree; record both `build_errors` and
       `status` from each. Expected: pre-fix reports a large inflated count with
       `status: "critical"`; post-fix reports the true count with `phantom_paths` equal to the
-      number of moved candidates.
-- [ ] In the same fixture, stage and commit the move, then re-run the post-fix probe. Assert the
+      number of moved candidates. *(completed: pre-fix build_errors=3/critical (3 moved
+      candidates, total inflation, zero residue — matches the Scope Hypothesis check); post-fix
+      pre-commit build_errors=0/healthy/phantom_paths=3. First fixture attempt had no untouched
+      companion file and hit the all-phantom degenerate branch instead — see progress file
+      phase-4 `approaches_tried[0]`; rebuilt with a companion file.)*
+- [x] In the same fixture, stage and commit the move, then re-run the post-fix probe. Assert the
       two post-fix readings agree — this is the task's stated acceptance condition (a `/todo` run
       reports the same `build_errors` and `status` as an identical probe run immediately after its
-      commit).
-- [ ] Confirm the reverse direction in the same evidence run: a genuinely broken file in the
-      fixture is still counted. Never report an unqualified green.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` (full suite,
-      including Phase 2's cases).
-- [ ] Run `validate-state.sh --deep` against a `state.json` whose `repository_health` carries the
+      commit). *(completed: both readings agree at build_errors=0/status=healthy;
+      phantom_paths drops from 3 to 0 post-commit as expected)*
+- [x] Confirm the reverse direction in the same evidence run: a genuinely broken file in the
+      fixture is still counted. Never report an unqualified green. *(completed: build_errors=1,
+      status=critical, phantom_paths=1 — the broken file counted exactly once alongside an
+      unrelated phantom entry)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` (full suite,
+      including Phase 2's cases). *(completed: 24 passed, 0 failed, exit 0)*
+- [x] Run `validate-state.sh --deep` against a `state.json` whose `repository_health` carries the
       new `phantom_paths` field, confirming the schema addition is accepted and
-      `additionalProperties: false` is satisfied.
-- [ ] Record in the implementation summary that `commands/todo.md` is the sole production caller of
+      `additionalProperties: false` is satisfied. *(completed: exit 0, 0 failures; the 3 WARN
+      findings are unrelated to the schema addition, caused by the synthetic fixture lacking a
+      git worktree and sibling TODO.md)*
+- [x] Record in the implementation summary that `commands/todo.md` is the sole production caller of
       `assess-repo-health.sh` under `agent-system/extensions/**` (item 3 of the task's WORK list,
       resolved by confirmed absence — re-verify with `grep -rln "assess-repo-health" agent-system/`
-      rather than restating the research's finding on trust).
-- [ ] Record explicitly that the Step 5A argument-length defect described in the task description
+      rather than restating the research's finding on trust). *(completed: re-verified live;
+      confirmed sole caller — manifest.json's hit is a file-copy registration, not a caller)*
+- [x] Record explicitly that the Step 5A argument-length defect described in the task description
       was verified closed upstream by the research pass and is deliberately untouched here.
+      *(completed)*
 
 **Timing**: 45 minutes
 
@@ -367,16 +378,17 @@ before the evidence is trusted.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `assess-repo-health.sh` and on every bash block extracted from the
+- [x] `bash -n` clean on `assess-repo-health.sh` and on every bash block extracted from the
       relocated `todo.md` section.
-- [ ] `jq empty` clean on `state-schema.json`.
-- [ ] `test-assess-repo-health.sh` exits 0 with the three new git-fixture cases passing and no
-      pre-existing case regressed.
-- [ ] Negative control: the new cases demonstrably `[FAIL]` against the pre-fix probe.
-- [ ] `validate-state.sh --deep` accepts a `repository_health` object carrying `phantom_paths`.
-- [ ] Measured before/after `build_errors` and `status` pairs recorded explicitly in the summary,
+- [x] `jq empty` clean on `state-schema.json`.
+- [x] `test-assess-repo-health.sh` exits 0 with the three new git-fixture cases passing and no
+      pre-existing case regressed. (24 passed, 0 failed)
+- [x] Negative control: the new cases demonstrably `[FAIL]` against the pre-fix probe. (verified
+      live for Bar 4/Bar 6-shaped fixtures against `git show`'d pre-Phase-1 script)
+- [x] `validate-state.sh --deep` accepts a `repository_health` object carrying `phantom_paths`.
+- [x] Measured before/after `build_errors` and `status` pairs recorded explicitly in the summary,
       in both directions (phantom contributes zero; real defect still counted).
-- [ ] No file under `.claude/**` modified (`git status --short` shows edits only under
+- [x] No file under `.claude/**` modified (`git status --short` shows edits only under
       `agent-system/extensions/core/**` and `specs/**`).
 
 ## Artifacts & Outputs
