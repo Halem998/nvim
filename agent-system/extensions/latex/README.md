@@ -34,9 +34,9 @@ No dedicated commands. Use core `/research`, `/plan`, `/implement` with `task_ty
 
 | Keymap | Action |
 |--------|--------|
-| `<leader>lc` | `:VimtexCompile` - compile current document |
+| `<leader>ll` | `:VimtexCompile` - compile current document |
 | `<leader>lv` | `:VimtexView` - view PDF |
-| `<leader>lk` | `:VimtexClean` - clean build artifacts |
+| `<leader>lk` | `:VimtexClean` + `:VimtexClearCache` - clean build artifacts |
 | `<leader>li` | `:VimtexTocOpen` - open table of contents |
 
 ## Document Structure Conventions

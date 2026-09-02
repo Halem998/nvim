@@ -23,7 +23,7 @@ Three task type keys route to extension agents:
 | skill-epi-research | epi-research-agent | opus | Study design, causal inference, literature review |
 | skill-epi-implement | epi-implement-agent | opus | R code, statistical modeling, data analysis |
 
-Planning uses the core `skill-planner` / `planner-agent`.
+Planning routes directly to the core `planner-agent` (no per-function skill layer).
 
 ## MCP Server
 

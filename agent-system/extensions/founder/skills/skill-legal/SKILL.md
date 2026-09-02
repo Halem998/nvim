@@ -50,7 +50,7 @@ Do not invoke for:
 - Market sizing (use skill-market)
 - Competitive analysis (use skill-analyze)
 - GTM strategy (use skill-strategy)
-- General business research (use skill-researcher)
+- General business research (use /orchestrate --research, task_type general)
 
 ---
 

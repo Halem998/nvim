@@ -201,8 +201,8 @@ resolver-directive branching (`LIT_DISABLED`, `GLOBAL_MISSING`, `SUBINDEX_PRESEN
 `AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`, `PROMPT_NEEDED`, the four interactive sub-index
 setup options, sparse-coverage re-prompting, and the `orchestrator_mode` dual-consumer contract)
 is canonically defined in `context/patterns/lit-stage4a-flow.md` — the single executable Stage 4a
-block that `skill-researcher`, `skill-planner`, `skill-implementer`, and their `-hard` variants
-all import directly and execute verbatim. Read that file for the full mechanics; this section is
+block that `skill-orchestrate` and every domain research/implementation skill import directly and
+execute verbatim. Read that file for the full mechanics; this section is
 a pointer, not a second copy. At a high level: the resolved flow calls
 `literature-briefing.sh`/`literature-briefing-invoke.sh` (never `literature-retrieve.sh`, which
 is quarantined — see below), which resolves metadata from `specs/literature-index.json` (the

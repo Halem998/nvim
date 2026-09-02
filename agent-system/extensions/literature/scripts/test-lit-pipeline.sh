@@ -14,7 +14,7 @@
 #   A - Script existence and syntax (literature-briefing.sh, literature-create-setup-task.sh)
 #   B - CSLib skill Stage 4a wiring (4 skills: lit_context init, briefing call, lit_flag gate)
 #   C - CSLib agent acknowledgment (4 agents: <literature-briefing> reference)
-#   D - General skill interactive detection (skill-researcher, skill-implementer)
+#   D - General skill interactive detection (skill-orchestrate)
 #   E - Runtime smoke test with mock fixtures (opt-in via --runtime)
 #   F - id/FTS namespace unification regression tests (opt-in via --runtime): ingest-then-brief
 #       shape, --validate schema-shape/divergence detection, project-filtered-search bridge.
@@ -326,8 +326,7 @@ section_d() {
   echo "----------------------------------------"
 
   local skills=(
-    "skill-researcher"
-    "skill-implementer"
+    "skill-orchestrate"
   )
 
   # Six skills now delegate Section D's branching to ONE shared, directly-executable block

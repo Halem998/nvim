@@ -1,0 +1,96 @@
+{
+  "phase": 9,
+  "phase_name": "Sweep non-core extensions",
+  "started_at": "2026-09-02T05:15:00Z",
+  "last_updated": "2026-09-02T06:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Batch-fix the 17 domain skills sharing the exact 'exactly as skill-X does' Stage 4a sentence, plus epidemiology's 2 marker-operation sentences",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+        "agent-system/extensions/python/skills/skill-python-research/SKILL.md",
+        "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+        "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+        "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md",
+        "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+        "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+        "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+        "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md",
+        "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
+        "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
+        "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+        "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md",
+        "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+        "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
+        "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md",
+        "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Fix founder/skills/skill-*'s '(use skill-researcher)' pointer pattern",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-project/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Fix extension README/EXTENSION.md routing tables",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/README.md",
+        "agent-system/extensions/formal/README.md",
+        "agent-system/extensions/epidemiology/README.md",
+        "agent-system/extensions/epidemiology/EXTENSION.md",
+        "agent-system/extensions/email/EXTENSION.md",
+        "agent-system/extensions/present/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Fix literature scripts and context docs, verify test-lit-pipeline.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature-briefing.sh",
+        "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+        "agent-system/extensions/literature/context/guides/literature-organization.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Fix present/commands, present/context/project/present/domain/grant-workflow.md, lean/hard-mode.md, nvim/tts-stt-integration.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/commands/funds.md",
+        "agent-system/extensions/present/commands/grant.md",
+        "agent-system/extensions/present/commands/timeline.md",
+        "agent-system/extensions/present/context/project/present/domain/grant-workflow.md",
+        "agent-system/extensions/present/skills/skill-timeline/SKILL.md",
+        "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+        "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "9.all",
+      "description": "Scope Hypothesis estimated ~43 non-core files",
+      "type": "altered",
+      "reason": "Actual hit count was 39 files (17 batch-fixed + 2 epidemiology extras counted once + 6 founder + 6 README/EXTENSION.md + 4 literature + 5 present/lean/nvim = 39 distinct files after dedup). Close to but not exactly matching the estimate; no files were found clean that the plan expected to need edits, and no additional unexpected files turned up beyond the plan's named territory list.",
+      "annotation": "n/a -- documented in plan checklist annotations directly"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Batch-fix used sed on 17 files after manually verifying (via grep -B1 -A1 across all 17) that every occurrence shared byte-identical surrounding sentence structure before substituting, per the risk-mitigation table's 'read the hit line and rewrite it, never blind bulk regex replace' rule -- the verification step happened first, the sed was then safe precisely because uniformity was confirmed rather than assumed. test-lit-pipeline.sh required an actual functional fix (its Section D skills array would have failed at runtime against the deleted files, not merely a stale comment) -- re-ran the full test after the fix: 8 passed, 0 failed."
+}

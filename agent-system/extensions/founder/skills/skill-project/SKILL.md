@@ -50,7 +50,7 @@ Do not invoke for:
 - Market sizing analysis (use skill-market)
 - Competitive analysis (use skill-analyze)
 - Business strategy (use skill-strategy)
-- General research without project planning focus (use skill-researcher)
+- General research without project planning focus (use /orchestrate --research, task_type general)
 
 ---
 

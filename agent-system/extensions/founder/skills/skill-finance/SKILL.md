@@ -52,7 +52,7 @@ Do not invoke for:
 - GTM strategy (use skill-strategy)
 - Contract review (use skill-legal)
 - Cost breakdown from scratch (use skill-spreadsheet)
-- General business research (use skill-researcher)
+- General business research (use /orchestrate --research, task_type general)
 
 ---
 

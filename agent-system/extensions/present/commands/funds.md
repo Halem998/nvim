@@ -434,7 +434,7 @@ Tasks with language="present" and task_type="funds" route through core commands:
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
 | `/research N` | skill-funds | Research funding landscape |
-| `/plan N` | skill-planner | Create implementation plan |
+| `/plan N` | planner-agent (direct) | Create implementation plan |
 | `/implement N` | skill-funds | Generate funding analysis report |
 
 ---

@@ -6,9 +6,9 @@ Epidemiology research and implementation support using R. Covers study design, s
 
 | Task Type Key | Research | Plan | Implement |
 |---------------|----------|------|-----------|
-| `epi` | skill-epi-research | skill-planner | skill-epi-implement |
-| `epi:study` | skill-epi-research | skill-planner | skill-epi-implement |
-| `epidemiology` | skill-epi-research | skill-planner | skill-epi-implement |
+| `epi` | skill-epi-research | planner-agent (direct) | skill-epi-implement |
+| `epi:study` | skill-epi-research | planner-agent (direct) | skill-epi-implement |
+| `epidemiology` | skill-epi-research | planner-agent (direct) | skill-epi-implement |
 
 ### Command
 

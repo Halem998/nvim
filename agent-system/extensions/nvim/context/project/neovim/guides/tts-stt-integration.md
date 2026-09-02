@@ -135,7 +135,7 @@ Lifecycle TTS is fired by each lifecycle skill's own postflight Stage 8a, via th
 `skill_lifecycle_notify` function in `skill-base.sh`:
 
 ```bash
-# Stage 8a of a lifecycle skill's Postflight section (e.g. skill-implementer/SKILL.md),
+# Stage 8a of a lifecycle skill's Postflight section (e.g. skill-nix-research/SKILL.md),
 # following @.claude/context/patterns/skill-postflight-flow.md's Stage 8a:
 skill_lifecycle_notify "$status"
 ```

@@ -78,7 +78,7 @@ to produce one), route it one of two ways:
 
 - **(b) Subagent dispatch** — the primary session is about to delegate to a subagent (e.g. via
   the `Agent` tool): inject the `<literature-briefing>` block into the subagent's prompt using
-  the same placement rule as skill-researcher Stage 5 — after `<memory-context>` (if any) and
+  the same placement rule every lifecycle skill's dispatch Stage 5 uses — after `<memory-context>` (if any) and
   before task-specific instructions.
 
 Never dispatch an empty `<literature-briefing>` block. If no briefing was produced (the

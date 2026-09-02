@@ -33,7 +33,7 @@
 # This script retains its existing silent-exit behavior in per-repo mode when the
 # sub-index is missing; the upstream skills are responsible for offering the
 # interactive setup flow (or the global-mode fallback) before calling this script.
-# See .claude/skills/skill-researcher/SKILL.md Stage 4a for the detection block.
+# See .claude/context/patterns/lit-stage4a-flow.md for the shared detection block.
 #
 # Environment:
 #   LITERATURE_DIR              Path to global Literature/ repo (default: ~/Projects/Literature)

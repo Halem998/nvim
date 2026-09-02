@@ -590,7 +590,7 @@ Tasks with language="present" and task_type="grant" route through core commands:
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
 | `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | skill-planner | Create implementation plan (informed by drafts/budgets) |
+| `/plan N` | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
 | `/implement N` | skill-grant (assemble) | Assemble grant materials |
 
 **Note**: `/plan N` creates an implementation plan using the standard planner, not a proposal draft. The plan should reference existing draft and budget artifacts when available. This routing is configured in the extension's manifest.json.

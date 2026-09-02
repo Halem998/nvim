@@ -322,7 +322,7 @@ Tasks with language="present", task_type="timeline" route through core commands:
 |---------|-----------|---------|
 | `/timeline N` | skill-timeline (timeline_research) | Research and build timeline |
 | `/research N` | skill-timeline (timeline_research) | Alternative research entry |
-| `/plan N` | skill-planner | Create implementation plan |
+| `/plan N` | planner-agent (direct) | Create implementation plan |
 | `/implement N` | skill-timeline (timeline_plan) | Generate Typst timeline output |
 
 **Note**: Manifest integration (routing entries, index entries) is a follow-up item.

@@ -102,7 +102,7 @@ Tasks with `language="grant"` route through core commands:
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
 | `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | skill-planner | Create implementation plan (informed by drafts/budgets) |
+| `/plan N` | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
 | `/implement N` | skill-grant (assemble) | Assemble grant materials |
 
 ## Recommended Workflow

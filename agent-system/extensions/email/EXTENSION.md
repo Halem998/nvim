@@ -9,7 +9,7 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
 
 | Task Type | Research | Plan | Implement | Agent |
 |-----------|----------|------|-----------|-------|
-| `email` | skill-researcher | skill-planner | skill-email-implementation | email-implementation-agent (sonnet) |
+| `email` | general-research-agent (direct) | planner-agent (direct) | skill-email-implementation | email-implementation-agent (sonnet) |
 
 Direct-execution skills (no agent dispatch):
 

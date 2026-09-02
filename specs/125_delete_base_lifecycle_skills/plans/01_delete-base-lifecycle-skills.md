@@ -463,23 +463,31 @@ empty.
 
 ---
 
-### Phase 9: Sweep non-core extensions [NOT STARTED]
+### Phase 9: Sweep non-core extensions [COMPLETED]
 
 **Goal**: Clear the remaining references across every non-core extension.
 
 **Tasks**:
-- [ ] Extension skills that describe the "Stage 4a verbatim" pattern: `python`, `web`, `latex`,
-      `epidemiology`, `z3`, `nvim`, `nix`, `typst`, `email`, `lean`, `present`, and the six
-      `founder/skills/skill-*` files.
-- [ ] Extension READMEs and EXTENSION.md files: `cslib`, `formal`, `epidemiology`, `email`,
-      `present`.
-- [ ] `literature/`: `scripts/literature-briefing.sh`, `scripts/test-lit-pipeline.sh`,
+- [x] Extension skills that describe the "Stage 4a verbatim" pattern: `python`, `web`, `latex`,
+      `epidemiology`, `z3`, `nvim`, `nix`, `typst`, `email` (17 files sharing the exact "exactly
+      as `skill-X` does" sentence, batch-verified identical before a targeted `sed` substitution
+      to `skill-orchestrate`, plus epidemiology's 2 additional "same as skill-X" marker-operation
+      sentences) -- `lean` and `present` had zero hits in this exact pattern (their hits were
+      elsewhere, handled below); the six `founder/skills/skill-*` files had a different
+      "(use skill-researcher)" pointer pattern, retargeted to `/orchestrate --research`.
+      *(completed)*
+- [x] Extension READMEs and EXTENSION.md files: `cslib`, `formal`, `epidemiology`, `email`,
+      `present`. *(completed)*
+- [x] `literature/`: `scripts/literature-briefing.sh`, `scripts/test-lit-pipeline.sh`,
       `context/guides/literature-organization.md`,
-      `context/project/literature/patterns/adhoc-navigation-directive.md`.
-- [ ] `present/commands/`: `funds.md`, `grant.md`, `timeline.md`;
-      `present/context/project/present/domain/grant-workflow.md`.
-- [ ] `lean/context/project/lean4/domain/hard-mode.md`,
-      `nvim/context/project/neovim/guides/tts-stt-integration.md`.
+      `context/project/literature/patterns/adhoc-navigation-directive.md`. Section D of
+      `test-lit-pipeline.sh` iterated a `skills=("skill-researcher" "skill-implementer")` array
+      that would now fail (files not found) -- reduced to `skills=("skill-orchestrate")` and
+      re-ran the test: 8 passed, 0 failed. *(completed)*
+- [x] `present/commands/`: `funds.md`, `grant.md`, `timeline.md`;
+      `present/context/project/present/domain/grant-workflow.md`. *(completed)*
+- [x] `lean/context/project/lean4/domain/hard-mode.md`,
+      `nvim/context/project/neovim/guides/tts-stt-integration.md`. *(completed)*
 
 **Timing**: 2 hours
 

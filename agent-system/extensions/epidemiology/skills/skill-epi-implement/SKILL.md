@@ -88,7 +88,7 @@ operation="implement"
 
 `operation="implement"` (not `"epi_implement"`) is required here: `update-task-status.sh`'s
 `target_status` vocabulary has no `epi_implement` value, so this skill maps onto the plain
-`implement` operation, same as `skill-implementer`. The marker's `operation` field now reads
+`implement` operation, same as `skill-orchestrate`. The marker's `operation` field now reads
 `"implement"` rather than `"epi_implement"` — a byte-for-byte Shape A key set, matching what this
 skill's marker already carried (`created`, `stop_hook_active`) before this conversion.
 
@@ -105,7 +105,7 @@ fi
 ```
 
 Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
-`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+`lit_context`, exactly as `skill-orchestrate` does. This skill supplies the shared block's
 preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ---

@@ -14,7 +14,7 @@ Structured proposal development (grants) and research presentation creation (tal
 | `present:slides` | plan | skill-slide-planning | slide-planner-agent | opus | Read, Write, Edit |
 | `present:slides` | critique | skill-slide-critic | slide-critic-agent | opus | Read, Write, Edit |
 
-All other `present:*` task types use `skill-planner` / `planner-agent` for the plan operation.
+All other `present:*` task types route directly to `planner-agent` for the plan operation (no per-function skill layer).
 
 ### Commands
 

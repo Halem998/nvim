@@ -51,7 +51,7 @@ When an implementing agent encounters any of these patterns:
 Do not invoke for:
 - Market sizing (use skill-market)
 - Competitive analysis (use skill-analyze)
-- General business research (use skill-researcher)
+- General business research (use /orchestrate --research, task_type general)
 - Product roadmap (not GTM)
 
 ---

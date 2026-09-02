@@ -11,7 +11,7 @@ Formal reasoning extension for mathematical logic, mathematics, and physics rese
 | `math` | math-research-agent | Algebra, lattice theory, category theory, topology |
 | `physics` | physics-research-agent | Dynamical systems, flows, bifurcations |
 
-This extension is **research-only**: it provides no dedicated implementation agents or skills. `/implement` on a formal/logic/math/physics task uses the core `skill-implementer` -> `general-implementation-agent` path. See the Research-Only Pattern section below for why this is intentional.
+This extension is **research-only**: it provides no dedicated implementation agents or skills. `/implement` on a formal/logic/math/physics task routes directly to the core `general-implementation-agent` (no per-function skill layer). See the Research-Only Pattern section below for why this is intentional.
 
 ## Installation
 
@@ -108,7 +108,7 @@ specs/{NNN}_{SLUG}/summaries/MM_{slug}-summary.md
 
 ## Research-Only Pattern
 
-**Important**: This extension provides only research agents. It deliberately omits implementation agents and skills. When you run `/implement` on a formal/logic/math/physics task, the implement command routes to the core `skill-implementer` -> `general-implementation-agent` path instead of a domain-specific implementer.
+**Important**: This extension provides only research agents. It deliberately omits implementation agents and skills. When you run `/implement` on a formal/logic/math/physics task, dispatch routes directly to the core `general-implementation-agent` instead of a domain-specific implementer.
 
 ### Why This Is Intentional
 
@@ -124,7 +124,7 @@ specs/{NNN}_{SLUG}/summaries/MM_{slug}-summary.md
 
 ### Router Behavior
 
-The extension's `manifest.json` declares only research skills. The core orchestrator's skill-selection logic falls through to `skill-implementer` when no domain-specific implementation skill is found. This is not a bug or missing configuration - it is the intended dispatch path for this extension.
+The extension's `manifest.json` declares only research skills and its `routing_agents.implement` entries point directly at `general-implementation-agent`. The core orchestrator's dispatch falls through to `general-implementation-agent` when no domain-specific implementation skill or agent is found. This is not a bug or missing configuration - it is the intended dispatch path for this extension.
 
 ## Output Artifacts
 

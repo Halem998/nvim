@@ -10,8 +10,8 @@ CSLib Lean 4 computer science library formalization support. Provides research a
 
 | Task Type | Research | Plan | Implementation | Hard-mode routing |
 |-----------|----------|------|----------------|-------------------|
-| `cslib` | skill-cslib-research | skill-planner | skill-cslib-implementation | skill-cslib-research-hard / skill-cslib-implementation-hard |
-| `pr` | skill-pr-review-research | skill-planner | skill-pr-review-implementation | none — falls back to standard skills under `--hard` |
+| `cslib` | skill-cslib-research | planner-agent (direct) | skill-cslib-implementation | skill-cslib-research-hard / skill-cslib-implementation-hard |
+| `pr` | skill-pr-review-research | planner-agent (direct) | skill-pr-review-implementation | none — falls back to standard skills under `--hard` |
 
 The extension routes `cslib` task types through dedicated agents that enforce CSLib coding conventions, use the CI verification pipeline, and follow the project's reuse-first and proof-readability principles from CONTRIBUTING.md. The `pr` task type handles both PR submission preparation and PR review response workflows.
 

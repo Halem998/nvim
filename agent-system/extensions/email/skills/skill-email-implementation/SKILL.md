@@ -59,7 +59,7 @@ fi
 ```
 
 Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit` and set
-`lit_context`, exactly as `skill-implementer` does. This skill supplies the shared block's
+`lit_context`, exactly as `skill-orchestrate` does. This skill supplies the shared block's
 preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ### Stage 4: Prepare Delegation Context

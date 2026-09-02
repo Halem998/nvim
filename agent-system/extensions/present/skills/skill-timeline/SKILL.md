@@ -124,7 +124,7 @@ or `"plan"` rather than the raw workflow-type string.
 
 ### Stage 3a: Artifact Number Calculation
 
-Calculate the artifact sequence number following the same pattern as skill-planner:
+Calculate the artifact sequence number following the same pattern as skill-reviser:
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")

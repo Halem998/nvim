@@ -14,7 +14,7 @@ Hard mode is per-invocation only — there is no sticky state.
 
 | Language | --hard Research | --hard Implement | --hard Plan |
 |----------|-----------------|------------------|-------------|
-| `lean4` | `skill-lean-research-hard` | `skill-lean-implementation-hard` | `skill-planner` (standard; see note below) |
+| `lean4` | `skill-lean-research-hard` | `skill-lean-implementation-hard` | `planner-agent` (standard, direct dispatch; see note below) |
 
 ## Skill-Agent Mapping (hard mode)
 
@@ -23,10 +23,10 @@ Hard mode is per-invocation only — there is no sticky state.
 | skill-lean-research-hard | lean-research-hard-agent | opus | H2+H3+H4+H5 hard-mode Lean research |
 | skill-lean-implementation-hard | lean-implementation-hard-agent | opus | H2+H9 hard-mode Lean implementation |
 
-**Note**: `/plan --hard` for lean4 tasks falls back to the standard `skill-planner` — core's own
-standalone hard-mode planner is deleted, and no lean4-specific hard-mode planner has ever
-existed to fall back to instead. No lean4-specific planner hard agent is needed — the standard
-planner already handles lean4 phase sizing, hard mode or not.
+**Note**: `/plan --hard` for lean4 tasks falls back to the standard `planner-agent` (direct
+dispatch) — core's own standalone hard-mode planner is deleted, and no lean4-specific hard-mode
+planner has ever existed to fall back to instead. No lean4-specific planner hard agent is needed
+— the standard planner already handles lean4 phase sizing, hard mode or not.
 
 ## Behavioral Contracts Added by Hard Mode
 
