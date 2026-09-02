@@ -1,7 +1,7 @@
 # Implementation Plan: Multi-Provider Tier 3 Fallback for literature-discover.sh
 
 - **Task**: 110 - Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md
@@ -460,18 +460,18 @@ the list as closed.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/literature/scripts/literature-discover.sh` passes after
+- [x] `bash -n agent-system/extensions/literature/scripts/literature-discover.sh` passes after
       every code phase.
-- [ ] Phase 3 regression gate: post-refactor stubbed output is byte-identical to the Phase 1
+- [x] Phase 3 regression gate: post-refactor stubbed output is byte-identical to the Phase 1
       pre-refactor golden baseline.
-- [ ] All five Phase 5 stub scenarios behave as specified (healthy, zero-result, S2-fails-OpenAlex-
+- [x] All five Phase 5 stub scenarios behave as specified (healthy, zero-result, S2-fails-OpenAlex-
       answers, all-fail, quota-zero).
-- [ ] Phase 6 end-to-end bar: S2 forced to 429 -> schema-valid Tier 3 record ->
+- [x] Phase 6 end-to-end bar: S2 forced to 429 -> schema-valid Tier 3 record ->
       `literature-ingest-online.sh --record ... --dry-run` does not exit 64.
-- [ ] `commands/literature.md`'s two consumer greps fire unmodified against the aggregated
+- [x] `commands/literature.md`'s two consumer greps fire unmodified against the aggregated
       FAILED line.
-- [ ] Existing tests under `agent-system/extensions/literature/scripts/tests/` still pass.
-- [ ] No fifth doc_id prefix anywhere; status vocabulary unchanged.
+- [x] Existing tests under `agent-system/extensions/literature/scripts/tests/` still pass.
+- [x] No fifth doc_id prefix anywhere; status vocabulary unchanged.
 
 ## Artifacts & Outputs
 
