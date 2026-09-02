@@ -462,7 +462,7 @@
         "directory-structure"
       ],
       "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory) and how --lit injection selects and budgets content from it",
-      "line_count": 342,
+      "line_count": 354,
       "load_when": {
         "agents": [
           "general-research-agent",

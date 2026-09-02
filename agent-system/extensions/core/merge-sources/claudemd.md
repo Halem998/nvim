@@ -103,6 +103,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/meta` | `/meta` | System builder for .claude/ changes |
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
+| `/zulip` | `/zulip <zulip-url> [output-path]` | Fetch a Zulip thread via API and write formatted JSON to a file |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean orphaned processes and old files |
 | `/tag` | `/tag [--patch|--minor|--major]` | Create semantic version tag (user-only) |
 | `/orchestrate` | `/orchestrate N[,N-N] [--lit] [--research] [--plan] [--implement]` | Drive task(s) autonomously through full lifecycle (no confirmation gates); the three phase-forcing flags are composable and re-run an already-passed phase in canonical lifecycle order (research, plan, implement) regardless of typed order, opening a new `MM_` artifact round and never regressing status, then stopping after the last named phase rather than falling through to status-derived dispatch — single-task only, accepted and ignored with a notice in multi-task mode |
@@ -160,6 +161,7 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-implementer-hard | general-implementation-hard-agent |
 | skill-git-workflow | (direct execution) |
 | skill-fix-it | (direct execution) |
+| skill-zulip | (direct execution) |
 | skill-project-overview | (direct execution) |
 | /review | (direct execution) — code-reviewer-agent available for future skill integration |
 

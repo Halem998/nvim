@@ -464,28 +464,28 @@ message and flag any divergence from 13 rather than silently reconciling to it.
 
 ---
 
-### Phase 6: Close the CLAUDE.md and utility-inventory documentation gaps [NOT STARTED]
+### Phase 6: Close the CLAUDE.md and utility-inventory documentation gaps [COMPLETED]
 
 **Goal**: Make `/zulip`, `skill-zulip`, and `check-runtime-file-tracking.sh` visible in the
 generated documentation, so a future dead-code sweep does not flag live machinery as orphaned.
 
 **Tasks**:
-- [ ] Add a `/zulip` row to the Command Reference table in
+- [x] Add a `/zulip` row to the Command Reference table in *(completed)*
       `agent-system/extensions/core/merge-sources/claudemd.md`, matching the surrounding rows'
       three-column shape and terseness. Source the usage and description from
       `core/commands/zulip.md` rather than inventing them.
-- [ ] Add a `skill-zulip` row to the Skill-to-Agent Mapping table in the same file. The skill is
+- [x] Add a `skill-zulip` row to the Skill-to-Agent Mapping table in the same file. The skill is *(completed)*
       direct-execution (it has a `SKILL.md` and no dedicated agent), so the Agent column reads
       `(direct execution)`, matching `skill-fix-it` and `skill-project-overview`.
-- [ ] Add `check-runtime-file-tracking.sh` to
+- [x] Add `check-runtime-file-tracking.sh` to *(completed)*
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`, matching the
       existing entries' `` `.claude/scripts/NAME` - description `` bullet format.
-- [ ] **Write that entry as dual-purpose, not as a bare row.** Its five documented siblings are
+- [x] **Write that entry as dual-purpose, not as a bare row.** Its five documented siblings are *(completed)*
       described as operator-invoked-only with no automated caller; this one is different — it is
       already wired in as a mandatory CI gate. The entry must say both: what an operator invokes it
       for, and that it runs as a `verify-deploy.sh` gate. Confirm the gate number live against
       `verify-deploy.sh` before writing it into the text rather than copying a remembered number.
-- [ ] Confirm the inventory's own preamble claim — "Every entry below is unchanged from the original
+- [x] Confirm the inventory's own preamble claim — "Every entry below is unchanged from the original *(completed)*
       list — none was dropped or summarized away" — still reads correctly with an entry added that
       was never in the original CLAUDE.md list; adjust the preamble if the addition makes it false.
 

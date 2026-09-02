@@ -1,0 +1,36 @@
+{
+  "phase": 6,
+  "phase_name": "Close the CLAUDE.md and utility-inventory documentation gaps",
+  "started_at": "2026-09-02T03:15:00Z",
+  "last_updated": "2026-09-02T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add /zulip row to Command Reference table", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Add skill-zulip row to Skill-to-Agent Mapping table (direct execution)", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Add check-runtime-file-tracking.sh to utility-scripts-inventory.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 4, "description": "Write entry as dual-purpose (operator + Gate 14 CI gate), gate number verified live against verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 5, "description": "Adjust inventory preamble's 'unchanged from original' claim for the new addition", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.extra-1",
+      "description": "Redeploying to test Phase 6's doc-lint verification surfaced a stale index-entries.json line_count mismatch for literature/context/guides/literature-organization.md (342 declared vs 354 actual), caused by Phase 3's edits to that file",
+      "type": "altered",
+      "reason": "Updated agent-system/extensions/literature/index-entries.json's line_count (342 -> 354) to keep the doc-lint index in sync; belongs to Phase 3's file but discovered and fixed during Phase 6's redeploy-and-verify step",
+      "annotation": "n/a -- not a plan checklist item for this phase; recorded here for traceability"
+    },
+    {
+      "task_id": "6.extra-2",
+      "description": "Post-redeploy gate 13 (whole-tree orphan detection) flagged 'orphan file: scripts/literature-retrieve.sh' -- a stale leftover in the deployed .claude/scripts/ tree from before Phase 3's manifest removal, left behind because deploy-headless.sh's default resync mode does not delete no-longer-declared files (only --wipe rebuilds from scratch)",
+      "type": "altered",
+      "reason": "Removed the stray deployed file (.claude/scripts/literature-retrieve.sh) directly -- this is deletion of a disposable deploy artifact, not hand-authoring content into .claude/, so it does not violate the source-store/deploy boundary rule",
+      "annotation": "n/a -- deploy-artifact cleanup, not a source-store or plan checklist change"
+    }
+  ],
+  "gate_verification": {
+    "check_extension_docs_sh": "PASS for core and literature extensions after the two fixes above",
+    "verify_deploy_skip_slow": "2 of 27 checks failed -- exactly the two named out-of-scope pre-existing failures (validate-state.sh --deep, state-writer boundary lint), matching the research baseline"
+  }
+}
