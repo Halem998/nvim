@@ -63,10 +63,6 @@ end
 -- Port detection
 -- ---------------------------------------------------------------------------
 
---- Find an available TCP port starting from base_port.
---- Scans base_port through base_port+100 using vim.uv.new_tcp() bind test.
----@param base_port number Starting port to scan (default 3030)
----@return number|nil port The first available port, or nil on failure
 --- Check if a port is already claimed by a running process in the registry.
 ---@param port number
 ---@return boolean
@@ -79,19 +75,69 @@ local function _port_in_registry(port)
   return false
 end
 
+--- Report whether something is currently accepting connections on host:port.
+---
+--- A *connect* probe rather than a bind probe. Binding is not a usable occupancy test here:
+--- libuv sets SO_REUSEADDR on its TCP handles, so `tcp:bind()` returns success even when
+--- another process is actively listening on that exact address (verified against a live
+--- Slidev server on [::1]:3030 -- bind returned 0 while a plain socket got EADDRINUSE).
+--- A successful connect, by contrast, means a listener answered.
+---
+--- A connect failure is treated as "nothing there", which also gives the right answer when the
+--- address family is unusable on this host (no IPv6), so no separate capability check is needed.
+---@param host string
+---@param port number
+---@return boolean listening
+local function _port_listening(host, port)
+  local tcp = vim.uv.new_tcp()
+  if not tcp then
+    return false
+  end
+  local listening = nil
+  local started = pcall(function()
+    tcp:connect(host, port, function(err)
+      listening = (err == nil)
+      pcall(function()
+        tcp:close()
+      end)
+    end)
+  end)
+  if not started then
+    pcall(function()
+      tcp:close()
+    end)
+    return false
+  end
+  -- vim.wait pumps the event loop cooperatively; nested vim.uv.run() is not safe here.
+  vim.wait(300, function()
+    return listening ~= nil
+  end, 10)
+  if listening == nil then
+    pcall(function()
+      tcp:close()
+    end)
+    return false
+  end
+  return listening
+end
+
+--- Find an available TCP port starting from base_port.
+---
+--- Both loopback families are probed. Checking IPv4 alone is not sufficient: Vite (and
+--- therefore Slidev) binds whatever `localhost` resolves to, which is ::1 on an IPv6-enabled
+--- host, so a server can hold [::1]:3030 while 127.0.0.1:3030 looks completely free. Handing
+--- out that port makes the launched server fail its own bind and exit 1, immediately after the
+--- launcher has already reported success.
+---@param base_port number Starting port to scan (default 3030)
+---@return number|nil port The first available port, or nil on failure
 local function _find_available_port(base_port)
   base_port = base_port or 3030
   for offset = 0, 100 do
     local port = base_port + offset
     -- Skip ports already claimed by our own processes
     if not _port_in_registry(port) then
-      local tcp = vim.uv.new_tcp()
-      if tcp then
-        local ok = tcp:bind("127.0.0.1", port)
-        tcp:close()
-        if ok == 0 then
-          return port
-        end
+      if not _port_listening("127.0.0.1", port) and not _port_listening("::1", port) then
+        return port
       end
     end
   end
@@ -200,6 +246,117 @@ end
 -- ---------------------------------------------------------------------------
 -- Core API (Phase 1)
 -- ---------------------------------------------------------------------------
+
+--- Read a process's argv from /proc, split on NUL.
+---@param pid string|number
+---@return string[]|nil
+local function _read_cmdline(pid)
+  local f = io.open("/proc/" .. pid .. "/cmdline", "rb")
+  if not f then
+    return nil
+  end
+  local ok, data = pcall(function()
+    return f:read("*a")
+  end)
+  pcall(function()
+    f:close()
+  end)
+  if not ok or not data or data == "" then
+    return nil
+  end
+  local args = {}
+  for arg in data:gmatch("([^%z]+)") do
+    args[#args + 1] = arg
+  end
+  return args
+end
+
+--- Extract the port a Slidev argv is serving on.
+--- Slidev's own default is 3030 when no flag is given.
+---@param args string[]
+---@return number
+local function _port_from_args(args)
+  for i, a in ipairs(args) do
+    if a == "--port" and args[i + 1] then
+      local n = tonumber(args[i + 1])
+      if n then
+        return n
+      end
+    end
+    local inline = a:match("^%-%-port=(%d+)$")
+    if inline then
+      return tonumber(inline)
+    end
+  end
+  return 3030
+end
+
+--- Find a Slidev server already serving `filepath`, started outside this Neovim instance.
+---
+--- Covers two cases the in-registry check in M.launch() cannot see: a server owned by a
+--- different Neovim instance, and an orphan whose owning instance was killed hard (its process
+--- reparents to the user systemd manager and keeps serving indefinitely). Reusing such a server
+--- is strictly better than starting a second one -- it is already warm, and spawning a duplicate
+--- only burns a second port and another Node process on the same deck.
+---
+--- Deliberately reuse-only: nothing is ever killed here, so this cannot misfire against a live
+--- server belonging to someone else's editor.
+---
+--- Matching is conservative, because one Slidev project directory can hold several decks:
+---   strong match -- the deck path appears verbatim in the server's argv
+---   weak match   -- the server has no deck argument at all (so it is serving the directory
+---                   default, `slides.md`) and its cwd is this deck's directory and this deck
+---                   *is* `slides.md`
+--- Anything else is left alone rather than risk attaching to the wrong deck.
+---
+--- The port is confirmed to be accepting connections before the server is offered for reuse, so
+--- a process caught mid-shutdown is not mistaken for a usable one.
+---@param filepath string
+---@return number|nil port
+local function _find_external_deck_server(filepath)
+  -- /proc is Linux-only; elsewhere simply decline to reuse.
+  if vim.fn.isdirectory("/proc") ~= 1 then
+    return nil
+  end
+  local dir = vim.fn.fnamemodify(filepath, ":h")
+  local basename = vim.fn.fnamemodify(filepath, ":t")
+
+  for _, pid_dir in ipairs(vim.fn.glob("/proc/[0-9]*", false, true)) do
+    local pid = pid_dir:match("/proc/(%d+)$")
+    if pid then
+      local args = _read_cmdline(pid)
+      if args then
+        local joined = table.concat(args, " ")
+        if joined:find("slidev", 1, true) then
+          local strong = false
+          local has_deck_arg = false
+          for _, a in ipairs(args) do
+            if a == filepath then
+              strong = true
+            end
+            if a:match("%.md$") then
+              has_deck_arg = true
+            end
+          end
+
+          local weak = false
+          if not strong and not has_deck_arg and basename == "slides.md" then
+            local cwd = vim.uv.fs_readlink(pid_dir .. "/cwd")
+            weak = (cwd ~= nil and cwd == dir)
+          end
+
+          if strong or weak then
+            local port = _port_from_args(args)
+            if _port_listening("127.0.0.1", port) or _port_listening("::1", port) then
+              return port
+            end
+          end
+        end
+      end
+    end
+  end
+  return nil
+end
 
 --- Start a background process and register it in the process manager.
 ---
@@ -522,6 +679,29 @@ function M.launch(filepath)
     end
   end
 
+  -- Nothing of ours is serving this deck. Before spawning, check whether a server started
+  -- outside this Neovim instance already is -- another editor, or an orphan outliving one.
+  local external_port = _find_external_deck_server(filepath)
+  if external_port then
+    -- Already adopted by an earlier launch in this session: just refocus it.
+    local existing = M.find_by_port(external_port)
+    if existing then
+      _open_browser(external_port, 0)
+      return existing.id
+    end
+    local cats = _categories()
+    _notify(string.format("Reusing Slidev already serving this deck on port %d", external_port),
+      cats and cats.USER_ACTION)
+    local id = M.register_external({
+      name = "slidev",
+      cmd = { "npx", "@slidev/cli", filepath, "--port", tostring(external_port) },
+      type = "slidev",
+      port = external_port,
+    })
+    _open_browser(external_port, 0)
+    return id
+  end
+
   local launcher = M._launchers[ft]
   if not launcher then
     local cats = _categories()
@@ -596,6 +776,8 @@ end
 
 -- Expose internals for testing/debugging
 M._find_available_port = _find_available_port
+M._port_listening = _port_listening
+M._find_external_deck_server = _find_external_deck_server
 M._make_ring_buffer = _make_ring_buffer
 M._is_slidev_project = _is_slidev_project
 

@@ -104,9 +104,9 @@ The process manager (`process.lua`) provides centralized background job manageme
 ### Key Features
 
 - **Job Registry**: Track background processes with pid, command, port, working directory, uptime, and stdout/stderr ring buffers
-- **Port Auto-Detection**: Find available ports starting from a base (default 3030) using `vim.uv.new_tcp()` bind test, skipping ports already claimed by tracked processes
+- **Port Auto-Detection**: Find available ports starting from a base (default 3030), skipping ports already claimed by tracked processes. Occupancy is tested by *connecting*, not binding: libuv sets `SO_REUSEADDR`, so `tcp:bind()` succeeds even against an actively listening socket. Both `127.0.0.1` and `::1` are probed, because Vite/Slidev bind whatever `localhost` resolves to — a server can hold `[::1]:3030` while the IPv4 address looks free, and handing out that port makes the launched server fail its own bind and exit 1
 - **Browser Auto-Open**: Launch browser via `xdg-open` on process start with per-port deduplication
-- **Duplicate Detection**: Launching a file that is already running shows "Already open on port: N" instead of starting a duplicate
+- **Duplicate Detection**: Launching a file that is already running opens the existing server instead of starting a duplicate. This also covers Slidev servers started *outside* this Neovim instance — another editor, or an orphan that outlived one — which are adopted via `register_external()` and reported as "Reusing Slidev already serving this deck on port N". Matching is conservative, since one project directory can hold several decks: the deck path must appear in the server's argv, or the server must have no deck argument while its cwd is the deck's directory and the deck is `slides.md`. Nothing is ever killed
 - **Filetype Launchers**: Extensible registry mapping filetypes to launch functions (ships with slidev for markdown and typst-preview for typst)
 - **VimLeavePre Cleanup**: All tracked processes are stopped when Neovim exits
 - **Telescope Integration**: Process picker (`<leader>xp`) shows all tracked processes with kill and browser-open actions
