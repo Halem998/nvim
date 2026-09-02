@@ -64,7 +64,15 @@
       "tests/generate-test-fixtures.py",
       "tests/test-literature-convert.sh",
       "tests/test-literature-build-index.sh",
-      "tests/test-quality-gate-notation.sh"
+      "tests/test-quality-gate-notation.sh",
+      "tests/curl-stub.sh",
+      "tests/test-literature-discover-tier3.sh",
+      "tests/fixtures/tier3-crossref-200.json",
+      "tests/fixtures/tier3-golden-baseline.json",
+      "tests/fixtures/tier3-openalex-200.json",
+      "tests/fixtures/tier3-semanticscholar-200.json",
+      "tests/fixtures/tier3-semanticscholar-empty-200.json",
+      "tests/fixtures/tier3-unpaywall-200.json"
     ]
   },
   "merge_targets": {

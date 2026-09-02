@@ -20,7 +20,7 @@
         "briefing"
       ],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 189,
+      "line_count": 191,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -202,7 +202,7 @@
         "in_zotero_no_pdf"
       ],
       "summary": "How literature-ingest-online.sh creates a Zotero item with PDF attachment (item-add wrapping zot add --pdf), envelope-field mitigation, %PDF gate, storage re-pointing, in_zotero_no_pdf sub-path",
-      "line_count": 207,
+      "line_count": 208,
       "load_when": {
         "agents": [
           "literature-agent",
@@ -339,7 +339,7 @@
         "SOURCES.md"
       ],
       "summary": "The two-mode /literature command: argument-shape mode detection, Mode A three-tier discovery (index, Zotero, online) with ingest-or-record outcomes, and Mode B ingestion",
-      "line_count": 39,
+      "line_count": 41,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -462,7 +462,7 @@
         "directory-structure"
       ],
       "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory) and how --lit injection selects and budgets content from it",
-      "line_count": 354,
+      "line_count": 389,
       "load_when": {
         "agents": [
           "general-research-agent",
@@ -496,7 +496,7 @@
         "literature-fidelity-audit"
       ],
       "summary": "chunk_NNNN.md files are index-only re-splits of a canonical document, not additional content -- whole-document metrics must exclude them or double-count",
-      "line_count": 40,
+      "line_count": 68,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -594,6 +594,67 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "project/literature/patterns/provenance-fidelity.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "fidelity",
+        "provenance",
+        "quarantine"
+      ],
+      "keywords": [
+        "provenance_fidelity",
+        "verified_conversion",
+        "unverified_summary",
+        "unverified_scan_source",
+        "fail-open",
+        "literature-fidelity-audit"
+      ],
+      "summary": "The seven-value provenance_fidelity enum stamped by literature-fidelity-audit.sh, its four detector signals (word-ratio, scan-source gate, disclosure check, proof-completeness check), and the fail-open allowlist invariant literature-search.sh and literature-briefing.sh depend on",
+      "line_count": 124,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/cite"
+        ]
+      },
+      "on_demand": true
+    },
+    {
+      "path": "project/literature/domain/tier3-provider-fallback.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "discover",
+        "tier3",
+        "fallback",
+        "providers"
+      ],
+      "keywords": [
+        "semantic-scholar",
+        "openalex",
+        "crossref",
+        "tier3_emit_record",
+        "doc_id",
+        "TIER3_STATUS"
+      ],
+      "summary": "Tier 3 online-search multi-provider fallback chain in literature-discover.sh (Semantic Scholar -> OpenAlex -> Crossref), the shared tier3_emit_record() contract, the closed four-branch doc_id derivation, and the aggregated TIER3_STATUS failure line",
+      "line_count": 126,
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
     }
   ]
 }
