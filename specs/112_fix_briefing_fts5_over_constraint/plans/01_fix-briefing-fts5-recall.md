@@ -265,33 +265,33 @@ shares the search call, widen the phase and re-verify repo-mode behavior explici
 
 ---
 
-### Phase 4: Global-mode FTS5 regression coverage [NOT STARTED]
+### Phase 4: Global-mode FTS5 regression coverage [COMPLETED]
 
 **Goal**: Make the fix durable with real-fixture tests, since `test-lit-pipeline.sh` currently
 checks only `--global` script existence/executability/`bash -n`.
 
 **Tasks**:
-- [ ] Add a new `section_i` to `test-lit-pipeline.sh` following Section G/H's fixture idiom
+- [x] Add a new `section_i` to `test-lit-pipeline.sh` following Section G/H's fixture idiom *(completed)*
       (own temp `LITERATURE_DIR`, own fixture DB, resolved relative to the script's own
       `SCRIPT_DIR`), register it in `main()`'s `--runtime` block, and add its one-paragraph entry to
       the header's `Sections:` list.
-- [ ] Build a small real fixture `.literature.db` from `literature-schema.sql` with a handful of
+- [x] Build a small real fixture `.literature.db` from `literature-schema.sql` with a handful of *(completed)*
       chunks whose content collectively contains the query's terms but never contiguously, plus a
       matching fixture `index.json` carrying `provenance_fidelity` so results are not quarantined.
-- [ ] Case I1 (the core regression): a long, realistic multi-word query including a literal
+- [x] Case I1 (the core regression): a long, realistic multi-word query including a literal *(completed)*
       `<sec:representation>` token returns a **non-empty** result set. This case must fail against
       the pre-fix scripts.
-- [ ] Case I2 (sparse honesty): a genuinely off-corpus query still yields `sparse=true`, and a query
+- [x] Case I2 (sparse honesty): a genuinely off-corpus query still yields `sparse=true`, and a query *(completed)*
       matching exactly `LITERATURE_SPARSE_THRESHOLD` segments yields `sparse=false` — exercising the
       strict `<` boundary on both sides.
-- [ ] Case I3 (error isolation): a query whose terms are all FTS5-hostile surfaces a non-null
+- [x] Case I3 (error isolation): a query whose terms are all FTS5-hostile surfaces a non-null *(completed)*
       `query_error`, while a query mixing one hostile term with valid terms returns results and no
       hard error.
-- [ ] Case I4 (dedupe): a chunk matched by several terms appears exactly once, and `seg_count`
+- [x] Case I4 (dedupe): a chunk matched by several terms appears exactly once, and `seg_count` *(completed)*
       counts it once.
-- [ ] Assert the marker line's field order and adjacency (the eight original fields, then the
+- [x] Assert the marker line's field order and adjacency (the eight original fields, then the *(completed)*
       `delta_*` fields) so a future edit cannot silently break the Stage 4a grep.
-- [ ] If Case I2's genuinely-sparse query comes back `sparse=false`, apply the corroboration rule:
+- [x] If Case I2's genuinely-sparse query comes back `sparse=false`, apply the corroboration rule: *(completed)*
       count only chunks with `matched_terms >= 2` toward the sparse accounting when the filtered
       term count exceeds `MULTI_TERM_MATCH_THRESHOLD`, leaving the displayed result set unchanged.
       Record the decision and its trigger in the phase notes either way.

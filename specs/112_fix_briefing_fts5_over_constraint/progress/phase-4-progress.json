@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Global-mode FTS5 regression coverage",
+  "started_at": "2026-09-01T02:00:00Z",
+  "last_updated": "2026-09-01T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add section_i following Section G/H's fixture idiom, register in main()/header", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 2, "description": "Build a small real fixture .literature.db with a matching fixture index.json", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 3, "description": "Case I1: long multi-word query with literal <sec:representation> returns non-empty", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 4, "description": "Case I2: sparse honesty at exact threshold boundary (both sides)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 5, "description": "Case I3: error isolation (all-hostile vs mixed)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 6, "description": "Case I4: dedupe (chunk matched by 2 terms counted once)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 7, "description": "Assert marker field order/adjacency", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/test-lit-pipeline.sh"]},
+    {"id": 8, "description": "Confirm each case fails against stashed pre-fix scripts", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Case I4 using a single-term query (\"representation\") to test dedupe", "result": "failed", "reason": "A single-term query cannot exercise cross-term merge dedup at all (a single MATCH naturally returns each row once); it produced identical seg_count=3 pre- and post-fix, proving nothing. Replaced with a two-term query (\"representation duality\") where one chunk (i_c4) satisfies BOTH terms individually -- pre-fix AND-all-terms only returns that one chunk (seg_count=1), post-fix per-term merge returns all 3 with i_c4 counted exactly once (seg_count=3), giving a real pre/post distinction."}
+  ],
+  "handoff_count": 0
+}

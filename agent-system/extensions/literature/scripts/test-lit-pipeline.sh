@@ -38,6 +38,16 @@
 #       fails open to SUBINDEX_PRESENT (H5); LITERATURE_COVERAGE_GAP_MIN's `>=` (not `>`)
 #       boundary is exercised exactly at and one below the threshold (H6). A sibling to
 #       Section G, following its fixture idiom.
+#   I - global-mode FTS5 regression tests (opt-in via --runtime): a long, realistic
+#       multi-word --global query (including a literal `<sec:representation>`-shaped
+#       token) that previously either hard-errored or returned zero segments now returns
+#       a non-empty, topically relevant result set (I1); sparse=true/false stays honest at
+#       the exact LITERATURE_SPARSE_THRESHOLD boundary (I2); one FTS5-hostile filtered
+#       term never poisons a query mixed with valid terms, while an all-hostile term set
+#       surfaces a non-null query_error (I3); a chunk matched by several filtered terms
+#       counts once, not once per term (I4). A sibling to Section G/H, following their
+#       fixture idiom, but with a real FTS5-populated .literature.db (Section G/H's
+#       fixture is metadata-only).
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -119,6 +129,7 @@ SUB_INDEX_PATH="$PROJECT_ROOT/specs/literature-index.json"
 TEMP_LIT_DIR_F=""
 TEMP_LIT_DIR_G=""
 TEMP_LIT_DIR_H=""
+TEMP_LIT_DIR_I=""
 
 cleanup() {
   if [[ -n "$TEMP_LIT_DIR" ]] && [[ -d "$TEMP_LIT_DIR" ]]; then
@@ -143,6 +154,10 @@ cleanup() {
   # Section H's own scratch corpus (separate from Sections E/F/G's own TEMP_LIT_DIR_*)
   if [[ -n "$TEMP_LIT_DIR_H" ]] && [[ -d "$TEMP_LIT_DIR_H" ]]; then
     rm -rf "$TEMP_LIT_DIR_H"
+  fi
+  # Section I's own scratch corpus (separate from Sections E/F/G/H's own TEMP_LIT_DIR_*)
+  if [[ -n "$TEMP_LIT_DIR_I" ]] && [[ -d "$TEMP_LIT_DIR_I" ]]; then
+    rm -rf "$TEMP_LIT_DIR_I"
   fi
 }
 trap 'cleanup' EXIT
@@ -1092,6 +1107,177 @@ PYEOF
 }
 
 # ============================================================
+# SECTION I: global-mode FTS5 regression (opt-in via --runtime)
+# ============================================================
+# Asserts the --global AND-all-terms/`<`-syntax-error fix: a full-length, realistic
+# multi-word query (including a literal `<sec:representation>`-shaped token) that
+# previously either hard-errored (unhandled `<`/`>`) or returned zero segments (FTS5's
+# bareword MATCH ANDs every term) now returns a non-empty, deduplicated result set
+# (I1); the sparse=true/false boundary stays honest at the exact
+# LITERATURE_SPARSE_THRESHOLD count, not just qualitatively "more" or "fewer" (I2);
+# one FTS5-hostile filtered term never poisons a query mixed with valid terms, while
+# an all-hostile term set surfaces a non-null query_error (I3); a chunk matched by
+# several filtered terms is counted once, not once per matching term (I4). A sibling
+# to Section G/H, following their fixture idiom -- its own temp LITERATURE_DIR, its
+# own fixture DB (built from the real schema, unlike G/H's metadata-only DB, since
+# this section exercises live FTS5 MATCH queries), resolved relative to test-lit-
+# pipeline.sh's own SCRIPT_DIR (like Section F/G/H, never the hardcoded deployed
+# .claude/ path Section E uses).
+section_i() {
+  echo ""
+  log_info "Section I: global-mode FTS5 regression tests (--runtime)"
+  echo "----------------------------------------"
+
+  local briefing_script_i="$SCRIPT_DIR/literature-briefing.sh"
+
+  if [[ ! -x "$briefing_script_i" ]] && [[ ! -f "$briefing_script_i" ]]; then
+    log_fail "Section I: literature-briefing.sh not found relative to $SCRIPT_DIR"
+    return
+  fi
+
+  if ! command -v sqlite3 >/dev/null 2>&1; then
+    log_warn "Section I: sqlite3 not available -- skipping (cannot build a real FTS5 fixture)"
+    return
+  fi
+
+  TEMP_LIT_DIR_I=$(mktemp -d)
+
+  # --- Fixture global index: five top-level documents, all verified_conversion so
+  # none is quarantined by do_search's/do_multi_search's fidelity filter. No
+  # project_tags on any entry, so literature-search.sh's project filter (get_project_doc_ids)
+  # matches every entry regardless of the repo_name literature-briefing.sh derives. ---
+  cat > "$TEMP_LIT_DIR_I/index.json" <<'IINDEX'
+{
+  "entries": [
+    {"id": "doc_alpha", "doc_id": "doc_alpha", "parent_doc": null, "path": "sources/doc_alpha/", "title": "Representation Theorem", "provenance_fidelity": "verified_conversion"},
+    {"id": "doc_beta", "doc_id": "doc_beta", "parent_doc": null, "path": "sources/doc_beta/", "title": "Coalgebraic Semantics", "provenance_fidelity": "verified_conversion"},
+    {"id": "doc_gamma", "doc_id": "doc_gamma", "parent_doc": null, "path": "sources/doc_gamma/", "title": "Bisimulation", "provenance_fidelity": "verified_conversion"},
+    {"id": "doc_delta", "doc_id": "doc_delta", "parent_doc": null, "path": "sources/doc_delta/", "title": "Duality Theory", "provenance_fidelity": "verified_conversion"},
+    {"id": "doc_epsilon", "doc_id": "doc_epsilon", "parent_doc": null, "path": "sources/doc_epsilon/", "title": "Cooking Recipes", "provenance_fidelity": "verified_conversion"}
+  ]
+}
+IINDEX
+
+  sqlite3 "$TEMP_LIT_DIR_I/.literature.db" < "$SCRIPT_DIR/literature-schema.sql"
+
+  # --- Fixture chunks: terms are spread across chunks so the words a query needs
+  # never appear contiguously in one place (the phrase_retry rung is syntax-safe but
+  # recall-narrow, so this fixture must be un-findable via a whole-query phrase
+  # match -- only per-term OR-of-AND-groups recall reaches it), and several chunks
+  # deliberately share terms (I4's dedupe case) while one (doc_epsilon) shares none
+  # (the off-corpus control for I2). ---
+  sqlite3 "$TEMP_LIT_DIR_I/.literature.db" <<'ISQL'
+INSERT INTO chunks_data (chunk_id, doc_id, section_path, title, keywords, summary, content, source_path)
+VALUES
+('i_c1','doc_alpha','Ch1 > Representation','Representation Theorem','representation modal theorem','About representation','This chunk discusses representation theorem for modal logic frames in depth.','doc_alpha/i_c1.md'),
+('i_c2','doc_beta','Ch2 > Coalgebra','Coalgebraic Semantics','coalgebra modal semantics','About coalgebra','Coalgebraic modal logic generalizes Kripke frames using functor based semantics.','doc_beta/i_c2.md'),
+('i_c3','doc_gamma','Ch3 > Bisimulation','Bisimulation','bisimulation modal invariance','About bisimulation','Bisimulation is a key notion relating modal logic frames and representation theorem.','doc_gamma/i_c3.md'),
+('i_c4','doc_delta','Ch4 > Duality','Duality Theory','duality modal representation','About duality','Duality theory connects modal algebra representation and frames directly.','doc_delta/i_c4.md'),
+('i_c5','doc_epsilon','Ch1 > Intro','Cooking Recipes','cooking recipes kitchen','About cooking','This document is entirely about cooking recipes and kitchen techniques, unrelated to logic.','doc_epsilon/i_c5.md');
+INSERT INTO chunks_fts(rowid, title, keywords, summary, content)
+  SELECT id, title, keywords, summary, content FROM chunks_data;
+ISQL
+
+  # --- Case I1: the core regression -- a long, realistic multi-word query including a
+  # literal `<sec:representation>` token returns a non-empty result set. This case
+  # must fail against the pre-fix scripts (no AND-all-terms query below matches all
+  # words in one chunk, and the unhandled `<`/`>` used to raise a hard syntax error). ---
+  local i1_query="Investigate the representation theorem for modal logic frames using coalgebraic semantics <sec:representation>"
+  local i1_out i1_seg_count
+  i1_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "$i1_query" --top-n 8 2>/dev/null)
+  i1_seg_count=$(echo "$i1_out" | grep -oP '(?<=seg_count=)\d+' | head -1)
+  if [[ -n "$i1_seg_count" ]] && [[ "$i1_seg_count" -gt 0 ]]; then
+    log_pass "Case I1 (core regression): --global returned seg_count=$i1_seg_count (non-empty) for a long query with a literal <sec:representation> token"
+  else
+    log_fail "Case I1 (core regression): --global returned zero segments (or no marker) for the long query. Got: $i1_out"
+  fi
+  if echo "$i1_out" | grep -q 'doc_alpha\|doc_beta\|doc_gamma\|doc_delta'; then
+    log_pass "Case I1 (core regression): result body references at least one topically relevant doc_id"
+  else
+    log_fail "Case I1 (core regression): no expected doc_id found in result body"
+  fi
+
+  # --- Case I2: sparse honesty at the exact threshold boundary ---
+  # I2a: genuinely off-corpus query -> sparse=true (0 < LITERATURE_SPARSE_THRESHOLD default 3).
+  local i2a_out i2a_marker
+  i2a_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "quantum chromodynamics particle accelerator" --top-n 8 2>/dev/null)
+  i2a_marker=$(echo "$i2a_out" | grep -- '<!-- lit-coverage')
+  if echo "$i2a_marker" | grep -q 'seg_count=0' && echo "$i2a_marker" | grep -q 'sparse=true'; then
+    log_pass "Case I2a (sparse honesty, below threshold): off-corpus query yields seg_count=0 sparse=true"
+  else
+    log_fail "Case I2a (sparse honesty, below threshold): unexpected marker. Got: $i2a_marker"
+  fi
+  # I2b: "theorem duality" matches exactly 3 distinct chunks (i_c1, i_c3 via "theorem";
+  # i_c4 via "duality") -- exactly LITERATURE_SPARSE_THRESHOLD (default 3), so sparse
+  # must be false (the boundary is strict `<`, never `<=`).
+  local i2b_out i2b_marker
+  i2b_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "theorem duality" --top-n 8 2>/dev/null)
+  i2b_marker=$(echo "$i2b_out" | grep -- '<!-- lit-coverage')
+  if echo "$i2b_marker" | grep -q 'seg_count=3' && echo "$i2b_marker" | grep -q 'sparse=false'; then
+    log_pass "Case I2b (sparse honesty, at threshold): query matching exactly 3 distinct chunks yields seg_count=3 sparse=false"
+  else
+    log_fail "Case I2b (sparse honesty, at threshold): unexpected marker (expected seg_count=3 sparse=false). Got: $i2b_marker"
+  fi
+
+  # --- Case I3: error isolation ---
+  # I3a: every filtered term is FTS5-hostile (a leading hyphen survives sanitize_query
+  # unchanged -- only MID-word hyphens are folded -- and raises "no such column" from
+  # FTS5's column-filter grammar) -> a non-null query_error must surface.
+  local i3a_out
+  i3a_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "-hostileterm1 -hostileterm2" --top-n 8 2>/dev/null)
+  if echo "$i3a_out" | grep -qi 'syntax error\|Note: the original query triggered'; then
+    log_pass "Case I3a (error isolation, all-hostile): non-null query_error surfaced in the briefing body"
+  else
+    log_fail "Case I3a (error isolation, all-hostile): expected a surfaced query_error message. Got: $i3a_out"
+  fi
+  # I3b: one hostile term mixed with a valid term ("theorem", matching i_c1/i_c3) ->
+  # results are returned and no hard query_error is surfaced (one bad term must never
+  # poison the whole multi-query response).
+  local i3b_out
+  i3b_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "-hostileterm1 theorem" --top-n 8 2>/dev/null)
+  if echo "$i3b_out" | grep -q 'seg_count=[1-9]' && ! echo "$i3b_out" | grep -qi 'syntax error\|Note: the original query triggered'; then
+    log_pass "Case I3b (error isolation, mixed): one hostile term among valid ones still returns results with no hard query_error"
+  else
+    log_fail "Case I3b (error isolation, mixed): expected non-zero seg_count and no surfaced query_error. Got: $i3b_out"
+  fi
+
+  # --- Case I4: dedupe -- "representation duality" is a genuine two-term merge case
+  # (unlike a single-term query, which cannot exercise cross-term dedup at all): i_c4
+  # is the ONLY chunk matching both terms (title "Duality Theory", keywords "duality
+  # modal representation", content repeats both words), while "representation" alone
+  # additionally matches i_c1 and i_c3. Pre-fix AND-all-terms semantics only ever
+  # return i_c4 (seg_count=1) since no chunk need be deduped across separate queries
+  # in a single bareword MATCH; this case demonstrably fails pre-fix. Post-fix, the
+  # per-term merge must count i_c4 exactly ONCE (not twice, despite matching both
+  # "representation" and "duality") alongside i_c1/i_c3, for seg_count=3.
+  local i4_out i4_marker i4_body_hits
+  i4_out=$(LITERATURE_DIR="$TEMP_LIT_DIR_I" bash "$briefing_script_i" --global "representation duality" --top-n 8 2>/dev/null)
+  i4_marker=$(echo "$i4_out" | grep -- '<!-- lit-coverage')
+  if echo "$i4_marker" | grep -q 'seg_count=3'; then
+    log_pass "Case I4 (dedupe): two-term query matching 3 distinct chunks (one via both terms) reports seg_count=3"
+  else
+    log_fail "Case I4 (dedupe): expected seg_count=3. Got: $i4_marker"
+  fi
+  i4_body_hits=$(echo "$i4_out" | grep -c '^   Read: `bash .claude/scripts/literature-search.sh --read i_c4`$')
+  if [[ "$i4_body_hits" -eq 1 ]]; then
+    log_pass "Case I4 (dedupe): chunk i_c4 (matched by both terms) appears exactly once in the rendered body"
+  else
+    log_fail "Case I4 (dedupe): chunk i_c4 appears $i4_body_hits times in the rendered body (expected exactly once)"
+  fi
+
+  # --- Marker field order/adjacency: the eight original fields stay byte-adjacent
+  # and in order, with the delta_* fields strictly after them, so
+  # lit-stage4a-flow.md's `lit-coverage mode=global .*sparse=true` grep keeps matching. ---
+  if echo "$i2a_marker" | grep -qP '^<!-- lit-coverage mode=global seg_count=\d+ sparse=(true|false) threshold=\d+ requested=\d+ resolved=\d+ skipped=\d+ skip_rate=\d+ delta_checked=(true|false) delta_gap=\d+ delta_candidates=\d+ -->$'; then
+    log_pass "Marker field order/adjacency: the eight original fields plus delta_* stay in the documented order"
+  else
+    log_fail "Marker field order/adjacency: unexpected field order/shape. Got: $i2a_marker"
+  fi
+
+  log_info "Section I complete. Temp corpus will be cleaned up."
+}
+
+# ============================================================
 # MAIN
 # ============================================================
 main() {
@@ -1115,6 +1301,7 @@ main() {
     section_f
     section_g
     section_h
+    section_i
   fi
 
   # --- Summary ---
