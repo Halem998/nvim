@@ -11,8 +11,8 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,48,51,53,72,74,87,90,91,100,102,103,106,108,110,111,113,121,125,129,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,50,75,76,89,104,105,109,112,127,136 | 29,48,74,87,91,102,108,121 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,50,51,53,72,74,87,90,91,100,102,103,106,108,110,111,113,121,125,129,134,137,138 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,75,76,89,104,105,109,112,127,136 | 29,74,87,91,102,108,121 | core-agent-system, extensions, literature |
 | 3 | 88,107 | 87,104,127 | core-agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -23,8 +23,7 @@ next_project_number: 139
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-48 [PLANNED] — Propagate the scoped-commit fix to the 65 call sites it never rea
-  └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
@@ -2351,12 +2350,13 @@ ROADMAP RESOLUTION DECIDED: delete specs/ROADMAP.md rather than rewriting it. It
 ---
 
 ### 48. Propagate scoped commit to all call sites
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124
 - **Research**: [048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md]
 - **Plan**: [048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md]
+- **Summary**: [048_propagate_scoped_commit_to_all_call_sites/summaries/01_scoped-commit-call-site-migration-summary.md]
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
