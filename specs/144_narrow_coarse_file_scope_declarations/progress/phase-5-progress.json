@@ -1,0 +1,54 @@
+{
+  "phase": 5,
+  "phase_name": "Apply the Per-Declaration Narrowings to specs/state.json",
+  "started_at": "2026-09-02T02:00:00Z",
+  "last_updated": "2026-09-02T02:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run Check 8 live, diff against report table, apply per-project narrowings via state-write.sh",
+      "status": "done",
+      "files_touched": [
+        "specs/state.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Live Check 8 re-run before touching any narrowing",
+      "result": "diverged from report",
+      "reason": "10 findings across 9 projects instead of the report's 11/10 -- project 20 completed (terminal) since research and is no longer flagged by Check 8"
+    },
+    {
+      "approach": "Re-derived project 44's six context/patterns/task-*.md filenames via a fresh grep of specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md rather than trusting the report's list",
+      "result": "confirmed identical to report",
+      "reason": "Artifacts & Outputs section names all six files plus index-entries.json verbatim"
+    },
+    {
+      "approach": "Re-derived project 88's tests/ and lint/ enumerations by re-running its own prescribed grep -rl \"SKILL.md\" live",
+      "result": "confirmed",
+      "reason": "12 tests/ files + 7 lint/ files"
+    },
+    {
+      "approach": "Re-derived 143/147/148/150's test-<basename>.sh companions from each project's OWN live file_scope rather than copying the report's table",
+      "result": "confirmed identical mapping",
+      "reason": "the underlying orchestrate-cycle-plan.sh/orchestrate-cycle-postflight.sh/etc script entries in each project's file_scope were unchanged since research"
+    },
+    {
+      "approach": "Applied all nine project narrowings in a single state-write.sh call (one jq filter with a per-project_number branch) rather than nine separate calls",
+      "result": "succeeded",
+      "reason": "still satisfies 'apply every edit through state-write.sh, replacing only the named entries' -- a single atomic write touching only the nine matched entries, verified via before/after diff that no other project or field changed"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.deviation-1",
+      "description": "Project 20's scripts/tests/ narrowing (replace with test-assess-repo-health.sh) skipped",
+      "type": "skipped",
+      "reason": "Project 20 completed (terminal status) earlier in this same orchestration batch. Check 8's live re-run no longer flags it (terminal tasks don't collide-schedule), so narrowing its file_scope would be a functional no-op. Matches the addendum's own precedent for terminal-task exclusions (general-implementation-hard-agent.md in projects 81, 121).",
+      "annotation": "*(deviation: skipped — project 20 completed/terminal, no longer flagged by Check 8)*"
+    }
+  ]
+}

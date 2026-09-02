@@ -50,13 +50,14 @@
         147
       ],
       "file_scope": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
-        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-        "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/scripts/tests/"
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ]
     },
     {
@@ -74,7 +75,6 @@
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/verify-deploy.sh",
-        "agent-system/extensions/core/scripts/lint/",
         "agent-system/extensions/core/scripts/measure-eager-context.sh",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
       ]
@@ -467,7 +467,13 @@
       ],
       "file_scope": [
         "agent-system/extensions/core/commands/task.md",
-        "agent-system/extensions/core/context/"
+        "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
+        "agent-system/extensions/core/context/patterns/task-description-transformation-examples.md",
+        "agent-system/extensions/core/context/patterns/task-expand-mode.md",
+        "agent-system/extensions/core/context/patterns/task-recover-mode.md",
+        "agent-system/extensions/core/context/patterns/task-review-mode.md",
+        "agent-system/extensions/core/context/patterns/task-sync-mode.md",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "description": "LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.",
       "artifacts": [
@@ -850,12 +856,29 @@
       ],
       "description": "=== ADDENDUM 2026-09-02 (team mode deleted; dry-run report retired) ===\nTeam rows no longer exist (team mode is deleted by an earlier Stage A task); item (6)'s `--team` notice removal is already done by that deletion. The loop's dry-run path is `orchestrate-cycle-plan.sh --dry-run` (the standalone report is retired by the cycle-plan task). Research on demand (a later task) changes only the phase the planner is dispatched in; this rewrite must not hardcode research-first anywhere -- the loop dispatches whatever phase the cycle plan names.\n=== REVISED 2026-09-02 (thin-lead path: engine deletion replaces mode-gating) ===\nSUPERSEDING SCOPE. The premise below -- that single-task /orchestrate is the hot path and should stop loading the multi-task section -- is the inverse of how the system is used: the default is many tasks at once, and \"batch of one\" is the decided design (specs/PATH.md). Mode-gating would keep both engines on disk and the parity-drift defect class alive. This task instead deletes the single-task engine and rewrites the skill as the four-move loop. Stage A.6 of specs/PATH.md. The file has grown to 293,977 B since the figures below were taken.\n\nWORK.\n(1) Delete single-task Stages 1-8 (~183,000 B) outright; the feature-port predecessor has already made them unreachable.\n(2) Rewrite skills/skill-orchestrate/SKILL.md as the loop: call orchestrate-cycle-plan.sh -> issue every dispatch row as a pointer-prompt Agent call in ONE message (team rows via orchestrate-team-fanout.sh) -> call orchestrate-cycle-postflight.sh per returned task -> branch: continue; on any `ask_user` verdict, AskUserQuestion once per question, batched at the end of the cycle after every other task's postflight has run, writing answers to specs/{NNN}_{slug}/.decisions.json for the next dispatch file; on `stop`, print the consolidated output and exit. Nothing else. The orchestrator never asks except to relay an agent-surfaced decision, and never reads a description, report, plan, summary, handoff prose, or context file during the loop.\n(3) Move narration, incident history, and exception taxonomies to docs/architecture/orchestrate-state-machine.md and handoff-schema.md. The `## MUST NOT` sections become a list of at most ~1,500 B.\n(4) Target: SKILL.md <= 20,000 B. Its Context References cite only the three cycle scripts, the fan-out script, and the state-machine doc.\n(5) Update context/reference/orchestrator-critical-paths.json labels, docs/architecture/orchestrate-state-machine.md, and every test that greps SKILL.md structure (enumerate by grep for skill-orchestrate/SKILL.md under scripts/tests and scripts/lint).\n(6) Retire the accepted-and-ignored notices for `--team` and phase-forcing flags in multi-task mode; both are per-row now.\n\nMUST NOT: change any decision the scripts make; reintroduce any inline jq beyond the loop; keep a second engine.\n\nACCEPTANCE: measured SKILL.md bytes before/after; a live 5-task batch completes end to end with the lead's per-cycle context growth measured (cycle-plan JSON + pointer prompts + postflight JSON; target on the order of 1 KB per task per cycle); a single-task-number invocation completes through the same path; an agent-surfaced user_decision is shown reaching AskUserQuestion and its answer reaching the next dispatch file; all orchestrate tests green; full gate run green.\n\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\nREFERENCE: specs/PATH.md, \"Target design: the thin lead\".\n=== ORIGINAL DESCRIPTION FOLLOWS ===Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.\n\nSection breakdown of the file: ## Multi-Task Mode 103,462 (only ~11% bash) | ## Execution Flow 71,570 | ## MUST NOT (Context Flatness) 8,932 | remainder ~2,500.\n\nESTIMATED SAVING: ~26,000 tokens per single-task /orchestrate invocation, taking its budget from ~83.5k toward ~57k. This is the single largest measured token item in the system and it is a pure move -- the section is self-contained and the branch is already explicit, so no prose rewriting is required.\n\nSecondary, separable lever recorded here so it is not lost: this file carries 5 bash blocks of >=20 lines totalling 39,275 B, and skill-orchestrate-hard carries 9 such blocks totalling 63,892 B. Bash moved into a standalone script costs ZERO context because the script source is never loaded. That is a bigger per-token win than prose extraction and is already the established pattern here (~20 orchestrate-*.sh scripts exist). Do it in a follow-up rather than widening this work.\n\nBEWARE the fence-interior heading trap: naive '^## ' section splitting can match headings inside fenced code blocks and silently truncate. The slim-task-command plan documents this exact hazard and mandates bottom-up extraction so earlier line numbers do not drift. Reuse that approach.\n\nACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; multi-task /orchestrate still works end to end; measured budget reduction reported against the 83.5k baseline.",
       "file_scope": [
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
         "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
-        "agent-system/extensions/core/scripts/tests/",
-        "agent-system/extensions/core/scripts/lint/"
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+        "agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh",
+        "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+        "agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh",
+        "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+        "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+        "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
+        "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+        "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+        "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+        "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "created": "2026-08-24T18:42:08Z",
       "last_updated": "2026-09-02T20:46:49Z",
@@ -2009,8 +2032,7 @@
         "agent-system/extensions/core/scripts/check-extension-docs.sh",
         "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
         "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
-        "agent-system/extensions/core/hooks/guard-destructive-git.sh",
-        "agent-system/extensions/core/context/standards/"
+        "agent-system/extensions/core/hooks/guard-destructive-git.sh"
       ],
       "created": "2026-09-01T11:24:42Z",
       "last_updated": "2026-09-01T11:24:42Z"
@@ -2320,14 +2342,15 @@
         146
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/scripts/tests/",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
-        "agent-system/extensions/core/commands/orchestrate.md",
-        "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-dry-run-report.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "artifacts": [],
       "next_artifact_number": 1,
@@ -2346,12 +2369,14 @@
         143
       ],
       "file_scope": [
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/orchestrate-churn.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/scripts/tests/"
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "artifacts": [],
       "next_artifact_number": 1,
@@ -2378,8 +2403,7 @@
         "agent-system/extensions/core/rules/artifact-formats.md",
         "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/index-entries.json",
-        "agent-system/extensions/core/scripts/tests/"
+        "agent-system/extensions/core/index-entries.json"
       ],
       "artifacts": [],
       "next_artifact_number": 1,
@@ -2398,14 +2422,16 @@
         88
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
         "agent-system/extensions/core/agents/planner-agent.md",
         "agent-system/extensions/core/context/formats/return-metadata-file.md",
         "agent-system/extensions/core/context/standards/status-markers.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-        "agent-system/extensions/core/scripts/tests/"
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"
       ],
       "artifacts": [],
       "next_artifact_number": 1,

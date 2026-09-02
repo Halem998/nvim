@@ -333,47 +333,63 @@ reason.
 
 ---
 
-### Phase 5: Apply the Per-Declaration Narrowings to `specs/state.json` [NOT STARTED]
+### Phase 5: Apply the Per-Declaration Narrowings to `specs/state.json` [COMPLETED]
 
 **Goal**: Replace each coarse directory-root entry with the files its task genuinely writes,
 re-derived from a live Check 8 run, without dropping any path a task actually modifies.
 
 **Tasks**:
-- [ ] Re-run Check 8 live (`bash agent-system/extensions/core/scripts/validate-state.sh`, and the
+- [x] Re-run Check 8 live (`bash agent-system/extensions/core/scripts/validate-state.sh`, and the
       spliced jq program from the report's appendix for the unabridged list) and record the
-      current finding set.
-- [ ] Diff the live set against the report's 11-row table. For any finding not in the table,
+      current finding set. *(completed: live run found 10 findings across 9 projects — see
+      deviation note)*
+- [x] Diff the live set against the report's 11-row table. For any finding not in the table,
       derive its own evidence before narrowing. For any table row no longer present, record it as
-      already-resolved and take no action.
-- [ ] Project 44: replace `agent-system/extensions/core/context/` with the six
+      already-resolved and take no action. *(completed: project 20's `scripts/tests/` finding has
+      vanished — task 20 completed earlier in this same batch and is now a terminal state, so
+      Check 8 no longer flags it; no non-terminal collision risk remains, no action taken. No new
+      finding appeared beyond the report's 10 remaining rows.)*
+- [x] Project 44: replace `agent-system/extensions/core/context/` with the six
       `context/patterns/task-*.md` files enumerated in
       `specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md`, plus
       `agent-system/extensions/core/index-entries.json` (Phase 7 of that plan mandates
       registration there, and the old `context/` prefix never covered it — closing a pre-existing
-      under-declaration). Re-grep that plan to confirm the six filenames before writing.
-- [ ] Project 20: replace `scripts/tests/` with
-      `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh`.
-- [ ] Projects 143, 147, 148, 150: replace `scripts/tests/` with the
+      under-declaration). Re-grep that plan to confirm the six filenames before writing. *(completed:
+      re-grepped live, six files confirmed against the plan's own Artifacts & Outputs section)*
+- [x] Project 20: replace `scripts/tests/` with
+      `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh`. *(deviation: skipped
+      — project 20 is now status=completed (terminal); Check 8 no longer flags it and a terminal
+      task's file_scope has no bearing on collision scheduling, so narrowing it is a no-op left
+      undone per the addendum's own terminal-exclusion precedent (81, 121))*
+- [x] Projects 143, 147, 148, 150: replace `scripts/tests/` with the
       `test-<script-basename>.sh` companions of the implementation scripts each already declares,
       per the report's per-project table. Re-verify each mapping against that project's live
-      `file_scope` rather than copying the table blind.
-- [ ] Project 88: replace `scripts/tests/` and `scripts/lint/` with the enumerations produced by
+      `file_scope` rather than copying the table blind. *(completed: re-derived live from each
+      project's current file_scope — 143: orchestrate-cycle-postflight.sh,
+      orchestrate-recover-outcome.sh; 147: orchestrate-cycle-plan.sh, orchestrate-dry-run-report.sh;
+      148: orchestrate-churn.sh, orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh; 150:
+      orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, orchestrate-triage-classify.sh)*
+- [x] Project 88: replace `scripts/tests/` and `scripts/lint/` with the enumerations produced by
       re-running its own prescribed grep,
       `grep -rl "SKILL.md" agent-system/extensions/core/scripts/tests/ agent-system/extensions/core/scripts/lint/`.
-      Do not touch any `context/patterns/` entry (none exists; the addendum forbids it anyway).
-- [ ] Project 142: drop `scripts/lint/` with no replacement — no lint file is named anywhere in
+      Do not touch any `context/patterns/` entry (none exists; the addendum forbids it anyway). *(completed:
+      12 tests/ files + 7 lint/ files from a live grep run)*
+- [x] Project 142: drop `scripts/lint/` with no replacement — no lint file is named anywhere in
       its description and no WORK item implies adding one; the write-back convention covers it if
-      implementation later discovers otherwise.
-- [ ] Project 149: drop `scripts/tests/` with no replacement — team-mode tests were already
+      implementation later discovers otherwise. *(completed)*
+- [x] Project 149: drop `scripts/tests/` with no replacement — team-mode tests were already
       deleted, and `parse-command-args.sh` has no companion test; genuinely unknown until its own
-      research runs.
-- [ ] Project 129: drop `context/standards/` with no replacement (its guidance-note filename is
+      research runs. *(completed)*
+- [x] Project 129: drop `context/standards/` with no replacement (its guidance-note filename is
       not determinable before its audit concludes); leave its eight already file-precise entries
-      untouched.
-- [ ] Apply every edit through `state-write.sh`, replacing only the named entries within each
-      task's array. Never rewrite an unrelated array and never touch `artifacts`.
-- [ ] Re-confirm the addendum items rather than re-fixing them: `general-implementation-hard-agent.md`
-      appears only under terminal projects 81 and 121; no non-terminal task references it.
+      untouched. *(completed)*
+- [x] Apply every edit through `state-write.sh`, replacing only the named entries within each
+      task's array. Never rewrite an unrelated array and never touch `artifacts`. *(completed: single
+      state-write.sh call with a per-project-number jq filter; `artifacts` and every other field
+      confirmed byte-identical via diff)*
+- [x] Re-confirm the addendum items rather than re-fixing them: `general-implementation-hard-agent.md`
+      appears only under terminal projects 81 and 121; no non-terminal task references it. *(completed:
+      re-confirmed live, unchanged)*
 
 **Timing**: 1.5 hours
 
@@ -387,7 +403,11 @@ re-derived from a live Check 8 run, without dropping any path a task actually mo
 142, 143, 147, 148, 149, 150), of which 9 are narrowed in place and 3 entries are dropped in
 favor of the write-back convention. The live re-run in this phase's first step is the
 confirmation; the count is a hypothesis from the research snapshot, not a fact, and the live
-result governs.
+result governs. *(actual: 10 findings across 9 projects — project 20 completed, terminal, and no
+longer flagged; no new project appeared. 8 projects narrowed in place (44, 88, 143, 147, 148, 150
+replaced with concrete files; note 44 and 88 both replace two-cluster coarse entries in one edit
+each) and 3 entries dropped with no replacement (129, 142, 149), per the same evidence rules the
+plan specified.)*
 
 **Files to modify**:
 - `specs/state.json` - `file_scope` arrays for the projects the live run flags.
