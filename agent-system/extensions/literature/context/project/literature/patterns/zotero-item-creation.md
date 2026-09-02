@@ -25,7 +25,26 @@ the same `$ZOTERO_API_KEY` dependency `zotero-write.sh` already requires for its
 `zot add --help` documents that a `--doi`-driven create fetches metadata (title, authors,
 journal, year, ...) from Crossref before posting, but a `--pdf`-only create does **not**: its
 help text states plainly that metadata is "not auto-resolved by API" for the PDF path. A
-`--pdf`-only create therefore yields a barer item than one created with `--doi` alongside it.
+`--pdf`-only create does not merely yield a barer item, however — it can **hard-fail outright**.
+`zotero-cli-cc` v0.10.0's `commands/add.py::_add_from_pdf` calls `extract_doi()`, which regexes
+`10\.\d{4,9}/\S+` over only the PDF's first two pages; when that finds nothing, `_add_from_pdf`
+calls `emit_error("validation_error", "No DOI found in PDF")` and exits with `SystemExit(3)`
+**before ever calling `writer.add_item`** — no item is created at all, not even a bare one. This
+is the actual failure this bridge originally hit on arXiv-only `open_access` records (no `doi`
+field, only an `arxiv_id`), not the milder "barer item" outcome this section previously claimed.
+
+**Implemented mitigation**: `literature-ingest-online.sh` derives `10.48550/arXiv.<arxiv_id>` (the
+arXiv DataCite DOI, which arXiv's own metadata always exposes) and passes it as `--doi` for any
+`open_access`/`arxiv_id`-only record with no real `doi`, bypassing `_add_from_pdf`'s PDF-text
+regex entirely so the item gets created. Honest caveat: this DataCite DOI is **not** a
+Crossref-registered, published-venue DOI, and Crossref will not resolve it — the created Zotero
+item therefore ends up metadata-bare (DOI field populated, but no Crossref-enriched
+title/author/journal/date) exactly like a `--pdf`-only create would otherwise be. This is treated
+as an accepted tradeoff, not a defect: an existing, metadata-bare Zotero item is strictly better
+than the pre-mitigation outcome of no item at all. The corpus-side `index.json` entry is
+unaffected — it is patched from the discovery record's own title/authors/year, never from this
+synthesized DOI.
+
 Whenever a discovery record carries a known DOI, pass `--doi` together with `--pdf` so the
 created item gets Crossref-enriched metadata rather than the bare PDF-derived shell.
 
@@ -200,6 +219,13 @@ executable (rather than a real write call against the production library), and c
 reuse confirmation that the attach-to-existing path shares every downstream helper
 (`download_and_verify`, `resolve_storage_path_from_envelope`, the `literature-ingest.sh` delegate,
 the metadata patch, and the sub-index upsert) with the already-fully-tested create-item path.
+
+**`--dry-run` cannot exercise or reproduce this section's failure**: `zot add --dry-run` returns a
+static preview and never calls `_add_from_pdf`, so it cannot reach `extract_doi()` or its
+`SystemExit(3)` hard-fail — the arXiv-DOI mitigation above (and the "No DOI found in PDF" failure
+it works around) can only be exercised by a real `zot add --pdf` call, or by a forced-failure/stub
+`zot` executable placed first on `PATH` that reproduces the real CLI's exit code and stderr text
+for the `add --pdf` (no `--doi`) case.
 
 ## Reference implementation
 

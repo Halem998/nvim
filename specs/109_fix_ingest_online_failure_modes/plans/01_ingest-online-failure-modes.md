@@ -432,26 +432,30 @@ record any further divergence from four rather than assuming this count.
 
 ---
 
-### Phase 6: Correct the zotero-item-creation.md understatement [NOT STARTED]
+### Phase 6: Correct the zotero-item-creation.md understatement [COMPLETED]
 
 **Goal**: Replace the claim that a `--pdf`-only create merely "yields a barer item" with the
 confirmed hard-failure mechanism and the implemented mitigation.
 
 **Tasks**:
-- [ ] Edit `context/project/literature/patterns/zotero-item-creation.md` §1 (the "barer item"
+- [x] Edit `context/project/literature/patterns/zotero-item-creation.md` §1 (the "barer item"
   sentence at line ~28) to state that a `--pdf`-only create can also hard-fail outright — exit 3,
-  `No DOI found in PDF`, with no item created at all
-- [ ] Document the mechanism concretely: `_add_from_pdf` calls `extract_doi()`, which regexes
+  `No DOI found in PDF`, with no item created at all *(completed)*
+- [x] Document the mechanism concretely: `_add_from_pdf` calls `extract_doi()`, which regexes
   `10\.\d{4,9}/\S+` over the PDF's first two pages only, and `emit_error`s before reaching
-  `writer.add_item` when that finds nothing
-- [ ] Document the implemented mitigation from Phase 2 (`10.48550/arXiv.<id>` as `--doi` for
+  `writer.add_item` when that finds nothing *(completed)*
+- [x] Document the implemented mitigation from Phase 2 (`10.48550/arXiv.<id>` as `--doi` for
   arXiv-only records) and the honest caveat that Crossref will not resolve a DataCite DOI, so the
   resulting Zotero item is metadata-bare on the Zotero side while the corpus index is unaffected
-- [ ] Note in §6 (verification scope limitation) that `zot add --dry-run` returns a static preview
+  *(completed)*
+- [x] Note in §6 (verification scope limitation) that `zot add --dry-run` returns a static preview
   and never calls `_add_from_pdf`, so dry-run cannot exercise or reproduce this failure
-- [ ] Cite durable anchors only — file names, function names, section headings. **No task-number
+  *(completed)*
+- [x] Cite durable anchors only — file names, function names, section headings. **No task-number
   references**: this file lives outside `specs/**` and is governed by
-  `.claude/rules/no-task-references-in-deliverables.md`
+  `.claude/rules/no-task-references-in-deliverables.md` *(completed: verified via grep, no
+  task-number references introduced; refrained from citing even the harness's task-scoped
+  specs/ path, describing the stub-zot mechanism generically instead)*
 
 **Timing**: 0.25 hours
 
