@@ -50,7 +50,7 @@ next_project_number: 151
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-144 [RESEARCHING] — Narrow the coarse whole-directory file_scope declarations that ma
+144 [RESEARCHED] — Narrow the coarse whole-directory file_scope declarations that ma
 
 ### Extensions
 
@@ -238,10 +238,11 @@ Team mode is deleted by this task's predecessor, so the `--team`/`--team-size` r
 ---
 
 ### 144. Narrow coarse file scope declarations
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md]
 
 **Description**: Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration.
 
