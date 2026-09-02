@@ -439,11 +439,11 @@ For each phase in the implementation plan:
    while IFS= read -r f; do
      [ -n "$f" ] && stage_paths+=("$f")
    done < <(jq -r '.objectives[]?.files_touched[]? // empty' "specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json" 2>/dev/null)
-   git add "${stage_paths[@]}"
-   git commit -m "task {N} phase {P}: {phase_name}
-
-   Session: {session_id}
-   "
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase {P}: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${stage_paths[@]}"
    ```
 6. **Proceed to next phase** or return if blocked
 

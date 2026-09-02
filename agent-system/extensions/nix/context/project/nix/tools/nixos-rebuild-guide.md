@@ -146,7 +146,10 @@ nix eval .#nixosConfigurations.hostname.config.services.nginx.enable
 
 ## Update Workflow
 
-Typical update process:
+Typical update process. This is generic NixOS system-administration guidance for the user's own
+flake-managed config repo (which may not even be this one, and may have no agent-system deployed
+at all) — not a task-scoped dispatch-pipeline commit, so it is intentionally left in the raw
+`git add`/`git commit -m` form rather than migrated to `git-commit-scoped.sh`:
 
 ```bash
 # 1. Update flake inputs

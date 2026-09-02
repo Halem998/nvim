@@ -500,18 +500,22 @@ exemption.
 
 ---
 
-### Phase 9: Migrate the remaining small extensions [NOT STARTED]
+### Phase 9: Migrate the remaining small extensions [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Clear the tail — one or two files per extension.
 
 **Tasks**:
-- [ ] Enumerate the remainder:
+- [x] Enumerate the remainder:
       `grep -rl 'git commit -m' agent-system/extensions/ | grep -v '/core/' | grep -vE '/(founder|present|lean|filetypes|web|epidemiology|cslib)/'`.
-- [ ] nix: `nix-implementation-agent.md` + `nixos-rebuild-guide.md` (the guide occurrence may be
+- [x] nix: `nix-implementation-agent.md` + `nixos-rebuild-guide.md` (the guide occurrence may be
       illustrative prose about rebuilding, not a task commit — read before converting).
-- [ ] memory: `skill-learn/SKILL.md` + `memory-troubleshooting.md`.
-- [ ] One file each in: typst, python, z3, nvim, latex, literature.
-- [ ] Convert each site; record any outlier as a candidate exemption with a reason.
+      *(completed: `nix-implementation-agent.md` migrated; `nixos-rebuild-guide.md` confirmed
+      illustrative — generic NixOS sysadmin guidance unrelated to the dispatch pipeline, possibly
+      a different repo entirely — exempted with reasoning added inline)*
+- [x] memory: `skill-learn/SKILL.md` + `memory-troubleshooting.md`.
+- [x] One file each in: typst, python, z3, nvim, latex, literature. *(`skill-literature/SKILL.md`
+      exempted, not migrated — see below)*
+- [x] Convert each site; record any outlier as a candidate exemption with a reason.
 
 **Timing**: 0.75 hours
 
@@ -533,6 +537,13 @@ scope is whatever remains after Phases 6-8, not this count.
 **Verification**:
 - The enumeration grep returns nothing, or only recorded exemptions.
 - Whole-tree count recorded: `grep -rl 'git commit -m' agent-system/extensions/ | wc -l`.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `nix/context/project/nix/tools/nixos-rebuild-guide.md` (`git commit -m "Update flake inputs"`) | Generic NixOS system-administration guidance for the user's own flake-managed config repo — not a task-scoped dispatch-pipeline commit, and the target repo may not even have the agent system deployed. | `agent-system/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md`, "Update Workflow" section, annotated inline. |
+| `literature/skills/skill-literature/SKILL.md` Import Step 12 (`git commit -m "import: $title ($year)"`) | Runs inside `$LITERATURE_DIR`, a separate content-only git repo with no agent-system deployed in it — `.claude/scripts/git-commit-scoped.sh` does not exist there to invoke. The pathspec set is already correctly targeted (not a whole-tree add). | `agent-system/extensions/literature/skills/skill-literature/SKILL.md`, "Import Step 12: Git Commit to Literature/ Repo", annotated inline. Confirmed via `ls ~/Projects/Literature/.claude/scripts/git-commit-scoped.sh` (not found). |
 
 ---
 

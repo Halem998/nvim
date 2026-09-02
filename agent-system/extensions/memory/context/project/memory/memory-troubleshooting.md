@@ -121,9 +121,12 @@ lsof -i :22360
    # If conflict occurs, edit index.md manually
    # Keep both entries or merge duplicates
 
-   # Commit resolution
-   git add index.md
-   git commit -m "Resolve index.md merge conflict"
+   # Commit resolution via git-commit-scoped.sh, the single sanctioned implementation of
+   # path-scoped, mutex-serialized committing
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "Resolve index.md merge conflict" \
+     --session "${session_id}" \
+     -- index.md
    ```
 
 3. **Prevention**:

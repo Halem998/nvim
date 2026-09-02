@@ -1054,10 +1054,10 @@ MCP search unavailable. Using grep-based fallback.
 After successful memory operations:
 
 ```bash
-git add .memory/
-git commit -m "memory: add/update ${memories_affected} memories
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "memory: add/update ${memories_affected} memories" \
+  --session "${session_id}" \
+  -- .memory/
 ```
 
 ---

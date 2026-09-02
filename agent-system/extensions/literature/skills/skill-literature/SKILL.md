@@ -1834,6 +1834,10 @@ fi
   # the separate Literature/ repo. Mirrors .claude/context/standards/git-staging-scope.md's
   # under-stage direction, adapted to this import's own artifact set (symlink, converted
   # markdown, index.json) since Literature/ is a separate git repo with no task-dir concept.
+  # Left as a raw `git add` + `git commit -m` rather than migrated to git-commit-scoped.sh: the
+  # Literature/ repo is a content-only repo with no agent-system deployed in it (no
+  # .claude/scripts/git-commit-scoped.sh exists there to invoke), and the pathspec set here is
+  # already correctly targeted, so raw git is the only option available in that repo.
   if [ -d "$lit_dir/.git" ]; then
     (
       cd "$lit_dir" && \
