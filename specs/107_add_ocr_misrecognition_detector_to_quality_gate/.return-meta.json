@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/summaries/01_ocr-misrecognition-detector-summary.md",
+      "summary": "Measured negative result on content-based OCR-misrecognition detection (four signal families, 11 scan-pipeline positives vs 6 born-digital controls, none separated); implemented the provenance-only fallback instead (shared scan_pipeline_provenance() function, deduplicated fidelity-audit consumer, non-blocking conversion-time ADVISORY, negative result written into repository docs)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the provenance-only fallback for the literature quality gate's OCR/scan-source signal after confirming (four measurement rounds, 11 scan-pipeline positives vs 6 born-digital dense-math controls) that a content-based OCR-misrecognition detector is not viable on this corpus. Promoted the existing Creator/Producer regex into an importable scan_pipeline_provenance() in literature_quality_gate.py, deduplicated literature-fidelity-audit.sh's own copy to consume it, added a non-blocking ADVISORY stderr line to literature-convert.sh's quality gate, added 9 self-test fixtures plus 6 new test-literature-convert.sh assertions, and recorded the negative result with its decisive numbers in literature-organization.md and provenance-fidelity.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature_quality_gate.py",
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+    "agent-system/extensions/literature/context/guides/literature-organization.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/provenance-fidelity.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md",
+    "specs/107_add_ocr_misrecognition_detector_to_quality_gate/summaries/01_ocr-misrecognition-detector-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shared regex/constant is promoted from a hand-duplicated inline copy into a shared module function, grep for the OLD symbol name across the whole repo (not just the direct consumer) before declaring the dedup complete -- a docstring/comment in the NEW module that explains the promotion by literally citing the old symbol name (for historical continuity) is itself a residual hit against a 'grep returns nothing' verification check. Rephrase such comments to describe the prior state without literally repeating the retired identifier.",
+      "category": "PATTERN",
+      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/summaries/01_ocr-misrecognition-detector-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["dedup", "grep-verification", "symbol-promotion", "shared-module", "regression-check"]
+    },
+    {
+      "content": "For a behavior-preserving refactor of a classifier/gate function (e.g. moving a check's logic into a shared module without changing its inputs/outputs), capture a pre-edit baseline of the classifier's full verdict-count distribution (not just spot-checking a few inputs) and re-run the identical command post-edit to diff the two distributions. A single unchanged summary count (e.g. 'unverified_scan_source: 11' before and after) is strong, cheap evidence the move introduced no behavior change, and is far cheaper than unit-testing every classification path directly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/summaries/01_ocr-misrecognition-detector-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["baseline-comparison", "behavior-preserving-refactor", "verdict-count", "regression-lock"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788329488_6a27b9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
