@@ -1,10 +1,11 @@
 # Territory Contract (H7)
 
 This contract implements H7: Territory Contracts for Parallel Dispatch. Its shipped consumer
-today is `skill-orchestrate-hard`'s single-phase dispatch, where it governs file ownership and
-commit coordination for the one agent currently working a phase, plus the STOP-and-report duty
-on any foreign work that agent observes. Parallel-wave dispatch is currently disabled (see
-`skill-orchestrate-hard/SKILL.md`'s "Parallel Wave Dispatch: DISABLED" section), but the contract
+today is `skill-orchestrate`'s hard-mode single-phase dispatch (H1, the merged successor to the
+now-deleted standalone hard-mode engine), where it governs file ownership and commit coordination
+for the one agent currently working a phase, plus the STOP-and-report duty on any foreign work
+that agent observes. Parallel-wave dispatch is currently disabled (see
+`skill-orchestrate/SKILL.md`'s "Parallel Wave Dispatch: DISABLED" section), but the contract
 remains fully applicable to multiple agents dispatched simultaneously to work on different phases
 of the same plan should parallel dispatch be re-enabled.
 

@@ -1103,10 +1103,10 @@ check_referenced_scripts_declared() {
 # Rule G: Project-wide dangling .claude/context/contracts/*.md reference scan.
 #
 # NOT per-extension: deployed skills/agents/rules/commands across the WHOLE project may
-# reference a specific contracts/*.md file by path (e.g. skill-orchestrate-hard/SKILL.md citing
+# reference a specific contracts/*.md file by path (e.g. a hard-mode skill's SKILL.md citing
 # `.claude/context/contracts/territory.md`). If the referenced path does not exist under this
 # project's `.claude/` root, the reference is dangling -- this is the exact BimodalLogic/cslib
-# defect: a downstream repo's skill-orchestrate-hard referenced contracts absent from that
+# defect: a downstream repo's hard-mode orchestrator referenced contracts absent from that
 # repo's deployed layer because core's `provides.context` never registered `contracts` (fixed in
 # Phase 1), so the contracts never propagated through the deploy tree. This check is reference-driven
 # (only validates what deployed content actually cites in THIS project), never presence-driven,

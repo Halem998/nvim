@@ -31,9 +31,11 @@
 #     <skill_attributed_path> <detecting_site_prefix> <dispatch_was_transport_error> \
 #     <cycle_count> [plan_path]
 #
-# where <notice_prefix> is `[orchestrate]` or `[hard-orchestrate]`, <skill_attributed_path> is
+# where <notice_prefix> is `[orchestrate]` (the sole caller, skill-orchestrate/SKILL.md, passes
+# this literally regardless of effort mode — the deleted standalone hard-mode engine's own
+# `[hard-orchestrate]` prefix has no live emitter any more), <skill_attributed_path> is
 # the calling SKILL.md's repo-relative path (used verbatim as --attributed-path), and
-# <detecting_site_prefix> is `skill-orchestrate/SKILL.md` or `skill-orchestrate-hard/SKILL.md`
+# <detecting_site_prefix> is `skill-orchestrate/SKILL.md`
 # (used to build e.g. `skill-orchestrate/SKILL.md:stage-5-stray-handoff`). <plan_path> is
 # optional; when empty, the script re-derives the latest plan the same way the inline code did
 # (`ls -1 "${task_dir}/plans/"*.md | sort -V | tail -1`).

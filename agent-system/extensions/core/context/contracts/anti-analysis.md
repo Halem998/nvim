@@ -45,10 +45,11 @@ Without all four elements, a defect claim is analysis, not implementation work.
 
 ## Sub-Sorry Policy
 
-**`--hard`-only**: This entire contract, including this policy, is loaded exclusively by
-hard-mode dispatch paths (`skill-implementer-hard`, `general-implementation-hard-agent`,
-`skill-orchestrate-hard`); STANDARD mode never loads this file and its zero-debt bar is
-unaffected by anything below.
+**`--hard`-only**: This entire contract, including this policy, is loaded exclusively via
+`skill-orchestrate`'s hard-mode contract injection (Stage 3.5, gated on `hard_mode == "true"`),
+which appends it to every hard-mode research/plan/implement dispatch's prompt; STANDARD mode
+never loads this file and its zero-debt bar is unaffected by anything below. cslib's and lean's
+own hard-mode implementation agents also reference it directly.
 
 - Tightly scoped, documented leaf sub-sorrys are acceptable progress markers
 - Main target theorems (or main-target-level constructs in non-formal domains) as sorry-stubs

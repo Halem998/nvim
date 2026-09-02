@@ -37,7 +37,7 @@ An agent MUST carry this bullet **if and only if it authors deliverable files ou
 - Every dispatchable implementation agent (core and every extension: general, cslib, pr-review,
   email, epi, founder, latex, lean, nix, neovim, python, typst, web, z3, and any future addition)
   — these write source files, configuration, and other deliverables directly.
-- The planning agents — `planner-agent`, `planner-hard-agent`, `reviser-agent` — because plan
+- The planning agents — `planner-agent`, `reviser-agent` — because plan
   files, while they live under `specs/**`, are frequently copied, quoted, or referenced into
   deliverables outside `specs/**` by the implementers that consume them, and because these agents
   routinely author cross-references into non-`specs/**` documentation as part of planning.
@@ -46,7 +46,7 @@ An agent MUST carry this bullet **if and only if it authors deliverable files ou
 
 **Out of scope** (excluded by explicit decision, not by oversight):
 - Research agents whose only output is a report under `specs/**/reports/` (e.g.
-  `general-research-agent`, domain research agents, `general-research-hard-agent`). A research
+  `general-research-agent`, domain research agents). A research
   report is itself a `specs/**` artifact — exempt under this rule's own exemption category 1 (see
   `.claude/context/standards/task-reference-exemptions.md`'s Exemption Taxonomy) — so an agent that
   produces nothing else has no deliverable-authoring surface this bullet needs to guard.
@@ -64,7 +64,7 @@ not decided in this fragment.
 
 Insert the bullet as the **last numbered item** of the target agent's existing MUST NOT list,
 matching the placement already used in the four compliant agents
-(`general-implementation-agent`, `general-implementation-hard-agent`, `cslib-implementation-agent`,
-`cslib-implementation-hard-agent`). Where an agent has no MUST NOT list, add one under
+(`general-implementation-agent`, `cslib-implementation-agent`,
+`cslib-implementation-hard-agent`, `lean-implementation-agent`). Where an agent has no MUST NOT list, add one under
 `## Critical Requirements` with a `**MUST NOT**:` heading rather than inventing a new section
 shape. Do not renumber or reword any surrounding bullet.

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # validate-handoff.sh - Validate orchestrator handoff JSON files
 #
-# Validates .orchestrator-handoff.json files produced by skill-orchestrate-hard
-# and skill-orchestrate, checking JSON structure, required fields, and
-# status/continuation consistency.
+# Validates .orchestrator-handoff.json files produced by a hard-mode implementation agent
+# (cslib/lean today; core's own standalone hard-mode engine is deleted) and read by
+# skill-orchestrate, checking JSON structure, required fields, and status/continuation
+# consistency.
 #
 # Contract reference: .claude/context/schemas/orchestrator-handoff-schema.json
 # (the machine-checkable authority) and .claude/context/contracts/wrap-up.md (H9, prose)

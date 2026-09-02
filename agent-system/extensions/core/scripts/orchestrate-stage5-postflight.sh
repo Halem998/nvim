@@ -36,14 +36,17 @@
 # argument preserves the pre-A2 behavior exactly: no clamp, and no artifact-round advance for a
 # non-research dispatch.
 #
-# where <tier_c_detecting_site> is the FULL, already-divergent literal detecting-site string for
-# the Tier C (off-schema) defect record — `skill-orchestrate/SKILL.md:stage-5-tier-c` for base,
-# `skill-orchestrate-hard/SKILL.md:tier-c` for hard. These are NOT parallel-derivable from a
-# shared prefix (a pre-existing, deliberately-preserved divergence — see
-# specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md's Risk row on detecting-site
-# strings), so this script takes the finished string rather than building it. <command_suffix> is
-# appended to the Tier C remedy message's `/orchestrate $task_number` hint — empty for base,
-# ` --hard` for hard.
+# where <tier_c_detecting_site> is the FULL literal detecting-site string for the Tier C
+# (off-schema) defect record. This script has one call site today — the single-task Stage 5
+# path in skill-orchestrate/SKILL.md, passing the literal `skill-orchestrate/SKILL.md:stage-5-tier-c`
+# regardless of effort mode (the deleted standalone hard-mode engine's own separate `:tier-c`
+# string has no live emitter any more, and this parameter is a plain string this script takes
+# rather than builds — see specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md's Risk row
+# on detecting-site strings for why). Stage MT-4's own Tier C handling calls
+# `system-defect-record.sh` directly with `skill-orchestrate/SKILL.md:stage-mt4-tier-c`, bypassing
+# this script entirely — a separate call path, not a second value this script's own parameter
+# takes. <command_suffix> is appended to the Tier C remedy message's `/orchestrate $task_number`
+# hint; the live call site always passes the empty string today.
 #
 # Output: a single-line compact JSON object on stdout. Fields:
 #   offschema_dispatch_status  bool    true when dispatch_status fell through to Tier C

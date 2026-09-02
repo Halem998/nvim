@@ -3,9 +3,10 @@
 #
 # The agent-level counterpart to command-route-skill.sh: both source the same
 # manifest-routing-lib.sh ladder, against routing_agents/routing_agents_hard instead of
-# routing/routing_hard. This is the resolver both skill-orchestrate and skill-orchestrate-hard
-# now call, replacing their prior independent case tables, directory probes, sed derivations,
-# and (for skill-orchestrate-hard) no-break last-match-wins manifest loop.
+# routing/routing_hard. This is the resolver skill-orchestrate calls (both effort modes, one
+# engine today), replacing its prior independent case tables, directory probes, sed derivations,
+# and — before the standalone hard-mode engine was merged in and deleted — that engine's own
+# no-break last-match-wins manifest loop.
 #
 # USAGE:
 #   source .claude/scripts/command-route-agent.sh "$op" "$TASK_TYPE" "$default_agent" "${effort_flag:-}"
@@ -15,10 +16,15 @@
 #   $1 = op             : "research" | "plan" | "implement"
 #   $2 = task_type      : TASK_TYPE resolved by the caller (may be simple or compound, e.g.
 #                         "founder:deck")
-#   $3 = default_agent  : fallback agent name if no manifest declares a routing_agents entry
+#   $3 = default_agent  : fallback agent name if no manifest declares a routing_agents entry —
 #                         e.g., "general-research-agent", "planner-agent",
-#                         "general-implementation-agent" (standard mode), or
-#                         "general-research-hard-agent" etc. (hard mode)
+#                         "general-implementation-agent". skill-orchestrate's one call site
+#                         passes the SAME base agent name regardless of effort_flag; there is no
+#                         separate "-hard" caller default in practice today (core's own
+#                         "-hard"-suffixed agents are deleted). An extension whose
+#                         routing_agents_hard block declares its own domain-specific "-hard"
+#                         agent (e.g. cslib, lean) is still reached via Steps 1-2 below, not via
+#                         this default.
 #   $4 = effort_flag    : (optional) "hard" | "fast" | "" | unset
 #                         When "hard", resolution runs against routing_agents_hard first, then
 #                         falls back to routing_agents, then to $default_agent.
@@ -34,9 +40,10 @@
 #     miss on routing_agents_hard falls back to the extension's own declared standard agent
 #     rather than discarding it, so --hard is never LESS specific than standard mode for
 #     extensions that declare routing_agents without a routing_agents_hard block. The
-#     caller-supplied hard default (e.g. "general-research-hard-agent") is reached only on a
-#     genuine total miss of both blocks — mirroring command-route-skill.sh's own standard-then-
-#     hard composition shape.
+#     caller-supplied default is reached only on a genuine total miss of both blocks — mirroring
+#     command-route-skill.sh's own standard-then-hard composition shape. In practice this
+#     default is always a base agent name (see $3 above); it is never itself a "-hard"-suffixed
+#     name today.
 #
 # NOTE: This script uses source semantics. It must be sourced (not executed) to export
 #       AGENT_NAME to the calling shell environment. It must NEVER call exit — a faulty

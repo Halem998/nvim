@@ -248,7 +248,7 @@ task_type=$(jq -r --arg num "$task_number" \
 if [[ "$target_status" == "pr_ready" && "$task_type" == "pr" ]]; then
   : # allowed: pr-type task transitioning to pr_ready
 elif [[ "$target_status" == "pr_ready" && "$ALLOW_PR_READY" == "true" ]]; then
-  : # allowed: explicit override flag passed (e.g. skeleton-exhaustion routing in skill-orchestrate-hard)
+  : # allowed: explicit override flag passed (e.g. skeleton-exhaustion routing in skill-orchestrate's hard-mode branch)
 elif [[ "$target_status" == "pr_ready" ]]; then
   echo "Error: 'pr_ready' is reserved for task_type == 'pr' (task $task_number has task_type '$task_type')." >&2
   echo "       Pass --allow-pr-ready to override this guard." >&2

@@ -5,9 +5,10 @@ dispatch ends with a complete handoff artifact and a set of green-build incremen
 The orchestrator relies on handoff JSON to drive the next dispatch cycle; incomplete handoffs
 break the pipeline.
 
-**`--hard`-only**: This entire contract is loaded exclusively by hard-mode dispatch paths
-(`skill-implementer-hard`, `general-implementation-hard-agent`, `skill-orchestrate-hard`);
-STANDARD mode never loads this file.
+**`--hard`-only**: This entire contract is loaded exclusively via `skill-orchestrate`'s hard-mode
+contract injection (implement dispatches, both core task types routed through this one engine's
+H1 branch, and cslib's/lean's own hard-mode implementation agents); STANDARD mode never loads
+this file.
 
 ## Orchestrator Handoff JSON Schema
 

@@ -8,10 +8,11 @@ uncommitted forward progress (new scaffolding and a sorry-count reduction) that 
 been committed.
 
 **`--hard`-only for rungs (b)/(c)**: The Recovery Ladder's rung (b) (strategic-sorry skeleton)
-and rung (c) (snapshot-then-rollback) mechanics below are loaded exclusively by hard-mode
-dispatch paths (`skill-implementer-hard`, `general-implementation-hard-agent`,
-`skill-orchestrate-hard`) and reference hard-mode-only artifacts (`anti-analysis.md`'s
-strategic-sorry test, `wrap-up.md`'s `sorry_inventory` schema). The rung (a) fix-forward
+and rung (c) (snapshot-then-rollback) mechanics below are loaded exclusively via
+`skill-orchestrate`'s hard-mode contract injection (both effort modes' implement dispatches
+resolve through this one engine's H1 branch when `hard_mode` is true) and reference
+hard-mode-only artifacts (`anti-analysis.md`'s strategic-sorry test, `wrap-up.md`'s
+`sorry_inventory` schema). The rung (a) fix-forward
 disambiguation statement immediately below carries no hard-mode dependency and is safe to
 quote verbatim in standard-mode dispatch prompts and documentation as well.
 

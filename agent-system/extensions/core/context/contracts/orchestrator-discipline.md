@@ -80,7 +80,8 @@ sidecar file, no separate artifact type.
 
 ## Domain Specialization / Scope
 
-**`--hard`-only.** This contract governs `skill-orchestrate-hard`'s state-machine loop
-specifically — the once-per-invocation Stage 1c preamble and the every-cycle Stage 3c gate.
-Base `skill-orchestrate` has no contract-slot mechanism and no per-phase dispatch loop tight
-enough for burnout to accumulate the way it did here; it is out of scope for this contract.
+**`--hard`-only.** This contract governs `skill-orchestrate`'s hard-mode state-machine loop
+specifically — the loop-guard initialization that seeds `burnout_signals_this_session` (Stage 2)
+and the every-cycle burnout circuit-breaker gate (Stage 3b-hard, `hard_mode`-gated). Base mode
+(`hard_mode = false`) has no contract-slot mechanism and no per-phase dispatch loop tight enough
+for burnout to accumulate the way it did here; it is out of scope for this contract.

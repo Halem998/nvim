@@ -664,8 +664,9 @@ skill_propagate_memory_candidates() {
 # Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" ["$session_id"]
 #
 # Single shared implementation of the guarded completion-data write, replacing what were
-# previously three independently-maintained copies (skill-implementer, skill-implementer-hard,
-# and the orphaned orchestrator-postflight.sh Stage 7b). Every caller — the plain /implement
+# previously three independently-maintained copies (skill-implementer, the deleted standalone
+# hard-mode implementer skill, and the orphaned orchestrator-postflight.sh Stage 7b). Every
+# caller — the plain /implement
 # producer path AND all four /orchestrate paths (base single-task, base multi-task Stage MT-4,
 # hard single-task, hard multi-task via inherited MT-4) — converges on this one function.
 #
@@ -884,10 +885,13 @@ skill_gate_completion_claim() {
   # without doing so. An unrecognized log_prefix resolves to a deliberately unresolvable
   # placeholder, so the recorder itself refuses (Signal B attribution unresolvable) and the note
   # below is absorbed non-fatally — this function's own return value is never affected either way.
+  # "[hard-orchestrate]" was the standalone hard-mode engine's own log_prefix; that file is
+  # deleted and no live caller passes this label any more -- skill-orchestrate/SKILL.md's single
+  # call site (both effort modes) always passes "[orchestrate]". The arm is removed rather than
+  # retargeted since it is genuinely unreachable, not merely renamed.
   case "$log_prefix" in
-    "[orchestrate]")      gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" ;;
-    "[hard-orchestrate]") gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" ;;
-    *)                    gate_attributed_path="unresolved:${log_prefix}" ;;
+    "[orchestrate]") gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" ;;
+    *)                gate_attributed_path="unresolved:${log_prefix}" ;;
   esac
   bash .claude/scripts/system-defect-record.sh \
     --defect-class META_MISSING_AFTER_NARRATION \
@@ -923,11 +927,11 @@ skill_gate_completion_claim() {
 # crash.
 #
 # This is a faithful lift of the three-way branch that used to live inline, once per engine, in
-# the recovered=true branch of skill-orchestrate/SKILL.md Stage 5 (and its Stage MT-4 step 1 and
-# skill-orchestrate-hard/SKILL.md Stage 5 mirrors) — this function changes WHERE the logic lives,
-# never the branch outcomes. All three recovery-path call sites were migrated to call this
-# function rather than keep their own copy; see each SKILL.md's Stage 5 / Stage MT-4 for the
-# call sites, and the "Evidence corroboration" comment they each still carry.
+# the recovered=true branch of skill-orchestrate/SKILL.md Stage 5 (and its Stage MT-4 step 1, plus
+# the now-deleted standalone hard-mode engine's own Stage 5 mirror) — this function changes WHERE
+# the logic lives, never the branch outcomes. All recovery-path call sites were migrated to call
+# this function rather than keep their own copy; see skill-orchestrate/SKILL.md's Stage 5 / Stage
+# MT-4 for the call sites, and the "Evidence corroboration" comment they still carry.
 #
 # ── D3 (deliberate divergence): trigger precondition is `phases_total -eq 0` ALONE ──────────────
 # This differs on purpose from the recovery path's `PHASES_ZERO_ON_SUCCESS` signature, which
@@ -1030,16 +1034,18 @@ skill_corroborate_phase_counts() {
 
 # ── Orchestrate-engine dedup: named-shim targets ─────────────────────────────────────────────────
 # The three functions below are the single home for logic that used to be verbatim-twinned
-# (byte-identical, or identical-but-for-a-notice-prefix) between skill-orchestrate/SKILL.md and
-# skill-orchestrate-hard/SKILL.md's Stage 2 and Stage 4/5. Both SKILL.md files keep a <=3-line
-# local function with the SAME NAME the pre-dedup code used (`mint_dispatch_seq`,
-# `append_detected_defect`, `hard_orchestrate_propagate_completion`), delegating to these shared
-# implementations — "named-shim preservation". This is required, not stylistic: two tests
-# (test-handoff-dispatch-identity.sh, test-loop-guard-budget-override.sh) `eval` literal SKILL.md
-# regions in a subshell whose cwd is a temp workdir, and one of them stubs `append_detected_defect`
-# by that exact name, so a call site inside those regions must never be renamed or replaced by a
-# script invocation. See specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md for the full
-# evidence this design is built on.
+# (byte-identical, or identical-but-for-a-notice-prefix) between skill-orchestrate/SKILL.md's
+# base-mode Stage 2/4/5 and the now-deleted standalone hard-mode engine's own Stage 2 and
+# Stage 4/5 — since merged into this one file's `$hard_mode`-forked branches.
+# skill-orchestrate/SKILL.md keeps a <=3-line local function with the SAME NAME the pre-dedup
+# code used (`mint_dispatch_seq`, `append_detected_defect`, `hard_orchestrate_propagate_completion`),
+# delegating to these shared implementations — "named-shim preservation". This is required, not
+# stylistic: two tests (test-handoff-dispatch-identity.sh, test-loop-guard-budget-override.sh)
+# `eval` literal SKILL.md regions in a subshell whose cwd is a temp workdir, and one of them stubs
+# `append_detected_defect` by that exact name, so a call site inside those regions must never be
+# renamed or replaced by a script invocation. See
+# specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md for the full evidence this design
+# is built on.
 #
 # Per the "no ambient global for a value that differs per engine" rule, `loop_guard_file` and the
 # notice prefix are always explicit parameters below. `task_number` and `cycle_count` remain
@@ -1144,16 +1150,17 @@ skill_orchestrate_propagate_completion() {
 # on this same path, and this call MUST NOT clobber fields it does not own.
 #
 # `detected_defects_json` is a resolved JSON array STRING, not a loop-guard path. This is a
-# deliberate deviation from a naive "pass the loop-guard path and read inside" signature: the two
-# engines' clean-exit call sites read this value at DIFFERENT points relative to their own
-# `rm -f "$loop_guard_file"` cleanup —
-# skill-orchestrate/SKILL.md's clean-exit reads it BEFORE that rm, in an earlier fence, and
-# carries the ambient value forward (its own metadata-write section runs AFTER cleanup);
-# skill-orchestrate-hard/SKILL.md's clean-exit reads it in the SAME fence, BEFORE its own later
-# `rm -f`. If this function read the loop guard itself, the base-mode clean-exit call would
-# silently resolve to "[]" (the guard is already gone by the time that call happens), losing the
-# real observation log. Requiring the caller to resolve the value at the same point the pre-dedup
-# inline code did preserves this asymmetry exactly rather than papering over it.
+# deliberate deviation from a naive "pass the loop-guard path and read inside" signature: the
+# base-mode and hard-mode clean-exit call sites in skill-orchestrate/SKILL.md (formerly two
+# separate engines, now `$hard_mode`-forked branches in this one file) read this value at
+# DIFFERENT points relative to their own `rm -f "$loop_guard_file"` cleanup — base mode's
+# clean-exit path reads it BEFORE that rm, in an earlier fence, and carries the ambient value
+# forward (its own metadata-write section runs AFTER cleanup); hard mode's clean-exit path reads
+# it in the SAME fence, BEFORE its own later `rm -f`. If this function read the loop guard
+# itself, the base-mode clean-exit call would silently resolve to "[]" (the guard is already gone
+# by the time that call happens), losing the real observation log. Requiring the caller to
+# resolve the value at the same point the pre-dedup inline code did preserves this asymmetry
+# exactly rather than papering over it.
 skill_orchestrate_merge_return_meta() {
   local meta_file="$1" detected_defects_json="$2" status="$3" cycles_used="$4" final_state="$5"
   local task_summaries_dir

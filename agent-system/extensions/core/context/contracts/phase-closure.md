@@ -13,10 +13,11 @@ that could mislead a future reader into assuming directory placement alone impli
 hard-mode-only applicability. It does not. Placement in `context/contracts/` is a naming and
 genre convention; the actual load-bearing mechanism, in this codebase, is an explicit
 `@`-reference bullet in the consuming agent's or skill's `## Context References` section. This
-contract carries that bullet in `agents/general-implementation-agent.md` (standard mode),
-`agents/general-implementation-hard-agent.md` (hard mode), and both `skills/skill-implementer/SKILL.md`
-and `skills/skill-implementer-hard/SKILL.md` (discoverability references — the skills delegate
-loading to their respective agents). It is additionally referenced from every non-core extension
+contract carries that bullet in `agents/general-implementation-agent.md` (standard mode, and —
+since core's standalone hard-mode implementation agent was deleted and merged into
+`skill-orchestrate`'s H1 per-phase dispatch branch — the sole surviving core implement-dispatch
+target for hard mode too), and `skills/skill-implementer/SKILL.md` (a discoverability reference —
+the skill delegates loading to its agent). It is additionally referenced from every non-core extension
 implementer agent that runs a plan-phase loop, and from any extension skill file maintaining its
 own contract-bullet list, following the same explicit-bullet mechanism rather than a separate
 injection path. See `context/architecture/context-layers.md`'s "Contracts directory: convention
@@ -96,8 +97,10 @@ Both observed failure shapes are in scope:
   cost-ordering and no stop condition other than "all phases complete." Under this contract, that
   loop still closes each phase before advancing to the next iteration, and terminates at a closed
   boundary rather than starting the next iteration when the remaining budget cannot finish it.
-- **Hard mode** (`skills/skill-implementer-hard/SKILL.md`, Stage 3b "Single-Phase Dispatch
-  Context (H1)"): the phase selector is a top-to-bottom heading scan —
+- **Hard mode** (`skills/skill-orchestrate/SKILL.md`'s Hard branch: Per-Phase Dispatch (H1),
+  formerly the standalone hard-mode implementer skill's Stage 3b "Single-Phase Dispatch Context
+  (H1)" before that file was merged in and deleted): the phase selector is a top-to-bottom
+  heading scan —
   `grep -E '^### Phase ... \[(NOT STARTED|PARTIAL|IN PROGRESS)\]' | head -1` — that treats
   `PARTIAL` and `NOT STARTED` as equal-priority, position-ordered candidates. This is precisely
   what permits opening a new phase while an earlier-opened one sits `PARTIAL`. **Behavioral
