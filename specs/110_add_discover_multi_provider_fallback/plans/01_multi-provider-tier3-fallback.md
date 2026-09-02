@@ -198,25 +198,25 @@ with zero behavior change when it is unset.
 
 ---
 
-### Phase 3: Extract tier3_emit_record() (Behavior-Preserving Refactor) [NOT STARTED]
+### Phase 3: Extract tier3_emit_record() (Behavior-Preserving Refactor) [COMPLETED]
 
 **Goal**: Lift the per-hit normalization body out of the inline Semantic Scholar loop into one
 shared function, with provably identical output for the existing path and no new providers yet.
 
 **Tasks**:
-- [ ] Define `tier3_emit_record()` taking, in order: `title`, `authors_json`, `year`, `doi`,
-      `arxiv_id`, `oa_url_from_provider`, `paper_id`.
-- [ ] Move into it, unchanged in logic: the empty-title skip, `is_seen_title` check, the
+- [x] Define `tier3_emit_record()` taking, in order: `title`, `authors_json`, `year`, `doi`,
+      `arxiv_id`, `oa_url_from_provider`, `paper_id`. *(completed)*
+- [x] Move into it, unchanged in logic: the empty-title skip, `is_seen_title` check, the
       four-branch doc_id derivation, the `is_seen_doc_id` check, the status/pdf_url derivation
       (provider OA URL -> arXiv synthesized URL -> Unpaywall-by-DOI -> `paywall`), the `jq -n`
-      record construction, and the `append_result` / `add_seen` calls.
-- [ ] Have it return a distinguishable status so the caller can count emitted records (e.g. 0 on
+      record construction, and the `append_result` / `add_seen` calls. *(completed)*
+- [x] Have it return a distinguishable status so the caller can count emitted records (e.g. 0 on
       emit, non-zero on skip), and make the caller's `count`/`remaining` break condition read that
-      status rather than assuming every iteration emits.
-- [ ] Reduce the Semantic Scholar `while` loop body to: field extraction via `jq` from the
-      Semantic Scholar shape, then one `tier3_emit_record` call.
-- [ ] Confirm the four doc_id branches and the three status values remain exactly as they were;
-      add no fifth branch and no new status value.
+      status rather than assuming every iteration emits. *(completed)*
+- [x] Reduce the Semantic Scholar `while` loop body to: field extraction via `jq` from the
+      Semantic Scholar shape, then one `tier3_emit_record` call. *(completed)*
+- [x] Confirm the four doc_id branches and the three status values remain exactly as they were;
+      add no fifth branch and no new status value. *(completed: verified via grep, exactly 4 branches)*
 
 **Timing**: 1.5 hours
 

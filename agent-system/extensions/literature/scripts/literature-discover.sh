@@ -518,6 +518,119 @@ print(json.dumps(parts))
 # greps it for `TIER3_STATUS: FAILED` to surface a visible incompleteness
 # notice. The JSON-array stdout contract is untouched by any of this.
 # ---------------------------------------------------------------------------
+# tier3_emit_record() — the single shared per-hit normalization/doc_id/status/dedup
+# path every Tier 3 provider branch calls. This is the extraction point that makes
+# every provider's output schema-identical by construction: no provider function
+# derives a doc_id, a status, or a pdf_url itself -- they all pass their own raw
+# fields through here.
+#
+# Args (positional, all but $1 may be empty string): title, authors_json (a JSON
+# array string, e.g. '["A. Author"]' or '[]'), year, doi, arxiv_id,
+# oa_url_from_provider (a provider-native OA/PDF URL, or empty), paper_id (Semantic
+# Scholar's paperId; always empty for OpenAlex/Crossref).
+#
+# doc_id is one of exactly four branches -- doi-slug / arxiv_<id> / ss_<paperId> /
+# unknown_<slug> -- closed by contract; no fifth prefix may ever be added here.
+# status is one of {open_access, paywall} (a fourth value, in_zotero_no_pdf, belongs
+# only to Tier 2 and is never produced here).
+#
+# Returns 0 and appends a record on emit; returns 1 (no record appended, no seen-set
+# mutation) on an empty title, a duplicate title, or a duplicate doc_id, so a caller's
+# count/remaining break condition can read this return status directly instead of
+# assuming every call emits.
+tier3_emit_record() {
+  local title="$1"
+  local authors_arr="$2"
+  local year="$3"
+  local doi="$4"
+  local arxiv_id="$5"
+  local oa_url_from_provider="$6"
+  local paper_id="$7"
+
+  if [ -z "$title" ]; then
+    return 1
+  fi
+
+  # Skip already-seen titles
+  if is_seen_title "$title"; then
+    return 1
+  fi
+
+  # Determine doc_id (prefer DOI slug, then arXiv, then paper_id) -- the closed
+  # four-branch contract. Providers never derive doc_ids themselves.
+  local doc_id=""
+  if [ -n "$doi" ] && [ "$doi" != "null" ]; then
+    doc_id=$(echo "$doi" | tr '/' '_' | tr '.' '_')
+  elif [ -n "$arxiv_id" ] && [ "$arxiv_id" != "null" ]; then
+    doc_id="arxiv_${arxiv_id//./_}"
+  elif [ -n "$paper_id" ]; then
+    doc_id="ss_$paper_id"
+  else
+    doc_id="unknown_$(echo "$title" | tr '[:upper:] ' '[:lower:]_' | tr -cs 'a-z0-9_' '_' | cut -c1-40)"
+  fi
+
+  # Skip already-seen doc_ids
+  if is_seen_doc_id "$doc_id"; then
+    return 1
+  fi
+
+  # Determine status and PDF URL: provider OA URL -> arXiv synthesized URL ->
+  # Unpaywall-by-DOI -> paywall.
+  local status="paywall"
+  local pdf_url=""
+
+  if [ -n "$oa_url_from_provider" ] && [ "$oa_url_from_provider" != "null" ]; then
+    status="open_access"
+    pdf_url="$oa_url_from_provider"
+  elif [ -n "$arxiv_id" ] && [ "$arxiv_id" != "null" ]; then
+    # arXiv PDFs are always freely available
+    status="open_access"
+    pdf_url="https://arxiv.org/pdf/$arxiv_id"
+  elif [ -n "$doi" ] && [ "$doi" != "null" ]; then
+    # Try Unpaywall for DOI lookup
+    local uw_url="https://api.unpaywall.org/v2/${doi}?email=${USER_EMAIL}"
+    local uw_result=""
+    local uw_exit=0
+
+    uw_result=$(curl -s --max-time 10 "$uw_url" 2>/dev/null) || uw_exit=$?
+
+    if [ "$uw_exit" -eq 0 ] && [ -n "$uw_result" ]; then
+      local oa_url
+      oa_url=$(echo "$uw_result" | jq -r '.best_oa_location.url // ""' 2>/dev/null)
+      if [ -n "$oa_url" ] && [ "$oa_url" != "null" ]; then
+        status="open_access"
+        pdf_url="$oa_url"
+      fi
+    fi
+  fi
+
+  local result
+  result=$(jq -n \
+    --arg title "$title" \
+    --argjson authors "$authors_arr" \
+    --arg year "$year" \
+    --arg doc_id "$doc_id" \
+    --arg status "$status" \
+    --arg doi "$doi" \
+    --arg arxiv_id "$arxiv_id" \
+    --arg pdf_url "$pdf_url" \
+    '{
+      title: $title,
+      authors: $authors,
+      year: (if $year == "null" or $year == "" then null else ($year | tonumber? // null) end),
+      doc_id: $doc_id,
+      status: $status,
+      tier: 3,
+      doi: (if $doi == "" or $doi == "null" then null else $doi end),
+      arxiv_id: (if $arxiv_id == "" or $arxiv_id == "null" then null else $arxiv_id end),
+      pdf_url: (if $pdf_url == "" then null else $pdf_url end)
+    }' 2>/dev/null) || return 1
+
+  append_result "$result"
+  add_seen "$doc_id" "$title"
+  return 0
+}
+
 tier3_search() {
   # Tier 3's budget is TIER3_QUOTA -- its own reserved share of DISCOVER_LIMIT
   # plus any unused share rolled forward from Tiers 1/2 (see the tier-dispatch
@@ -594,15 +707,6 @@ tier3_search() {
     open_access_url=$(echo "$paper" | jq -r '.openAccessPdf.url // ""' 2>/dev/null)
     paper_id=$(echo "$paper" | jq -r '.paperId // ""' 2>/dev/null)
 
-    if [ -z "$title" ]; then
-      continue
-    fi
-
-    # Skip already-seen titles
-    if is_seen_title "$title"; then
-      continue
-    fi
-
     # Build authors array
     authors_arr=$(echo "$paper" | jq -r '
       .authors // [] |
@@ -611,80 +715,11 @@ tier3_search() {
       @json
     ' 2>/dev/null || echo '[]')
 
-    # Determine doc_id (prefer DOI slug, then arXiv, then paper_id)
-    local doc_id=""
-    if [ -n "$doi" ] && [ "$doi" != "null" ]; then
-      doc_id=$(echo "$doi" | tr '/' '_' | tr '.' '_')
-    elif [ -n "$arxiv_id" ] && [ "$arxiv_id" != "null" ]; then
-      doc_id="arxiv_${arxiv_id//./_}"
-    elif [ -n "$paper_id" ]; then
-      doc_id="ss_$paper_id"
-    else
-      doc_id="unknown_$(echo "$title" | tr '[:upper:] ' '[:lower:]_' | tr -cs 'a-z0-9_' '_' | cut -c1-40)"
-    fi
-
-    # Skip already-seen doc_ids
-    if is_seen_doc_id "$doc_id"; then
-      continue
-    fi
-
-    # Determine status and PDF URL
-    local status="paywall"
-    local pdf_url=""
-
-    if [ -n "$open_access_url" ] && [ "$open_access_url" != "null" ]; then
-      status="open_access"
-      pdf_url="$open_access_url"
-    elif [ -n "$arxiv_id" ] && [ "$arxiv_id" != "null" ]; then
-      # arXiv PDFs are always freely available
-      status="open_access"
-      pdf_url="https://arxiv.org/pdf/$arxiv_id"
-    elif [ -n "$doi" ] && [ "$doi" != "null" ]; then
-      # Try Unpaywall for DOI lookup
-      local uw_url="https://api.unpaywall.org/v2/${doi}?email=${USER_EMAIL}"
-      local uw_result=""
-      local uw_exit=0
-
-      uw_result=$(curl -s --max-time 10 "$uw_url" 2>/dev/null) || uw_exit=$?
-
-      if [ "$uw_exit" -eq 0 ] && [ -n "$uw_result" ]; then
-        local oa_url
-        oa_url=$(echo "$uw_result" | jq -r '.best_oa_location.url // ""' 2>/dev/null)
-        if [ -n "$oa_url" ] && [ "$oa_url" != "null" ]; then
-          status="open_access"
-          pdf_url="$oa_url"
-        fi
+    if tier3_emit_record "$title" "$authors_arr" "$year" "$doi" "$arxiv_id" "$open_access_url" "$paper_id"; then
+      count=$(( count + 1 ))
+      if [ "$count" -ge "$remaining" ]; then
+        break
       fi
-    fi
-
-    local result
-    result=$(jq -n \
-      --arg title "$title" \
-      --argjson authors "$authors_arr" \
-      --arg year "$year" \
-      --arg doc_id "$doc_id" \
-      --arg status "$status" \
-      --arg doi "$doi" \
-      --arg arxiv_id "$arxiv_id" \
-      --arg pdf_url "$pdf_url" \
-      '{
-        title: $title,
-        authors: $authors,
-        year: (if $year == "null" or $year == "" then null else ($year | tonumber? // null) end),
-        doc_id: $doc_id,
-        status: $status,
-        tier: 3,
-        doi: (if $doi == "" or $doi == "null" then null else $doi end),
-        arxiv_id: (if $arxiv_id == "" or $arxiv_id == "null" then null else $arxiv_id end),
-        pdf_url: (if $pdf_url == "" then null else $pdf_url end)
-      }' 2>/dev/null) || continue
-
-    append_result "$result"
-    add_seen "$doc_id" "$title"
-    count=$(( count + 1 ))
-
-    if [ "$count" -ge "$remaining" ]; then
-      break
     fi
   done < <(echo "$ss_results" | jq -c '.data[]? // empty' 2>/dev/null)
 }
