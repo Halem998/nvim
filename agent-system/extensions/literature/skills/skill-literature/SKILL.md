@@ -377,7 +377,11 @@ For each indexed entry, check:
    directory-path entries (book/parent-level records whose `path` ends in `/`)
 2. Token count drift (recount vs stored, flag if >20% different) — applies to file-path entries
    only; directory-path entries have no single content file to recount against
-3. Required schema fields present: `id`, `path`, `token_count`, `keywords`, `summary`, `doc_type`, `source_format`
+3. Required schema fields present — **top-level document entries only** (`parent_doc` null or
+   empty; a section/chunk entry is held only to checks 1, 2, and 4, never to this one): `doc_type`,
+   `source_format`, `authors`, `title`. This is the full field list the check enforces; `id`/`path`
+   are covered separately by the schema-shape bucket above, and `keywords`/`summary` are not
+   enforced by any check today.
 4. `authors` field shape: present and an array, all elements are strings, and no element looks
    like an unsplit comma-joined multi-author string (see authors-shape check below). This catches
    regressions from any future writer that reintroduces the malformed schema this check guards against —
@@ -452,15 +456,22 @@ while IFS= read -r entry_json; do
   fi
 
   # Check for required schema fields (new in schema v2). Reads the already-parsed
-  # entry record directly (no re-query by path needed), so this runs for every entry
-  # that resolves on disk -- directory-path entries included.
+  # entry record directly (no re-query by path needed). Scoped to top-level document
+  # entries only (parent_doc null/empty), reusing literature-coverage-delta.sh's
+  # canonical top-level predicate verbatim -- section/chunk entries lack these fields
+  # by design and are not expected to carry them. A directory-path (book/parent) entry
+  # is itself top-level, so it remains covered.
   missing_fields=$(echo "$entry_json" | jq -r '
-    [
-      (if .doc_type == null or .doc_type == "" then "doc_type" else empty end),
-      (if .source_format == null or .source_format == "" then "source_format" else empty end),
-      (if .authors == null then "authors" else empty end),
-      (if .title == null or .title == "" then "title" else empty end)
-    ] | join(", ")
+    if (.parent_doc == null or .parent_doc == "") then
+      [
+        (if .doc_type == null or .doc_type == "" then "doc_type" else empty end),
+        (if .source_format == null or .source_format == "" then "source_format" else empty end),
+        (if .authors == null then "authors" else empty end),
+        (if .title == null or .title == "" then "title" else empty end)
+      ] | join(", ")
+    else
+      ""
+    end
   ' 2>/dev/null || echo "")
   if [ -n "$missing_fields" ]; then
     schema_warnings+=("$entry_path (missing fields: $missing_fields)")
@@ -650,7 +661,7 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 {for each drift entry:}
 - {entry_path}: stored {N}, actual {M} ({pct}% drift)
 
-### Schema Warnings ({count}) — entries missing required v2 fields
+### Schema Warnings ({count}) — top-level document entries missing required v2 fields
 {for each schema_warning entry:}
 - {entry_path}: {missing_fields}
   Run: /literature --index {file_path} to update entry with missing fields
