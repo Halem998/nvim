@@ -375,22 +375,22 @@ figures.
 
 ---
 
-### Phase 6: Document FTS5 query semantics [NOT STARTED]
+### Phase 6: Document FTS5 query semantics [COMPLETED]
 
 **Goal**: Record the AND-all-terms/`<`-syntax gotchas so the next contributor adding an FTS5 call
 site does not re-derive them, as the origin session had to.
 
 **Tasks**:
-- [ ] Add `agent-system/extensions/literature/context/project/literature/domain/fts5-query-semantics.md`
+- [x] Add `agent-system/extensions/literature/context/project/literature/domain/fts5-query-semantics.md` *(completed)*
       covering: FTS5's bareword-AND default and why long free-text queries need per-term/grouped
       search; the full FTS5-hostile character set `sanitize_query()` owns (now including `<`/`>`);
       the three-rung ladder's actual recall behavior (phrase_retry/trigram are syntax-safe but
       recall-narrow, never general recall improvements); and the multi-query envelope contract
       (`total_matched`, `matched_terms`, conservative `query_error` aggregation).
-- [ ] Register the new file wherever the extension's context files are indexed (manifest/index
+- [x] Register the new file wherever the extension's context files are indexed (manifest/index *(completed)*
       entries and the extension's context pointer list), matching how sibling domain docs are
       registered.
-- [ ] Cite durable anchors only — file names, function names, section headings. No task-number
+- [x] Cite durable anchors only — file names, function names, section headings. No task-number *(completed)*
       references (`rules/no-task-references-in-deliverables.md`).
 
 **Timing**: 0.75 hours

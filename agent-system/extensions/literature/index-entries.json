@@ -637,6 +637,46 @@
       "on_demand": true
     },
     {
+      "path": "project/literature/domain/fts5-query-semantics.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": [
+        "literature",
+        "fts5",
+        "search",
+        "query",
+        "sanitization",
+        "multi-query"
+      ],
+      "keywords": [
+        "sanitize_query",
+        "bareword-and",
+        "fts5-hostile",
+        "multi-query",
+        "total_matched",
+        "matched_terms",
+        "corroborated_count",
+        "query_error"
+      ],
+      "summary": "FTS5's bareword-AND recall ceiling, the full FTS5-hostile character set sanitize_query() owns, the three-rung fallback ladder's actual (narrow, not general) recall behavior, and the --multi envelope contract (total_matched, matched_terms sort priority, corroborated_count sparse signal, conservative query_error aggregation)",
+      "line_count": 142,
+      "load_when": {
+        "agents": [
+          "literature-agent",
+          "general-research-agent",
+          "general-implementation-agent",
+          "planner-agent"
+        ],
+        "commands": [
+          "/literature",
+          "/research",
+          "/plan",
+          "/implement"
+        ]
+      },
+      "on_demand": true
+    },
+    {
       "path": "project/literature/domain/tier3-provider-fallback.md",
       "domain": "project",
       "subdomain": "literature",

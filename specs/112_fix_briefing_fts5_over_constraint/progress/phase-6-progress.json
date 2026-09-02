@@ -1,0 +1,14 @@
+{
+  "phase": 6,
+  "phase_name": "Document FTS5 query semantics",
+  "started_at": "2026-09-02T05:35:00Z",
+  "last_updated": "2026-09-02T05:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add fts5-query-semantics.md covering AND-all-terms, hostile character set, ladder recall behavior, multi-query envelope contract", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/fts5-query-semantics.md"]},
+    {"id": 2, "description": "Register the new file in index-entries.json following sparse-coverage.md's registration pattern", "status": "done", "files_touched": ["agent-system/extensions/literature/index-entries.json"]},
+    {"id": 3, "description": "Confirm no task-number references (check-task-references.sh)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
