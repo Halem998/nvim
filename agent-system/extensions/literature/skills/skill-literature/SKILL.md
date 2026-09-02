@@ -2531,9 +2531,20 @@ See `rules/error-handling.md` for general patterns. Skill-specific behaviors:
 
 - **specs/literature/ missing**: Not an error for status/scan — report and suggest next steps
 - **index.json missing**: Initialize with empty structure for convert/index modes; warn for validate
-- **pdftotext missing**: Hard error for convert mode on PDF files — show install command
+- **Conversion engine-tier availability**: No longer a Mode: Convert concern — Convert Step 3b
+  delegates extraction to `literature-convert.sh`, which owns the engine-tier ladder
+  (pymupdf4llm -> ... -> pdftotext/djvutxt) and reports total tier exhaustion as its own exit 2
+  (see the next bullet).
 - **djvutxt missing**: Soft warning — skip DJVU files with message, continue processing PDFs
-- **Empty pdftotext output**: Warn "no text extracted, OCR required", skip file, continue
+- **Quality gate rejection (`literature-convert.sh` exit 3)**: Skip the file with the gate's own
+  reason surfaced via a `QUALITY GATE FAILED` operator message; listed under Skipped Files, never
+  written to `index.json`, never chunked.
+- **Engine-tier exhaustion or hard conversion failure (`literature-convert.sh` exit 1/2)**: Skip
+  the file with the engine's own reason from its stderr; listed under Skipped Files, continue
+  processing the remaining targets.
+- **Invariant**: a gate-rejected or hard-failed document is never written to `index.json` and
+  never chunked — Mode: Convert only reports it in the Skipped Files summary, it never appears as
+  a partial or silent success.
 - **jq failure**: Use two-step write pattern (write to tmp file, then mv) to avoid corruption
 - **Git commit failure**: Non-blocking — log and continue
 - **zotero-library.json not found**: Exit code 1 from zotero-search.sh — show setup instructions, fall back to index-only search

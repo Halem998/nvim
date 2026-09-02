@@ -262,22 +262,22 @@ editing.
 
 ---
 
-### Phase 4: Update the Error Handling section to the delegated failure contract [NOT STARTED]
+### Phase 4: Update the Error Handling section to the delegated failure contract [COMPLETED]
 
 **Goal**: Bring the documented error contract in sync with the behavior Phases 1-3 produce, so the
 skill's own documentation no longer describes inline-extraction failure modes that can no longer
 occur.
 
 **Tasks**:
-- [ ] Replace the `- **pdftotext missing**: Hard error for convert mode on PDF files` bullet
+- [x] Replace the `- **pdftotext missing**: Hard error for convert mode on PDF files` bullet
       (currently ~2468) — after Phase 3 this is no longer true; state that conversion tier
       availability is `literature-convert.sh`'s concern and surfaces as its exit 2.
-- [ ] Replace the `- **Empty pdftotext output**` bullet (~2470) with the two real delegated failure
+- [x] Replace the `- **Empty pdftotext output**` bullet (~2470) with the two real delegated failure
       modes: quality-gate rejection (exit 3 -> skip with the gate's own reason, no index entry) and
       engine-tier exhaustion (exit 1/2 -> skip with the engine reason).
-- [ ] Keep the `- **djvutxt missing**` bullet, adjusting its wording only if Phase 3's outcome
+- [x] Keep the `- **djvutxt missing**` bullet, adjusting its wording only if Phase 3's outcome
       changed the guard's location — the DJVU prerequisite itself is unchanged.
-- [ ] Add one bullet stating the invariant explicitly: a gate-rejected document is never written to
+- [x] Add one bullet stating the invariant explicitly: a gate-rejected document is never written to
       `index.json` and never chunked, and Mode: Convert reports it in the Skipped Files summary.
 
 **Timing**: 0.5 hours

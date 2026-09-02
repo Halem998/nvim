@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Update the Error Handling section to the delegated failure contract",
+  "started_at": "2026-09-01T00:25:00Z",
+  "last_updated": "2026-09-01T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace stale pdftotext/empty-output bullets with the delegated failure contract and invariant bullet", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
