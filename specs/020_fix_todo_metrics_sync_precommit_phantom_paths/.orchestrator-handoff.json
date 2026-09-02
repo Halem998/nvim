@@ -1,15 +1,21 @@
 {
-  "dispatch_seq": 3,
-  "status": "planned",
-  "summary": "Created a 4-phase implementation plan: (1) existence-safe enumeration in assess-repo-health.sh plus a new phantom_paths field, schema, and schema doc as one atomic batch; (2) three git-fixture regression cases locking both directions; (3) re-sequencing /todo's metrics sync to after its commit with its own state-scoped commit and three cross-reference updates; (4) measured before/after acceptance evidence and full-gate verification. The task description's second defect (Step 5A MAX_ARG_STRLEN) is recorded as already closed upstream and explicitly out of scope.",
+  "dispatch_seq": 6,
+  "status": "implemented",
+  "summary": "All 4 phases of the phantom-path existence-safety plan implemented and committed. assess-repo-health.sh is now existence-safe (filters git-index entries absent from disk at the single population choke point, emits a new phantom_paths diagnostic), state-schema.json and state-management-schema.md updated to match, /todo's metrics sync re-sequenced to run after its own commit (Step 6.5) with a dedicated scoped follow-up commit, and three new git-fixture regression cases (Bar 4/5/6) lock both directions of the fix. Full test suite: 24 passed, 0 failed. validate-state.sh --deep accepts the new field. No file under .claude/** was touched (git status --short .claude/ empty at every phase boundary).",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/summaries/01_phantom-path-existence-safety-summary.md",
+      "summary": "Implementation summary for all 4 phases: existence-safe probe + phantom_paths field, git-fixture regression cases, /todo re-sequencing, and acceptance evidence."
+    },
     {
       "type": "plan",
       "path": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md",
-      "summary": "4-phase plan for phantom-path existence safety and /todo metrics-sync re-sequencing."
+      "summary": "4-phase plan, all phases [COMPLETED], plan-level Status updated to [COMPLETED]."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
+  "plan_markers_verified": true,
   "blockers": []
 }
