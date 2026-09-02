@@ -186,30 +186,31 @@ line numbers differ, correct them in the phase record rather than proceeding on 
 
 ---
 
-### Phase 2: Replace Both Crash Sites With jq-Internal `first(...)` [NOT STARTED]
+### Phase 2: Replace Both Crash Sites With jq-Internal `first(...)` [COMPLETED]
 
 **Goal**: Remove `head` from both `parent_entry` extraction pipelines by bounding the result
 inside jq, eliminating the SIGPIPE structurally while preserving the `(.id // .doc_id)` tolerance
 and the two-step strict-then-fallback lookup verbatim.
 
 **Tasks**:
-- [ ] Edit **only** `agent-system/extensions/literature/scripts/literature-briefing.sh` (source
-      store). Do not touch `.claude/scripts/literature-briefing.sh`.
-- [ ] Replace the site at `:238-241` with:
+- [x] Edit **only** `agent-system/extensions/literature/scripts/literature-briefing.sh` (source
+      store). Do not touch `.claude/scripts/literature-briefing.sh`. *(completed)*
+- [x] Replace the site at `:238-241` with:
       `parent_entry=$(jq -c --arg id "$doc_id" 'first(.entries[] | select((.id // .doc_id) == $id and (.parent_doc == null or .parent_doc == "")))' "$GLOBAL_INDEX" 2>/dev/null)`
       keeping the existing multi-line formatting and the preceding explanatory comment about the
-      stub-shaped-entry contract.
-- [ ] Replace the fallback site at `:245-247` with:
+      stub-shaped-entry contract. *(completed)*
+- [x] Replace the fallback site at `:245-247` with:
       `parent_entry=$(jq -c --arg id "$doc_id" 'first(.entries[] | select((.id // .doc_id) == $id))' "$GLOBAL_INDEX" 2>/dev/null)`
       keeping the `# Try without parent_doc filter (older entries may lack the field)` comment.
-- [ ] Do NOT add `|| true` / `|| :` guards — `first(...)` over an empty stream exits 0 with no
-      output, confirmed in research.
-- [ ] Do NOT collapse the two queries into one; do NOT alter the `if [ -z "$parent_entry" ]`
-      checks at `:243` and `:250`.
-- [ ] Do NOT modify `set -euo pipefail` at line 63.
-- [ ] Run `bash -n` on the edited file to confirm it still parses.
-- [ ] Commit this single-file change per the commit-per-green-substep mandate once `bash -n` and
-      the greps below pass.
+      *(completed)*
+- [x] Do NOT add `|| true` / `|| :` guards — `first(...)` over an empty stream exits 0 with no
+      output, confirmed in research. *(completed: no guards added)*
+- [x] Do NOT collapse the two queries into one; do NOT alter the `if [ -z "$parent_entry" ]`
+      checks at `:243` and `:250`. *(completed: two-step structure intact, `-z` checks unchanged)*
+- [x] Do NOT modify `set -euo pipefail` at line 63. *(completed: unchanged)*
+- [x] Run `bash -n` on the edited file to confirm it still parses. *(completed: exits 0)*
+- [x] Commit this single-file change per the commit-per-green-substep mandate once `bash -n` and
+      the greps below pass. *(completed)*
 
 **Timing**: 0.5 hours
 

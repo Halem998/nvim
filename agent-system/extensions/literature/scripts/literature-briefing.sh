@@ -235,16 +235,15 @@ if [ "$mode" = "repo" ]; then
     # Find the parent entry (parent_doc == null and (id // doc_id) matches doc_id).
     # Tolerates a stub-shaped entry keyed only by .doc_id (no .id field) -- see
     # get_doc_fidelity's header comment above for the full contract.
-    parent_entry=$(jq -r --arg id "$doc_id" '
-      .entries[]
-      | select((.id // .doc_id) == $id and (.parent_doc == null or .parent_doc == ""))
-    ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+    parent_entry=$(jq -c --arg id "$doc_id" '
+      first(.entries[] | select((.id // .doc_id) == $id and (.parent_doc == null or .parent_doc == "")))
+    ' "$GLOBAL_INDEX" 2>/dev/null)
 
     if [ -z "$parent_entry" ]; then
       # Try without parent_doc filter (older entries may lack the field)
-      parent_entry=$(jq -r --arg id "$doc_id" '
-        .entries[] | select((.id // .doc_id) == $id)
-      ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      parent_entry=$(jq -c --arg id "$doc_id" '
+        first(.entries[] | select((.id // .doc_id) == $id))
+      ' "$GLOBAL_INDEX" 2>/dev/null)
     fi
 
     if [ -z "$parent_entry" ]; then

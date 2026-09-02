@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "Replace Both Crash Sites With jq-Internal first(...)",
+  "started_at": "2026-09-02T16:15:00Z",
+  "last_updated": "2026-09-02T16:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace both parent_entry jq-into-head-1 pipelines with jq -c 'first(...)' at :238-241 and :245-247, preserving the (.id // .doc_id) tolerance and the two-step lookup structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "verification_results": {
+      "bash_-n": "exits 0, parses cleanly",
+      "head_-1_count": "8 (down from 10, as expected)",
+      "parent_entry_grep_count": "4 hits (two assignments at 238, 244; two -z checks at 242, 249) -- structure preserved",
+      "first_entries_count": "2 (as expected)",
+      "id_doc_id_tolerance": "present at both new sites (lines 239, 245)",
+      "set_euo_pipefail_line": "63, unchanged",
+      "git_diff_stat": "exactly one file changed (agent-system/extensions/literature/scripts/literature-briefing.sh), 6 insertions/7 deletions",
+      "deploy_copy_untouched": ".claude/scripts/literature-briefing.sh shows no git changes; diff -q against source-store now reports 'differ' (expected drift, per plan Non-Goals)"
+    }
+  },
+  "deviations": []
+}
