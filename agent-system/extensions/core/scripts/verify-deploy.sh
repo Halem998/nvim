@@ -55,11 +55,11 @@
 #   fast/full split and exit-code contract.
 #
 # Findings mode (--findings, additive-only):
-#   Emits a normalized, one-per-line, machine-diffable findings set across all seventeen gates
-#   (gate0 through gate16) plus a gate0 "could not run" sentinel, printed to stdout after the
+#   Emits a normalized, one-per-line, machine-diffable findings set across all eighteen gates
+#   (gate0 through gate17) plus a gate0 "could not run" sentinel, printed to stdout after the
 #   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
 #   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate16`); the automated consumer is expected to invoke
+#   gate label (`gate0`..`gate17`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
@@ -760,6 +760,36 @@ if [ "$gate16_hits" -eq 0 ]; then
   pass "no extension manifest declares routing_hard/routing_agents_hard"
 fi
 unset gate16_manifest gate16_ext gate16_declares gate16_hits
+
+say ""
+
+# Gate 17: scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
+#
+# Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12):
+# only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
+# (source store or deployed .claude/) invoked this script. Invokes the source-store copy
+# directly, resolving REPO_ROOT the same way gate 12 does.
+say "17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)"
+CURRENT_GATE="gate17"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- scoped-commit boundary lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh" ]; then
+  fail "lint-scoped-commit-boundary.sh not found in source store"
+else
+  scoped_commit_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh" --verbose 2>&1)
+  scoped_commit_lint_status=$?
+  if [ "$scoped_commit_lint_status" -eq 0 ]; then
+    pass "scoped-commit boundary lint reports no hand-rolled bare git-commit call sites"
+  else
+    fail "scoped-commit boundary lint reported hand-rolled bare git-commit call sites" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r scoped_commit_lint_line; do
+        FINDINGS_LIST+=("FINDING gate17 ${scoped_commit_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$scoped_commit_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
 
 say ""
 if [ "$FAILURES" -eq 0 ]; then

@@ -656,16 +656,16 @@ The final full exemption record for the scoped-commit acceptance grep (9 files, 
 
 ---
 
-### Phase 11: Add lint-scoped-commit-boundary.sh and wire it into the deploy gate set [NOT STARTED]
+### Phase 11: Add lint-scoped-commit-boundary.sh and wire it into the deploy gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Make the raw form mechanically impossible to reintroduce, closing the regrowth path the
 task explicitly asks to settle.
 
 **Tasks**:
-- [ ] Read `core/scripts/lint/lint-state-writer-boundary.sh` in full — it is the design template
+- [x] Read `core/scripts/lint/lint-state-writer-boundary.sh` in full — it is the design template
       (two layers: a broad candidate regex over `.md`/`.sh` files, narrowed by a structural line
       classifier, plus a short reason-carrying file-level allowlist).
-- [ ] Write `core/scripts/lint/lint-scoped-commit-boundary.sh`:
+- [x] Write `core/scripts/lint/lint-scoped-commit-boundary.sh`:
       - Candidate detection: `git commit -m` across `.md` and `.sh` files in the source store.
       - Structural classifier: a compliant occurrence ends in a trailing `-- <pathspec>` — this
         mirrors `git-staging-scope.md`'s own stated rule that a commit lacking a trailing pathspec
@@ -674,19 +674,23 @@ task explicitly asks to settle.
         its reason inline — never a bare path list. Include the lint's own path and its test
         fixture, mirroring `lint-state-writer-boundary.sh`'s self-reference exemption.
       - Match the sibling lints' `--verbose` behavior and exit-code convention.
-- [ ] Write `core/scripts/tests/test-lint-scoped-commit-boundary.sh`, mirroring
+- [x] Write `core/scripts/tests/test-lint-scoped-commit-boundary.sh`, mirroring
       `test-lint-state-writer-boundary.sh`'s structure: a dirty fixture the lint must flag, a
-      clean fixture it must pass, and verbose-mode assertions.
-- [ ] Register both in `core/manifest.json`: the lint in the `lint/` list (alongside
+      clean fixture it must pass, and verbose-mode assertions. *(6 cases, 8 assertions: dirty,
+      clean, trailing-pathspec structural exemption, file-level-allowlist exemption, --verbose,
+      --quiet.)*
+- [x] Register both in `core/manifest.json`: the lint in the `lint/` list (alongside
       `lint-state-writer-boundary.sh`), the test in the `tests/` list.
-- [ ] Add the lint as a new numbered gate in `core/scripts/verify-deploy.sh`, immediately after
+- [x] Add the lint as a new numbered gate in `core/scripts/verify-deploy.sh`, immediately after
       the current final gate. Follow the `[SKIP]`-if-not-source-store posture used by the sibling
       gates, and match gate 12's invocation style
       (`lint-state-writer-boundary.sh --verbose`). Derive the new gate's number from the live
-      file at implementation time rather than hardcoding it from this plan.
-- [ ] Add a one-line pointer from `core/context/standards/git-staging-scope.md` to the new lint,
+      file at implementation time rather than hardcoding it from this plan. *(confirmed live final
+      gate was 16; new gate is 17, matching the research report's prediction.)*
+- [x] Add a one-line pointer from `core/context/standards/git-staging-scope.md` to the new lint,
       so a future contributor discovers that a mechanical check exists.
-- [ ] Redeploy and run the full gate set; the new gate must pass on the migrated tree.
+- [x] Redeploy and run the full gate set; the new gate must pass on the migrated tree. *(gate 17
+      passes: "scoped-commit boundary lint reports no hand-rolled bare git-commit call sites".)*
 
 **Timing**: 1.5 hours
 
@@ -710,11 +714,34 @@ reading the file before assigning one — do not trust either number from this p
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh` passes
-  (dirty fixture flagged, clean fixture passes).
-- The new lint run standalone over the migrated source store reports zero violations.
+  (dirty fixture flagged, clean fixture passes). *(8/8 assertions pass.)*
+- The new lint run standalone over the migrated source store reports zero violations. *(confirmed:
+  `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose` —
+  1049 files checked, 40 candidate lines exempted (all via the file-level allowlist or the
+  trailing-pathspec structural rule), 0 violations.)*
 - `verify-deploy.sh` exits 0 with the new gate present in its output and the check count
-  incremented by one.
-- The complete existing test suite under `core/scripts/tests/` still passes.
+  incremented by one. *(completed with exclusions: gate 17 itself PASSes and the check count
+  correctly went from 27 to 28; the script's overall exit code is 1 only because of the same 3
+  pre-existing, unrelated failures documented in Phase 10's Reasoned Exclusions — doc-lint's 3
+  orphaned test scripts, validate-state.sh's 2 unrelated schema-drift entries, and
+  state-writer-boundary lint's 4 pre-existing violations in test-force-phases.sh. None of these
+  three touches a file this task modified.)*
+- The complete existing test suite under `core/scripts/tests/` still passes. *(confirmed:
+  `bash .claude/scripts/tests/run-all.sh` — 55 passed, 0 failed, 0 skipped, including the new
+  test-lint-scoped-commit-boundary.sh.)*
+
+#### Reasoned Exclusions
+
+Same root cause as Phase 10's Reasoned Exclusions table (not repeated in full here): `verify-deploy.sh`
+exits 1 rather than 0 because of 3 pre-existing, unrelated failures (doc-lint's 3 orphaned test
+scripts, `validate-state.sh --deep`'s 2 unrelated schema-drift entries on other tasks' rows, and
+state-writer-boundary lint's 4 pre-existing violations in `test-force-phases.sh`). Gate 17 itself
+— the deliverable of this phase — PASSes cleanly, and the check count incremented from 27 to 28 as
+expected.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` overall exit code (1, not 0) | Caused entirely by the 3 pre-existing, unrelated gate failures documented in Phase 10's Reasoned Exclusions table; gate 17 (this phase's own deliverable) passes. | `bash .claude/scripts/verify-deploy.sh` output: `17. Scoped-commit boundary lint ... [PASS]`; overall `[verify-deploy] FAIL -- 3 of 28 check(s) failed`. |
 
 ---
 

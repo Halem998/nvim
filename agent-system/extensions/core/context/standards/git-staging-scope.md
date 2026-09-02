@@ -326,3 +326,6 @@ the addendum and falls through to the plain commit message — it must never bre
 - `.claude/docs/architecture/orchestrate-state-machine.md` — MT Mode's Commit Granularity
   subsection, and `.claude/context/patterns/batch-orchestration-guardrails.md` — hazard 2's
   retirement record
+- `.claude/scripts/lint/lint-scoped-commit-boundary.sh` — the mechanical guardrail against
+  regrowth of the raw `git add` + bare `git commit -m` anti-pattern this doc describes; wired as
+  `verify-deploy.sh` gate 17
