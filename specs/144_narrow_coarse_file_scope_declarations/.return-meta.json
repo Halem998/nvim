@@ -1,35 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md",
-      "summary": "Live Check 8 re-run (11 findings across 10 projects), per-declaration old->new narrowing with justification, the three preserved real orchestrate-cycle-plan/postflight collisions, addendum verification, the Component 4a over-declaring root cause, and the decided unknown-footprint write-back convention."
+      "type": "plan",
+      "path": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
+      "summary": "Six-phase sequential plan: fix the Component 4a over-declaring guidance first, add proposed_file_scope + --file-scope-add additive write-back, then apply the per-declaration narrowings and verify Check 8 plus the three preserved genuine collisions."
     }
   ],
-  "next_steps": "Run /plan 144 to create an implementation plan applying the narrowed file_scope arrays, the multi-task-creation-standard.md Component 4a fix, and the proposed_file_scope write-back convention documented in the research report.",
+  "next_steps": "Run /implement 144 to execute the plan",
   "metadata": {
-    "session_id": "sess_1788382844_27990c_144",
-    "agent_type": "general-research-agent",
+    "session_id": "sess_1788390027_14a27d_144",
+    "agent_type": "planner-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
   },
   "memory_candidates": [
     {
-      "content": "multi-task-creation-standard.md Component 4a step 1 currently instructs task creation to 'bias toward over-declaring (broader prefixes): false positives here only cost parallelism, not correctness.' This is a direct root cause of coarse whole-directory file_scope declarations later flagged by validate-state.sh Check 8 (added by task 61 specifically to catch this pattern) -- the standard that populates file_scope and the check that flags it are in tension. Any fix to coarse declarations should also update this guidance line, or new coarse declarations will keep being created.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/state.json",
-      "confidence": 0.9,
-      "suggested_keywords": ["file_scope", "multi-task-creation-standard", "coarse-declaration", "check-8", "over-declaring"]
-    },
-    {
-      "content": "Core scripts/tests/ follows a strong, near-universal test-<script-basename>.sh naming convention (verified: lint-*.sh <-> test-lint-*.sh, orchestrate-triage-classify.sh <-> test-orchestrate-triage-classify.sh, assess-repo-health.sh <-> test-assess-repo-health.sh). This convention is reliable enough to predict the exact test-file path for a not-yet-created implementation script at task-creation time, which resolves most 'unknown until research' file_scope cases for scripts/tests/ without needing to declare the whole directory.",
+      "content": "When a task's declared file_scope omits files its own plan must edit, the safe repair is an additive union via state-write.sh (never an array replacement), because active_projects[].file_scope may have been changed independently by other writers between read and write. This is the same additive-only discipline that makes a research-postflight file_scope write-back categorically safe against false negatives: under-declaring silently removes the collision guard between concurrent agents, while over-declaring only costs an orchestration cycle. Any mechanism that mutates file_scope should therefore be union-only by construction, not by author care.",
       "category": "PATTERN",
-      "source_artifact": "agent-system/extensions/core/scripts/tests/",
+      "source_artifact": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
       "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "test-naming-convention", "scripts/tests", "narrowing"]
+      "suggested_keywords": ["file_scope", "additive-union", "state-write", "false-negative", "collision-guard"]
     }
   ],
-  "modified_files": [],
+  "modified_files": [
+    "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md"
+  ],
   "errors": []
 }

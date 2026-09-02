@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 1,
+  "status": "planned",
+  "summary": "Created a 6-phase, fully sequential implementation plan (7h, complex) for task 144. Sequencing is binding per the operator addendum: the Component 4a generator fix lands first (Phase 1), then the proposed_file_scope schema (Phase 2), the --file-scope-add additive union on update-task-status.sh with tests (Phase 3), consumer wiring in skill-base.sh and orchestrator-postflight.sh plus an additive extension of task 144's own file_scope (Phase 4), the per-declaration state.json narrowings re-derived from a live Check 8 run (Phase 5), and deploy plus verification that Check 8 is clean and the three genuine collisions still serialize (Phase 6).",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
+      "summary": "Six-phase sequential plan covering all three binding deliverables plus verification."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}

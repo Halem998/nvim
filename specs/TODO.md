@@ -26,10 +26,10 @@ next_project_number: 151
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-20 [RESEARCHED] — /todo's repository-metrics sync runs before its git commit, so th
+20 [PLANNED] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-72 [RESEARCHED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
+72 [PLANNED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
@@ -39,7 +39,7 @@ next_project_number: 151
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-144 [RESEARCHED] — Narrow the coarse whole-directory file_scope declarations that ma
+144 [PLANNED] — Narrow the coarse whole-directory file_scope declarations that ma
 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
   └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
     └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
@@ -62,7 +62,7 @@ next_project_number: 151
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-113 [RESEARCHED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
+113 [PLANNED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
 
@@ -235,11 +235,12 @@ Team mode is deleted by this task's predecessor, so the `--team`/`--team-size` r
 ---
 
 ### 144. Narrow coarse file scope declarations
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md]
+- **Plan**: [144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md]
 
 **Description**: Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration.
 
@@ -258,7 +259,51 @@ OUT OF SCOPE. The advisory is WARN-only by design and must stay non-blocking; do
 
 ACCEPTANCE. Check 8 reports clean, or each surviving coarse declaration carries an explicit recorded justification; no task's narrowed file_scope omits a path that task actually modifies; validate-state.sh green on the duplicate check; full gate run green.
 === ADDENDUM 2026-09-02 (thin-lead path) ===
-Also repair the file_scope entries that point at files deleted by the hard-mode collapse: projects 76, 136 and 139 each declared agent-system/extensions/core/agents/general-implementation-hard-agent.md, which no longer exists (the lean extension's own lean-implementation-hard-agent.md still exists and stays); those entries have been removed at the state level already -- verify no others remain. Do NOT narrow project 88's core/context/patterns/ entry here: that project is being rewritten and its scope changes with it. For the "footprint unknown before research" convention, the recommended default to evaluate first: declare the narrowest known files at creation, and have the research phase end with a proposed file_scope that the postflight script writes back to state.json -- decide and document.
+Also repair the file_scope entries that point at files deleted by the hard-mode collapse: projects 76, 136 and 139 each declared agent-system/extensions/core/agents/general-implementation-hard-agent.md, which no longer exists (the lean extension's own lean-implementation-hard-agent.md still exists and stays); those entries have been removed at the state level already -- verify no others remain. Do NOT narrow project 88's core/context/patterns/ entry here: that project is being rewritten and its scope changes with it. For the "footprint unknown before research" convention, the recommended default to evaluate first: declare the narrowest known files at creation, and have the research phase end with a proposed file_scope that the postflight script writes back to state.json -- decide and document.=== ADDENDUM 2026-09-02 (operator decision: DURABILITY over speed) ===
+The operator has chosen the best long-term solution. The Component 4a guidance fix and the
+write-back convention are BINDING IN SCOPE for this task -- they do not split into a follow-up,
+and they are not optional extras behind the narrowings.
+
+SEQUENCING (binding). The generator is fixed BEFORE, or in the same change as, the instances.
+Narrowing the flagged declarations while multi-task-creation-standard.md still instructs task
+creation to "bias toward over-declaring (broader prefixes): false positives here only cost
+parallelism, not correctness" leaves the cause running: every task created afterward
+reintroduces a coarse declaration and the cleanup decays immediately. A plan that lands the
+narrowings first, or omits the guidance rewrite, does not satisfy this task.
+
+THREE DELIVERABLES, ALL REQUIRED:
+  1. Rewrite multi-task-creation-standard.md Component 4a step 1. Replace the over-declaring
+     bias with: declare the narrowest currently-known files; a directory root is warranted ONLY
+     when the task's real footprint is expected to span most of that directory, never as a
+     stand-in for "not known yet". Preserve the no-false-negatives constraint explicitly --
+     under-declaring is still strictly worse than over-declaring, and narrowing must never drop
+     a path the task actually writes.
+  2. Implement the unknown-until-research convention: an optional proposed_file_scope field in
+     .return-meta.json, consumed by a --file-scope-add flag on update-task-status.sh's research
+     postflight. Merge must be ADDITIVE/union only, never subtractive -- this is what makes the
+     convention safe against false negatives categorically rather than by care.
+  3. Apply the per-declaration narrowings from the research report.
+
+PRESERVE THE REAL COLLISIONS. The report's most load-bearing finding is that some overlaps are
+genuine: 147/148/150 share orchestrate-cycle-plan.sh and 143/148/150 share
+orchestrate-cycle-postflight.sh (neither script exists yet). The coarse declarations were
+MASKING these inside a false mass-collision. Narrowing must surface them, not erase them -- a
+narrowing that removes these serializations has introduced exactly the false negative the task
+forbids.
+
+STALE SNAPSHOT WARNING. The original description's 3-item list is stale; live Check 8 reports 11
+findings. Both addendum items in the original text were verified ALREADY CLEAN (hard-agent refs
+survive only in terminal projects 81/121; project 88's context/patterns/ entry no longer exists).
+Re-derive from a live Check 8 run at implementation time rather than trusting either list.
+
+OUT OF SCOPE, UNCHANGED: Check 8 stays WARN-only, never a gate. Do not change the overlap
+predicate in file-footprint-overlap.md. The two pre-existing validate-state FAILs
+(abandon_reason on 12 projects, blocks_note on 3) are schema drift unrelated to file_scope --
+leave them.
+
+FILE_SCOPE NOTE: this task's own file_scope was literal null at the time of this addendum -- an
+instance of the very metadata-defect class it exists to address. It has been set to the five
+paths its three deliverables actually touch.
 
 ---
 
@@ -1458,11 +1503,12 @@ RELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same de
 ---
 
 ### 113. Fix briefing sigpipe head crash
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [113_fix_briefing_sigpipe_head_crash/reports/01_sigpipe-head-crash-fix.md]
+- **Plan**: [113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md]
 
 **Description**: Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified at task-creation time: the Logos/Theory deploy copy of literature-briefing.sh is byte-identical to the source store, so there is no drift to reconcile.
 
@@ -2456,11 +2502,12 @@ in isolation.
 
 ### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md]
+- **Plan**: [072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md]
 
 **Description**: === REVISED 2026-09-02 (team mode deleted; narrowed to the marker-correlation defect) ===
 SUPERSEDING SCOPE. Team mode is being removed from the system (specs/PATH.md, Decisions), so Part A below (teammate .return-meta.json ownership) is moot: there are no teammates. Part B survives on its own merits and is now this task's whole scope, because the defect is not team-specific: hooks/subagent-postflight.sh's find_marker() picks the FIRST .postflight-pending marker under specs/ (`head -1`) with no correlation to the stopping subagent's session, so with several concurrent single-task sessions the hook can act on, burn the continuation budget of, or on cap DELETE a marker belonging to a different session. The marker JSON already carries session_id (written by skill_create_postflight_marker in skill-base.sh); the hook never reads it.
@@ -2513,7 +2560,42 @@ RELATED BUT DISTINCT:
 ACCEPTANCE: in a team run of each of the three team skills, the task directory ends with exactly one skill-owned .return-meta.json carrying the team_execution block; no teammate has overwritten it; no stray per-teammate metadata file exists unless the chosen direction deliberately defines one and a consumer reads it.
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.=== ADDENDUM 2026-09-02 (scope widened by operator decision; events-attribution AC RETAINED) ===
+The binding SOURCE-STORE RULE is widened from two files to three. Research established that
+hooks/events-log-lifecycle.sh carries an INDEPENDENT, identical uncorrelated-marker-selection
+bug (its own `find specs -maxdepth 3 -name ".postflight-pending" | head -1` at :125, a separate
+MARKER_FILE variable from subagent-postflight.sh's at :20). Because that second hook is what
+writes the subagent_stop events, the events.jsonl attribution acceptance criterion CANNOT be
+satisfied by fixing subagent-postflight.sh alone. That AC is retained, not deferred: the
+operator's decision is the most complete fix.
+
+BINDING EDIT TARGETS (all under agent-system/extensions/core/, never .claude/**):
+  hooks/subagent-postflight.sh          -- find_marker() correlation (:20)
+  hooks/events-log-lifecycle.sh         -- identical correlation fix (:125)
+  scripts/skill-base.sh                 -- skill_create_postflight_marker adds cc_session_id
+  scripts/tests/test-postflight-marker-schema.sh   -- exact-key-set assertion must admit the new field
+  scripts/tests/test-subagent-postflight-marker.sh -- already exercises BOTH hooks as companion cases
+
+VERIFIED SURFACE (enumerated, do not re-derive): a repo-wide grep for `.postflight-pending`
+across agent-system/ finds exactly TWO arbitrary-selection consumers -- the two hooks above.
+The other occurrences are the writer (skill-base.sh:257), two task-dir-scoped `rm -f` cleanups
+(skill-base.sh:814, orchestrator-postflight.sh:549), and test fixtures. There is no third
+consumer to find.
+
+VERIFIED CORRELATION KEY (do not re-derive): CLAUDE_CODE_SESSION_ID is exported into every Bash
+tool invocation and is the SAME id space as hook stdin's top-level .session_id. In-repo
+precedent with an explicit comment stating this: update-task-status.sh:600-613, which keys its
+workflow-active marker by ${CLAUDE_CODE_SESSION_ID:-$session_id}. The marker writer currently
+emits NO cc_session_id field, and subagent-postflight.sh reads no session id at all -- both
+confirmed by direct read.
+
+PLANNER'S CHOICE (deliberately left open, not a research gap): whether the two hooks each carry
+their own copy of the correlation logic or share an extracted helper. Two hooks with identical
+logic is a duplication smell; weigh a shared helper against hook standalone-ness. Either is
+acceptable if the fail-safe below holds in both.
+
+FAIL-SAFE (binding): on no match, act on NO marker. Never fall back to an arbitrary one. This
+must also hold for legacy markers written before cc_session_id existed.
 
 ---
 
@@ -3119,11 +3201,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md]
+- **Plan**: [020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md]
 
 **Description**: /todo's repository-metrics sync runs before its git commit, so the health probe measures a tree whose git index still points at pre-move paths. Every archived-away file is counted as a structural failure, inflating build_errors and flipping status to "critical" on a healthy tree.
 
