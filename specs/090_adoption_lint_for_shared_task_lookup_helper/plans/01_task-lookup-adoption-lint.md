@@ -270,28 +270,28 @@ before the allowlist is padded.
 
 ---
 
-### Phase 4: Fixture-driven regression test suite [NOT STARTED]
+### Phase 4: Fixture-driven regression test suite [COMPLETED]
 
 **Goal**: Pin the lint's behaviour against the specific defects that made the earlier single-source
 gate worthless, and prove the acceptance criterion — a newly introduced offender is rejected.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh`,
       modelled on `tests/test-lint-state-writer-boundary.sh`'s harness shape (temp-dir fixtures,
       `pass`/`fail` helpers, summary line, nonzero exit on any failure).
-- [ ] Test: a planted NEW offender on an executable surface (a fresh `skills/skill-x/SKILL.md`
+- [x] Test: a planted NEW offender on an executable surface (a fresh `skills/skill-x/SKILL.md`
       carrying the narrow shape, not on the allowlist) causes exit 1 and is named in the output.
       This is the task's stated acceptance criterion and must be an explicit test.
-- [ ] Test: a planted offender in `context/illustrative.md` is NOT flagged (prose-exclusion
+- [x] Test: a planted offender in `context/illustrative.md` is NOT flagged (prose-exclusion
       boundary).
-- [ ] Test: deployed-mode `.md` detection — a fixture laid out in deploy shape
+- [x] Test: deployed-mode `.md` detection — a fixture laid out in deploy shape
       (`commands/`/`skills/`/`agents/` directly under the root) is detected, not silently skipped.
-- [ ] Test: the source-store-vs-deployed mode probe itself resolves correctly for both layouts.
-- [ ] Test: each of the four legitimate jq shapes (mutation, deletion, existence/length check,
+- [x] Test: the source-store-vs-deployed mode probe itself resolves correctly for both layouts.
+- [x] Test: each of the four legitimate jq shapes (mutation, deletion, existence/length check,
       single-field read) is exempted, one assertion per shape.
-- [ ] Test: `skill-base.sh` and `command-gate-in.sh` fixtures are never flagged.
-- [ ] Test: `--quiet` on a failing run still prints violations and the failing summary.
-- [ ] Run the new suite and confirm all cases pass; confirm each negative-case test genuinely fails
+- [x] Test: `skill-base.sh` and `command-gate-in.sh` fixtures are never flagged.
+- [x] Test: `--quiet` on a failing run still prints violations and the failing summary.
+- [x] Run the new suite and confirm all cases pass; confirm each negative-case test genuinely fails
       when its guard is removed (RED-before-GREEN check) before finalising.
 
 **Timing**: 1.5 hours
