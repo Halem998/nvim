@@ -1,0 +1,62 @@
+{
+  "phase": 10,
+  "phase_name": "Final Verification and Deploy Check",
+  "started_at": "2026-09-02T06:15:00Z",
+  "last_updated": "2026-09-02T07:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-derive the reference inventory from scratch",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm zero hits outside specs/** carve-out",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run the full gate set",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run check-task-references.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Regenerate the deploy and confirm .claude/skills/ no longer contains the three directories",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Default (non-destructive resync) deploy-headless.sh",
+      "result": "failed",
+      "reason": "Default mode is additive-only by design and never removes orphaned .claude/skills/ files, so the three deleted skill directories remained in the deployed tree, failing the whole-tree orphan-detection gate"
+    },
+    {
+      "approach": "deploy-headless.sh --wipe",
+      "result": "succeeded",
+      "reason": "Full destructive wipe-and-regenerate correctly removed the three orphaned .claude/skills/ directories; post-wipe verify-deploy confirms whole-tree orphan detection passes with zero findings"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "10.5",
+      "description": "Regenerate the deploy (deploy-headless.sh) and confirm .claude/skills/ no longer contains the three directories",
+      "type": "altered",
+      "reason": "The plan's task text named a plain 'deploy-headless.sh' call, but the default resync mode never deletes stale files (additive-only by design, per the script's own header comment). --wipe mode was required to actually remove the orphaned .claude/skills/skill-{researcher,planner,implementer}/ directories.",
+      "annotation": "n/a -- documented in plan checklist annotation directly"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Final gate results: validate-wiring.sh (zero Skill-missing lines; 41 pre-existing unrelated failures), lint-routing-wiring.sh (259 passed, 0 failed), lint-agent-contracts.sh (101 passed, 0 failed), lint-contract-compliance.sh (21 passed, 0 failed), lint-task-lookup-adoption.sh (0 violations across 339 files), test-postflight-marker-schema.sh (10/10), test-lit-pipeline.sh (8/8), check-task-references.sh (0 unexempted occurrences across 4 trees). Repo-wide grep for the three skill names returns zero hits outside specs/** (all specs/** hits are in other tasks' frozen historical artifacts, exempt under the general specs/** carve-out). Post-wipe verify-deploy: 26 of 29 checks pass; the 3 remaining failures (doc-lint literature index-entries.json line_count drift, validate-state.sh --deep unknown-field findings on unrelated task numbers, state-writer boundary lint violations in test-force-phases.sh) are the same pre-existing, unrelated issues observed at the start of this task's work and are out of scope. Also corrected an accidental sweep: Phase 9's commit passed a directory pathspec that swept in an unrelated pre-existing untracked pyenv cache file; reverted via a follow-up commit that restored its untracked status without deleting the file."
+}

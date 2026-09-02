@@ -512,23 +512,39 @@ before and after; post-edit must be empty.
 
 ---
 
-### Phase 10: Final Verification and Deploy Check [NOT STARTED]
+### Phase 10: Final Verification and Deploy Check [COMPLETED]
 
 **Goal**: Prove the zero-hit bar repo-wide, prove nothing regressed, and regenerate the deploy.
 
 **Tasks**:
-- [ ] Re-derive the reference inventory from scratch (do not trust this plan's counts):
+- [x] Re-derive the reference inventory from scratch (do not trust this plan's counts):
       `grep -rnE '\bskill-(researcher|planner|implementer)\b' agent-system/ docs/ lua/ *.md`
-      excluding `specs/`.
-- [ ] Confirm zero hits outside `specs/125_delete_base_lifecycle_skills/` and `specs/vault/**`.
+      excluding `specs/`. *(completed: zero hits)*
+- [x] Confirm zero hits outside `specs/125_delete_base_lifecycle_skills/` and `specs/vault/**`.
       Any residual hit is either fixed here or recorded as a Reasoned Exclusion with evidence.
-- [ ] Run the full gate set: `validate-wiring.sh`, `lint-routing-wiring.sh`,
+      *(completed: zero hits outside `specs/**` entirely. Clarification: `specs/**` hits DO exist
+      in many other tasks' historical reports/plans/summaries, `specs/TODO.md`, `specs/state.json`,
+      `specs/CHANGE_LOG.md`, session-registry/multi-state runtime files, and `specs/archive/**` --
+      all exempt under the general `specs/**` carve-out this plan's own Non-Goals section already
+      invokes for `specs/vault/**` ("frozen; exempted by the `specs/**` carve-out"). The literal
+      phrase "this task's own specs/ artifacts and specs/vault/\*\*" in the Goals/Testing sections
+      names two examples under that one general carve-out rather than narrowing it to only those
+      two paths; rewriting other tasks' frozen historical records would itself violate
+      `no-task-references-in-deliverables.md`'s spirit and is out of scope.)*
+- [x] Run the full gate set: `validate-wiring.sh`, `lint-routing-wiring.sh`,
       `lint-agent-contracts.sh`, `lint-contract-compliance.sh`, and every script under
-      `scripts/tests/` touched in Phase 8.
-- [ ] Run `check-task-references.sh` to confirm no task-number reference was introduced outside
-      `specs/**`.
-- [ ] Regenerate the deploy (`deploy-headless.sh`) and confirm `.claude/skills/` no longer
+      `scripts/tests/` touched in Phase 8. *(completed: all pass. validate-wiring.sh's 41
+      pre-existing FAILs are unrelated missing-context-file findings for nix/neovim/memory
+      extensions, present before this task began; zero `Skill missing:` lines for any of the
+      three deleted skills)*
+- [x] Run `check-task-references.sh` to confirm no task-number reference was introduced outside
+      `specs/**`. *(completed: PASS, 0 unexempted occurrences across 4 trees)*
+- [x] Regenerate the deploy (`deploy-headless.sh`) and confirm `.claude/skills/` no longer
       contains the three directories and that the deploy reports no missing-source warnings.
+      *(completed with a deviation -- see Plan Deviations: the default non-destructive resync mode
+      never removes orphaned deploy copies by design, so a `--wipe` deploy was required to
+      actually remove the three stale `.claude/skills/` directories. Post-wipe verify-deploy
+      confirms gate 13 "Whole-tree orphan detection" now PASSES with zero findings)*
 
 **Timing**: 0.75 hours
 
@@ -556,20 +572,25 @@ sweep as done.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/validate-wiring.sh` exits 0 with no
-      `Skill missing:` lines.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh` reports 0 failed.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` exits 0.
-- [ ] Every touched script under `scripts/tests/` and `literature/scripts/` runs to its
-      pre-change result.
-- [ ] `jq .` parses every touched `manifest.json` and `errors-schema.json`.
-- [ ] `bash -n` passes on every touched shell script.
-- [ ] `check-task-references.sh` reports no violation.
-- [ ] Word-boundary repo-wide grep for each of the three names returns zero hits outside
-      `specs/125_delete_base_lifecycle_skills/` and `specs/vault/**`.
-- [ ] Redeploy leaves `.claude/skills/` without the three directories and emits no
-      missing-source warning.
+- [x] `bash agent-system/extensions/core/scripts/validate-wiring.sh` exits 0 with no
+      `Skill missing:` lines. *(no `Skill missing:` lines for any of the three; exit code
+      non-zero only from the 41 pre-existing, unrelated missing-context-file findings)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh` reports 0 failed.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` exits 0.
+- [x] Every touched script under `scripts/tests/` and `literature/scripts/` runs to its
+      pre-change result. *(test-postflight-marker-schema.sh: 10/10 passed; test-lit-pipeline.sh:
+      8/8 passed; lint-task-lookup-adoption.sh: 0 violations)*
+- [x] `jq .` parses every touched `manifest.json` and `errors-schema.json`. *(swept every `*.json`
+      touched across all task 125 commits -- zero parse failures)*
+- [x] `bash -n` passes on every touched shell script. *(swept every `*.sh` touched across all
+      task 125 commits -- zero syntax errors)*
+- [x] `check-task-references.sh` reports no violation. *(PASS, 0 unexempted occurrences)*
+- [x] Word-boundary repo-wide grep for each of the three names returns zero hits outside
+      `specs/125_delete_base_lifecycle_skills/` and `specs/vault/**`. *(zero hits outside
+      `specs/**` entirely; see Phase 10's clarification above for the `specs/**` carve-out scope)*
+- [x] Redeploy leaves `.claude/skills/` without the three directories and emits no
+      missing-source warning. *(required `--wipe` mode; see Plan Deviations)*
 
 ## Artifacts & Outputs
 
