@@ -1,7 +1,7 @@
 # Implementation Plan: Task #90
 
 - **Task**: 90 - Adoption lint for the shared task-lookup helper
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 124 (state.json `dependencies`); informational sequencing overlap with task 116 and task 48 (see Risks)
 - **Research Inputs**: specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md

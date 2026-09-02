@@ -731,7 +731,7 @@
     {
       "project_number": 90,
       "project_name": "adoption_lint_for_shared_task_lookup_helper",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -744,7 +744,7 @@
         "agent-system/extensions/core/scripts/skill-base.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-02T02:43:02Z",
+      "last_updated": "2026-09-02T03:41:00Z",
       "session_id": "sess_1788304786_edca9f_90",
       "artifacts": [
         {
@@ -756,6 +756,11 @@
           "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/plans/01_task-lookup-adoption-lint.md",
           "type": "plan",
           "summary": "8-phase, 6-wave plan for the task-lookup adoption lint, its test suite, and a bounded migration slice."
+        },
+        {
+          "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md",
+          "type": "summary",
+          "summary": "New task-lookup adoption lint as verify-deploy gate 18, 18-assertion test suite, and a bounded 3-site migration."
         }
       ]
     },
