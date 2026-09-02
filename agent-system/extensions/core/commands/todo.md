@@ -776,41 +776,6 @@ Track `roadmap_abandoned_annotated` as the count of these edits applied.
   `*(Task {N} abandoned:` or `*(Completed:`; preserve existing formatting and indentation; one
   edit per item; never remove existing content.
 
-### 5.6. Sync Repository Metrics
-
-Update repository-wide metrics in state.json via the standalone health-assessment probe. All
-probe logic (file enumeration, the `bash -n`/`jq empty` structural checks, TODO/FIXME counting,
-and `status` derivation) lives in `scripts/assess-repo-health.sh` — see that script's header for
-the full contract, including why `build_errors` answers "is the tree structurally sound" rather
-than "does this project's own build/lint/test command pass", and why it can emit JSON `null`
-("not measured") rather than guessing `0` or `1`. This stage is a thin call site over that script.
-
-**Step 5.6.1: Compute current metrics**:
-```bash
-health_json=$(bash .claude/scripts/assess-repo-health.sh)
-```
-
-**Step 5.6.2: Update state.json repository_health**:
-
-`repository_health` lives in `state.json` only — TODO.md frontmatter does not mirror it, because
-`generate-todo.sh` fully overwrites TODO.md on every run (no read-modify-write of the existing
-file) and no consumer of a hand-authored TODO.md-frontmatter debt/health YAML block exists
-anywhere under `agent-system/extensions/**`.
-```bash
-bash .claude/scripts/state-write.sh \
-   '.repository_health = $health' \
-   --session-id "$session_id" \
-   --argjson health "$health_json"
-```
-
-**Step 5.6.3: Report metrics sync**:
-Track for output:
-- `metrics_todo_count`: Current TODO count (`$health_json`'s `todo_count`)
-- `metrics_fixme_count`: Current FIXME count (`$health_json`'s `fixme_count`)
-- `metrics_build_errors`: Current build errors, or "not measured" when `$health_json`'s
-  `build_errors` is JSON `null`
-- `metrics_synced`: true/false indicating if sync was performed
-
 ### 5.7. Vault Operation (when next_project_number > 1000)
 
 When `next_project_number` exceeds 1000, initiate vault archival operation to reset task numbering.
@@ -929,7 +894,7 @@ bash .claude/scripts/state-write.sh \
 The vault-transition record lives in `state.json` `.vault_history[]` and
 `specs/vault/{NN}-vault/meta.json` only — TODO.md does not carry a transition marker, because
 `generate-todo.sh` fully overwrites TODO.md on every run (no read-modify-write of the existing
-file), so any hand-inserted marker is erased by the next regeneration. See Step 5.6.2 for the
+file), so any hand-inserted marker is erased by the next regeneration. See Step 6.5.2 for the
 identical rationale applied to `repository_health`.
 
 Track vault operations for output:
@@ -975,6 +940,75 @@ bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and
 ```
 
 Where `{R}` = roadmap_completed_annotated + roadmap_abandoned_annotated (total roadmap items updated).
+
+### 6.5. Sync Repository Metrics
+
+Update repository-wide metrics in state.json via the standalone health-assessment probe. All
+probe logic (file enumeration, the `bash -n`/`jq empty` structural checks, the existence filter
+that keeps a moved-but-unstaged tracked file from inflating the count, TODO/FIXME counting, and
+`status` derivation) lives in `scripts/assess-repo-health.sh` — see that script's header for the
+full contract, including why `build_errors` answers "is the tree structurally sound" rather than
+"does this project's own build/lint/test command pass", and why it can emit JSON `null`
+("not measured") rather than guessing `0` or `1`. This stage is a thin call site over that script.
+
+**Why this stage runs after Step 6's commit, not before it**: Step 5's archival, Step 5D's
+directory moves, and Step 5.7's vault operation all leave the git index behind the worktree until
+Step 6 commits — a metrics probe run any earlier measures paths the tree has already left behind.
+`assess-repo-health.sh` is independently existence-safe as of the `phantom_paths` fix (a moved but
+still-tracked-at-its-old-path candidate no longer inflates `build_errors`), but re-sequencing is
+still required on top of that fix: existence-safety protects against a stale git *index* entry,
+not against measuring a worktree state this run is about to change again. Running the probe after
+this run's own commit is the only way its `repository_health` describes the tree `/todo` actually
+produced.
+
+**Step 6.5.1: Compute current metrics**:
+```bash
+health_json=$(bash .claude/scripts/assess-repo-health.sh)
+```
+
+**Step 6.5.2: Update state.json repository_health**:
+
+`repository_health` lives in `state.json` only — TODO.md frontmatter does not mirror it, because
+`generate-todo.sh` fully overwrites TODO.md on every run (no read-modify-write of the existing
+file) and no consumer of a hand-authored TODO.md-frontmatter debt/health YAML block exists
+anywhere under `agent-system/extensions/**`.
+```bash
+bash .claude/scripts/state-write.sh \
+   '.repository_health = $health' \
+   --session-id "$session_id" \
+   --argjson health "$health_json"
+```
+
+**Step 6.5.3: Commit the metrics update**:
+
+This is its own narrowly-scoped commit, separate from Step 6's archival commit, via
+`.claude/scripts/git-commit-scoped.sh` (the single sanctioned implementation of path-scoped,
+mutex-serialized committing — `git-commit-scoped.sh` is stage+commit-atomic with no "stage only"
+mode, so this cannot be folded back into Step 6 without re-introducing the pre-commit measurement
+this re-sequencing exists to avoid). `--honest-index-rows` is inapplicable here for the opposite
+reason it is inapplicable to Step 6: this commit touches nothing task-scoped at all.
+```bash
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "todo: sync repository metrics" \
+  --session "${session_id}" \
+  -- specs/state.json
+```
+
+If this commit fails while Step 6's own commit already succeeded, the run leaves no state lost —
+only `repository_health` one run stale, since the next `/todo` invocation recomputes it from
+scratch. This is the same non-blocking treatment `rules/error-handling.md` gives every git
+failure, and it is strictly better than the prior pre-commit-probe behavior, which baked a
+*wrong* value permanently into the same commit as the archival it was supposed to describe.
+
+**Step 6.5.4: Report metrics sync**:
+Track for output:
+- `metrics_todo_count`: Current TODO count (`$health_json`'s `todo_count`)
+- `metrics_fixme_count`: Current FIXME count (`$health_json`'s `fixme_count`)
+- `metrics_build_errors`: Current build errors, or "not measured" when `$health_json`'s
+  `build_errors` is JSON `null`
+- `metrics_phantom_paths`: Current phantom-path count (`$health_json`'s `phantom_paths`) — a
+  nonzero value is visible to the operator here rather than buried in state.json
+- `metrics_synced`: true/false indicating if sync was performed
 
 ### 7. Output
 

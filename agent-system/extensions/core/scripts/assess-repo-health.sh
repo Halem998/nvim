@@ -2,7 +2,7 @@
 # assess-repo-health.sh - Standalone, portable, fixture-testable probe for /todo's
 # "Sync Repository Metrics" stage. Emits the whole `repository_health` object as one JSON
 # document on stdout; never writes state.json or any other file itself (the caller pipes the
-# output into `state-write.sh --argjson health ...`, see commands/todo.md Step 5.6).
+# output into `state-write.sh --argjson health ...`, see commands/todo.md Step 6.5).
 #
 # Why this exists as a script rather than markdown-embedded bash/jq (the prior shape): logic
 # embedded in a command file's prose is executed by an agent but never compiled, so defects

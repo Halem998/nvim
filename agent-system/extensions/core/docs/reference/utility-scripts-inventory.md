@@ -7,7 +7,7 @@ material. Every entry carried over from the original CLAUDE.md list is unchanged
 dropped or summarized away; entries added since the relocation (documented as such, e.g.
 `check-runtime-file-tracking.sh` below) are new coverage, not modifications to the original set.
 
-- `.claude/scripts/assess-repo-health.sh` - Standalone repository-health probe: structural `bash -n`/`jq empty` checks over tracked `*.sh`/`*.json`, TODO/FIXME counts, and status derivation, emitted as one JSON `repository_health` object. Called by `/todo`'s Sync Repository Metrics stage (Step 5.6.1)
+- `.claude/scripts/assess-repo-health.sh` - Standalone repository-health probe: structural `bash -n`/`jq empty` checks over tracked `*.sh`/`*.json`, TODO/FIXME counts, and status derivation, emitted as one JSON `repository_health` object. Called by `/todo`'s Sync Repository Metrics stage (Step 6.5.1)
 - `.claude/scripts/validate-return-meta.sh` - The `.return-meta.json` sibling of `validate-handoff.sh`: validates status vocabulary, the strict object-shaped `artifacts` array (bare-string elements FAIL), `type` enum, on-disk path resolution, and required `metadata` sub-fields. `--fix` performs the unambiguous bare-string-to-object repair, opt-in only, never implicit
 - `.claude/scripts/export-to-markdown.sh` - Export .claude/ directory to consolidated markdown file
 - `.claude/scripts/check-extension-docs.sh` - Doc-lint: validate extension READMEs, manifests, and cross-references (exits non-zero on failures)

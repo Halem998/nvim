@@ -243,38 +243,42 @@ before and after the fix is not a regression lock and must be replaced.
 
 ---
 
-### Phase 3: Re-sequence /todo's metrics sync after its commit [NOT STARTED]
+### Phase 3: Re-sequence /todo's metrics sync after its commit [COMPLETED]
 
 **Goal**: `/todo` computes and records repository metrics against the tree it has already
 committed, and records that update in its own narrowly-scoped commit.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/commands/todo.md`, relocate the `### 5.6. Sync Repository
+- [x] In `agent-system/extensions/core/commands/todo.md`, relocate the `### 5.6. Sync Repository
       Metrics` section to sit between `### 6. Git Commit` and `### 7. Output`, renumbering it to
       `### 6.5. Sync Repository Metrics` and its substeps accordingly. Placement before Step 7
-      preserves Step 7's ability to report the `metrics_*` values it already reads.
-- [ ] Add a rationale paragraph to the relocated section stating why it runs post-commit: Step 5D's
+      preserves Step 7's ability to report the `metrics_*` values it already reads. *(completed:
+      verified post-edit heading order reads 5.5 -> 5.7 -> 6 -> 6.5 -> 7)*
+- [x] Add a rationale paragraph to the relocated section stating why it runs post-commit: Step 5D's
       directory moves and Step 5.7's vault operation leave the git index behind the worktree, so a
       pre-commit probe measures paths that no longer exist. Note that the probe is independently
       existence-safe as of Phase 1, and that both fixes are required — re-sequencing does not
-      protect against a concurrent session's uncommitted rename elsewhere in the tree.
-- [ ] Add a new final substep issuing a metrics-only commit via `git-commit-scoped.sh` scoped to
+      protect against a concurrent session's uncommitted rename elsewhere in the tree. *(completed)*
+- [x] Add a new final substep issuing a metrics-only commit via `git-commit-scoped.sh` scoped to
       `specs/state.json` (message: `todo: sync repository metrics`, same `--session`). Note that
       `--honest-index-rows` is inapplicable here for the opposite reason it is inapplicable to Step
-      6: this commit touches nothing task-scoped at all.
-- [ ] Record in that substep's prose that a failure between Step 6's commit and this one leaves
+      6: this commit touches nothing task-scoped at all. *(completed as Step 6.5.3)*
+- [x] Record in that substep's prose that a failure between Step 6's commit and this one leaves
       metrics one run stale but loses no state — the next `/todo` recomputes — consistent with the
-      non-blocking treatment of git failures in `rules/error-handling.md`.
-- [ ] Add `metrics_phantom_paths` to the tracked output values in the relocated reporting substep,
+      non-blocking treatment of git failures in `rules/error-handling.md`. *(completed)*
+- [x] Add `metrics_phantom_paths` to the tracked output values in the relocated reporting substep,
       so a nonzero phantom count is visible to the operator rather than buried in state.json.
-- [ ] Update every cross-reference to the old step number: the "See Step 5.6.2 for the identical
+      *(completed as Step 6.5.4)*
+- [x] Update every cross-reference to the old step number: the "See Step 5.6.2 for the identical
       rationale" pointer in the Step 5.7 vault section, the `commands/todo.md Step 5.6` pointer in
       `assess-repo-health.sh`'s header, and the `(Step 5.6.1)` pointer in
-      `docs/reference/utility-scripts-inventory.md`.
-- [ ] Re-grep `Step 5\.6` across `agent-system/` and confirm the only remaining hits are unrelated
+      `docs/reference/utility-scripts-inventory.md`. *(completed; all three now read 6.5.x)*
+- [x] Re-grep `Step 5\.6` across `agent-system/` and confirm the only remaining hits are unrelated
       (`commands/review.md`'s own `5.6.x` subsections and
       `docs/examples/fix-it-flow-example.md`'s skill-step reference, neither of which concerns
-      `/todo`).
+      `/todo`). *(completed: post-edit grep returns only fix-it-flow-example.md's two hits;
+      commands/review.md's own 5.6.x subsections did not even match this grep, confirming no
+      collision)*
 
 **Timing**: 1 hour
 
