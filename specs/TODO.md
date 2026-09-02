@@ -1,5 +1,5 @@
 ---
-next_project_number: 139
+next_project_number: 141
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 139
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,125,129,134,137,138 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,104,105,109,112,127,136 | 29,74,87,91,102,108,121 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,102,103,106,108,110,111,113,121,125,129,134,137,138,139 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,75,76,89,104,105,109,112,127,136,140 | 29,74,87,91,102,108,121,139 | core-agent-system, extensions, literature |
 | 3 | 88,107 | 87,104,127 | core-agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -40,6 +40,8 @@ next_project_number: 139
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
+139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
+  └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 
 ### Extensions
 
@@ -80,6 +82,90 @@ next_project_number: 139
 138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
 
 ## Tasks
+
+### 140. Add a concurrency-gated history-rewrite predicate to guard-destructive-git.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 139
+
+**Description**: Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
+
+WHY A SECOND PREDICATE AND NOT AN EXTENSION OF THE FIRST. The hook's entire existing design is built around ONE hazard: discarding UNCOMMITTED working-tree changes. Its header states the premise directly -- "block destructive git commands when the working tree is dirty" (lines 3-5) -- and its first live check is the clean-tree exemption, "working tree is already clean (git status --porcelain is empty)" / "Clean tree -> nothing to lose" (lines 19-23, check at lines 61-64). The hazard this task addresses is a different class: rewriting ALREADY-COMMITTED history owned by a concurrent writer. Both commands involved are non-destructive to the working tree, so the clean-tree exemption would have ACTIVELY WAVED THEM THROUGH. Merely adding `--amend` to the existing dirty-tree predicate would still not fire. The new predicate must therefore not consult tree dirtiness at all. Verified: the file matches `amend` 0 times and `mixed` 0 times today.
+
+MOTIVATING INCIDENT (real, observed 2026-09-02, multi-task /orchestrate run, five concurrent implementation agents committing to master). An agent ran bare `git commit --amend` intending its own commit; a sibling agent's commit had landed on top in the interim, so the amend rewrote the sibling's commit, preserving its file content but overwriting its message. A follow-up `git reset --mixed <own-sha>` rewound HEAD past three further legitimate commits and intermingled their changes in the working tree. Recovered via reflog: trees identical, zero content lost, residual damage exactly one mislabeled commit message. Reconstructible evidence: 539561c39 (correct), 9c5b790b6 (orphaned original), fd50fabfd (tree-identical to 9c5b790b6, wrong message).
+
+THE DESIGN TENSION TO RESOLVE, NOT PAPER OVER. The hook observes only the literal top-level tool_input.command string. It cannot see intent. An over-broad rule blocks legitimate solo interactive `--amend`, which is explicitly permitted. Research must select and justify a concurrency signal, weighing false-positive and false-negative cost. Candidate signals, none pre-committed:
+  - a live entry in specs/.task-locks/ held by a session other than the caller's;
+  - an in-flight session-registry entry belonging to a different session;
+  - HEAD having moved since the calling agent's own last commit (directly diagnostic of the incident, but requires per-session commit-sha state the hook does not currently keep).
+Also decide the response: hard refusal (exit 2 + stderr, matching the existing block mechanism -- note the header's warning that `permissionDecision: deny` is documented-buggy for allow-listed Bash(git:*) commands, GH #4669/#13214/#18312) versus a loud non-blocking warning. These may differ per signal strength.
+
+DESIGN CONSTRAINTS.
+  - The new predicate must be structurally independent of the clean-tree exemption; that exemption currently returns exit 0 before any detector runs, so predicate ordering is load-bearing.
+  - `git-commit-scoped.sh` must remain unblocked. Note the existing header's observation-boundary argument (lines 41-47): a git command run as a subprocess inside a wrapper script never appears in tool_input.command, so wrapper-internal git is structurally invisible to this hook. Follow that established pattern rather than special-casing.
+  - Reuse the file's existing argv-anchoring scan-string machinery (COMMAND_SCAN, quoted-span and comment stripping, lines 67+) so a commit message containing the text "--amend" cannot trigger a false positive.
+  - The refusal message must point at the rule section its predecessor task adds, so a blocked agent can read the rationale.
+
+WORK.
+(a) Implement the concurrency-gated history-rewrite predicate in hooks/guard-destructive-git.sh.
+(b) Update the hook's header comment block, which currently documents a single-hazard design and would otherwise misdescribe the file.
+(c) Update context/standards/git-safety.md for the new hazard class and the chosen signal.
+(d) Update rules/git-workflow.md's enumeration of what the hook enforces (its "enforced by" framing) so rules and implementation stay in agreement.
+(e) Verify with concrete cases: a bare `--amend` under a foreign task lock is refused; the same command with no concurrent writer is permitted; a git-commit-scoped.sh invocation is permitted; a commit message containing the literal string "--amend" does not trigger.
+
+NON-GOALS (explicit).
+  - Do NOT forbid `--amend` unconditionally for single-session interactive use.
+  - Do NOT attempt retroactive repair of the mislabeled commit fd50fabfd.
+
+ACCEPTANCE. A bare `git commit --amend` or `git reset` issued by a dispatched agent while another session holds a task lock is refused or loudly warned; the rationale is reachable from the message; compliant git-commit-scoped.sh use remains unblocked; solo use is unaffected.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Never edit .claude/ directly. Redeploy and confirm the hook survives regeneration and actually fires from the deployed copy.
+
+DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task settles the policy this one mechanizes and supplies the rationale text this hook's refusal message points at; and both tasks touch rules/git-workflow.md, so the file-footprint admission gate serializes them regardless.
+
+---
+
+### 139. Forbid concurrent-writer history rewrites in git rules and agent contracts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
+
+MOTIVATING INCIDENT (real, observed 2026-09-02 during a multi-task /orchestrate run with five concurrent implementation agents committing to master). An agent ran bare `git commit --amend` to add an attribution trailer to what it believed was its own commit. Between its commit and the amend, a DIFFERENT agent's commit landed on top, so the amend rewrote the sibling's commit instead -- preserving that sibling's file content but overwriting its message. The agent then ran `git reset --mixed <own-sha>` to undo, which rewound HEAD past three further legitimate commits and dumped their changes into the working tree intermingled. It caught this and restored HEAD via reflog. Verified afterward: trees identical, zero content lost; residual damage is exactly one mislabeled commit message still in history. Reconstructible reflog evidence: commits 539561c39 (correct), 9c5b790b6 (orphaned original), fd50fabfd (tree-identical to 9c5b790b6, wrong message).
+
+WHY THIS IS A NEW PREDICATE, NOT A WIDENED OLD ONE -- the load-bearing finding. ALL THREE layers of the existing mechanism share one identical blind spot: each is scoped by dirtiness-of-tree, and the incident's hazard is concurrency-of-writers. Both commands involved are non-destructive to the working tree, so every existing guard would have actively waved them through.
+
+  1. HOOK. agent-system/extensions/core/hooks/guard-destructive-git.sh states its own premise in its header: "PreToolUse Bash hook: block destructive git commands when the working tree is dirty" (lines 3-5), with the exemption "working tree is already clean (git status --porcelain is empty)" -- annotated in the file as "Clean tree -> nothing to lose" (lines 19-23, and the live check at lines 61-64). Verified: the file matches `amend` 0 times and `mixed` 0 times. It blocks only `reset --hard`, `checkout -- <path>`, `restore <path>`, `clean -f -d`, `stash drop`/`clear`, and forced `checkout`/`switch`.
+  2. RULES. agent-system/extensions/core/rules/git-workflow.md's "Never Run" list (line 77) covers `push --force`, `reset --hard` on uncommitted work, `rebase -i`, `add -A`, `commit -am` -- but NOT `commit --amend` and NOT non-hard `reset`. Its sibling section at line 89 is titled "No Destructive Git on Uncommitted Work"; that title and framing structurally exclude already-committed history.
+  3. AGENT CONTRACTS. agent-system/extensions/core/agents/general-implementation-agent.md carries no prohibition at all. Its `-hard` sibling (general-implementation-hard-agent.md, ~line 63, Recovery Ladder) says "Never `git reset`/`git checkout -- <path>`/`git restore` WHILE UNCOMMITTED CHANGES EXIST" -- the prohibition is itself gated on the dirty-tree predicate, so it too would have permitted this. This phrasing must be CORRECTED, not merely supplemented.
+
+Verified across agent-system/extensions/core/{rules,context,agents}/: `--amend` has ZERO occurrences. It is forbidden nowhere.
+
+WORK (contract and documentation layer only; the hook predicate is a separate task).
+(a) rules/git-workflow.md: add `git commit --amend` and non-hard `git reset` to the "Never Run" list.
+(b) rules/git-workflow.md: add a SIBLING section to "No Destructive Git on Uncommitted Work" covering rewrites of already-committed history under concurrent writers. Place it so a reader arriving at the uncommitted-work rule finds it -- the current title is precisely what makes this case invisible. Include the incident rationale and the concurrency-vs-dirtiness distinction.
+(c) agents/general-implementation-agent.md: add a MUST NOT bullet against bare history rewrites, directing all commits through scripts/git-commit-scoped.sh, which serializes on the commit mutex and path-scopes staging. Empirical support: in the motivating run, four of five agents used git-commit-scoped.sh exclusively and had zero incidents; the one that did not caused the entire incident.
+(d) agents/general-implementation-hard-agent.md: correct the Recovery Ladder bullet's "while uncommitted changes exist" scoping so the prohibition also covers committed-history rewrites under concurrent writers.
+
+NON-GOALS (explicit).
+  - Do NOT forbid `--amend` unconditionally for single-session interactive use. The discriminating variable is a concurrent writer, not the command itself.
+  - Do NOT attempt retroactive repair of the mislabeled commit fd50fabfd. That is a separate operator decision to be made when the branch is quiet.
+
+ACCEPTANCE.
+  - `git commit --amend` and non-hard `git reset` appear in the "Never Run" list with the concurrency qualifier.
+  - The rationale is documented where a reader looking at the uncommitted-work rule will find it.
+  - general-implementation-agent.md carries an explicit git-commit-scoped.sh mandate.
+  - general-implementation-hard-agent.md no longer scopes its git prohibition solely by tree dirtiness.
+  - Compliant git-commit-scoped.sh use remains unrestricted.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Never edit .claude/ directly (it is a regenerated deploy artifact). Redeploy and confirm the change survives regeneration.
+
+RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and marker correlation -- a different concern entirely.
+
+---
 
 ### 138. Multi-task consumption of force_phases, MT artifact-number advance, and MT artifact_number dispatch-context threading
 - **Status**: [NOT STARTED]
@@ -1206,6 +1292,7 @@ COORDINATION NOTE (no dependency deliberately added). Task 89 restructures this 
 - **Dependencies**: None
 - **Research**: [110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md]
 - **Plan**: [110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md]
+- **Summary**: [110_add_discover_multi_provider_fallback/summaries/01_multi-provider-tier3-fallback-summary.md]
 
 **Description**: Stop Tier 3 online discovery from being a single point of failure. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1365,6 +1452,7 @@ A NEGATIVE RESULT IS A COMPLETE OUTCOME. If no content signal separates OCR garb
 - **Dependencies**: None
 - **Research**: [106_route_skill_literature_convert_through_gated_pipeline/reports/01_route-convert-through-gate.md]
 - **Plan**: [106_route_skill_literature_convert_through_gated_pipeline/plans/01_route-convert-through-gate.md]
+- **Summary**: [106_route_skill_literature_convert_through_gated_pipeline/summaries/01_route-convert-through-gate-summary.md]
 
 **Description**: Route skill-literature's convert path through literature-convert.sh so that /literature ingests are quality-gated. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -1456,6 +1544,7 @@ MANDATORY RECONCILIATION. Whichever route wins MUST reconcile itself with the pr
 - **Dependencies**: None
 - **Research**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md]
 - **Plan**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/plans/01_fidelity-audit-chunk-scan-fixes.md]
+- **Summary**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/summaries/01_fidelity-audit-chunk-scan-fixes-summary.md]
 
 **Description**: Fix literature-fidelity-audit.sh so it can verify pipeline-ingested documents at all, and resolve the absent-baseline problem that blocks the overwhelming majority of the corpus. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -1504,6 +1593,7 @@ COORDINATE, DO NOT DUPLICATE: the converter-tier task warns that "scanned/OCR'd 
 - **Dependencies**: None
 - **Research**: [102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md]
 - **Plan**: [102_characterize_converter_tiers_and_ocr_vintage/plans/01_correct-converter-tier-remedy-claim.md]
+- **Summary**: [102_characterize_converter_tiers_and_ocr_vintage/summaries/01_correct-converter-tier-remedy-claim-summary.md]
 
 **Description**: Characterize when the PyMuPDF column-clustering fallback tier actually helps versus hurts, and correct the now-falsified claim that it is the universal remedy for gate rejections. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
