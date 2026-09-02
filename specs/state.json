@@ -437,6 +437,11 @@
           "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
           "type": "plan",
           "summary": "8-phase, 2-wave closeout of the verification-trust decisions and mechanical hygiene residue."
+        },
+        {
+          "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+          "type": "summary",
+          "summary": "Closed the deploy-ordering and defect-criterion decisions plus five mechanical hygiene items; 8/8 phases."
         }
       ]
     },

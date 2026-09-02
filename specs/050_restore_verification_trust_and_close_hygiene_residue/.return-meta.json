@@ -1,8 +1,73 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1788304786_edca9f",
-  "task_number": 50,
-  "dispatch_seq": 11
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+      "summary": "8-phase implementation closing the re-measured verification-trust and hygiene bundle: deploy-ordering error disposition (jq -S semantic equality adopted), live-cycle defect-acceptance criterion re-scoped and documented, literature-retrieve.sh quarantined plus 3 test scripts registered, ROADMAP.md deletion made to stick (roadmap_absent handling plus two additional auto-create sites fixed), topic taxonomy reconciled, CLAUDE.md/utility-inventory documentation gaps closed, 15 @.claude/docs prose references normalized across 8 files, and a closing full gate run confirming only the two named pre-existing out-of-scope failures remain."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the re-measured verification-trust and hygiene bundle across 8 phases: settled the deploy-ordering non-determinism decision (jq -S semantic equality standard), re-scoped the live-cycle defect-acceptance criterion, quarantined literature-retrieve.sh and registered 3 test scripts, made the ROADMAP.md deletion stick (fixing two additional auto-create sites discovered along the way), reconciled active_topics against live usage (13 orphans pruned), closed CLAUDE.md/utility-inventory documentation gaps, normalized 15 stale @.claude/docs prose references, and ran a closing full gate suite confirming no regression."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/architecture/component-checklist.md",
+    "agent-system/extensions/core/context/architecture/system-overview.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/patterns/thin-wrapper-skill.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/deprecated/README.md",
+    "agent-system/extensions/core/scripts/deprecated/literature-retrieve.sh",
+    "agent-system/extensions/core/scripts/manage-topics.sh",
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+    "agent-system/extensions/literature/context/guides/literature-organization.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
+    "specs/ROADMAP.md",
+    "specs/TODO.md",
+    "specs/errors.json",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a repository consumer decides to delete a file that other tooling auto-creates on absence, grep is not enough to find every auto-create site: a duplicate, informal copy of the same 'if file missing, create default template' logic can live in a Markdown skill/command spec alongside the canonical script implementation (e.g. commands/todo.md and skills/skill-todo/SKILL.md both independently documented the same ROADMAP.md auto-create step that roadmap-integration.sh itself also performed). Fixing only the script leaves the prose copy to silently undo the fix on the next command run. Search skill/command Markdown prose for the same trigger phrase ('Ensure X exists', 'If the file does not exist, create it') as well as the script logic before declaring an absence-handling fix complete.",
+      "category": "PATTERN",
+      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["auto-create-on-absence", "roadmap-integration", "duplicate-logic", "skill-prose-vs-script", "absence-as-supported-state"]
+    },
+    {
+      "content": "A resync-mode deploy (deploy-headless.sh without --wipe) does not delete files that were removed from an extension manifest's provides.scripts -- it only stops recopying them. After quarantining a script (removing it from provides.scripts and git-mv-ing it to scripts/deprecated/), a stale copy can linger in the deployed .claude/scripts/ tree and trip a whole-tree orphan-detection gate (find_orphans) on the next verify-deploy.sh run. The fix is a direct rm of the stale deployed file (safe: .claude/ is a disposable, gitignored deploy artifact) rather than a --wipe, which is needlessly destructive for a single stray file.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "orphan-detection", "quarantine", "resync-vs-wipe", "stale-deployed-file"]
+    },
+    {
+      "content": "Editing a markdown file registered in an extension's index-entries.json (line_count field) will trip check-extension-docs.sh's Rule R (line-count mismatch) on the next doc-lint run unless the index entry's line_count is updated in the same change. This applies per-extension (core/index-entries.json, literature/index-entries.json, etc.) -- any content edit to a file with an index entry needs a companion line_count fix, discoverable only by actually redeploying and running the doc-lint gate, not by static review alone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["index-entries.json", "line_count", "check-extension-docs", "doc-lint", "Rule-R"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
 }

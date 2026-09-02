@@ -2314,6 +2314,7 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 - **Dependencies**: Task 48
 - **Research**: [050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md]
 - **Plan**: [050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md]
+- **Summary**: [050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 SPLIT AND REDUCED. Item 1 -- the non-deterministic shell test suite -- has been extracted into its own task (deflake_shell_test_suite_under_concurrency) because it is the highest-value piece here by a wide margin: until the suite is deterministic, no acceptance gate in this repo is trustworthy in either direction, including this task's own. Do not work it here.
