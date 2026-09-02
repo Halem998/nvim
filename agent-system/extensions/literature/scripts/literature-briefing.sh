@@ -86,6 +86,15 @@ LITERATURE_SKIP_RATE_THRESHOLD="${LITERATURE_SKIP_RATE_THRESHOLD:-50}"
 # literature-lit-flag-resolve.sh's identical pattern.
 export LITERATURE_COVERAGE_GAP_MIN="${LITERATURE_COVERAGE_GAP_MIN:-25}"
 LITERATURE_COVERAGE_DELTA_THRESHOLD="${LITERATURE_COVERAGE_DELTA_THRESHOLD:-1}"
+# Global-mode search fan-out bound: --global forwards the filtered-term set (see
+# literature-term-match.sh's filter_terms()) as one literature-search.sh --multi call
+# rather than the raw query as a single AND-all-terms search (FTS5's bareword MATCH ANDs
+# every term together, a condition no real document satisfies once a query reaches
+# 15-30+ words). This caps how many per-term MATCH executions that one call performs --
+# the fan-out happens inside literature-search.sh's single already-open connection, so
+# this bound controls query cost, not process count. Longest-first truncation (see the
+# global-mode branch below) keeps the most discriminating terms when the cap is hit.
+LITERATURE_GLOBAL_MAX_TERMS="${LITERATURE_GLOBAL_MAX_TERMS:-12}"
 
 # --- Argument parsing ---
 mode="repo"
@@ -393,22 +402,68 @@ else
   # ============================================================
   repo_name="$(basename "$PROJECT_ROOT")"
 
+  # --- Filtered-term multi-query search ---
+  # FTS5's bareword MATCH ANDs every term together, a condition no real document
+  # satisfies once the forwarded query reaches full task-description length (15-30+
+  # words) -- the AND-all-terms recall defect this mode exists to fix. Replace the
+  # single whole-query search with the filtered-term set (literature-coverage-delta.sh's
+  # established reuse template -- copied verbatim, not a second stop-word filter),
+  # forwarded as one literature-search.sh --multi call so the per-term fan-out costs one
+  # process, not N.
+  # shellcheck source=literature-term-match.sh
+  source "$SCRIPT_DIR/literature-term-match.sh"
+  mapfile -t FILTERED_TERMS < <(filter_terms "$query")
+
+  # filter_terms() prints exactly one blank line when every term was filtered out
+  # (a `printf '%s\n' "${terms[@]:-}"` quirk on a zero-element array), so a fully
+  # stop-word query yields a 1-element array holding "" rather than a 0-element
+  # array -- strip blank entries before sizing FILTERED_TERMS, or the empty-filtered
+  # -terms fallback below never triggers.
+  _nonblank_terms=()
+  for _t in "${FILTERED_TERMS[@]}"; do
+    [ -n "$_t" ] && _nonblank_terms+=("$_t")
+  done
+  FILTERED_TERMS=("${_nonblank_terms[@]}")
+  unset _nonblank_terms _t
+
+  # Longest-first cap: keeps the most discriminating terms when filter_terms()
+  # returns more than LITERATURE_GLOBAL_MAX_TERMS.
+  if [ "${#FILTERED_TERMS[@]}" -gt "$LITERATURE_GLOBAL_MAX_TERMS" ]; then
+    mapfile -t FILTERED_TERMS < <(
+      printf '%s\n' "${FILTERED_TERMS[@]}" \
+        | awk '{ print length, $0 }' \
+        | sort -rn \
+        | head -n "$LITERATURE_GLOBAL_MAX_TERMS" \
+        | cut -d' ' -f2-
+    )
+  fi
+
   # Capture stderr instead of discarding it so a real search-script
   # failure can be surfaced below rather than silently coerced to "no results".
   search_err_file="$(mktemp)"
-  results_json=$(bash "$SEARCH_SCRIPT" --project "$repo_name" "$query" 2>"$search_err_file") || results_json="[]"
+  if [ "${#FILTERED_TERMS[@]}" -eq 0 ]; then
+    # Empty-filtered-terms fallback (e.g. a query that is entirely stop words):
+    # never search nothing silently -- fall back to the original single
+    # raw-query call and log a visible notice.
+    echo "Warning: no meaningful search terms survived stop-word filtering for --global query '${query}'; falling back to a single raw-query search." >&2
+    results_json=$(bash "$SEARCH_SCRIPT" --project "$repo_name" "$query" 2>"$search_err_file") || results_json="[]"
+  else
+    results_json=$(printf '%s\n' "${FILTERED_TERMS[@]}" | bash "$SEARCH_SCRIPT" --project "$repo_name" --multi 2>"$search_err_file") || results_json="[]"
+  fi
   search_stderr="$(cat "$search_err_file" 2>/dev/null || true)"
   rm -f "$search_err_file"
 
   # --- Shape-aware parsing ---
-  # Accepts both the legacy bare-array shape (pre-#833: degraded=false, fallback_tier=bm25,
-  # query_error=null) and the new envelope object {results, degraded, fallback_tier,
-  # query_error} literature-search.sh now emits. An unparseable payload remains a hard []
-  # fallback, but now logs a visible notice -- this task exists to remove exactly the kind
-  # of silent swallow the old unconditional coercion performed.
+  # Accepts the legacy bare-array shape (pre-#833: degraded=false, fallback_tier=bm25,
+  # query_error=null), the single-query envelope object {results, degraded, fallback_tier,
+  # query_error} literature-search.sh emitted before this task, and the multi-query
+  # envelope (adds total_matched) this task's --multi mode emits. An unparseable payload
+  # remains a hard [] fallback, but now logs a visible notice -- this task exists to
+  # remove exactly the kind of silent swallow the old unconditional coercion performed.
   degraded="false"
   fallback_tier="bm25"
   query_error="null"
+  total_matched=""
 
   if echo "$results_json" | jq -e 'type == "array"' >/dev/null 2>&1; then
     : # legacy bare-array shape; results_json already holds the array, defaults above stand
@@ -416,13 +471,24 @@ else
     degraded=$(echo "$results_json" | jq -r '.degraded // false')
     fallback_tier=$(echo "$results_json" | jq -r '.fallback_tier // "bm25"')
     query_error=$(echo "$results_json" | jq -r 'if .query_error == null then "null" else .query_error end')
+    total_matched=$(echo "$results_json" | jq -r 'if has("total_matched") and (.total_matched != null) then (.total_matched|tostring) else "" end')
     results_json=$(echo "$results_json" | jq -c '.results // []')
   else
     echo "Warning: literature-search.sh returned an unparseable payload for --global query '${query}'; treating as zero results. stderr: ${search_stderr:-<empty>}" >&2
     results_json="[]"
   fi
 
-  seg_count=$(echo "$results_json" | jq 'length' 2>/dev/null || echo 0)
+  # seg_count is the de-duplicated, post-merge, PRE-top_n-slice total-match count (this
+  # is what coverage_count below is pinned to, so the sparse=true marker stays honest).
+  # Prefer the multi-query envelope's own total_matched (the true dedup total across all
+  # filtered terms) when present; fall back to `results | length` for the legacy
+  # bare-array/single-query-object shapes that never had this field -- for those shapes
+  # `results | length` IS the pre-slice total, matching the field's original semantics.
+  if [ -n "$total_matched" ]; then
+    seg_count="$total_matched"
+  else
+    seg_count=$(echo "$results_json" | jq 'length' 2>/dev/null || echo 0)
+  fi
 
   if [ "$seg_count" -gt "$top_n" ]; then
     results_json=$(echo "$results_json" | jq --argjson n "$top_n" '.[0:$n]')

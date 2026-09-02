@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Rebuild literature-briefing.sh global mode on filtered terms",
+  "started_at": "2026-09-01T01:00:00Z",
+  "last_updated": "2026-09-01T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source literature-term-match.sh, compute FILTERED_TERMS verbatim per literature-coverage-delta.sh's pattern", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 2, "description": "Add LITERATURE_GLOBAL_MAX_TERMS threshold, longest-first cap", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Empty-filtered-terms fallback to raw single-query call with stderr notice", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 4, "description": "Replace single --project call with --multi filtered-term call", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 5, "description": "Extend shape-aware parser to read total_matched with results|length fallback", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 6, "description": "Pin seg_count/coverage_count/requested_count to de-duplicated pre-top_n total", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 7, "description": "Confirm rendering/fidelity/degraded-banner/marker/zero-result logic untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Sizing FILTERED_TERMS via ${#FILTERED_TERMS[@]} directly after mapfile from filter_terms()", "result": "failed", "reason": "filter_terms() prints exactly one blank line (not zero lines) when every term is filtered out, so mapfile captures a 1-element array holding an empty string rather than a 0-element array; the empty-filtered-terms fallback never triggered for an all-stop-word query. Fixed by stripping blank entries from FILTERED_TERMS before sizing it."}
+  ],
+  "handoff_count": 0
+}

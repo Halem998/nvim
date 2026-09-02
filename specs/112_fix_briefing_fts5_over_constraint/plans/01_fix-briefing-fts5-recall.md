@@ -208,36 +208,36 @@ widen this phase's dependent set rather than proceeding on the assumption.
 
 ---
 
-### Phase 3: Rebuild literature-briefing.sh global mode on filtered terms [NOT STARTED]
+### Phase 3: Rebuild literature-briefing.sh global mode on filtered terms [COMPLETED]
 
 **Goal**: Replace the single AND-all-terms `--global` call with a filtered-term multi-query call,
 preserving the briefing's rendering, degraded banner, error messaging, and coverage marker.
 
 **Tasks**:
-- [ ] `source "$SCRIPT_DIR/literature-term-match.sh"` and compute
+- [x] `source "$SCRIPT_DIR/literature-term-match.sh"` and compute *(completed)*
       `mapfile -t FILTERED_TERMS < <(filter_terms "$query")`, copying
       `literature-coverage-delta.sh`'s consumption pattern verbatim (including the
       `# shellcheck source=` directive). Do not write a second stop-word filter.
-- [ ] Add `LITERATURE_GLOBAL_MAX_TERMS="${LITERATURE_GLOBAL_MAX_TERMS:-12}"` alongside the file's
+- [x] Add `LITERATURE_GLOBAL_MAX_TERMS="${LITERATURE_GLOBAL_MAX_TERMS:-12}"` alongside the file's *(completed)*
       other threshold declarations, and cap the term list to that many terms (longest-first, so the
       most discriminating survive). Document the cap's purpose (fan-out bound) in a comment.
-- [ ] Handle the empty-filtered-terms case explicitly: fall back to the current single-query call
+- [x] Handle the empty-filtered-terms case explicitly: fall back to the current single-query call *(completed)*
       with the raw query rather than searching nothing, and log a `>&2` notice — never a silent
       zero-result.
-- [ ] Replace the single `bash "$SEARCH_SCRIPT" --project "$repo_name" "$query"` call with the
+- [x] Replace the single `bash "$SEARCH_SCRIPT" --project "$repo_name" "$query"` call with the *(completed)*
       Phase 2 multi-query invocation, keeping the existing stderr-capture-and-surface pattern
       (`search_err_file`) intact.
-- [ ] Extend the shape-aware envelope parser to read `total_matched`, falling back to
+- [x] Extend the shape-aware envelope parser to read `total_matched`, falling back to *(completed)*
       `results | length` when the field is absent (keeps the legacy bare-array and pre-change object
       shapes working).
-- [ ] Set `seg_count`/`coverage_count`/`requested_count` from the de-duplicated merged total
+- [x] Set `seg_count`/`coverage_count`/`requested_count` from the de-duplicated merged total *(completed)*
       (`total_matched`), i.e. post-merge and **pre-`top_n`-slice** — matching the field's existing
       documented semantics. Never sum per-term totals.
-- [ ] Leave untouched: the `top_n` slice, per-segment rendering (title/section/doc/tokens/summary/
+- [x] Leave untouched: the `top_n` slice, per-segment rendering (title/section/doc/tokens/summary/ *(completed)*
       `Read:` command), the fidelity marker, the degraded-tier banner and its `case` on
       `fallback_tier`, the genuine-zero-vs-`query_error` messaging, and the shared exit point's
       marker/banner emission.
-- [ ] Confirm the emitted `<!-- lit-coverage ... -->` line keeps its original eight fields
+- [x] Confirm the emitted `<!-- lit-coverage ... -->` line keeps its original eight fields *(completed)*
       byte-adjacent and in order (the `delta_*` fields stay strictly after them), so
       `lit-stage4a-flow.md`'s `lit-coverage mode=global .*sparse=true` grep still matches.
 
