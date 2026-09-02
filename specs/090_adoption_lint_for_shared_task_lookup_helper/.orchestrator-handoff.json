@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 7,
+  "summary": "8-phase, 6-wave plan built on the research report's corrected numbers (63 files / 69 occurrences of the exact full-record-lookup shape on executable surfaces, not 111 files; skill_validate_input() has zero real callers, the 'six callers' figure was gate_in()'s adoption misattributed). The lint targets the narrow full-record shape only, since the broad pattern also matches legitimate mutations, deletions, existence checks, and single-field reads. Scan-root and file-scope logic is reused verbatim from test-common-lib.sh's dual-mode probe; enforcement follows lint-state-writer-boundary.sh's structural-plus-reasoned-allowlist convention so the lint lands green today rather than blocking on the ~62-site backlog. Phases: re-measure baseline, lint core, Layer 2 allowlist with by-definition self-exemption of skill-base.sh and command-gate-in.sh, fixture regression suite, verify-deploy gate 17 plus manifest registration, adoption-lint-conventions context doc, a bounded migration slice gated on the core-collapse deletion set with a [COMPLETED WITH EXCLUSIONS] fallback, and a full gate run. All edits target agent-system/extensions/**; no edits to the deleted lifecycle command files and none to git-commit call sites.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/plans/01_task-lookup-adoption-lint.md",
+      "summary": "8-phase plan for lint-task-lookup-adoption.sh: narrow-pattern detection, reasoned allowlist, fixture tests, verify-deploy gate 17, conventions doc, bounded migration slice with direction metrics."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /implement 90. Fully sequential through wave 3 (phases 1 -> 2 -> 3, all converging on the one new lint script); wave 4 (phases 4, 5, 6) is genuinely parallel across disjoint files. Effort ~7 hours. Phase 7 requires reading the core-collapse task's named deletion set before migrating any SKILL.md site."
+}
