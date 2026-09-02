@@ -62,7 +62,7 @@ next_project_number: 139
 106 [PLANNED] — Route skill-literature's convert path through literature-convert.
 108 [PLANNED] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
-110 [PLANNING] — Stop Tier 3 online discovery from being a single point of failure
+110 [PLANNED] — Stop Tier 3 online discovery from being a single point of failure
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
@@ -1200,11 +1200,12 @@ COORDINATION NOTE (no dependency deliberately added). Task 89 restructures this 
 
 ### 110. Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3
 - **Effort**: 6-10 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md]
+- **Plan**: [110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md]
 
 **Description**: Stop Tier 3 online discovery from being a single point of failure. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 

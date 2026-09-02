@@ -1009,7 +1009,7 @@
       "project_number": 110,
       "project_name": "add_discover_multi_provider_fallback",
       "title": "Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "effort": "6-10 hours",
@@ -1019,13 +1019,18 @@
       ],
       "description": "Stop Tier 3 online discovery from being a single point of failure. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.\n\nORIGIN: defects observed directly during a `/research 503 --lit` run in the BimodalLogic repo on 2026-08-26. Every claim below was re-verified against the source store at task-creation time; line numbers are from that verification, not from the original session.\n\nTHE DEFECT. literature-discover.sh's Tier 3 has exactly ONE provider. literature-discover.sh:537:\n\n    local ss_url=\"https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded_query}&fields=title,authors,year,openAccessPdf,externalIds&limit=10\"\n\nOBSERVED: Semantic Scholar returned HTTP 429 for the ENTIRE ~35-minute session -- 20+ attempts across 3 distinct queries, with 75s backoff between retries. Consequence: NO automated discovery record was produced at all, and the online-ingest bridge (literature-ingest-online.sh) could not be exercised by its normal route. A single rate-limited provider silently disables the whole online tier.\n\nFIX 1 -- HONOR AN API KEY. Semantic Scholar's rate limits are far higher for authenticated callers. Read an S2_API_KEY environment variable and, when set, send it as an `x-api-key` request header. Verified absent today: grep for 'S2_API_KEY|x-api-key' across literature-discover.sh returns nothing. Unset must remain fully supported (anonymous access), so this is additive.\n\nFIX 2 -- ADD FALLBACK PROVIDERS. When Semantic Scholar returns 429 (or any non-200, or an unparseable body), fall through to at least one alternate provider. Candidates, in rough order of fit:\n  - OpenAlex:  https://api.openalex.org/works?search=...  (no key required, generous limits, has DOI + OA location data)\n  - Crossref:  https://api.crossref.org/works?query=...   (no key, authoritative DOIs, but no OA PDF links)\n  - arXiv API: http://export.arxiv.org/api/query           (Atom XML, not JSON -- note the parser cost; strong for the preprint-heavy corpus)\nChoosing a subset with justification is a valid outcome; adding all three is not required.\n\nHARD CONSTRAINT -- SCHEMA IDENTITY. Every provider MUST emit the SAME record schema that the existing Semantic Scholar branch emits, because literature-ingest-online.sh consumes it directly. The authoritative field list is the record contract documented at literature-ingest-online.sh:26-41 and constructed at literature-discover.sh:657-670: title, authors, year, doc_id, status, tier, and path|doi|pdf_url|arxiv_id. Preserve the doc_id derivation rules exactly (doi-slug | arxiv_<id> | ss_<paperId> | unknown_<slug>, see :607-608 and :627-630) -- a provider that mints doc_ids differently will break dedup and index patching downstream. Note especially that arXiv hits are status==\"open_access\" with arxiv_id set; there is NO literal \"arxiv\" status (literature-ingest-online.sh:34-39).\n\nPRESERVE TIER SEMANTICS. Tier 3 is non-fatal by design and honors TIER3_QUOTA including rolled-forward budget from Tiers 1/2 (literature-discover.sh:506-521, :714-716). Critically, the existing code distinguishes 'Tier 3 ran and found nothing' from 'Tier 3 could not run' via the TIER3_STATUS line -- absence of the line means the former. Multi-provider fallback must keep that distinction meaningful: exhausting ALL providers is a different outcome from all providers returning zero matches, and the status line should let a reader tell them apart.\n\nVERIFICATION BAR. Demonstrate a real end-to-end discovery producing a schema-valid record while Semantic Scholar is unavailable (simulate by forcing the S2 branch to 429). Then feed that record to `literature-ingest-online.sh --dry-run` and show it classifies without a usage error -- that is the actual integration contract this task exists to restore.",
       "created": "2026-08-26T18:57:07Z",
-      "last_updated": "2026-09-02T04:53:53Z",
+      "last_updated": "2026-09-02T04:59:41Z",
       "session_id": "sess_1788323839_c3b8b4_110",
       "artifacts": [
         {
           "path": "specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md",
           "type": "report",
           "summary": "Design for S2_API_KEY support and an ordered OpenAlex/Crossref fallback chain in literature-discover.sh's Tier 3, preserving the discover-record schema, the four-branch doc_id contract, and the TIER3_STATUS FAILED stderr contract consumed by commands/literature.md."
+        },
+        {
+          "path": "specs/110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md",
+          "type": "plan",
+          "summary": "7-phase plan adding optional S2_API_KEY support and an ordered OpenAlex/Crossref fallback chain to literature-discover.sh Tier 3 via a shared tier3_emit_record() extraction, with a byte-identical pre/post-refactor regression gate and an end-to-end ingest-bridge verification."
         }
       ]
     },
