@@ -1,39 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1788304786_edca9f_50",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1788304786_edca9f",
   "task_number": 50,
-  "dispatch_seq": 10,
-  "phase_count": 8,
-  "estimated_hours": 9,
-  "dependency_waves": [[1, 2, 3, 4, 5, 6, 7], [8]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
-      "summary": "8-phase plan closing the re-measured verification-trust and hygiene bundle: deploy-ordering error disposition, defect-acceptance-criterion re-scoping, literature-retrieve.sh quarantine plus the folded-in 3-script manifest registration, ROADMAP.md deletion with its required roadmap-integration.sh companion fix, live topic-taxonomy reconciliation, CLAUDE.md and utility-inventory documentation gaps, @.claude/docs prose normalization, and a closing full gate run."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1788304786_edca9f_50",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "A decision to delete a generated-or-annotated file does not stick unless the tooling that consumes it also stops auto-creating it on absence. roadmap-integration.sh heredocs a fresh empty ROADMAP.md stub whenever the file is missing, so a bare rm regenerates it on the next /review or /todo run. The general pattern: before planning any file deletion, grep the consumers for an 'if [[ ! -f ... ]]' create-default branch, and pair the deletion with a change that converts that branch into a structured skip (stable warning code + empty-state payload + exit 0) registered in every caller's warning vocabulary. Absence must become a supported state, not a repair trigger.",
-      "category": "PATTERN",
-      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file-deletion", "auto-create-stub", "roadmap-integration", "absence-as-supported-state", "warning-code-vocabulary"]
-    }
-  ],
-  "modified_files": [
-    "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
-    "specs/050_restore_verification_trust_and_close_hygiene_residue/.orchestrator-handoff.json",
-    "specs/050_restore_verification_trust_and_close_hygiene_residue/.return-meta.json"
-  ],
-  "next_steps": "Run /implement 50 to execute the plan"
+  "dispatch_seq": 11
 }

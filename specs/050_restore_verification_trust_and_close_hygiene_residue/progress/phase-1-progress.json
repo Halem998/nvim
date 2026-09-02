@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Re-run the deploy wipe-pair and settle the ordering non-determinism",
+  "started_at": "2026-09-02T01:46:00Z",
+  "last_updated": "2026-09-02T01:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read err_1786350581240_JyztWt and sibling err_1786350581208_23mAsn from specs/errors.json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run wipe-pair procedure against scratch target (3 pairs, 6 --wipe invocations)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Compare context/index.json and settings.json via raw diff, jq -S semantic diff, timestamp-stripped sorted diff for each pair", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-check settings.local.json content-loss observation (hooks.PreToolUse, mcpServers presence + semantic equality)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Decide and record: jq -S semantic equality adopted as deploy-comparison standard (no content loss reproduced)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Update err_1786350581240_JyztWt in specs/errors.json with fix_status, fixed_date, fix_task, and re-measured evidence", "status": "done", "files_touched": ["specs/errors.json"]},
+    {"id": 7, "description": "Record process finding: recorded fold into orphan-file parity task never performed", "status": "done", "files_touched": ["specs/errors.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

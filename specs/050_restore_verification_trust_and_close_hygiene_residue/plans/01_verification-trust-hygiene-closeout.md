@@ -1,7 +1,7 @@
 # Implementation Plan: Task #50
 
 - **Task**: 50 - Restore verification trust and close hygiene residue
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: Task 48 (completed)
 - **Research Inputs**: specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md
@@ -151,7 +151,7 @@ file territories (verified at plan time), so parallel dispatch is safe:
 
 ---
 
-### Phase 1: Re-run the deploy wipe-pair and settle the ordering non-determinism [NOT STARTED]
+### Phase 1: Re-run the deploy wipe-pair and settle the ordering non-determinism [COMPLETED]
 
 **Goal**: Establish, against the *current* tree rather than the 2026-08-10 run, whether two
 identical `deploy-headless.sh --wipe` runs still differ only by object-key/array-element ordering
@@ -159,30 +159,30 @@ and the expected generated timestamp — then either fix the non-determinism or 
 `jq -S` semantic equality as the standard, and close `err_1786350581240_JyztWt` either way.
 
 **Tasks**:
-- [ ] Read `err_1786350581240_JyztWt` and its already-closed sibling `err_1786350581208_23mAsn`
+- [x] Read `err_1786350581240_JyztWt` and its already-closed sibling `err_1786350581208_23mAsn` *(completed)*
       from `specs/errors.json`. Note that the sibling's own `message` field already records the
       resolving rationale ("sorted-key diffs are empty (settings.json) or differ only in the
       generated timestamp (index.json), i.e. structurally/semantically identical, ordering only")
       — this is the precedent to apply or refute, not to re-derive.
-- [ ] Run the wipe-pair procedure against a scratch target directory (never the live `.claude/`):
+- [x] Run the wipe-pair procedure against a scratch target directory (never the live `.claude/`): *(completed)*
       two consecutive `deploy-headless.sh --wipe` runs into two separate scratch roots, from an
       unchanged source store.
-- [ ] For each pair, compare `context/index.json` and `settings.json` in three ways: raw `diff`,
+- [x] For each pair, compare `context/index.json` and `settings.json` in three ways: raw `diff`, *(completed)*
       `jq -S . a > /tmp/a.s; jq -S . b > /tmp/b.s; diff /tmp/a.s /tmp/b.s`, and a timestamp-stripped
       sorted diff. Record all three outcomes verbatim.
-- [ ] Re-check the `settings.local.json` content-loss observation specifically (the sibling error's
+- [x] Re-check the `settings.local.json` content-loss observation specifically (the sibling error's *(completed)*
       original single-observation finding) and record whether it reproduces.
-- [ ] Repeat the pair at least twice more (3 pairs total) so a single observation cannot decide the
+- [x] Repeat the pair at least twice more (3 pairs total) so a single observation cannot decide the *(completed)*
       outcome — this mirrors the 3-pair methodology the sibling error was closed on.
-- [ ] **Decide and record**: if the diffs are ordering-only under `jq -S`, write the explicit
+- [x] **Decide and record**: if the diffs are ordering-only under `jq -S`, write the explicit *(completed)*
       decision that semantic equality under `jq -S` is the deploy-comparison standard and
       byte-identity is not required, generalizing the sibling's precedent to this ticket. If a
       genuine content difference reproduces, do NOT close the error — record the reproduction and
       mark the phase `[PARTIAL]` with the finding.
-- [ ] Update `err_1786350581240_JyztWt` in `specs/errors.json`: set `fix_status`, `fixed_date`, and
+- [x] Update `err_1786350581240_JyztWt` in `specs/errors.json`: set `fix_status`, `fixed_date`, and *(completed)*
       `fix_task`, and extend `message` with the re-measured evidence (pair count, the three diff
       forms, the decision taken).
-- [ ] Record the **process finding** in the same `message`: the ledger disposition folded this
+- [x] Record the **process finding** in the same `message`: the ledger disposition folded this *(completed)*
       error into the orphan-file parity task, that task closed two unrelated errors and has since
       archived without ever touching ordering or content loss, so a recorded fold was never
       performed. State it as a ledger-hygiene finding, not only a technical one.

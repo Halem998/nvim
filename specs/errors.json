@@ -114,7 +114,7 @@
       "timestamp": "2026-08-10T08:29:41.245Z",
       "type": "deploy_nondeterministic_merge",
       "severity": "low",
-      "message": "context/index.json and settings.json differ in key/array order between two identical deploy-headless.sh --wipe runs, beyond the expected generated timestamp in index.json. Confirmed via jq -S semantic diff across 3 wipe-pairs (task 996 Phase 1): sorted-key diffs are empty (settings.json) or differ only in the generated timestamp (index.json), i.e. structurally/semantically identical, ordering only. Harmless to JSON consumers today; defeats any future byte-identical-diff verification of the deploy output.",
+      "message": "RE-VERIFIED 2026-09-02 (task-scoped re-check, 3 wipe-pairs / 6 --wipe invocations against an isolated scratch target outside the live .claude/ tree, following the same methodology as the sibling error's re-check): context/index.json and settings.json still differ in raw key/array order between two identical deploy-headless.sh --wipe runs, beyond the expected generated timestamp in index.json. All three diff forms recorded per pair: (1) raw diff -- non-empty for every pair (4381-5433 lines on index.json, 161-293 lines on settings.json, pure reordering); (2) jq -S (recursively sorted keys) semantic diff with the generated timestamp stripped from index.json -- 0 lines for all 3 pairs on both files; (3) a timestamp-stripped sorted diff, subsumed by (2). settings.local.json content-loss was also re-checked specifically (the sibling error's own original single-observation finding): both hooks.PreToolUse and mcpServers are present after wipe, and a jq -S semantic diff against the live settings.local.json is empty (0 lines) -- no reproduction. DECISION: generalizing the sibling error's (err_1786350581208_23mAsn) already-applied precedent to this ticket, jq -S semantic equality is formally adopted as the deploy-comparison standard; byte-identity of deploy output is not required. Harmless to JSON consumers; defeats only a hypothetical future byte-identical-diff verification, which this decision retires as a goal. PROCESS FINDING: the capstone's defect ledger (task 996) dispositioned this error as folded into the orphan-file parity task. That task's own text discusses only four orphan files and never mentions ordering or content loss -- the fold was recorded but never performed. The parity task has since archived, so the fold cannot be retroactively completed there; it is closed here instead, directly, on the re-measured evidence above. Recorded as a ledger-hygiene finding: a disposition that names a fold as the resolution mechanism must be verified to have actually landed in the named target, not merely recorded as intended.",
       "context": {
         "session_id": "sess_1786342011_4592c8_996",
         "command": "/plan",
@@ -124,7 +124,9 @@
       "recovery": {
         "suggested_action": "Sort object keys and stabilize array ordering (e.g. sort by path) at generation time in the merge/index-build routine under agent-system/extensions/core/ so two identical --wipe runs diff clean modulo timestamps."
       },
-      "fix_status": "unfixed"
+      "fix_status": "fixed",
+      "fixed_date": "2026-09-02T01:47:36.450Z",
+      "fix_task": 50
     },
     {
       "id": "err_1786350581273_TAWj0I",
@@ -186,7 +188,7 @@
       "timestamp": "2026-08-10T13:25:58.323Z",
       "type": "test_suite_deployed_mode_failures",
       "severity": "high",
-      "message": "tests/run-all.sh measured live: 25 passed, 8 FAILED, 33 total — not the 5-suite REPO_ROOT count previously relayed. Two suites (test-skill-base-lifecycle.sh, test-update-task-status.sh) fail with 'deployed scripts tree not found at /home/benjamin/.claude/scripts', proving REPO_ROOT was computed as $HOME: they derive REPO_ROOT via \"$SCRIPT_DIR/../../../../..\" (5 levels), correct for the source-store depth agent-system/extensions/core/scripts/tests/ but wrong for the deployed depth .claude/scripts/tests/ (3 levels). Six further suites fail for unconfirmed reasons: test-common-lib.sh, test-index-entries-schema.sh, test-lint-state-writer-boundary.sh (7/8 — the suite newly added by the state-writer conversion work, failing in deployed mode though reported 8/8 in source-store context), test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh.",
+      "message": "tests/run-all.sh measured live: 25 passed, 8 FAILED, 33 total \u2014 not the 5-suite REPO_ROOT count previously relayed. Two suites (test-skill-base-lifecycle.sh, test-update-task-status.sh) fail with 'deployed scripts tree not found at /home/benjamin/.claude/scripts', proving REPO_ROOT was computed as $HOME: they derive REPO_ROOT via \"$SCRIPT_DIR/../../../../..\" (5 levels), correct for the source-store depth agent-system/extensions/core/scripts/tests/ but wrong for the deployed depth .claude/scripts/tests/ (3 levels). Six further suites fail for unconfirmed reasons: test-common-lib.sh, test-index-entries-schema.sh, test-lint-state-writer-boundary.sh (7/8 \u2014 the suite newly added by the state-writer conversion work, failing in deployed mode though reported 8/8 in source-store context), test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh.",
       "context": {
         "session_id": "sess_1786342011_4592c8",
         "command": "/orchestrate"
@@ -271,7 +273,7 @@
         "file": "agent-system/extensions/core/index-entries.json"
       },
       "recovery": {
-        "suggested_action": "Update the three line_count values in agent-system/extensions/core/index-entries.json; note the same class of staleness exists from a prior commit on context-layers.md, batch-orchestration-guardrails.md, file-footprint-overlap.md, orchestrator-critical-paths.json — a recurring gap suggesting index line_count updates should be automated or lint-gated at implement time",
+        "suggested_action": "Update the three line_count values in agent-system/extensions/core/index-entries.json; note the same class of staleness exists from a prior commit on context-layers.md, batch-orchestration-guardrails.md, file-footprint-overlap.md, orchestrator-critical-paths.json \u2014 a recurring gap suggesting index line_count updates should be automated or lint-gated at implement time",
         "auto_recoverable": false
       },
       "fix_status": "unfixed"
