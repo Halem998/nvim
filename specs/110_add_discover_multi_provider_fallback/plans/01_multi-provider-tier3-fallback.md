@@ -359,27 +359,28 @@ failed.
 
 ---
 
-### Phase 6: End-to-End Integration Verification Against the Stated Bar [NOT STARTED]
+### Phase 6: End-to-End Integration Verification Against the Stated Bar [COMPLETED]
 
 **Goal**: Demonstrate the actual contract this task exists to restore — a schema-valid record
 produced while Semantic Scholar is unavailable, accepted by the ingest bridge.
 
 **Tasks**:
-- [ ] Run `literature-discover.sh` (the **source-store** copy, not the `.claude/` deploy copy)
+- [x] Run `literature-discover.sh` (the **source-store** copy, not the `.claude/` deploy copy)
       with the stub forcing `api.semanticscholar.org` to HTTP 429 and allowing OpenAlex through
-      (fixture or real network), capturing stdout and stderr separately.
-- [ ] Assert the resulting JSON array contains at least one `tier == 3` record with all nine
-      contract keys present and `status` in `{open_access, paywall}`.
-- [ ] Pipe exactly that record into
+      (fixture or real network), capturing stdout and stderr separately. *(completed)*
+- [x] Assert the resulting JSON array contains at least one `tier == 3` record with all nine
+      contract keys present and `status` in `{open_access, paywall}`. *(completed)*
+- [x] Pipe exactly that record into
       `literature-ingest-online.sh --record '<json>' --dry-run` and confirm it **does not exit
       64** (the usage/malformed-input code) and prints a documented directive token or dry-run
-      preview.
-- [ ] Run the all-providers-fail scenario and apply `commands/literature.md`'s two exact consumer
+      preview. *(completed: rc=8 ONLINE_INGEST_DEDUP_CHECK_FAILED, not 64)*
+- [x] Run the all-providers-fail scenario and apply `commands/literature.md`'s two exact consumer
       expressions to the captured stderr: `grep -q 'TIER3_STATUS: FAILED'` must succeed and
-      `grep -o 'http_code=[^ ]*'` must yield exactly one space-free token.
-- [ ] Confirm `commands/literature.md` required no edit (its greps still fire unmodified).
-- [ ] Record all scenario commands and their observed output in the implementation summary so the
-      verification is reproducible rather than asserted.
+      `grep -o 'http_code=[^ ]*'` must yield exactly one space-free token. *(completed)*
+- [x] Confirm `commands/literature.md` required no edit (its greps still fire unmodified).
+      *(completed: zero diff against HEAD)*
+- [x] Record all scenario commands and their observed output in the implementation summary so the
+      verification is reproducible rather than asserted. *(completed: see summaries/01_multi-provider-tier3-fallback-summary.md)*
 
 **Timing**: 1.5 hours
 
@@ -403,29 +404,30 @@ produced while Semantic Scholar is unavailable, accepted by the ingest bridge.
 
 ---
 
-### Phase 7: Documentation — Env Vars, README Tier 3, and Provider-Chain Context Doc [NOT STARTED]
+### Phase 7: Documentation — Env Vars, README Tier 3, and Provider-Chain Context Doc [COMPLETED]
 
 **Goal**: Document the new environment variables, correct the now-stale Tier 3 description, and
 record the provider-chain contract so the next reader does not have to re-derive it from source.
 
 **Tasks**:
-- [ ] Extend the script header's `ENVIRONMENT` block with `OPENALEX_API_KEY` (optional, additive)
-      alongside the `S2_API_KEY` entry added in Phase 2.
-- [ ] Update the script header's Tier 3 one-liner and the `show_usage()` Tier 3 line, both of
+- [x] Extend the script header's `ENVIRONMENT` block with `OPENALEX_API_KEY` (optional, additive)
+      alongside the `S2_API_KEY` entry added in Phase 2. *(completed in Phase 4)*
+- [x] Update the script header's Tier 3 one-liner and the `show_usage()` Tier 3 line, both of
       which currently say "Semantic Scholar + Unpaywall/arXiv", to name the provider chain.
-- [ ] Update the Tier 3 bullet in `agent-system/extensions/literature/README.md` (currently
+      *(completed)*
+- [x] Update the Tier 3 bullet in `agent-system/extensions/literature/README.md` (currently
       "Semantic Scholar API, Unpaywall DOI lookup, arXiv direct PDF") to describe the ordered
-      chain and both optional API-key variables.
-- [ ] Create `agent-system/extensions/literature/context/project/literature/domain/tier3-provider-fallback.md`
+      chain and both optional API-key variables. *(completed)*
+- [x] Create `agent-system/extensions/literature/context/project/literature/domain/tier3-provider-fallback.md`
       documenting: provider order and its rationale, the `tier3_emit_record()` contract and
       parameter list, the closed four-branch doc_id rule with an explicit warning against a fifth
       prefix, the advance-only-on-genuine-failure rule, and the aggregated `TIER3_STATUS` line
       shape with its `commands/literature.md` consumer constraint. Mirror the shape of the
-      sibling `sparse-coverage.md` doc in that directory.
-- [ ] Record the arXiv-out-of-scope decision in that context doc so a future reader sees it was
-      decided, not overlooked.
-- [ ] Reference durable anchors only (filenames, function names, section headings) — no task-number
-      citations in any file outside `specs/`.
+      sibling `sparse-coverage.md` doc in that directory. *(completed)*
+- [x] Record the arXiv-out-of-scope decision in that context doc so a future reader sees it was
+      decided, not overlooked. *(completed)*
+- [x] Reference durable anchors only (filenames, function names, section headings) — no task-number
+      citations in any file outside `specs/`. *(completed: check-task-references.sh passes clean)*
 
 **Timing**: 1 hour
 
