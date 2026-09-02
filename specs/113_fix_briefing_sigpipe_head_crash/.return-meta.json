@@ -25,15 +25,28 @@
       "category": "INSIGHT",
       "source_artifact": "specs/113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["script-dir", "project-root", "bash-source", "deploy-layout", "test-harness", "path-resolution"]
+      "suggested_keywords": [
+        "script-dir",
+        "project-root",
+        "bash-source",
+        "deploy-layout",
+        "test-harness",
+        "path-resolution"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788390027_14a27d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #113
 
 - **Task**: 113 - Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None. Sequenced BEFORE the sibling task that edits this same file's
   global-mode query construction; that sibling's edits have already landed, so the line
