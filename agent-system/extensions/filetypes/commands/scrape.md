@@ -175,14 +175,10 @@ Only commit if:
 
 ```bash
 # Only if commit requested
-git add "$output_path"
-git commit -m "$(cat <<'EOF'
-scrape: extract annotations from {source_filename}
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "scrape: extract annotations from {source_filename}" \
+  --session "{session_id}" \
+  -- "$output_path"
 ```
 
 Commit failure is non-blocking (log and continue).

@@ -364,10 +364,10 @@ If any fix tasks were created, commit the state changes:
 cd /home/benjamin/Projects/cslib
 
 if git status --porcelain specs/state.json specs/TODO.md | grep -q .; then
-  git add specs/state.json specs/TODO.md
-  git commit -m "vet task(s) $TASK_NUMBERS: create fix tasks
-
-Session: $session_id"
+  bash .claude/scripts/git-commit-scoped.sh \
+    --message "vet task(s) $TASK_NUMBERS: create fix tasks" \
+    --session "$session_id" \
+    -- specs/state.json specs/TODO.md
   echo "Fix tasks committed."
 else
   echo "No state changes to commit (no fix tasks created)."

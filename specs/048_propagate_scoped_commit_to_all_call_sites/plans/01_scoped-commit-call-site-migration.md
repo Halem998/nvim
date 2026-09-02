@@ -446,22 +446,27 @@ and is confirmed to follow the uniform shape, the rest are hypotheses.
 
 ---
 
-### Phase 8: Migrate the filetypes, web, epidemiology, and cslib extensions [NOT STARTED]
+### Phase 8: Migrate the filetypes, web, epidemiology, and cslib extensions [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Convert the mid-sized extension territories.
 
 **Tasks**:
-- [ ] Enumerate:
+- [x] Enumerate:
       `grep -rln 'git commit -m' agent-system/extensions/filetypes/ agent-system/extensions/web/ agent-system/extensions/epidemiology/ agent-system/extensions/cslib/`.
-- [ ] filetypes: 5 commands (convert, edit, scrape, sheet, table). `table.md` was read directly
+- [x] filetypes: 5 commands (convert, edit, scrape, sheet, table). `table.md` was read directly
       during research and follows the uniform shape.
-- [ ] web: 2 skills + 1 agent.
-- [ ] epidemiology: `commands/epi.md` + 2 skills.
-- [ ] cslib: `commands/pr.md` + `skill-cslib-vet` + `cslib-implementation-hard-agent.md`.
+- [x] web: 2 skills + 1 agent.
+- [x] epidemiology: `commands/epi.md` + 2 skills.
+- [x] cslib: `commands/pr.md` + `skill-cslib-vet` + `cslib-implementation-hard-agent.md`.
       `commands/pr.md` is the one user-invoked command permitted to push and open PRs — read its
       commit site carefully and confirm the commit being migrated is a local task-scoped commit
       and not part of the push/PR flow. If it is not task-scoped, record it as an exemption.
-- [ ] Convert each site; record any outlier as a candidate exemption with a reason.
+      *(completed: `pr.md` actually carries 4 occurrences, not the plan's hypothesized 1 — 2 are
+      task-scoped commits inside `$CSLIB_DIR`, migrated; 2 are deliberate whole-tree `git add -A`
+      captures that are genuinely part of the push/PR flow, recorded as exemptions with reasoning
+      added inline in the file, matching an exemption the file already documented for one of the
+      two)*
+- [x] Convert each site; record any outlier as a candidate exemption with a reason.
 
 **Timing**: 1 hour
 
@@ -485,6 +490,13 @@ exemption.
 - `grep -rl 'git commit -m'` over the four extension roots returns nothing, or only recorded
   exemptions.
 - The `cslib/commands/pr.md` decision (migrate or exempt) is written down with its reason.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `cslib/commands/pr.md` STEP 0.5.5 (`git commit -m "task ${input_value}: apply review feedback"`) | Runs inside `$CSLIB_DIR`, a SEPARATE git repository from the agent-system working tree, and is a deliberate whole-tree `git add -A` capture of PR review-feedback changes across the branch — not a task-directory-scoped commit. Already self-documented in the file with an inline comment predating this migration. | `agent-system/extensions/cslib/commands/pr.md` line ~569-581. |
+| `cslib/commands/pr.md` STEP 10a (`git commit -m "$pr_title"`, plus the sibling `amend` workflow's `git commit --amend`) | Same reasoning as the item above — runs inside `$CSLIB_DIR`, deliberately captures an arbitrary, unknown set of feature-branch changes with `git add -A` before push/PR creation. This is the core of the push/PR flow itself, which the plan explicitly asks to leave unconverted if not task-scoped. Reasoning comment added inline during this phase. | `agent-system/extensions/cslib/commands/pr.md` STEP 10a, line ~1867-1885. |
 
 ---
 

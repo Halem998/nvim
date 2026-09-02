@@ -357,10 +357,11 @@ the entire working tree:
 ```bash
 task_dir="specs/{NNN}_{SLUG}"
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
-git add "${stage_paths[@]}"
-git commit -m "task {N} phase {P}: complete
-
-Session: {session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: complete" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- "${stage_paths[@]}"
 ```
 
 ### Stage 6: Create Implementation Summary

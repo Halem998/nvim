@@ -186,14 +186,10 @@ Only commit if:
 
 ```bash
 # Only if commit requested
-git add "$file_path"
-git commit -m "$(cat <<'EOF'
-edit: {filename} - {brief_description}
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "edit: {filename} - {brief_description}" \
+  --session "{session_id}" \
+  -- "$file_path"
 ```
 
 Commit failure is non-blocking (log and continue).

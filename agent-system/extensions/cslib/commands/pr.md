@@ -336,9 +336,11 @@ bash /home/benjamin/.config/nvim/.claude/scripts/generate-todo.sh
 **Git commit the new task**:
 
 ```bash
-cd /home/benjamin/.config/nvim
-git add specs/state.json specs/TODO.md
-git commit -m "task ${next_num}: create ${task_slug}"
+bash /home/benjamin/.config/nvim/.claude/scripts/git-commit-scoped.sh \
+  --message "task ${next_num}: create ${task_slug}" \
+  --session "${session_id}" \
+  --honest-index-rows "${next_num}" \
+  -- specs/state.json specs/TODO.md
 ```
 
 **Display confirmation**:
@@ -742,9 +744,13 @@ fi
 bash .claude/scripts/generate-todo.sh
 echo "TODO.md regenerated."
 
-# Commit state changes
-git add specs/state.json specs/TODO.md
-git commit -m "task ${input_value}: complete pr review response"
+# Commit state changes — via CSLIB_DIR's own deployed git-commit-scoped.sh (cwd is already
+# $CSLIB_DIR from the `cd` above, a separate git repository from the agent-system working tree)
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${input_value}: complete pr review response" \
+  --session "${session_id}" \
+  --honest-index-rows "${input_value}" \
+  -- specs/state.json specs/TODO.md
 echo "State committed."
 ```
 
@@ -1864,7 +1870,14 @@ if [ "$workflow" = "amend" ]; then
   echo "Amended last commit on branch $branch_name."
 ```
 
-**All other workflows** (`new`, `stacked`, `update`): if there are uncommitted changes:
+**All other workflows** (`new`, `stacked`, `update`): if there are uncommitted changes. This is
+part of the push/PR flow, not a task-scoped commit — like the `apply review feedback` commit
+above (STEP 0.5.5), it runs inside `$CSLIB_DIR`, a SEPARATE git repository, and is deliberately a
+whole-tree capture of everything on the feature branch (an arbitrary, unknown set of files the
+user/reviewer changed) before pushing. It is exempt from the scoped-commit contract's
+task-directory scoping model for the same reason git-snapshot.sh's `--branch` mode is exempt —
+the whole point is to capture everything, not a task scope. Do not "fix" this to targeted staging
+or `git-commit-scoped.sh`:
 ```bash
   git add -A 2>&1
   git reset HEAD pr-description.md 2>/dev/null || true

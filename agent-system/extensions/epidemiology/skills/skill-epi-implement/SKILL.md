@@ -242,10 +242,11 @@ metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
-git add "${stage_paths[@]}"
-git commit -m "task ${task_number}: complete epi implementation
-
-Session: ${session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete epi implementation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "${stage_paths[@]}"
 ```
 
 ---
