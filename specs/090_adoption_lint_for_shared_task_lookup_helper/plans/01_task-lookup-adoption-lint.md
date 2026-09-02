@@ -1,7 +1,7 @@
 # Implementation Plan: Task #90
 
 - **Task**: 90 - Adoption lint for the shared task-lookup helper
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 124 (state.json `dependencies`); informational sequencing overlap with task 116 and task 48 (see Risks)
 - **Research Inputs**: specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md
@@ -116,27 +116,27 @@ so parallel execution is safe.
 
 ---
 
-### Phase 1: Re-measure the class and derive the offender baseline [NOT STARTED]
+### Phase 1: Re-measure the class and derive the offender baseline [COMPLETED]
 
 **Goal**: Establish the live, reproducible offender list and the two acceptance numbers (adopter
 count, duplicate count) before writing any code, so the lint's allowlist and the recorded baseline
 are derived from the tree as it actually is rather than from the report's snapshot.
 
 **Tasks**:
-- [ ] Re-run the report's narrow and broad measurement commands from the repo root against
+- [x] Re-run the report's narrow and broad measurement commands from the repo root against
       `agent-system/extensions/`; record file counts and occurrence counts for both.
-- [ ] Enumerate the narrow-pattern offender files, grouped as `scripts/`, `commands/`, `skills/`,
+- [x] Enumerate the narrow-pattern offender files, grouped as `scripts/`, `commands/`, `skills/`,
       and note which fall under `deprecated/`.
-- [ ] Confirm the two canonical implementations still exist and still contain the narrow pattern
+- [x] Confirm the two canonical implementations still exist and still contain the narrow pattern
       in their own bodies: `skill_validate_input()` in `scripts/skill-base.sh` and `gate_in()` in
       `scripts/command-gate-in.sh`.
-- [ ] Re-confirm `skill_validate_input()`'s caller count (report says zero real callers; every hit
+- [x] Re-confirm `skill_validate_input()`'s caller count (report says zero real callers; every hit
       outside its own definition is a doc example or its docstring) and `gate_in()`'s adopter list.
-- [ ] Verify the three deleted lifecycle command files (`commands/research.md`, `plan.md`,
+- [x] Verify the three deleted lifecycle command files (`commands/research.md`, `plan.md`,
       `implement.md`) are absent, and drop any report-era reference to them from the offender list.
-- [ ] Confirm `tests/test-common-lib.sh` still passes and its `collect_session_id_offenders()`
+- [x] Confirm `tests/test-common-lib.sh` still passes and its `collect_session_id_offenders()`
       dual-mode root probe is still present and reusable.
-- [ ] Write the measured numbers and the grouped offender list into a scratch note for Phases 3
+- [x] Write the measured numbers and the grouped offender list into a scratch note for Phases 3
       and 7 to consume (not a deliverable; the durable record is written in Phase 7).
 
 **Timing**: 0.75 hours
