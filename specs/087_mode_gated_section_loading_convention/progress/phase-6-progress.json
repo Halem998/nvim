@@ -1,0 +1,62 @@
+{
+  "phase": 6,
+  "phase_name": "Full gate run, deploy verification, and measurement write-up",
+  "started_at": "2026-09-02T08:53:00Z",
+  "last_updated": "2026-09-02T09:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run full test suite (run-all.sh), confirm new lint test discovered and passes with no regressions",
+      "status": "done",
+      "files_touched": [],
+      "note": "61 passed, 1 failed (test-four-tier-conflict.sh case 6, timing-flaky, unrelated to this task; re-run in isolation: 13/13 passed), 0 skipped, 62 total. New test-lint-branch-gated-sections.sh discovered and PASS."
+    },
+    {
+      "id": 2,
+      "description": "Run verify-deploy.sh end to end; all gates including Gate 19 must pass",
+      "status": "done",
+      "files_touched": [],
+      "note": "verify-deploy.sh: 27/30 checks PASS including Gate 19 (branch-gated section threshold lint) PASS. 3 pre-existing failures confirmed unrelated to task 87: (a) doc-lint FAIL on literature ext's zotero-item-creation.md line_count drift (208 declared vs 234 actual); (b) validate-state.sh --deep FAIL on unknown fields abandon_reason/blocks_note on unrelated project numbers (94,46,31,64,73,115,132,106,107,109); (c) state-writer boundary lint FAIL on pre-existing hand-rolled writes in test-force-phases.sh. All three predate and are outside this task's file scope (concurrent sibling-task edits)."
+    },
+    {
+      "id": 3,
+      "description": "Deploy (or dry-run) and confirm all four new/changed artifacts land in .claude/",
+      "status": "done",
+      "files_touched": [],
+      "note": "Deploy verification via byte-diff against .claude/ rather than re-invoking deploy-headless.sh directly (this agent is not one of the two sanctioned automated call sites per context/patterns/regeneration-is-manual-only.md's Automated Exception subsections; the postflight completion-deploy gate handles the actual redeploy after this dispatch returns). All four artifacts (convention doc, lint script, lint test, pilot pattern file) plus SKILL.md and verify-deploy.sh are byte-identical between source store and .claude/ -- confirmed already deployed and current, consistent with verify-deploy.sh Gate 5's PASS (manifest-driven category parity + content-hash equality)."
+    },
+    {
+      "id": 4,
+      "description": "Confirm deployed pointer path resolves to a real file after deploy",
+      "status": "done",
+      "files_touched": [],
+      "note": "Deployed pointer .claude/context/project/email/patterns/email-cleanup-all-mode.md resolves to a real 17,729 B file; SKILL.md line 283 pointer text confirmed; entry merged into .claude/context/index.json at path project/email/patterns/email-cleanup-all-mode.md."
+    },
+    {
+      "id": 5,
+      "description": "Run validate-context-budgets.sh and confirm no tier cap breach",
+      "status": "done",
+      "files_touched": [],
+      "note": "validate-context-budgets.sh: 4 pre-existing violations (general-research-agent, general-implementation-agent, planner-agent over cap by large margins unrelated to this task) plus 2 documented OK* exceptions (nix/neovim-implementation-agent). Confirmed by inspecting .claude/context/index.json: both new entries (patterns/mode-gated-section-loading.md, on_demand:true, load_when.agents=[]; project/email/patterns/email-cleanup-all-mode.md, load_when.agents=[], commands=['/email'] only) are not in any agent's load_when.agents list, so they contribute zero to any agent budget and breach no tier cap. The 4 pre-existing violations predate and are independent of this task."
+    },
+    {
+      "id": 6,
+      "description": "Run task-reference lint over changed files, confirm no task-number references outside specs/**",
+      "status": "done",
+      "files_touched": [],
+      "note": "check-task-references.sh (deployed copy): PASS, 0 unexempted task-reference occurrences across all 4 scanned trees (agent-system/extensions, .opencode, lua, .memory). Matches verify-deploy.sh Gate 4's PASS."
+    },
+    {
+      "id": 7,
+      "description": "Write task summary with measurement table and acceptance evidence",
+      "status": "done",
+      "files_touched": [
+        "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md"
+      ],
+      "note": "Task summary written with measurement table and full acceptance evidence."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

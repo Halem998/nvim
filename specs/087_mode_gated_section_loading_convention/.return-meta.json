@@ -1,11 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md",
+      "summary": "Full gate run, deploy verification, and measurement write-up for the mode-gated section loading convention: run-all.sh 61/62 green (1 pre-existing unrelated flake), verify-deploy.sh Gate 19 PASS (3 pre-existing unrelated failures), all four artifacts confirmed deployed and byte-identical, context budgets clean for the two new entries, task-reference lint clean, measurement table recorded."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed Phase 6 (final phase) of the mode-gated section loading convention: full test suite and verify-deploy.sh Gate 19 confirmed green, all four new/changed artifacts confirmed deployed correctly, context-budget and task-reference lints confirmed clean, and the task summary with the full measurement table (SKILL.md 47,832 B -> 30,656 B, -35.9%) was written. All 6 plan phases are now [COMPLETED]."
+  },
+  "modified_files": [
+    "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md",
+    "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md",
+    "specs/087_mode_gated_section_loading_convention/progress/phase-6-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan phase's verification instructs running deploy-headless.sh (or similar) to prove artifacts are deployed, check context/patterns/regeneration-is-manual-only.md's Automated Exception subsections first -- general implementation agents are NOT a sanctioned automated caller. Instead, verify deploy currency by direct byte-diff between the source store (agent-system/extensions/**) and the deployed .claude/ tree; verify-deploy.sh's own Gate 5 (manifest-driven content-hash parity) corroborates this without needing to invoke the deploy script directly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "regeneration-is-manual-only", "verify-deploy", "byte-diff", "source-store-boundary"]
+    },
+    {
+      "content": "validate-context-budgets.sh and check-task-references.sh (and similar scripts with '../..' root resolution) must be invoked from the deployed .claude/scripts/ tree, not the agent-system/extensions/core/scripts/ source store -- they error loudly rather than silently misresolving. Always run the .claude/ copy for these verification-only scripts when both exist and are already in sync.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["validate-context-budgets", "check-task-references", "deployed-scripts-tree", "root-resolution"]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1788357501_0d2431",
+    "session_id": "sess_1788364293_dfc521",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

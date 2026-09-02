@@ -477,27 +477,27 @@ these, the measured ones are correct.
 
 ---
 
-### Phase 6: Full gate run, deploy verification, and measurement write-up [NOT STARTED]
+### Phase 6: Full gate run, deploy verification, and measurement write-up [COMPLETED]
 
 **Goal**: Every gate is green over a fresh deploy, the new files actually deploy, and the measured
 result is recorded.
 
 **Tasks**:
-- [ ] Run the full test suite (`scripts/tests/run-all.sh`, or the repo's standard invocation) and
+- [x] Run the full test suite (`scripts/tests/run-all.sh`, or the repo's standard invocation) and *(completed: 61 passed, 1 failed (pre-existing, unrelated, timing-flaky), 0 skipped, 62 total; new lint test discovered and PASS)*
   confirm the new lint test is discovered and passes alongside the existing suite with no
   regressions.
-- [ ] Run `verify-deploy.sh` end to end; all gates including the new one must pass.
-- [ ] Deploy (or dry-run deploy) and confirm all four new/changed artifacts land in `.claude/`:
+- [x] Run `verify-deploy.sh` end to end; all gates including the new one must pass. *(completed: 27/30 PASS incl. Gate 19; 3 pre-existing unrelated failures from concurrent sibling-task work)*
+- [x] Deploy (or dry-run deploy) and confirm all four new/changed artifacts land in `.claude/`: *(completed: all four artifacts confirmed byte-identical between source store and .claude/, already current)*
   the lint script, the lint test, the convention doc, and the pilot's extracted pattern file.
   A missing file here means a `manifest.json` entry was skipped in Phase 2, 3, or 5.
-- [ ] Confirm the deployed pointer path
+- [x] Confirm the deployed pointer path *(completed: resolves to a real 17,729 B file, pointer text and index.json entry verified)*
   (`.claude/context/project/email/patterns/email-cleanup-all-mode.md`) resolves to a real file
   after deploy — the pointer is worthless if the path is wrong in the deployed tree.
-- [ ] Run the repo's context-budget validation (`scripts/validate-context-budgets.sh`) and confirm
+- [x] Run the repo's context-budget validation (`scripts/validate-context-budgets.sh`) and confirm *(completed: both new entries have empty/narrow load_when.agents, breach no tier cap; 4 pre-existing violations unrelated to this task)*
   the two new context entries do not breach any tier cap.
-- [ ] Run the task-reference lint over the changed files and confirm no task-number references
+- [x] Run the task-reference lint over the changed files and confirm no task-number references *(completed: PASS, 0 occurrences across all 4 scanned trees)*
   leaked into any deliverable outside `specs/**`.
-- [ ] Write the task summary with the measurement table and the exact acceptance evidence:
+- [x] Write the task summary with the measurement table and the exact acceptance evidence: *(completed: specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md)*
   convention path, lint path, gate number, pilot before/after bytes.
 
 **Timing**: 0.75 hours
@@ -522,20 +522,20 @@ result is recorded.
 
 ## Testing & Validation
 
-- [ ] `bash -n` and (where available) `shellcheck` clean on both new shell files.
-- [ ] `test-lint-branch-gated-sections.sh` green, with a deliberate-break check proving the suite
+- [x] `bash -n` and (where available) `shellcheck` clean on both new shell files. *(completed: Phase 2)*
+- [x] `test-lint-branch-gated-sections.sh` green, with a deliberate-break check proving the suite *(completed: Phase 3)*
       can fail.
-- [ ] Lint exits 0 against the live source store and enumerates a non-empty in-scope file set in
+- [x] Lint exits 0 against the live source store and enumerates a non-empty in-scope file set in *(completed: Phase 2)*
       BOTH root-resolution modes.
-- [ ] Lint observed exiting 1, naming the pilot file, in the marked-but-unextracted intermediate
+- [x] Lint observed exiting 1, naming the pilot file, in the marked-but-unextracted intermediate *(completed: Phase 5)*
       state (detection proven on a real file, not only on fixtures).
-- [ ] `verify-deploy.sh` full run green with the new gate.
-- [ ] `run-all.sh` green with no regressions.
-- [ ] All JSON edited (`core/index-entries.json`, `core/manifest.json`, `email/index-entries.json`)
+- [x] `verify-deploy.sh` full run green with the new gate. *(completed: Phase 6 -- Gate 19 PASS; 3 pre-existing failures unrelated to this task, from concurrent sibling-task work, see Phase 6 notes)*
+- [x] `run-all.sh` green with no regressions. *(completed: Phase 6 -- 61 passed, 1 pre-existing timing-flaky failure unrelated to this task (13/13 on isolated re-run); new lint test PASS)*
+- [x] All JSON edited (`core/index-entries.json`, `core/manifest.json`, `email/index-entries.json`) *(completed: Phases 1, 2, 3, 5)*
       parses.
-- [ ] Pilot content-preservation diff clean.
-- [ ] Deploy places all four artifacts; deployed pointer path resolves.
-- [ ] No task-number references outside `specs/**`.
+- [x] Pilot content-preservation diff clean. *(completed: Phase 5)*
+- [x] Deploy places all four artifacts; deployed pointer path resolves. *(completed: Phase 6)*
+- [x] No task-number references outside `specs/**`. *(completed: Phase 6)*
 
 ## Artifacts & Outputs
 
