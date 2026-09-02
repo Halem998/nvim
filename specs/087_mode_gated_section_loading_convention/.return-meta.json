@@ -1,0 +1,44 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+      "summary": "Formalizes the existing 'READ context/patterns/*.md pointer' precedent (tasks 56, 44) into a documented convention with a new paired branch-gated:begin/end marker, a structural-plus-allowlist lint modeled on lint-task-lookup-adoption.sh wired as verify-deploy.sh Gate 19, and a pilot recommendation (skill-email-cleanup's --all Mode) independent of the four named follow-up tasks."
+    }
+  ],
+  "next_steps": "Run /plan 87 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788357501_0d2431_87",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "This repo's proven pattern for shrinking always-loaded skill/command bodies: relocate a branch-gated or reference-appendix section verbatim into context/patterns/{name}.md, replace it in the source with an imperative 'READ <deployed-path> now' pointer (never 'see also'), register the new file in index-entries.json under load_when.commands/agents (manifest.json needs no edit since patterns/ is listed wholesale), and for whole-section (not just reference-appendix) extractions state at both the pointer site and the destination file's opening line that it is 'the complete and only specification... MUST be followed exactly' -- a skipped READ on a whole-section extraction produces unspecified execution, not just degraded execution.",
+      "category": "PATTERN",
+      "source_artifact": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-loading", "pointer", "index-entries", "extraction", "token-budget"]
+    },
+    {
+      "content": "Naive '^## ' heading-scan section extraction is unsafe: fenced code examples can contain decoy '##'-level headings that a bottom-up line-range scan mistakes for real section boundaries, silently truncating the wrong range. Established mitigation (from task 44's plan): extract bottom-up (last section first) so untouched regions keep their line numbers, and re-locate every boundary by heading TEXT (not a stored line number) immediately before each deletion. A more robust fix going forward: wrap the section in a paired comment marker (e.g. <!-- branch-gated:begin --> / <!-- branch-gated:end -->) so tooling greps for the literal end-marker string instead of scanning for the next heading.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["fence-interior-heading-trap", "extraction", "markdown", "section-boundaries"]
+    },
+    {
+      "content": "adoption-lint-conventions.md's decision rule for choosing a new adoption/regression lint's posture: non-zero migration debt at LANDING TIME selects the structural-plus-reasoned-allowlist convention (lint-task-lookup-adoption.sh / lint-state-writer-boundary.sh shape); a class already at zero selects zero-tolerance (collect_session_id_offenders() shape). Always check the LIVE duplicate/debt count before choosing, not a count from whatever report motivated the task -- it is common for that number to be stale.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["adoption-lint", "allowlist", "lint-design", "migration-debt"]
+    }
+  ],
+  "modified_files": [
+    "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+    "specs/087_mode_gated_section_loading_convention/.return-meta.json"
+  ]
+}
