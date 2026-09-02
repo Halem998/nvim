@@ -18,9 +18,20 @@
 #                                             # envelope -- one process for per-term recall
 #                                             # instead of N. Envelope adds `total_matched`
 #                                             # (top-level: de-duplicated, post-quarantine,
-#                                             # pre-limit-slice count) and `matched_terms`
-#                                             # (per row: how many distinct sub-queries
-#                                             # surfaced it, a rank tiebreak only).
+#                                             # pre-limit-slice count), `corroborated_count`
+#                                             # (top-level: same pre-limit-slice pool, but
+#                                             # only rows with matched_terms >= 2 -- a
+#                                             # sparse/rich signal total_matched alone
+#                                             # cannot give once many short, individually-
+#                                             # common words are OR-merged), and
+#                                             # `matched_terms` (per row: how many distinct
+#                                             # sub-queries surfaced it). Results sort by matched_terms
+#                                             # descending, then rank ascending WITHIN a
+#                                             # matched_terms tier -- bm25 scores from
+#                                             # independent single-term sub-queries are not
+#                                             # on a comparable scale, so cross-term
+#                                             # corroboration leads (see do_multi_search's
+#                                             # merge-sort comment for the empirical evidence).
 #                                             # query_error is non-null only when every
 #                                             # sub-query failed against every database that
 #                                             # exists.
@@ -1098,9 +1109,37 @@ if not include_unverified:
 # the sparse=true marker stays honest. Never a sum of per-term totals.
 total_matched = len(merged)
 
-# Sort by rank ascending (bm25 is more-negative-is-better); matched_terms is a
-# tiebreak ONLY among equal-rank rows, never a replacement for rank.
-merged.sort(key=lambda r: (r['rank'], -r['matched_terms']))
+# corroborated_count: the subset of the same pre-limit-slice merged set matched by
+# 2+ DISTINCT filtered terms. Additive, alongside total_matched -- not a replacement
+# for it. Exists because total_matched alone is NOT a reliable sparse-vs-rich signal
+# once many short, individually-common English words are searched independently and
+# merged by OR: verified empirically against the real global corpus that a
+# genuinely off-topic query (no shared subject matter with the corpus at all) can
+# still report a large total_matched purely from coincidental single-term hits
+# across unrelated documents, silently defeating the sparse=true re-prompt this
+# field exists to keep honest. literature-briefing.sh uses this field (never
+# total_matched) for the sparse determination specifically when the filtered term
+# count exceeds MULTI_TERM_MATCH_THRESHOLD -- mirroring the same >=2-distinct-hits
+# asymmetry literature-coverage-delta.sh/literature-discover.sh already apply to
+# their own long-query keyword passes. total_matched/seg_count keep reporting the
+# full deduplicated count regardless; only the sparse boolean's INPUT changes.
+corroborated_count = sum(1 for r in merged if r['matched_terms'] >= 2)
+
+# Sort by matched_terms descending, THEN rank ascending (bm25 is more-negative-is-
+# better) within each matched_terms tier. matched_terms leads, not rank, because
+# bm25 scores from INDEPENDENT single-term sub-queries are not on a comparable
+# scale: a generic word that happens to be the entirety of one short document's
+# match can score more extreme than a genuinely on-topic multi-word hit, so
+# sorting the merged pool by raw rank alone lets corpus-wide-common words flood
+# the top with single-term-only noise. Corroboration by two or more distinct
+# filtered terms is real signal that raw cross-query rank cannot see -- verified
+# empirically against the real global corpus with a full-length (100+-word) task
+# description: rank-primary sorting returned zero topically relevant chunks in the
+# top 10 despite non-empty recall, while promoting matched_terms surfaced the
+# corpus's actual modal-logic textbook among the top hits. Within a matched_terms
+# tier, rank is still the ONLY signal used to order -- this never recomputes a new
+# relevance score, it only changes which of the two existing signals leads.
+merged.sort(key=lambda r: (-r['matched_terms'], r['rank']))
 merged = merged[:limit]
 
 if merged:
@@ -1139,6 +1178,7 @@ envelope = {
     'fallback_tier': fallback_tier,
     'query_error': query_error,
     'total_matched': total_matched,
+    'corroborated_count': corroborated_count,
 }
 
 print(json.dumps(envelope, indent=2, ensure_ascii=False))

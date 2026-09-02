@@ -365,6 +365,10 @@ ${entry}"
   header="## Available Literature (${#briefing_lines[@]} document(s))"
   coverage_mode="repo"
   coverage_count="${#briefing_lines[@]}"
+  # Repo mode has no per-term corroboration concept (it resolves specific doc_ids, it
+  # never runs the --multi filtered-term search) -- sparse determination always uses
+  # the plain coverage_count here, matching pre-existing behavior exactly.
+  sparse_eval_count="$coverage_count"
 
   # --- Topic-scoped coverage-delta guard (repo mode only, --query present) ---
   # Reaches the consuming agent's prompt via the in-band marker/banner below even in
@@ -464,6 +468,7 @@ else
   fallback_tier="bm25"
   query_error="null"
   total_matched=""
+  corroborated_count=""
 
   if echo "$results_json" | jq -e 'type == "array"' >/dev/null 2>&1; then
     : # legacy bare-array shape; results_json already holds the array, defaults above stand
@@ -472,6 +477,7 @@ else
     fallback_tier=$(echo "$results_json" | jq -r '.fallback_tier // "bm25"')
     query_error=$(echo "$results_json" | jq -r 'if .query_error == null then "null" else .query_error end')
     total_matched=$(echo "$results_json" | jq -r 'if has("total_matched") and (.total_matched != null) then (.total_matched|tostring) else "" end')
+    corroborated_count=$(echo "$results_json" | jq -r 'if has("corroborated_count") and (.corroborated_count != null) then (.corroborated_count|tostring) else "" end')
     results_json=$(echo "$results_json" | jq -c '.results // []')
   else
     echo "Warning: literature-search.sh returned an unparseable payload for --global query '${query}'; treating as zero results. stderr: ${search_stderr:-<empty>}" >&2
@@ -533,6 +539,24 @@ ${entry}"
   coverage_count="$seg_count"
   requested_count="$seg_count"
 
+  # --- Sparse-determination input, corroboration-tightened for long queries ---
+  # seg_count/coverage_count above stay the honest, unchanged, de-duplicated total --
+  # the DISPLAYED result set never shrinks because of this. But once the filtered
+  # term count exceeds MULTI_TERM_MATCH_THRESHOLD, total_matched alone stops being a
+  # reliable sparse-vs-rich signal: verified empirically against the real global
+  # corpus that a query with NO real topical overlap with the corpus can still post a
+  # large total_matched purely from coincidental single-term hits spread across
+  # unrelated documents once enough short, individually-common English words are
+  # OR-merged, which would silently defeat the sparse=true re-prompt this marker
+  # exists to drive. Use corroborated_count (matched_terms >= 2) as the sparse
+  # boolean's input instead, in that regime only -- mirroring the same >=2-distinct
+  # -hits asymmetry literature-coverage-delta.sh/literature-discover.sh already apply
+  # for exactly this class of long, generic-word-heavy query.
+  sparse_eval_count="$coverage_count"
+  if [ "${#FILTERED_TERMS[@]}" -gt "$MULTI_TERM_MATCH_THRESHOLD" ] && [ -n "$corroborated_count" ]; then
+    sparse_eval_count="$corroborated_count"
+  fi
+
   # --- Degraded-tier banner ---
   # When results exist but the primary bm25 tier did not answer, prefix the segment list
   # with a visible, tier-specific notice -- following the existing FIDELITY_MARKER_TEXT
@@ -581,7 +605,7 @@ else
 fi
 
 sparse="false"
-if [ "$coverage_count" -lt "$LITERATURE_SPARSE_THRESHOLD" ]; then
+if [ "$sparse_eval_count" -lt "$LITERATURE_SPARSE_THRESHOLD" ]; then
   sparse="true"
 elif [ "$skip_count" -gt 0 ] && [ "$skip_rate" -ge "$LITERATURE_SKIP_RATE_THRESHOLD" ]; then
   sparse="true"

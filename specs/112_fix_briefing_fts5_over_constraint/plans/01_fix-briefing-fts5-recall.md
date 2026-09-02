@@ -319,37 +319,37 @@ that and budget the extra fixture-builder work rather than silently reducing cas
 
 ---
 
-### Phase 5: Real-corpus verification, timing, and caller decision [NOT STARTED]
+### Phase 5: Real-corpus verification, timing, and caller decision [COMPLETED]
 
 **Goal**: Meet the task's verification bar against the live global corpus, quantify the cost change,
 and settle the `lit-stage4a-flow.md` caller question with a written reason.
 
 **Tasks**:
-- [ ] Establish the run location first: `literature-briefing.sh` derives `PROJECT_ROOT` as
+- [x] Establish the run location first: `literature-briefing.sh` derives `PROJECT_ROOT` as *(completed)*
       `$SCRIPT_DIR/../..`, which does **not** resolve to a repo root from the source-store path.
       Run the end-to-end verification against the deployed `.claude/scripts/` copy refreshed through
       the sanctioned deploy/reload path, or a temp tree laid out so the resolution is correct.
       Never hand-edit `.claude/**` to achieve this.
-- [ ] Re-run the original failing task description through `literature-briefing.sh --global`. It
+- [x] Re-run the original failing task description through `literature-briefing.sh --global`. It *(completed)*
       previously returned 0 segments; it must now return a non-empty, topically relevant set.
-- [ ] Re-derive the ground truth rather than assuming it: run
+- [x] Re-derive the ground truth rather than assuming it: run *(completed)*
       `literature-coverage-delta.sh` against the same description for the matching-global-document
       count, and a set of hand-written 2-4 word searches for the reachable-segment count. Compare
       the briefing's `seg_count` against both and record all three numbers.
-- [ ] Record a before/after timing table (`time` on the same query against stashed pre-fix scripts
+- [x] Record a before/after timing table (`time` on the same query against stashed pre-fix scripts *(completed)*
       vs. post-fix), in the spirit of task 108's measurement, and confirm the briefing spawns one
       `literature-search.sh` process rather than one per term.
-- [ ] Spot-check relevance by hand: read 2-3 of the returned chunks via their emitted `Read:`
+- [x] Spot-check relevance by hand: read 2-3 of the returned chunks via their emitted `Read:` *(completed)*
       commands and confirm topical relevance, not merely non-emptiness.
-- [ ] Capture the marker line before and after for one genuinely-sparse and one genuinely-rich real
+- [x] Capture the marker line before and after for one genuinely-sparse and one genuinely-rich real *(completed)*
       query and confirm `sparse=` flips correctly in both.
-- [ ] Decide the caller question and write the reason down: if the above shows the script fix alone
+- [x] Decide the caller question and write the reason down: if the above shows the script fix alone *(completed)*
       meets the bar, leave `lit-stage4a-flow.md`'s two `--global "$description"` call sites
       unchanged (the research's recommendation — 6 skill call sites import that file verbatim, so
       the blast radius is wide for a small marginal gain). Only if the bar is still unmet, change
       the callers to pass title + filtered terms, and then re-verify all six importing skills'
       Stage 4a blocks still read correctly.
-- [ ] If the callers are left unchanged, state that explicitly in the implementation summary as a
+- [x] If the callers are left unchanged, state that explicitly in the implementation summary as a *(completed)*
       ratified decision with its reason — not as an omission.
 
 **Timing**: 1.5 hours

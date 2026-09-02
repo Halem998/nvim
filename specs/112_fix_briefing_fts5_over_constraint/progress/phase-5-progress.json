@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Real-corpus verification, timing, and caller decision",
+  "started_at": "2026-09-02T03:00:00Z",
+  "last_updated": "2026-09-02T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Establish run location: symlinked source-store scripts into a temp tree under the real BimodalLogic repo root so PROJECT_ROOT resolves correctly", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run the original failing task-503 description through literature-briefing.sh --global", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-derive ground truth via literature-coverage-delta.sh and hand-written 2-4 word searches", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record before/after timing table and process count", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Spot-check relevance by hand (read chunks via Read: commands / direct filesystem)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Capture marker before/after for one sparse and one rich real query", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Fold back discovered fixes into Phase 2/3 files: matched_terms-primary sort, corroborated_count sparse tightening", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh", "agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 8, "description": "Decide the lit-stage4a-flow.md caller question with a written reason", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Rank-primary sort (rank asc, matched_terms desc tiebreak) as originally implemented in Phase 2", "result": "failed", "reason": "Verified empirically against the real 252MB global corpus with the actual original failing 100-word task-503 description: rank-primary sorting returned ZERO topically relevant chunks in the top 10 (all hyperproperties/probability/game-theory noise), because bm25 scores from independent single-term sub-queries are not on a comparable scale -- a generic filler word (\"systematically\", \"understanding\", \"contemplate\") scoring well against one short document can dominate the merged ranking. Fixed by promoting matched_terms to the primary sort key (matched_terms desc, then rank asc within a tier), which surfaced the corpus's own Chagrov & Zakharyaschev Modal Logic textbook at #1."},
+    {"approach": "Raising LITERATURE_GLOBAL_MAX_TERMS above the Phase 3 default of 12 to include more discriminating short domain words (\"modal\", \"logic\") that the longest-first cap excludes", "result": "failed", "reason": "Uncapped (100) with the matched_terms-primary sort actually produced a WORSE top-1 result (an unrelated Ehrenfeucht-Fraisse game-theory overview, matched_terms=4) than the capped-12 run (Chagrov & Zakharyaschev's Modal Logic, matched_terms=2) -- more terms in the pool created more opportunities for coincidental multi-term overlap among unrelated \"Overview\"/survey-style sections. Left LITERATURE_GLOBAL_MAX_TERMS at its Phase 3 default of 12; the length-based cap is an imperfect but not obviously improvable-without-redesign heuristic given the time budget."},
+    {"approach": "total_matched (pre-limit deduped count) alone as the sparse/rich signal for --global mode, unchanged from Phase 2/3", "result": "failed", "reason": "Verified empirically against the real corpus that a genuinely off-topic control query (\"quantum chromodynamics particle accelerator experiment string theory\", no real overlap with this logic/philosophy/CS corpus) reported seg_count=102 sparse=false -- a false negative, purely from coincidental single-term hits by common English words (\"theory\", \"experiment\") spread across unrelated documents once OR-merged across many per-term sub-queries. This directly violated the plan's PRESERVE THE SPARSE-COVERAGE CONTRACT requirement. Fixed by adding an additive `corroborated_count` envelope field (matched_terms >= 2, pre-limit-slice) and using it (never total_matched) as the sparse boolean's input specifically when the filtered term count exceeds MULTI_TERM_MATCH_THRESHOLD (5) -- mirroring literature-coverage-delta.sh's own >=2-distinct-hits asymmetry for long queries. seg_count/coverage_count/the displayed result set are unchanged; only the sparse determination's input changed."}
+  ],
+  "handoff_count": 0
+}
