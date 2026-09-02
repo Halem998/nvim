@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-briefing.sh --global FTS5 over-constraint
 
 - **Task**: 112 - Fix literature-briefing.sh --global FTS5 over-constraint returning zero segments
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.25 hours
 - **Dependencies**: 108 (completed; verified non-overlapping — `literature-term-match.sh`'s public
   contract `filter_terms`/`STOP_WORDS`/`MULTI_TERM_MATCH_THRESHOLD` is unchanged by it)
@@ -112,22 +112,22 @@ Phases within the same wave can execute in parallel. Phases 4 and 5 own disjoint
 
 ---
 
-### Phase 1: Strip FTS5-hostile `<`/`>` in sanitize_query() [NOT STARTED]
+### Phase 1: Strip FTS5-hostile `<`/`>` in sanitize_query() [COMPLETED]
 
 **Goal**: Close the hard-syntax-error half of the defect for every `literature-search.sh` caller,
 independently of the merge redesign.
 
 **Tasks**:
-- [ ] In `sanitize_query()`'s punctuation-normalization block (the section that already folds
+- [x] In `sanitize_query()`'s punctuation-normalization block (the section that already folds *(completed)*
       mid-word hyphens, `:`, `/`, `(`, `)` to spaces), fold `<` and `>` to spaces using the same
       idiom and the same comment style.
-- [ ] Extend that block's existing comment to name the character set this function owns and state
+- [x] Extend that block's existing comment to name the character set this function owns and state *(completed)*
       why these are folded rather than quoted (the caller passes one opaque free-text query, never
       a hand-built FTS5 boolean expression) — the rationale already given there for `:`/`/`/parens.
-- [ ] Re-run the research's direct check: source the function and confirm
+- [x] Re-run the research's direct check: source the function and confirm *(completed)*
       `"hello <sec:representation> world"` sanitizes with no `<`/`>` surviving, and that the
       sanitized output no longer raises `fts5: syntax error near "<"` against a live FTS5 table.
-- [ ] Confirm no existing behavior regressed: AND/OR/NOT stripping, quote balancing, unquoted `*`
+- [x] Confirm no existing behavior regressed: AND/OR/NOT stripping, quote balancing, unquoted `*` *(completed)*
       stripping, ligature folding, and apostrophe stripping all still behave as before.
 
 **Timing**: 0.5 hours

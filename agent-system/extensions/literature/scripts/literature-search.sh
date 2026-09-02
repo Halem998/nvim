@@ -167,15 +167,21 @@ if quote_count % 2 != 0:
 
 # --- Punctuation normalization ---
 # FTS5's query grammar treats mid-word hyphens (column-exclusion/NOT-prefix),
-# colons (column-filter), slashes, and parens (grouping -- even word-attached
-# and balanced) as syntax, not as word characters. This tool's only caller
-# passes one opaque free-text query string, never a hand-built FTS5 boolean
-# expression, so none of that syntax is ever an intended feature here: fold
-# all four to spaces rather than trying to preserve grouping/filter semantics.
+# colons (column-filter), slashes, parens (grouping -- even word-attached
+# and balanced), and angle brackets (unrecognized syntax -- FTS5 raises a hard
+# "fts5: syntax error near '<'" the moment one appears anywhere in a MATCH
+# string, not just when balanced/word-attached) as syntax, not as word
+# characters. This function owns the FTS5-hostile character set for its one
+# caller (do_search/do_multi_search's sanitize_query() call, and any future
+# caller): that caller passes one opaque free-text query string, never a
+# hand-built FTS5 boolean expression, so none of this syntax is ever an
+# intended feature here -- fold all of it to spaces rather than trying to
+# preserve grouping/filter semantics.
 query = re.sub(r'(?<=\w)-(?=\w)', ' ', query)  # mid-word hyphen only
 query = query.replace(':', ' ')
 query = query.replace('/', ' ')
 query = query.replace('(', ' ').replace(')', ' ')
+query = query.replace('<', ' ').replace('>', ' ')
 
 # Balance parentheses: if unbalanced, strip all parens (no-op now that parens
 # are unconditionally stripped above -- kept so this stays inert rather than

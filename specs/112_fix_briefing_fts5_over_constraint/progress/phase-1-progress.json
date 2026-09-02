@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Strip FTS5-hostile <>/> in sanitize_query()",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fold < and > to spaces in punctuation-normalization block", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Extend comment naming character set owned", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 3, "description": "Re-run research probe check", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no existing behavior regressed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
