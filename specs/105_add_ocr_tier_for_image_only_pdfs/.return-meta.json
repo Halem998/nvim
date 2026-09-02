@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788329488_6a27b9_105",
+  "task_number": 105,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md",
+      "summary": "Confirms the OCR-tier gap in literature-convert.sh, finds ocrmypdf/tesseract already installed system-wide (no venv provisioning needed), and grounds both the 'absence' and 'poor-vintage-OCR' failure classes in live corpus evidence (gabbay_2000 currently gate-rejected on sentence-boundary-glue=10; a manual ocr/sweep_* staging workflow already built by hand in _staging_gametheory). Recommends (1) mandatory actionable-error messaging at both the exit-2 empty-output and exit-3 gate-rejection failure points, and (2) an explicit, non-auto LITERATURE_CONVERTER=ocr mode mirroring the existing pdftotext escape-hatch pattern, reusing the existing fallback tier + normalization + quality gate."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/literature, ocrmypdf and tesseract are already available system-wide via the NixOS system profile (/run/current-system/sw/bin/), independent of this repo's own dependency management. Unlike pymupdf4llm (which needs a pinned uv venv + nix-ld shim to work around compiled-wheel issues, see literature-pyenv-provision.sh), a plain CLI tool like ocrmypdf needs no provisioning step at all -- only a `command -v ocrmypdf` graceful-detection check. When evaluating whether to integrate an external CLI tool into this pipeline, check whether it's a compiled Python extension (needs the venv+shim precedent) vs. a standalone CLI binary (needs only detection) before assuming provisioning complexity.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature", "ocrmypdf", "tesseract", "nix", "dependency-provisioning", "literature-pyenv"]
+    },
+    {
+      "content": "literature-convert.sh's quality gate computes src_words = sum(page.get_text().split() word counts) but only uses it as a page-coverage ratio denominator (bypassed to 1.0 when src_words==0). This is a cheap, already-available, unambiguous 'this PDF has no text layer at all' signal distinct from Task 102's harder Class A/B (structuring-artifact vs. text-layer-defect) discrimination, which IS diagnostic/non-automatable. Don't conflate the two: zero-text-layer detection is safe to automate/message on; Class A vs B classification is not.",
+      "category": "PATTERN",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["literature", "quality-gate", "ocr", "text-layer-detection", "converter-tier"]
+    },
+    {
+      "content": "~/Projects/Literature/_staging_gametheory/ contains operator-built manual tier-escalation staging folders (ocr/ocr2/ocr3, sweep_default/sweep_fallback/sweep_lastresort, retry/stit_retry/stit_missing) -- direct evidence of a real, repeated, entirely manual per-document LITERATURE_CONVERTER escalation workflow (auto -> fallback -> pdftotext -> manual ocrmypdf) that the literature extension's pipeline does not currently support natively. Useful corpus-impact evidence for any future literature-extension conversion-pipeline task.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["literature", "corpus", "staging", "ocr", "manual-workflow", "converter-tier"]
+    }
+  ],
+  "next_steps": "Run /plan 105 to create implementation plan"
+}
