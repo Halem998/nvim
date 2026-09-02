@@ -903,23 +903,81 @@ tier3_search() {
   # as-is with no extra threshold applied here.
   local query_string="${FILTERED_TERMS[*]}"
 
-  # NOTE: single-provider call site, kept behavior-identical to the
-  # pre-extraction script. Phase 5 replaces this body with the ordered
-  # provider chain (Semantic Scholar -> OpenAlex -> Crossref) and the
-  # aggregated TIER3_STATUS line.
-  if ! tier3_try_semantic_scholar "$query_string" "$remaining"; then
-    case "$PROVIDER_FAIL_REASON" in
-      curl_exit)
-        echo "TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)" >&2
+  # Baseline RESULTS length at Tier 3 entry, so `remaining` can be recomputed
+  # from actual emitted-record counts after each provider attempt, mirroring
+  # the outer per-tier rollover math's derive-from-RESULTS approach below,
+  # rather than trusting each provider's own internal counter.
+  local baseline_results
+  baseline_results=$(echo "$RESULTS" | jq 'length' 2>/dev/null || echo "0")
+
+  # Ordered chain: Semantic Scholar first (the already-working default, now
+  # improved by S2_API_KEY support), OpenAlex second (breadth plus native OA
+  # data, no key required), Crossref last (DOI-authoritative but OA-blind).
+  local providers=(semantic_scholar openalex crossref)
+  local any_provider_answered=false
+  local fail_notes=()
+  local tried_providers=()
+  local last_http_code="n/a"
+
+  local provider
+  for provider in "${providers[@]}"; do
+    if [ "$remaining" -le 0 ]; then
+      break
+    fi
+
+    tried_providers+=("$provider")
+    local provider_ok=false
+
+    # Called in `if` condition context -- errexit-exempt, so a provider's
+    # non-zero return (a genuine failure) never aborts the script.
+    case "$provider" in
+      semantic_scholar)
+        if tier3_try_semantic_scholar "$query_string" "$remaining"; then
+          provider_ok=true
+        fi
         ;;
-      http)
-        echo "TIER3_STATUS: FAILED reason=http http_code=${PROVIDER_FAIL_HTTP_CODE} (Semantic Scholar rate-limited or unreachable)" >&2
+      openalex)
+        if tier3_try_openalex "$query_string" "$remaining"; then
+          provider_ok=true
+        fi
         ;;
-      api_error)
-        echo "TIER3_STATUS: FAILED reason=api_error http_code=${PROVIDER_FAIL_HTTP_CODE} (Semantic Scholar API error)" >&2
+      crossref)
+        if tier3_try_crossref "$query_string" "$remaining"; then
+          provider_ok=true
+        fi
         ;;
     esac
+
+    if [ "$provider_ok" = "true" ]; then
+      # The chain does not continue past a real answer, including a
+      # zero-result one -- advancing only on genuine failure is the whole
+      # point of this contract.
+      any_provider_answered=true
+      break
+    fi
+
+    fail_notes+=("${provider}:reason=${PROVIDER_FAIL_REASON}:http=${PROVIDER_FAIL_HTTP_CODE}")
+    last_http_code="$PROVIDER_FAIL_HTTP_CODE"
+
+    local current_results
+    current_results=$(echo "$RESULTS" | jq 'length' 2>/dev/null || echo "0")
+    remaining=$(( TIER3_QUOTA - (current_results - baseline_results) ))
+  done
+
+  # Emit exactly one aggregated failure line, and only when every attempted
+  # provider failed. Literal `TIER3_STATUS: FAILED` substring and a
+  # space-free `http_code=` token both land on this one line, which is what
+  # commands/literature.md's two consumer greps require -- no edit needed
+  # there. Absence of this line still means "Tier 3 ran and found nothing"
+  # for both the quota-zero skip above and a real zero-result answer here.
+  if [ "$any_provider_answered" = "false" ] && [ "${#tried_providers[@]}" -gt 0 ]; then
+    local tried_str notes_str
+    tried_str=$(IFS=', '; echo "${tried_providers[*]}")
+    notes_str=$(IFS='; '; echo "${fail_notes[*]}")
+    echo "TIER3_STATUS: FAILED reason=all_providers_exhausted http_code=${last_http_code} (tried: ${tried_str}; ${notes_str})" >&2
   fi
+
+  return 0
 }
 
 # ---------------------------------------------------------------------------

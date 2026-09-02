@@ -306,31 +306,33 @@ for all three rather than special-casing one.
 
 ---
 
-### Phase 5: Ordered Provider Loop and Aggregated TIER3_STATUS Line [NOT STARTED]
+### Phase 5: Ordered Provider Loop and Aggregated TIER3_STATUS Line [COMPLETED]
 
 **Goal**: Replace the single inline provider call with an ordered chain that advances only on
 genuine failure, and emit one backward-compatible aggregated failure line only when all providers
 failed.
 
 **Tasks**:
-- [ ] In `tier3_search()`, after the existing `TIER3_QUOTA <= 0` skip and query-string build,
-      capture a baseline `RESULTS` length so per-provider emission can be counted.
-- [ ] Define the ordered chain `semantic_scholar openalex crossref` (Semantic Scholar first as the
+- [x] In `tier3_search()`, after the existing `TIER3_QUOTA <= 0` skip and query-string build,
+      capture a baseline `RESULTS` length so per-provider emission can be counted. *(completed)*
+- [x] Define the ordered chain `semantic_scholar openalex crossref` (Semantic Scholar first as the
       already-working default now improved by Fix 1; OpenAlex second for breadth plus native OA
-      data with no key required; Crossref last as DOI-authoritative but OA-blind).
-- [ ] Loop over the chain: break when `remaining <= 0`; call the provider in `if` condition
+      data with no key required; Crossref last as DOI-authoritative but OA-blind). *(completed)*
+- [x] Loop over the chain: break when `remaining <= 0`; call the provider in `if` condition
       context (errexit-safe); on success set `any_provider_answered=true` and **break** — the
       chain does not continue past a real answer, including a zero-result one; on failure append
       `provider:reason=<r>:http=<code>` to a `fail_notes` array and record `last_http_code`.
-- [ ] Recompute `remaining` from `TIER3_QUOTA` minus (current `RESULTS` length minus the baseline
+      *(completed)*
+- [x] Recompute `remaining` from `TIER3_QUOTA` minus (current `RESULTS` length minus the baseline
       captured at entry), mirroring the outer rollover math's derive-from-RESULTS approach.
-- [ ] When and only when `any_provider_answered` is false, emit exactly one line to stderr in the
+      *(completed)*
+- [x] When and only when `any_provider_answered` is false, emit exactly one line to stderr in the
       shape `TIER3_STATUS: FAILED reason=all_providers_exhausted http_code=<last|n/a> (tried: ...; <fail_notes>)`
       — literal `TIER3_STATUS: FAILED` substring present, `http_code=` followed by a token with no
-      embedded spaces, all on one line.
-- [ ] Preserve the two existing silences: no line on a `TIER3_QUOTA <= 0` skip, and no line when a
-      provider answered with zero matches.
-- [ ] Keep `tier3_search()` returning 0 in every path (Tier 3 stays non-fatal).
+      embedded spaces, all on one line. *(completed)*
+- [x] Preserve the two existing silences: no line on a `TIER3_QUOTA <= 0` skip, and no line when a
+      provider answered with zero matches. *(completed)*
+- [x] Keep `tier3_search()` returning 0 in every path (Tier 3 stays non-fatal). *(completed)*
 
 **Timing**: 1 hour
 
