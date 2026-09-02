@@ -8,11 +8,7 @@
   "critical_paths": [
     {
       "path": "skills/skill-orchestrate/SKILL.md",
-      "label": "multi-task dispatch state machine"
-    },
-    {
-      "path": "skills/skill-orchestrate-hard/SKILL.md",
-      "label": "hard-mode dispatch contracts"
+      "label": "multi-task dispatch state machine (both effort modes: hard-mode dispatch contracts now live here too, since the former standalone hard-mode engine was merged in and deleted)"
     },
     {
       "path": "commands/orchestrate.md",

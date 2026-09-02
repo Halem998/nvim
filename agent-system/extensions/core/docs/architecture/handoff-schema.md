@@ -4,9 +4,15 @@
 
 **File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (per-dispatch runtime state,
 tracked as durable provenance)
-**Written by**: The hard-mode implementation agent only — this artifact is formally
-hard-mode-implement-only (see "Handoff Writers" below)
-**Read by**: `skill-orchestrate` and `skill-orchestrate-hard` state machine loops
+**Written by**: A hard-mode implementation agent only — this artifact is formally
+hard-mode-implement-only (see "Handoff Writers" below). Core's own standalone hard-mode
+implementation agent was deleted along with the rest of core's `-hard` lifecycle skills/agents;
+today only cslib's and lean's hard-mode implementation agents still write this file, since core's
+`general`/`meta`/`markdown` task types now resolve hard-mode implement dispatch to the SAME
+base-mode `general-implementation-agent`, which never writes a handoff — see "Handoff Writers"
+below for the full, current writer set.
+**Read by**: `skill-orchestrate`'s state machine loop (a single engine now covers both effort
+modes)
 **Machine-checkable schema**: `context/schemas/orchestrator-handoff-schema.json` is the single
 source of truth this document, `wrap-up.md`, and `validate-handoff.sh` all point at rather than
 restating independently.
@@ -42,9 +48,8 @@ absent from the hook input), so the hook is structurally blind to that class of 
 codebase previously had exactly such a writer (a Bash-redirect helper function in
 `scripts/skill-base.sh` with zero callers); it has been deleted rather than rewired, closing the
 coverage gap by removing the class of writer rather than patching the hook. The orchestrator-side
-stray-handoff sweep (`skill-orchestrate` and
-`skill-orchestrate-hard`, Stage 5) remains the mechanism-agnostic backstop should a future
-Bash-redirect writer ever be introduced.
+stray-handoff sweep (`skill-orchestrate` Stage 5, covering both effort modes) remains the
+mechanism-agnostic backstop should a future Bash-redirect writer ever be introduced.
 
 **Readers MUST check freshness.** A handoff at the correct path is not necessarily *this
 dispatch's* handoff. Both orchestrators compare the file's mtime against `dispatch_start_ts` —
@@ -94,7 +99,7 @@ behind" — has **one canonical, writable form**:
 
 | Form | Shape | Who writes it | Canonical source |
 |------|-------|----------------|-------------------|
-| **Flat** `continuation_path` | top-level string, e.g. `"specs/NNN_slug/handoffs/phase-N-handoff-TS.md"` | The hard-mode implementation agent's H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, and the cslib/lean counterparts) — the only writer of `.orchestrator-handoff.json` | `context/contracts/wrap-up.md`'s Orchestrator Handoff JSON Schema and `context/schemas/orchestrator-handoff-schema.json` — this is the canonical, required shape |
+| **Flat** `continuation_path` | top-level string, e.g. `"specs/NNN_slug/handoffs/phase-N-handoff-TS.md"` | A hard-mode implementation agent's H9 wrap-up (core's own is deleted; the cslib and lean counterparts are the surviving writers today) | `context/contracts/wrap-up.md`'s Orchestrator Handoff JSON Schema and `context/schemas/orchestrator-handoff-schema.json` — this is the canonical, required shape |
 
 The **nested** `continuation_context` form (`{ "handoff_path": "...", "orchestrator_mode": true
 }`) is **deprecated and read-only-accepted**: no writer anywhere emits it — its sole writer, a
@@ -108,12 +113,12 @@ carry the nested form, and a reader that suddenly stopped accepting it would mis
 continuation as absent.
 
 **Reader behavior is unchanged by the writer's retirement.** `validate-handoff.sh`,
-`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, `skill-orchestrate/SKILL.md`
-(Stage 4 partial handler, Stage 5 result read, Stage MT-4 dispatch bullet), and
-`skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read) all continue to
-resolve **either** form, normalizing to `{ handoff_path, orchestrator_mode: true }` before the
-value is handed to a successor dispatch. Do not narrow any of these readers to reject the nested
-form without first confirming no in-flight handoff still carries it.
+`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, and
+`skill-orchestrate/SKILL.md` (Stage 4 partial handler and hard-mode H1 branch, Stage 5 result
+read, Stage MT-4 dispatch bullet — one engine, both effort modes) all continue to resolve
+**either** form, normalizing to `{ handoff_path, orchestrator_mode: true }` before the value is
+handed to a successor dispatch. Do not narrow any of these readers to reject the nested form
+without first confirming no in-flight handoff still carries it.
 
 **Do not re-introduce a nested-form writer** without updating this document, the schema file's
 `deprecated` annotation, and re-deriving the reasoning above — the point of retiring the writer
@@ -170,8 +175,8 @@ use it, or attempt to extend it, as a substitute for `dispatch_seq` below.
 Orchestrator-minted, unforgeable per-dispatch identity. See "Readers MUST check freshness" above
 for the full rationale. Minted by the orchestrator immediately before the `Agent` tool call,
 embedded in that dispatch's delegation context (alongside `handoff_path`), and echoed back
-unchanged by the dispatched agent in this field. Stage 5 of both `skill-orchestrate` and
-`skill-orchestrate-hard` compares this value against the value minted for the current cycle:
+unchanged by the dispatched agent in this field. Stage 5 of `skill-orchestrate` (both effort
+modes, one engine) compares this value against the value minted for the current cycle:
 - Match (or field absent from the handoff): accepted, subject to the existing mtime check.
 - Mismatch: rejected — `handoff_stale=true`, the same loud-error path the mtime check already
   takes, naming both the expected and observed values.
@@ -273,9 +278,10 @@ section for the full per-field definition. Read only by the hard engine.
 A git checkpoint reference (commit SHA, `working-progress-*.patch` path, `stash@{N}` ref, or
 `untracked-backup-{ts}` path) recorded at a context-pressure or phase-end handoff, so a fresh
 dispatch can locate checkpointed state without re-deriving it. See
-`general-implementation-hard-agent.md`'s Stage 4C checkpoint sub-section for the full write
-contract — it may appear at the top level or nested inside the relevant `blockers` entry for the
-interrupted phase.
+`context/patterns/checkpoint-before-overflow.md`, the shared CHECKPOINT-BEFORE-OVERFLOW procedure
+every implementation agent (base and hard-mode alike, core and extension) follows, for the full
+write contract — it may appear at the top level or nested inside the relevant `blockers` entry
+for the interrupted phase.
 
 ### `phases_completed` / `phases_total` (required, integers, TOP LEVEL)
 Phase-accounting fields read by the completion-claim verification gate (see below). These are
@@ -376,11 +382,19 @@ research/plan/implement return via `.return-meta.json` (recovered by
 `orchestrate-recover-outcome.sh` — see "Outcome Channels" below); research agents never write a
 handoff at all, in any mode. This is a decided contract, not a default that happened to emerge.
 
+Core's own standalone hard-mode implementation agent (the former sole core writer, H9 Stage 5)
+was deleted along with the rest of core's `-hard` lifecycle skills/agents. Core's
+`general`/`meta`/`markdown` task types now resolve hard-mode implement dispatch to the SAME
+base-mode `general-implementation-agent` used by standard mode (routing_agents_hard for core was
+removed; resolution falls through to routing_agents) — which, per the base-mode row below, never
+writes a handoff. **Consequence**: core task types produce no `.orchestrator-handoff.json` under
+`--hard` any more than they do under standard mode; only cslib and lean, which still declare
+their own hard-mode implementation agents, remain active writers.
+
 | Writer | Status | Continuation form emitted | Notes |
 |--------|--------|----------------------------|-------|
-| `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | **Flat** `continuation_path` | The only writer of `.orchestrator-handoff.json`; see `context/contracts/wrap-up.md`'s canonical schema |
-| cslib and lean hard-mode implementation agent counterparts | Active | **Flat** `continuation_path` | Mirror the core H9 wrap-up, with two known, named, unlanded gaps left as follow-ups (both extensions are out of this document's declared scope): `cslib-implementation-hard-agent.md` Stage 5 hardcodes `continuation_context: null` with no population instruction, and lacks the `artifacts`-shape spec; `lean-implementation-hard-agent.md` Stage 5 omits `artifacts` entirely and also carries a redundant `continuation_context: null` now that only the flat form is canonical. |
-| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Never writes a handoff, by design | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); base-mode plan/implement rely exclusively on `.return-meta.json`. This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
+| cslib and lean hard-mode implementation agent counterparts | Active | **Flat** `continuation_path` | The only writers of `.orchestrator-handoff.json` today (core's own counterpart is deleted; see above), with two known, named, unlanded gaps left as follow-ups (both extensions are out of this document's declared scope): `cslib-implementation-hard-agent.md` Stage 5 hardcodes `continuation_context: null` with no population instruction, and lacks the `artifacts`-shape spec; `lean-implementation-hard-agent.md` Stage 5 omits `artifacts` entirely and also carries a redundant `continuation_context: null` now that only the flat form is canonical. See `context/contracts/wrap-up.md`'s canonical schema |
+| Base-mode `general-research-agent`, `planner-agent`, `general-implementation-agent` (used for BOTH standard and hard-mode dispatch on core task types) | Never writes a handoff, by design | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); plan/implement rely exclusively on `.return-meta.json`. This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
 
 Every agent contract that could nonetheless end up writing this file carries its own "Defensive
 case" paragraph covering exactly that scenario; those paragraphs are the fallback guidance for
@@ -395,8 +409,8 @@ the interim safety net. Resolving it is a maintainer-level decision between two 
 stop instructing research agents to write the file, restoring the documented invariant as
 written, or (b) expand the documented writer set above to match observed practice.
 
-**No consumer-side dual-shape tolerance exists for this file today.** Both direct handoff-artifact
-reads (`skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`) are raw, unguarded
+**No consumer-side dual-shape tolerance exists for this file today.** The direct handoff-artifact
+read in `skill-orchestrate/SKILL.md` (both effort modes, one engine) is a raw, unguarded
 `jq -r '.artifacts[0].path // ""'` — there is no tolerance to remove or retain, and a future
 reader should not search for one.
 
@@ -418,10 +432,10 @@ in `context/schemas/orchestrator-handoff-schema.json`.
 producer-defect diagnostic from `skill_corroborate_phase_counts()` in
 `agent-system/extensions/core/scripts/skill-base.sh`, firing only when that function receives a
 non-empty, existing `handoff_path` argument (the handoff-present corroboration call sites in
-`skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md` Stage 5 pass the current
-handoff; the recovery-path call sites pass an empty string, since there is no handoff to validate
-there). Its exit status never influences `skill_corroborate_phase_counts()`'s own return value or
-the completion-claim gate.
+`skill-orchestrate/SKILL.md` Stage 5, both effort modes, pass the current handoff; the
+recovery-path call sites pass an empty string, since there is no handoff to validate there). Its
+exit status never influences `skill_corroborate_phase_counts()`'s own return value or the
+completion-claim gate.
 
 ---
 
@@ -521,7 +535,8 @@ dispatch) but not a sufficient one: base-mode research/plan/implement also recei
 never this file.
 
 ```bash
-# In general-implementation-hard-agent.md's Stage 5, after receiving delegation context:
+# In a hard-mode implementation agent's Stage 5 (cslib/lean; core's own is deleted), after
+# receiving delegation context:
 orchestrator_mode=$(echo "$delegation_context" | jq -r '.orchestrator_mode // "false"')
 
 if [ "$orchestrator_mode" = "true" ]; then
@@ -624,10 +639,10 @@ plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "abse
 ```
 
 This dual-form resolution is applied identically at every reader site:
-`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate,
-`skill-orchestrate/SKILL.md` (Stage 4 partial handler, Stage 5 result read, Stage MT-4 dispatch
-bullet), and `skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read).
-It is one rule, applied in several places — never independently re-derived.
+`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, and
+`skill-orchestrate/SKILL.md` (Stage 4 partial handler and hard-mode H1 branch, Stage 5 result
+read, Stage MT-4 dispatch bullet — one engine, both effort modes). It is one rule, applied in
+several places — never independently re-derived.
 
 When `status = "implemented"`, the orchestrator additionally calls
 `skill_gate_completion_claim` (see the `plan_markers_verified` field definition above) to decide
@@ -649,8 +664,8 @@ narrow, grep-only exceptions are sanctioned, and all three are bounded to `### P
 
 Outside these three, the reading contract is unchanged: the handoff object is the sole channel
 by which artifact content reaches the orchestrator. See the "Recovery exception (phase-marker
-grep)" contract in `skill-orchestrate/SKILL.md` and the Read allowlist in
-`skill-orchestrate-hard/SKILL.md` for the binding wording.
+grep)" contract and Read allowlist, both in `skill-orchestrate/SKILL.md`, for the binding
+wording.
 
 ---
 
@@ -717,8 +732,9 @@ or plan dispatches, which never write this file at all.
 
 ### Partial with Continuation (the one canonical form)
 
-This is the shape hard-mode H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, the only
-writer) emits — a flat top-level `continuation_path` string, per `context/contracts/wrap-up.md`:
+This is the shape hard-mode H9 wrap-up (Stage 5 of a hard-mode implementation agent — today only
+cslib's and lean's, since core's own is deleted; see "Handoff Writers" above) emits — a flat
+top-level `continuation_path` string, per `context/contracts/wrap-up.md`:
 
 ```json
 {
@@ -819,13 +835,13 @@ The orchestrator handoff and continuation handoff are written by different compo
 different consumers:
 
 ```
-general-implementation-hard-agent (H9 wrap-up, the only writer):
+a hard-mode implementation agent (H9 wrap-up — cslib/lean today; core's own is deleted):
   ├── Writes: handoffs/phase-2-handoff-T.md   (for successor agent)
-  └── Writes: .orchestrator-handoff.json      (for skill-orchestrate / skill-orchestrate-hard)
+  └── Writes: .orchestrator-handoff.json      (for skill-orchestrate)
               └── continuation_path = "handoffs/phase-2-handoff-T.md"   (the one canonical
                   writable form — see "One Write Form, Deprecated-But-Accepted Read Form" above)
 
-skill-orchestrate / skill-orchestrate-hard (next cycle):
+skill-orchestrate (next cycle, either effort mode — one engine):
   ├── Reads: .orchestrator-handoff.json       (400 tokens)
   │          └── resolves continuation_path (or a deprecated legacy continuation_context.handoff_path)
   └── Passes: normalized continuation_context = { handoff_path, orchestrator_mode: true }

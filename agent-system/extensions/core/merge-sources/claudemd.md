@@ -155,10 +155,6 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-reviser | reviser-agent |
 | skill-spawn | spawn-agent |
 | skill-orchestrate | (direct execution) |
-| skill-orchestrate-hard | (direct execution) |
-| skill-researcher-hard | general-research-hard-agent |
-| skill-planner-hard | planner-hard-agent |
-| skill-implementer-hard | general-implementation-hard-agent |
 | skill-git-workflow | (direct execution) |
 | skill-fix-it | (direct execution) |
 | skill-zulip | (direct execution) |

@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "De-reference the routing and orchestration-engine documentation",
+  "started_at": "2026-09-02T19:05:00Z",
+  "last_updated": "2026-09-02T20:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-orchestrate/SKILL.md rewrite (19 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "commands/orchestrate.md rewrite (2 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 3, "description": "merge-sources/claudemd.md rewrite (4 rows)", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "context/guides/hard-mode-routing.md rewrite (9 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 5, "description": "context/guides/manifest-routing-schema.md rewrite (3 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 6, "description": "docs/architecture/handoff-schema.md rewrite (16 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 7, "description": "docs/architecture/batch-admit-schema.md + orchestrate-state-machine.md rewrite (6+2 occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md", "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 8, "description": "context/reference/orchestrator-critical-paths.json (1 occurrence)", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"]},
+    {"id": 9, "description": "docs/reference/utility-scripts-inventory.md (1 occurrence)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Repo-wide census after Phase 6: 84 occurrences across 30 files remaining (down from 201/41 post-Phase-4) -- entirely Phase 7's designated scope (contracts, patterns, standards, scripts, extension-side citations).",
+    "Surfaced a real architectural consequence while rewriting handoff-schema.md: core's general/meta/markdown task types now resolve hard-mode implement dispatch to the SAME base-mode general-implementation-agent (routing_agents_hard removed for core), which never writes .orchestrator-handoff.json -- so core task types under --hard no longer produce a handoff at all; only cslib and lean, which retain their own hard-mode implementation agents, remain active writers. Documented explicitly rather than silently glossed over.",
+    "check-extension-docs.sh re-run after this phase shows the same 7 expected 'deployed script content drift' FAILs as after Phase 4 (no new categories, no broken references) -- confirms this phase introduced no new deploy-consistency issues."
+  ]
+}

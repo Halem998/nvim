@@ -491,33 +491,54 @@ line grep) before editing; if any occurrence appears at a path other than
 
 ---
 
-### Phase 6: De-reference the routing and orchestration-engine documentation [NOT STARTED]
+### Phase 6: De-reference the routing and orchestration-engine documentation [COMPLETED]
 
 **Goal**: Rewrite the documents that describe hard-mode routing and the orchestration engine so
 they describe the post-deletion architecture. These are the highest-density and most load-bearing
 references: read as live behavioral claims, they become false the moment Phase 4 lands.
 
 **Tasks**:
-- [ ] `skills/skill-orchestrate/SKILL.md` — rewrite references to the deleted engine and agents.
+- [x] `skills/skill-orchestrate/SKILL.md` — rewrite references to the deleted engine and agents.
       Many are provenance comments explaining what was migrated *from* `skill-orchestrate-hard`;
       keep the explanation, drop the implication that the source file still exists (e.g. phrase as
-      "the superseded hard engine" rather than a live path).
-- [ ] `commands/orchestrate.md` — remove `skill-orchestrate-hard` from the `--hard` dispatch
-      description; `--hard` now sets `hard_mode` inside `skill-orchestrate`.
-- [ ] `merge-sources/claudemd.md` — remove the four deleted skill/agent rows from the
+      "the superseded hard engine" rather than a live path). *(completed: all 19 occurrences
+      rewritten to phrase past cross-file synchronization as within-file dual-branch handling, and
+      provenance mentions as "the superseded standalone hard-mode engine")*
+- [x] `commands/orchestrate.md` — remove `skill-orchestrate-hard` from the `--hard` dispatch
+      description; `--hard` now sets `hard_mode` inside `skill-orchestrate`. *(completed: 2
+      occurrences retargeted)*
+- [x] `merge-sources/claudemd.md` — remove the four deleted skill/agent rows from the
       Skill-to-Agent Mapping table and any hard-routing prose naming them. This is the source of
       the generated `.claude/CLAUDE.md`, which currently lists all four as live skills.
-- [ ] `context/guides/hard-mode-routing.md` — the routing table's three
+      *(completed: 4 rows removed)*
+- [x] `context/guides/hard-mode-routing.md` — the routing table's three
       "Core manifest routing_hard + Step 4e fallback" rows and the `skill-orchestrate-hard`
-      row are now wrong. Rewrite for the single-engine model.
-- [ ] `context/guides/manifest-routing-schema.md` — update the two examples and the consumer list.
-- [ ] `docs/architecture/handoff-schema.md` — the "Read by" line, the Handoff Writers table
+      row are now wrong. Rewrite for the single-engine model. *(completed: "Deployed Hard Skills"
+      table rewritten to list only cslib/lean's surviving domain-specific -hard skills;
+      "Orchestrate-Hard: Same Resolver, Different Block" section rewritten as "Orchestrate Hard
+      Mode: One Engine, Effort-Gated")*
+- [x] `context/guides/manifest-routing-schema.md` — update the two examples and the consumer list.
+      *(completed: 3 occurrences retargeted, preserving the "before this task" provenance
+      narrative)*
+- [x] `docs/architecture/handoff-schema.md` — the "Read by" line, the Handoff Writers table
       (which names `general-implementation-hard-agent.md` as "the only writer"), and the Stage
-      4/5 reader citations all need retargeting to the surviving writer/reader.
-- [ ] `docs/architecture/batch-admit-schema.md` and `docs/architecture/orchestrate-state-machine.md`
-      — retarget engine citations.
-- [ ] `context/reference/orchestrator-critical-paths.json` — remove or retarget the deleted path.
-- [ ] `docs/reference/utility-scripts-inventory.md` — retarget its one citation.
+      4/5 reader citations all need retargeting to the surviving writer/reader. *(completed: all
+      16 occurrences retargeted. Surfaced and documented a real architectural consequence in the
+      process: core's general/meta/markdown task types now resolve hard-mode implement dispatch
+      to the SAME base-mode general-implementation-agent, which never writes a handoff — so core
+      task types produce no `.orchestrator-handoff.json` under `--hard` any more than under
+      standard mode; only cslib and lean, which still declare their own hard-mode implementation
+      agents, remain active writers)*
+- [x] `docs/architecture/batch-admit-schema.md` and `docs/architecture/orchestrate-state-machine.md`
+      — retarget engine citations. *(completed: 6 + 2 occurrences retargeted; two Version History
+      table rows describing the now-deleted file's historical co-maintenance updates were reworded
+      to reference "the former standalone hard-mode orchestrator's own transcription (file since
+      deleted)" rather than dropped, preserving the historical record)*
+- [x] `context/reference/orchestrator-critical-paths.json` — remove or retarget the deleted path.
+      *(completed: the dedicated skill-orchestrate-hard/SKILL.md entry removed; its "hard-mode
+      dispatch contracts" label folded into the skill-orchestrate/SKILL.md entry's own label)*
+- [x] `docs/reference/utility-scripts-inventory.md` — retarget its one citation. *(completed:
+      lint-contract-compliance.sh's description rewritten to match its Phase 2 retargeted checks)*
 
 **Timing**: 2.0 hours
 

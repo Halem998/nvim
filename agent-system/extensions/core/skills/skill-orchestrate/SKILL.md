@@ -181,9 +181,9 @@ trust model, created and read only inside `$hard_mode` branches below. See
 
 ```bash
 # Cycle budget is mode-aware: hard mode's per-phase dispatch (H1) needs roughly one cycle per
-# phase, so a 7-phase plan needs ~7 cycles minimum — the same rationale
-# skill-orchestrate-hard/SKILL.md's Stage 2 carried for its own fixed MAX_CYCLES=13. Base mode's
-# whole-plan-per-dispatch handler keeps its original budget.
+# phase, so a 7-phase plan needs ~7 cycles minimum — carried forward as the fixed
+# MAX_CYCLES=13 below (the value the former standalone hard-mode engine used before it was
+# merged into this file). Base mode's whole-plan-per-dispatch handler keeps its original budget.
 if [ "$hard_mode" = "true" ]; then
   MAX_CYCLES=13
 else
@@ -192,11 +192,10 @@ fi
 # Single shared implementation, orchestrate-loop-guard-init.sh — see that script's header for
 # the full contract (MAX_INFRA_FAILURES constant, loop_guard_file/handoff_file assignment,
 # mkdir -p "$TASK_DIR", and the blocker-escalation counter pair applied further below in this
-# same fence). This is the same call skill-orchestrate-hard/SKILL.md's Stage 2 makes for its own
-# genuinely-common portion — everything else in this stage (the hard-only loop-guard-staleness
-# detector, churn-state init) stays per-engine, either because it differs or because it sits
-# inside the locked budget-continuation-override region below, which this script and its call
-# site never touch.
+# same fence). This one call now covers both effort-mode branches in this file — everything else
+# in this stage (the hard-only loop-guard-staleness detector, churn-state init) stays
+# mode-specific, either because it differs or because it sits inside the locked
+# budget-continuation-override region below, which this script and its call site never touch.
 loop_guard_init_json=$(bash .claude/scripts/orchestrate-loop-guard-init.sh "$TASK_DIR" "${HANDOFF_PATH_ABS}")
 loop_guard_file=$(echo "$loop_guard_init_json" | jq -r '.loop_guard_file')
 handoff_file=$(echo "$loop_guard_init_json" | jq -r '.handoff_file')
@@ -340,11 +339,10 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # declaration). `// []` is the forward-compatible read for a guard file written before this
   # field existed, matching the `// 0` idiom above.
   detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file")
-  # dispatch_seq_counter: orchestrator-minted per-dispatch identity (Defect A), verbatim-twin
-  # field to skill-orchestrate-hard/SKILL.md's Stage 2. `// 0` forward-compatible read, matching
-  # cycle_count's own idiom — a guard written before this field existed resumes at 0, never
-  # repeating a value already minted this task since the counter only ever increments (see
-  # mint_dispatch_seq() below).
+  # dispatch_seq_counter: orchestrator-minted per-dispatch identity (Defect A), read identically
+  # regardless of effort mode. `// 0` forward-compatible read, matching cycle_count's own idiom —
+  # a guard written before this field existed resumes at 0, never repeating a value already
+  # minted this task since the counter only ever increments (see mint_dispatch_seq() below).
   dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$loop_guard_file")
   # burnout_signals_this_session: hard-mode-only counter (D3 — written in BOTH modes via the
   # unified loop-guard schema below, so this read is unconditional and forward-compatible; base
@@ -482,16 +480,12 @@ fi
 
 **On the `budget-continuation-override` region above (Defect B)**: this rewrites the SAME
 `loop_guard_file` in place (via the archived copy), specifically so `dispatch_seq_counter` and
-`detected_defects` are carried forward rather than reset to their fresh-init defaults. This is
-the same mechanism `skill-orchestrate-hard/SKILL.md`'s Stage 2 implements — the decision is
-identical in both engines — but the mechanism itself is necessarily NET-NEW code here rather than
-a byte-for-byte mirror, because base mode has no `loop-guard-staleness` detector region for it to
-sit adjacent to.
+`detected_defects` are carried forward rather than reset to their fresh-init defaults. This
+decision applies identically to both effort modes, since this single engine now handles both.
 
 **Decision record**: `cycle_count` is a per-task, cumulative budget that survives re-invocation by
 design — this is the existing, deliberate semantics (protected by
-`test-session-runtime-files.sh` Case 3), not a new decision introduced by this override. The same
-record appears in `skill-orchestrate-hard/SKILL.md`'s Stage 2 so both engines visibly agree.
+`test-session-runtime-files.sh` Case 3), not a new decision introduced by this override.
 
 **Asymmetry decision (recorded, "recorded not acted on" style)**: the 3-signal
 `loop-guard-staleness` detector now exists in this engine, behind the `$hard_mode` gate (D4) —
@@ -1410,8 +1404,8 @@ research_artifact=$(jq -r --argjson num "$task_number" \
   specs/state.json)
 ```
 
-**H4: Adversarial verification gate (hard mode only)** — ported from
-`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+**H4: Adversarial verification gate (hard mode only)** — ported from the superseded
+standalone hard-mode engine's `researched` handler, landing corrected matcher patterns
 rather than transcribing the original false-negative ones (see the companion word-boundary
 portability audit for the general defect shape this instance exercises). In base mode
 (`$hard_mode = false`) this gate is a no-op and `skill_preflight_update` below runs unchanged.
@@ -1445,7 +1439,8 @@ if [ "${hard_mode:-false}" = "true" ] && [ "$adversarial_verified" = "false" ]; 
     else
       # Dispatch a focused verification research pass. $RESEARCH_AGENT never writes
       # .orchestrator-handoff.json, per the Stage 3.6 "Scoping Decision" in
-      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+      # general-research-agent.md (core's own hard-mode research agent counterpart is deleted; the cslib
+      # and lean hard-mode research agents mirror the same scoping decision) and the Handoff Writers table
       # in docs/architecture/handoff-schema.md, so no absolute anchor (handoff_path) is passed
       # here, and orchestrator_mode is explicitly false.
       dispatch_start_ts=$(date -u +%s)
@@ -1546,8 +1541,8 @@ research_artifact=$(jq -r --argjson num "$task_number" \
   specs/state.json)
 ```
 
-**H4: Adversarial verification gate (hard mode only)** — ported from
-`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+**H4: Adversarial verification gate (hard mode only)** — ported from the superseded
+standalone hard-mode engine's `researched` handler, landing corrected matcher patterns
 rather than transcribing the original false-negative ones (see the companion word-boundary
 portability audit for the general defect shape this instance exercises). In base mode
 (`$hard_mode = false`) this gate is a no-op and `skill_preflight_update` below runs unchanged.
@@ -1581,7 +1576,8 @@ if [ "${hard_mode:-false}" = "true" ] && [ "$adversarial_verified" = "false" ]; 
     else
       # Dispatch a focused verification research pass. $RESEARCH_AGENT never writes
       # .orchestrator-handoff.json, per the Stage 3.6 "Scoping Decision" in
-      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+      # general-research-agent.md (core's own hard-mode research agent counterpart is deleted; the cslib
+      # and lean hard-mode research agents mirror the same scoping decision) and the Handoff Writers table
       # in docs/architecture/handoff-schema.md, so no absolute anchor (handoff_path) is passed
       # here, and orchestrator_mode is explicitly false.
       dispatch_start_ts=$(date -u +%s)
@@ -1706,7 +1702,8 @@ phases_completed_before="$phases_completed"
 
 # Heading-scan phase selection, replacing a naive next_phase=$((phases_completed + 1)) integer
 # increment (could not address N.1/N.2 sub-phase headings, sparse numbering, or
-# skeleton-exhaustion). Mirrors skill-implementer-hard/SKILL.md Stage 3b's own fix.
+# skeleton-exhaustion). Mirrors the same Stage 3b fix the superseded standalone hard-mode
+# implementer skill once carried.
 next_phase=""
 phase_scan_inconclusive=false
 if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
@@ -1820,8 +1817,10 @@ elif [ -n "$next_phase" ]; then
   # marker write and the plan-level [STATUS] stamp (via update-plan-status.sh) — it writes NO
   # per-phase marker, on any path: the dispatched implementation agent owns every per-phase
   # [IN PROGRESS]/[COMPLETED] transition directly via its own explicit phase-status calls, as
-  # the first action of processing whichever phase it actually works on (see Stage 4A of
-  # general-implementation-hard-agent). This is deliberate, not an oversight — re-deriving "the
+  # the first action of processing whichever phase it actually works on (see
+  # general-implementation-agent.md's Phase Checkpoint Protocol / Stage 4A, which every
+  # implement-dispatch target — base or hard-mode, core or extension — follows the same shape
+  # of). This is deliberate, not an oversight — re-deriving "the
   # first NOT STARTED phase" here with a narrower scan could advance a phase this dispatch
   # never touched, diverging from the wider `next_phase` selection above whenever the
   # dispatched phase was itself a resumed IN PROGRESS/PARTIAL/BLOCKED one.
@@ -2324,9 +2323,9 @@ fi
 # (return-meta fallback)"; the widened evidence-corroboration narrative for a recovered outcome
 # — the PHASES_ZERO_ON_SUCCESS arm calling skill_corroborate_phase_counts, and the sibling
 # ARTIFACTS_SHAPE_MISMATCH arm; infra-failure discrimination and the sanctioned phase-marker
-# recovery grep for a non-recovered outcome). This is the same call
-# skill-orchestrate-hard/SKILL.md's Stage 5 makes, so the two engines cannot drift apart on this
-# logic again. The script never sets loop state itself — it only computes and prints a decision
+# recovery grep for a non-recovered outcome). This one call now covers both effort-mode branches
+# in this file, so the logic cannot drift apart the way it once could across two separate
+# engines. The script never sets loop state itself — it only computes and prints a decision
 # JSON; every field below is applied inline, in the same branch shape the pre-dedup code used.
 stage5_gates_json=$(bash .claude/scripts/orchestrate-stage5-gates.sh \
   "$TASK_DIR" "$task_number" "$session_id" "$handoff_file" "$handoff_stale" \
@@ -2533,8 +2532,8 @@ fi
 # Single shared implementation, orchestrate-stage5-postflight.sh — see that script's header for
 # the full contract (the researched/planned/implemented/partial|failed|blocked/Tier C case
 # ladder, the completion-claim gate, the completion-propagation call, the artifact-linking
-# block). This is the same call skill-orchestrate-hard/SKILL.md's Stage 5 makes, so the two
-# engines cannot drift apart on this logic again. The script performs the real state.json/
+# block). This one call now covers both effort-mode branches in this file, so the logic cannot
+# drift apart the way it once could across two separate engines. The script performs the real state.json/
 # TODO.md writes, but the actual loop-halting decision (`EXIT (partial)`) and the cycle_count
 # increment below stay HERE, applied inline from the script's decision JSON — this is the
 # mitigation for the state-swallowing risk: a script boundary must never silently absorb an
@@ -2671,8 +2670,10 @@ if [ "${hard_mode:-false}" = "true" ]; then
         verbatim_goal=$(echo "$handoff" | jq -r '.blockers[0].verbatim_goal // ""')
 
         # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
-        # Decision" in general-research-agent.md / general-research-hard-agent.md and the
-        # Handoff Writers table in docs/architecture/handoff-schema.md — so no absolute anchor
+        # Decision" in general-research-agent.md (core's own hard-mode research agent
+        # counterpart is deleted; the cslib and lean hard-mode research agents mirror the same
+        # scoping decision) and the Handoff Writers table in
+        # docs/architecture/handoff-schema.md — so no absolute anchor
         # (handoff_path) is passed here, and orchestrator_mode is explicitly false.
         Agent tool:
           subagent_type: $RESEARCH_AGENT
@@ -3051,8 +3052,8 @@ subsection):
   semantics, consumers, and Stage MT-5 role byte-for-byte.
 - `detected_defects: []` — an APPEND-ONLY OBSERVATION LOG of every system-defect detection that
   fired during this run. This declaration is the SINGLE canonical definition of the field's
-  contract; `skill-orchestrate-hard/SKILL.md` points back here rather than restating it, so the
-  two engines cannot drift.
+  contract, read identically by both effort-mode branches in this file — there is no longer a
+  second engine file that could drift from it.
 
   **Entry shape**:
   `{"task": <int>, "defect_class": <string>, "attributed_source_path": <string>, "detecting_site": <string>, "cycle": <int>, "detail": <string>, "record_result": <string|null>}`.
@@ -3105,17 +3106,18 @@ subsection):
   `defer_ledger` — that log's `defer_reason` vocabulary is load-bearing for admission reporting,
   and an advisory has no `defer_reason` at all.
 
-**Hard-mode finding, recorded, not acted on**: `skills/skill-orchestrate-hard/SKILL.md` has no
-MT-stage implementation of its own — its Stage 0 states explicitly that when `multi_task_mode` is
-true it "use[s] base multi-task stages", i.e. these SAME Stage MT-1 through MT-5 stages in
-`skill-orchestrate/SKILL.md`. Multi-task `/orchestrate --hard` therefore already writes
-`mt_state_file.dispatch_start_ts`, `defer_ledger`, and `forward_progress_violated` via this same
-file with no separate hard-mode edit needed. The `dispatch_start_ts` occurrences that DO appear as
-hard-mode-local shell variables elsewhere in `skill-orchestrate-hard/SKILL.md` belong to its
-single-task (non-MT) infra-failure-discrimination logic — a same-named but unrelated local
-variable, not the `mt_state_file` field. `commands/orchestrate.md` Step 5's three-branch
-resolution still degrades explicitly (an explicit "not evaluable" notice, never a silent skip) for
-any future MT path variant that might lack the field, but no such variant exists today.
+**Hard-mode finding, historical, now moot**: before the standalone hard-mode engine was merged
+into this file and deleted, it had no MT-stage implementation of its own — its own Stage 0 stated
+explicitly that when `multi_task_mode` is true it "use[s] base multi-task stages", i.e. these SAME
+Stage MT-1 through MT-5 stages. Multi-task `/orchestrate --hard` has therefore always written
+`mt_state_file.dispatch_start_ts`, `defer_ledger`, and `forward_progress_violated` via this one
+file, both before and after the merge, with no separate hard-mode edit ever needed. (The deleted
+file's own `dispatch_start_ts` shell variable occurrences belonged to its single-task, non-MT
+infra-failure-discrimination logic — a same-named but unrelated local variable, not this
+`mt_state_file` field; this distinction is recorded here only because it is no longer directly
+verifiable against the deleted source.) `commands/orchestrate.md` Step 5's three-branch resolution
+still degrades explicitly (an explicit "not evaluable" notice, never a silent skip) for any future
+MT path variant that might lack the field, but no such variant exists today.
 
 ### Stage MT-2: Build Per-Task Routing Table
 
@@ -3631,9 +3633,9 @@ MUST-NOTs — is defined ONCE in Stage MT-1's `detected_defects` declaration and
 here.
 
 **These MT sites serve `/orchestrate --hard` batches too.** Exactly as Stage MT-1 already records
-for `defer_ledger`, `skill-orchestrate-hard/SKILL.md` has no MT-stage implementation of its own
-and delegates to these same stages, so the wiring below needs no hard-file mirror. The absence of
-a hard-mode MT counterpart is intentional; do not "fix" it.
+for `defer_ledger`, multi-task mode has no separate hard-mode MT-stage implementation — hard-mode
+batches use these same Stage MT-1 through MT-5 stages directly, so the wiring below needs no
+hard-mode mirror anywhere. This unified handling is intentional; do not "fix" it by adding one.
 
 ```bash
 append_detected_defect_mt() {  # task_num, class, attributed_path, site, detail, record_result
@@ -4439,13 +4441,12 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   non-fatal `system-defect-record.sh` call and `append_detected_defect` log entry. Exit 1 and
   exit 2 from the probe (no recoverable `.return-meta.json`, or a usage/jq error) are both
   treated as "no signal available" and are not escalated — a handoff-present dispatch
-  legitimately may have nothing left to probe. `skill-orchestrate-hard/SKILL.md` was checked for
+  legitimately may have nothing left to probe. The now-deleted standalone hard-mode engine had
   the same structural hole on its own handoff-present branch (its "Evidence corroboration
-  (handoff-present branch)" block, structurally identical to this one) and found to have the
-  IDENTICAL gap — its existing `orchestrate-recover-outcome.sh` call sites are all on the
-  recovered-path branch (this file's branch (2) mirror), not the handoff-present branch. The
-  same advisory probe was applied there too, at the corresponding location, so both engines
-  visibly agree.
+  (handoff-present branch)" block, structurally identical to this one) before it was merged into
+  this file — its `orchestrate-recover-outcome.sh` call sites were all on the recovered-path
+  branch (this file's branch (2) mirror), not the handoff-present branch. The same advisory probe
+  was applied there too, at the time, before the two engines converged into this single file.
 - **Diagnostic in branch (1), evidence-based escalation in branches (2) and (3)**: in branch (1)
   the recovered counts are logged and recorded in the loop guard only — they never synthesize a
   `dispatch_status` and never drive a status transition, since there is no recoverable outcome

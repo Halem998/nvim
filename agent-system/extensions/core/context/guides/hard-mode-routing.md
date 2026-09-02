@@ -75,8 +75,8 @@ extension's entry wins unconditionally.
 
 **Example** (hypothetical override):
 ```
-Core:    routing_hard.implement.meta = "skill-implementer-hard"
-Non-core: routing_hard.implement.meta = "skill-myext-implementation-hard"
+Core:    routing_hard.implement.mytype = "skill-mytype-implementation-hard"
+Non-core: routing_hard.implement.mytype = "skill-myext-implementation-hard"
 Result:  SKILL_NAME = "skill-myext-implementation-hard"
 ```
 
@@ -106,31 +106,36 @@ fi
 
 ## Deployed Hard Skills (current inventory)
 
-The following hard skills have deployed SKILL.md files and are reachable via
-the `-hard` append fallback (Step 4e) or via manifest routing (Steps 4a-4d):
+Core's own four standalone lifecycle-stage `-hard` skills (the research/plan/implement stage
+skills plus the standalone hard-mode orchestrator) were deleted: `--hard` behavior for
+`general`/`meta`/`markdown` task types is now a `hard_mode` flag inside the single
+`skill-orchestrate` engine (Stage 3.5's hard-mode contract injection, Stage 4's H1 per-phase
+dispatch branch), not a separate skill file or a separate manifest routing table. Core's
+`routing_hard`/`routing_agents_hard` manifest blocks were removed along with the skills.
+
+Extensions that still declare their own domain-specific `-hard` skills remain reachable via
+manifest routing exactly as before:
 
 | Skill | Reachable via |
 |-------|---------------|
-| `skill-researcher-hard` | Core manifest routing_hard + Step 4e fallback |
-| `skill-planner-hard` | Core manifest routing_hard + Step 4e fallback |
-| `skill-implementer-hard` | Core manifest routing_hard + Step 4e fallback |
 | `skill-cslib-research-hard` | CSLib extension manifest routing_hard |
 | `skill-cslib-implementation-hard` | CSLib extension manifest routing_hard |
-| `skill-orchestrate-hard` | Not manifest-routed itself; invoked directly by `/orchestrate --hard`, and resolves agents via `command-route-agent.sh` against `routing_agents_hard` (see note below) |
+| `skill-lean-research-hard` | Lean extension manifest routing_hard |
+| `skill-lean-implementation-hard` | Lean extension manifest routing_hard |
 
 ---
 
-## Orchestrate-Hard: Same Resolver, Different Block
+## Orchestrate Hard Mode: One Engine, Effort-Gated
 
-`skill-orchestrate-hard` (invoked by `/orchestrate --hard`) resolves AGENT names (not skill
-names) via `command-route-agent.sh` — the same shared `manifest-routing-lib.sh` ladder
-`command-route-skill.sh` uses, called with effort `"hard"` against each manifest's
-`routing_agents_hard` block instead of `routing_hard`. It previously used a separate inline
-manifest reader with last-match-wins semantics (the opposite of `command-route-skill.sh`'s
-first-match-wins); that divergence has been eliminated — both `skill-orchestrate` and
-`skill-orchestrate-hard` now call `command-route-agent.sh` with identical precedence, differing
-only in the effort argument and their three defaults (standard vs `-hard` agents). See
-`context/guides/manifest-routing-schema.md` for the full model.
+`skill-orchestrate` (invoked by `/orchestrate --hard`) resolves AGENT names via
+`command-route-agent.sh` — the same shared `manifest-routing-lib.sh` ladder
+`command-route-skill.sh` uses, called with `effort_flag="hard"` against each manifest's
+`routing_agents_hard` block instead of `routing_agents`. There is no longer a second, standalone
+engine file: base mode and hard mode share Stage 1b's resolution calls and diverge only inside
+`skill-orchestrate/SKILL.md` itself, on the `$hard_mode` variable (derived once in Stage 1 from
+`effort_flag == "hard"`) — see that file's own acceptance-checklist table for the full mapping of
+which stage each hard-mode technique (H1/H4/H5/H6/etc.) now lives in. See
+`context/guides/manifest-routing-schema.md` for the full routing model.
 
 ---
 
@@ -146,7 +151,7 @@ relevant extension's `manifest.json`:
       "mytype": "skill-mytype-research-hard"
     },
     "plan": {
-      "mytype": "skill-planner-hard"
+      "mytype": "skill-mytype-planning-hard"
     },
     "implement": {
       "mytype": "skill-mytype-implementation-hard"
@@ -164,7 +169,8 @@ entry. Undeclared-but-deployed skills are automatically reachable via Step 4e.
 
 - `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation
 - `.claude/scripts/command-route-skill.sh` — Skill resolution (research.md/plan.md/implement.md)
-- `.claude/scripts/command-route-agent.sh` — Agent resolution (skill-orchestrate/skill-orchestrate-hard)
+- `.claude/scripts/command-route-agent.sh` — Agent resolution (called from skill-orchestrate's
+  Stage 1b, both effort modes)
 - `.claude/extensions/core/manifest.json` — Core routing_hard / routing_agents_hard entries
 - `.claude/extensions/cslib/manifest.json` — CSLib routing_hard / routing_agents_hard entries
 - `.claude/extensions/lean/manifest.json` — Lean routing_hard / routing_agents_hard entries

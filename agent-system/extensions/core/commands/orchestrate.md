@@ -86,8 +86,8 @@ consumer-side-only signal that is never forwarded to `orchestrate-batch-admit.sh
 `file_scope_collision` admission gate only (never `in_batch` — see D1 in the originating plan),
 and never forwarded to `orchestrate-batch-admit.sh` itself. `CONTINUE_BUDGET_FLAG` (default
 `"false"`) is threaded the same way, as `continue_budget` (Defect B) — also consumer-side-only,
-read by `skill-orchestrate`/`skill-orchestrate-hard`'s own Stage 2, never forwarded to any
-admission-gate script. `CLEAN_FLAG` (default `"false"`) and `EFFORT_FLAG` (default `""`) are
+read by `skill-orchestrate`'s own Stage 2 (both effort modes share this single engine), never
+forwarded to any admission-gate script. `CLEAN_FLAG` (default `"false"`) and `EFFORT_FLAG` (default `""`) are
 also read here from the sourced parser and passed into the Skill delegation context below as
 `clean_flag` and `effort_flag` — `clean_flag` suppresses `skill-orchestrate`'s own automatic
 memory retrieval (Stage 3.5), and `effort_flag` supplies reasoning-depth guidance, on the same
@@ -559,12 +559,11 @@ fi
 skipped_count=${#skipped_tasks[@]}
 ```
 
-**Three-branch, all-non-silent invariant resolution** (works regardless of which skill ran —
-`skill-orchestrate` writes `forward_progress_violated` directly per Phase 3 above;
-`skill-orchestrate-hard`'s multi-task mode delegates to the SAME base MT stages per its own Stage
-0, so it already inherits the field too — see that file's Stage 0 statement. This three-branch
-shape exists as a forward-compatible safety net for any future MT variant that might omit the
-field, not because one exists today):
+**Three-branch, all-non-silent invariant resolution** (works regardless of effort mode —
+`skill-orchestrate` writes `forward_progress_violated` directly per Phase 3 above, and its
+hard-mode multi-task path shares the SAME base MT stages rather than a separate engine, so it
+already inherits the field too. This three-branch shape exists as a forward-compatible safety net
+for any future MT variant that might omit the field, not because one exists today):
 
 1. **`forward_progress_violated` present in `mt_state_file`** (`fpv_field_present == "true"`) —
    use it directly: `forward_progress_violated` from above.

@@ -99,10 +99,11 @@ Step 5: no match -> empty (caller substitutes its own default)
 ```
 
 "First match wins" and "non-core scanned before core" are the SAME rule applied identically by
-every consumer: `command-route-skill.sh`, `command-route-agent.sh`, `skill-orchestrate`, and
-`skill-orchestrate-hard`. Before this task's consolidation, `skill-orchestrate-hard` used a
-different, undocumented rule (last-match-wins, no core exclusion) — see
-`context/guides/hard-mode-routing.md` for that history.
+every consumer: `command-route-skill.sh`, `command-route-agent.sh`, and `skill-orchestrate`
+(both effort modes share this one engine today). Before the standalone hard-mode orchestrator was
+merged into `skill-orchestrate` and then deleted, it used a different, undocumented rule
+(last-match-wins, no core exclusion) — see `context/guides/hard-mode-routing.md` for that
+history.
 
 Only Step 5's emptiness is a true "miss" — a caller's own default (e.g. `skill-researcher`,
 `general-research-agent`) is substituted OUTSIDE the ladder, by the caller, never inside
@@ -115,7 +116,7 @@ does NOT have: if hard-mode resolution (Steps 1-4 against `routing_hard`) misses
 tries appending `-hard` to the already-resolved standard `SKILL_NAME`, using the result only if
 `.claude/skills/${candidate}-hard/SKILL.md` exists on disk (a safety gate against resolving to an
 undeployed skill). `command-route-agent.sh` has no equivalent — a hard-mode agent miss falls
-through directly to the caller-supplied hard default (e.g. `general-research-hard-agent`), never
+through directly to the caller-supplied hard default (a `-hard`-suffixed agent name), never
 to the standard `routing_agents` block. This asymmetry is deliberate: skill names follow a
 predictable `-hard` suffix convention; agent names do not.
 
@@ -162,9 +163,10 @@ its directory happens to be named.
 
 ## Agent Names Are Declared, Never Derived
 
-Before this task, `skill-orchestrate` and `skill-orchestrate-hard` derived agent names from skill
-names via string surgery: `echo "$skill_name" | sed 's/^skill-//' | sed 's/$/-agent/'`. This is
-wrong whenever the pattern doesn't hold:
+Before this task, `skill-orchestrate` and its now-merged-and-deleted standalone hard-mode
+predecessor derived agent names from skill names via string surgery:
+`echo "$skill_name" | sed 's/^skill-//' | sed 's/$/-agent/'`. This is wrong whenever the pattern
+doesn't hold:
 
 | `task_type` | Routed skill | sed-derived (wrong) | Real agent |
 |---|---|---|---|

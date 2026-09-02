@@ -39,10 +39,11 @@ Each `dispatch(...)` call in the table above now performs the preflight status t
 in-flight states are entered during the work window rather than only after the dispatch returns.
 This is implemented via `skill_preflight_update()` (see `.claude/scripts/skill-base.sh`), called
 from each single-task and multi-task state handler in `skill-orchestrate/SKILL.md`'s "Stage 4:
-State Handlers" and "Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight" sections, and the
-equivalent handlers in `skill-orchestrate-hard/SKILL.md` — immediately before each handler's
-corresponding Agent dispatch, mirroring the `skill_postflight_update()` call these same handlers
-already make after the dispatch returns.
+State Handlers" and "Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight" sections — covering
+both effort modes, since the formerly-separate hard-mode engine's equivalent handlers were merged
+in and the standalone file deleted — immediately before each handler's corresponding Agent
+dispatch, mirroring the `skill_postflight_update()` call these same handlers already make after
+the dispatch returns.
 
 ### Convergence: `researching`/`planning` No Longer Exit
 
@@ -58,8 +59,9 @@ outright), or a prior session's lock was stale and reclaimed. A task sitting in 
 `planning` under a dead prior session's stale lock is a STRANDED task, not a genuinely in-flight
 one, so the correct action is to re-dispatch (research or plan, respectively) rather than exit —
 exactly the recovery this convergence provides. See `skills/skill-orchestrate/SKILL.md`'s
-`#### State: researching` and `#### State: planning` handlers for the converged dispatch logic,
-and `skills/skill-orchestrate-hard/SKILL.md`'s mirrored handlers.
+`#### State: researching` and `#### State: planning` handlers for the converged dispatch logic —
+each handler's hard-mode branch, forked internally on `$hard_mode`, covers what a separate
+mirrored file used to.
 
 The `partial` no-handoff/no-blockers sub-state (a normal shape for a base-mode dispatch, which
 never writes a handoff) now dispatches `implement` on every cycle where budget remains, sourcing
