@@ -27,9 +27,6 @@
     "research": {
       "z3": "skill-z3-research"
     },
-    "plan": {
-      "z3": "skill-planner"
-    },
     "implement": {
       "z3": "skill-z3-implementation"
     }

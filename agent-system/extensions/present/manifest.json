@@ -52,11 +52,6 @@
       "present:slides": "skill-slides"
     },
     "plan": {
-      "present": "skill-planner",
-      "present:grant": "skill-planner",
-      "present:budget": "skill-planner",
-      "present:timeline": "skill-planner",
-      "present:funds": "skill-planner",
       "present:slides": "skill-slide-planning",
       "slides": "skill-slide-planning"
     },

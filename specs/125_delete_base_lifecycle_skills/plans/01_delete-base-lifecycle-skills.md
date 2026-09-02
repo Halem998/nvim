@@ -140,22 +140,23 @@ deletion leaves nothing reporting a false failure.
 
 ---
 
-### Phase 2: Prune Dangling Manifest Routing and the Live Router Default [NOT STARTED]
+### Phase 2: Prune Dangling Manifest Routing and the Live Router Default [COMPLETED]
 
 **Goal**: Remove every manifest `routing.{op}.{type}` entry whose value is one of the three
 deleted skills, and replace the one live literal-default router argument.
 
 **Tasks**:
-- [ ] For each extension manifest, delete only the key-value pairs whose value is
+- [x] For each extension manifest, delete only the key-value pairs whose value is
       `"skill-researcher"`, `"skill-planner"`, or `"skill-implementer"`. Delete the enclosing
       `routing.{op}` object only if it becomes empty; leave `routing_agents*` and `routing_hard`
-      untouched.
-- [ ] In `agent-system/extensions/epidemiology/commands/epi.md`, change the Step 2 router call's
+      untouched. *(completed: 15 manifests, including email whose routing.research.email pointed
+      at skill-researcher)*
+- [x] In `agent-system/extensions/epidemiology/commands/epi.md`, change the Step 2 router call's
       literal default argument from `"skill-researcher"` to `"skill-epi-research"` (the value the
       epidemiology manifest's own `routing.research.epi` already resolves to), and update the
       surrounding prose that names `implement.md` as the shape being mirrored, since that command
-      no longer exists.
-- [ ] Re-run `jq .` over every touched manifest to confirm valid JSON.
+      no longer exists. *(completed)*
+- [x] Re-run `jq .` over every touched manifest to confirm valid JSON. *(completed)*
 
 **Timing**: 1 hour
 

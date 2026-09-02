@@ -31,9 +31,6 @@
     "research": {
       "neovim": "skill-neovim-research"
     },
-    "plan": {
-      "neovim": "skill-planner"
-    },
     "implement": {
       "neovim": "skill-neovim-implementation"
     }

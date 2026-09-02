@@ -32,9 +32,6 @@
     "research": {
       "nix": "skill-nix-research"
     },
-    "plan": {
-      "nix": "skill-planner"
-    },
     "implement": {
       "nix": "skill-nix-implementation"
     }

@@ -48,15 +48,6 @@
       "filetypes:docx": "skill-docx-edit",
       "filetypes:xlsx": "skill-sheet"
     },
-    "plan": {
-      "filetypes": "skill-planner",
-      "filetypes:document": "skill-planner",
-      "filetypes:spreadsheet": "skill-planner",
-      "filetypes:presentation": "skill-planner",
-      "filetypes:scrape": "skill-planner",
-      "filetypes:docx": "skill-planner",
-      "filetypes:xlsx": "skill-planner"
-    },
     "implement": {
       "filetypes": "skill-filetypes",
       "filetypes:document": "skill-filetypes",

@@ -29,9 +29,6 @@
     "research": {
       "latex": "skill-latex-research"
     },
-    "plan": {
-      "latex": "skill-planner"
-    },
     "implement": {
       "latex": "skill-latex-implementation"
     }

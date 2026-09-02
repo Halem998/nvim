@@ -33,9 +33,6 @@
     "research": {
       "memory": "skill-learn"
     },
-    "plan": {
-      "memory": "skill-planner"
-    },
     "implement": {
       "memory": "skill-learn"
     }

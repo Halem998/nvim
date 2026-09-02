@@ -46,11 +46,6 @@
       "lean4:lake": "skill-lake-repair",
       "lean4:version": "skill-lean-version"
     },
-    "plan": {
-      "lean4": "skill-planner",
-      "lean4:lake": "skill-planner",
-      "lean4:version": "skill-planner"
-    },
     "implement": {
       "lean4": "skill-lean-implementation",
       "lean4:lake": "skill-lake-repair",

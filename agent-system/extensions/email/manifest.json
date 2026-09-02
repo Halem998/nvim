@@ -54,12 +54,6 @@
     ]
   },
   "routing": {
-    "research": {
-      "email": "skill-researcher"
-    },
-    "plan": {
-      "email": "skill-planner"
-    },
     "implement": {
       "email": "skill-email-implementation"
     }

@@ -27,9 +27,6 @@
     "research": {
       "typst": "skill-typst-research"
     },
-    "plan": {
-      "typst": "skill-planner"
-    },
     "implement": {
       "typst": "skill-typst-implementation"
     }

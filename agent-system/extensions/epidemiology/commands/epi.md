@@ -361,12 +361,13 @@ task_type=$(echo "$task_data" | jq -r '.task_type')
 
 ### Step 2: Delegate
 
-Resolve the skill through the single canonical router, `command-route-skill.sh` — mirroring the
-shape `implement.md` uses, not a third mechanism. The epidemiology manifest declares `epi`,
-`epi:study`, and `epidemiology` as aliases all resolving to `skill-epi-research`.
+Resolve the skill through the single canonical router, `command-route-skill.sh` — the same
+mechanism every command-driven skill dispatch uses, not a third mechanism. The epidemiology
+manifest declares `epi`, `epi:study`, and `epidemiology` as aliases all resolving to
+`skill-epi-research`.
 
 ```bash
-source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-researcher" "${effort_flag:-}"
+source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-epi-research" "${effort_flag:-}"
 skill_name="$SKILL_NAME"
 ```
 

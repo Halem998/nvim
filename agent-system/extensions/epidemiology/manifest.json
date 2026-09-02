@@ -30,11 +30,6 @@
       "epi:study": "skill-epi-research",
       "epidemiology": "skill-epi-research"
     },
-    "plan": {
-      "epi": "skill-planner",
-      "epi:study": "skill-planner",
-      "epidemiology": "skill-planner"
-    },
     "implement": {
       "epi": "skill-epi-implement",
       "epi:study": "skill-epi-implement",

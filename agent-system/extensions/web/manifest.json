@@ -29,9 +29,6 @@
     "research": {
       "web": "skill-web-research"
     },
-    "plan": {
-      "web": "skill-planner"
-    },
     "implement": {
       "web": "skill-web-implementation"
     }

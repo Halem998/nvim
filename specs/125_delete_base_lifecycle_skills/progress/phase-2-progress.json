@@ -1,0 +1,45 @@
+{
+  "phase": 2,
+  "phase_name": "Prune Dangling Manifest Routing and the Live Router Default",
+  "started_at": "2026-09-02T00:10:00Z",
+  "last_updated": "2026-09-02T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete dangling routing key-value pairs valued at the three deleted skills across 15 extension manifests, dropping empty routing.{op} objects",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/formal/manifest.json",
+        "agent-system/extensions/latex/manifest.json",
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json",
+        "agent-system/extensions/nvim/manifest.json",
+        "agent-system/extensions/web/manifest.json",
+        "agent-system/extensions/z3/manifest.json",
+        "agent-system/extensions/nix/manifest.json",
+        "agent-system/extensions/filetypes/manifest.json",
+        "agent-system/extensions/present/manifest.json",
+        "agent-system/extensions/epidemiology/manifest.json",
+        "agent-system/extensions/python/manifest.json",
+        "agent-system/extensions/typst/manifest.json",
+        "agent-system/extensions/memory/manifest.json",
+        "agent-system/extensions/email/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Retarget epi.md router default argument to skill-epi-research and fix implement.md-mirroring prose",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]
+    },
+    {
+      "id": 3,
+      "description": "Re-run jq . over every touched manifest to confirm valid JSON",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
