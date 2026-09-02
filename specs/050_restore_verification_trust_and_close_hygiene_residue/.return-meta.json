@@ -1,40 +1,39 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1788304786_edca9f_50",
   "task_number": 50,
-  "dispatch_seq": 9,
-  "findings_count": 11,
+  "dispatch_seq": 10,
+  "phase_count": 8,
+  "estimated_hours": 9,
+  "dependency_waves": [[1, 2, 3, 4, 5, 6, 7], [8]],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md",
-      "summary": "Re-measured every count in the bundle description against the current tree: session-ID one-liner and jq #1132 items are already resolved (task 84 and prior pointer-conversion work), the deploy-ordering non-determinism error and the live-cycle defect-criterion decision remain genuinely open with new evidence, topic-taxonomy orphans grew to 13 (not 10), ROADMAP.md deletion needs a companion roadmap-integration.sh fix, and three pre-existing verify-deploy.sh failures are confirmed live with no owning task. Recommends keeping this as one two-phase task rather than splitting."
+      "type": "plan",
+      "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
+      "summary": "8-phase plan closing the re-measured verification-trust and hygiene bundle: deploy-ordering error disposition, defect-acceptance-criterion re-scoping, literature-retrieve.sh quarantine plus the folded-in 3-script manifest registration, ROADMAP.md deletion with its required roadmap-integration.sh companion fix, live topic-taxonomy reconciliation, CLAUDE.md and utility-inventory documentation gaps, @.claude/docs prose normalization, and a closing full gate run."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f_50",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
   "memory_candidates": [
     {
-      "content": "When a task description's measured counts are inherited from an earlier filing, always check specs/archive/**/summaries/ for a task whose own filed baseline matches the description's numbers exactly (e.g. '43 -> 48 files, 46 .md') -- it usually means a predecessor task already closed the gap and the description simply predates that closure. Grep for the exact baseline numbers across specs/archive/state.json and specs/TODO.md before assuming residue is still open.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md",
+      "content": "A decision to delete a generated-or-annotated file does not stick unless the tooling that consumes it also stops auto-creating it on absence. roadmap-integration.sh heredocs a fresh empty ROADMAP.md stub whenever the file is missing, so a bare rm regenerates it on the next /review or /todo run. The general pattern: before planning any file deletion, grep the consumers for an 'if [[ ! -f ... ]]' create-default branch, and pair the deletion with a change that converts that branch into a structured skip (stable warning code + empty-state payload + exit 0) registered in every caller's warning vocabulary. Absence must become a supported state, not a repair trigger.",
+      "category": "PATTERN",
+      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
       "confidence": 0.85,
-      "suggested_keywords": ["remeasurement", "stale-description", "archived-task-lineage", "duplication-gate", "hygiene-residue"]
-    },
-    {
-      "content": "roadmap-integration.sh auto-creates a default ROADMAP.md template on the file's absence rather than skipping roadmap processing. A decision to delete ROADMAP.md permanently requires also changing this auto-create behavior (or the /review step invoking it), or the file silently regenerates as an empty stub on the next /review run.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["roadmap-integration.sh", "ROADMAP.md", "auto-recreate", "review-command", "deletion-decision"]
-    },
-    {
-      "content": "A grep-based file-count for a duplication finding (e.g. files mentioning an issue number) can wildly overstate real duplication if most matches are short pointer references rather than the full duplicated block. Before scoping cleanup work, sample several matches and check for the actual multi-line marker text, not just the identifying keyword -- 34 of 36 'jq Issue #1132' matches in this repo were already single-line pointers to the canonical doc, not duplicated content.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["duplication-measurement", "grep-methodology", "false-positive-scoping", "jq-escaping-workarounds"]
+      "suggested_keywords": ["file-deletion", "auto-create-stub", "roadmap-integration", "absence-as-supported-state", "warning-code-vocabulary"]
     }
   ],
-  "next_steps": "Run /plan 50 to create implementation plan"
+  "modified_files": [
+    "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
+    "specs/050_restore_verification_trust_and_close_hygiene_residue/.orchestrator-handoff.json",
+    "specs/050_restore_verification_trust_and_close_hygiene_residue/.return-meta.json"
+  ],
+  "next_steps": "Run /implement 50 to execute the plan"
 }

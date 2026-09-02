@@ -23,7 +23,7 @@ next_project_number: 139
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-50 [RESEARCHED] — === REVISED 2026-08-24 (refactor survey) ===
+50 [PLANNED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
@@ -2309,11 +2309,12 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 ---
 
 ### 50. Restore verification trust and close hygiene residue
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 48
 - **Research**: [050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md]
+- **Plan**: [050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md]
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 SPLIT AND REDUCED. Item 1 -- the non-deterministic shell test suite -- has been extracted into its own task (deflake_shell_test_suite_under_concurrency) because it is the highest-value piece here by a wide margin: until the suite is deterministic, no acceptance gate in this repo is trustworthy in either direction, including this task's own. Do not work it here.

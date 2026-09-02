@@ -1,0 +1,26 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 10,
+  "summary": "Created an 8-phase plan built on the research report's re-measurement, not the filed description. Two of six filed sub-items (session-ID one-liner migration, jq #1132 pointer conversion) are already fully resolved and are scheduled ONLY as an evidenced closing note in Phase 8 -- no migration work. Group A (decisions/verification): Phase 1 re-runs three deploy wipe-pairs and dispositions err_1786350581240_JyztWt, most likely by formalizing the jq -S semantic-equality precedent its already-fixed sibling was closed on, and records the never-performed ledger fold as a process finding; Phase 2 re-scopes the live-cycle defect-acceptance bar to 'no new defect classes AND no unexplained known-class firing-rate increase', after reading the sibling task's three dated evidence blocks and the capstone's own re-scoping precedent, and records it with a concrete evaluation procedure in context/patterns/system-defect-discrimination.md. Group B (mechanical hygiene): Phase 3 quarantines literature-retrieve.sh (move to scripts/deprecated/, drop from provides.scripts) plus the folded-in doc-lint fix registering 3 unregistered test scripts, and corrects literature-organization.md's stale live-mechanism description; Phase 4 makes the decided ROADMAP.md deletion stick by replacing roadmap-integration.sh's auto-create-stub branch with a roadmap_absent warning-code skip and registering that code in review.md and todo.md -- the report classes this as required, not optional; Phase 5 re-derives the topic-orphan list live (13 at research time, 10 filed -- both treated as stale) and prunes through the mutex-guarded state writer; Phase 6 documents /zulip + skill-zulip in the CLAUDE.md merge source and check-runtime-file-tracking.sh in the utility inventory as a dual-purpose operator+CI-gate entry; Phase 7 normalizes 15 @.claude/docs prose refs across 8 files. Phase 8 runs the full gate set and asserts the two out-of-scope failures are unchanged. Wave 1 is all seven of phases 1-7 (verified pairwise-disjoint file territories); wave 2 is Phase 8. All edits target agent-system/extensions/** or specs/**; nothing touches .claude/**, skill-base.sh, scripts/lint/, or the base lifecycle skill directories.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/050_restore_verification_trust_and_close_hygiene_residue/plans/01_verification-trust-hygiene-closeout.md",
+      "summary": "8-phase plan: deploy-ordering disposition, defect-criterion re-scoping, literature-retrieve.sh quarantine plus 3-script manifest registration, ROADMAP deletion with the roadmap-integration.sh companion fix, live topic-taxonomy reconciliation, CLAUDE.md/utility-inventory doc gaps, @.claude/docs normalization, and a closing full gate run."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "decisions_made": [
+    "Kept as one task in the report's recommended two-group shape (A: decisions/verification, B: mechanical hygiene) rather than expanding -- the bundle shrank by roughly a third since filing.",
+    "Scheduled the two already-resolved sub-items as an evidenced closing note in Phase 8 only; no migration work is planned for either.",
+    "Treated the roadmap-integration.sh auto-create fix as required scope, not optional polish -- without it the decided ROADMAP.md deletion does not stick.",
+    "Chose the roadmap_absent stable warning code + empty-state payload + exit 0 design over a hard-require, so a repo that still keeps a roadmap sees byte-identical present-file behavior.",
+    "Forbade every phase from acting on a count copied from the plan or the report: Phases 2, 5, 7 and 8 carry Scope Hypothesis lines requiring live re-derivation.",
+    "Included the @.claude/docs normalization (report Phase B item, absent from the dispatch brief's remaining-scope list but never named out of scope) as its own isolated Phase 7, flagged in the plan Overview so it can be dropped alone if it was deliberately excluded upstream.",
+    "Named the state-schema --deep drift and the test-force-phases.sh state-writer-boundary violations in Non-Goals with their measured evidence and 'no owning task found', rather than absorbing or silently dropping them."
+  ],
+  "next_action_hint": "Run /implement 50. Wave 1 dispatches phases 1-7 in parallel (disjoint territories); Phase 4 is the highest-risk phase -- verify the roadmap-integration.sh change green BEFORE deleting specs/ROADMAP.md, and keep the '# Build output JSON' marker line byte-identical or test-roadmap-argv-ceiling.sh fails loudly. Effort ~9 hours."
+}
