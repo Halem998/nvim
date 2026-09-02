@@ -84,7 +84,7 @@ routing:
 ---
 ```
 
-**Reference**: @.claude/docs/guides/creating-commands.md
+**Reference**: `.claude/docs/guides/creating-commands.md`
 
 ---
 
@@ -478,7 +478,7 @@ Prevent infinite delegation loops with depth tracking:
 ## Related Documentation
 
 ### User-Facing Documentation
-- @.claude/docs/architecture/system-overview.md - Simplified architecture overview for users
+- `.claude/docs/architecture/system-overview.md` - Simplified architecture overview for users
 
 ### Detailed Patterns
 - @.claude/context/orchestration/orchestration-core.md - Delegation, routing, session tracking

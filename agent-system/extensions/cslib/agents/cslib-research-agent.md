@@ -291,7 +291,7 @@ full field spec.
 **`.orchestrator-handoff.json` prohibition**: this agent MUST NOT write
 `.orchestrator-handoff.json`, in any mode, including when `orchestrator_mode: true` is present in
 the delegation context. `.orchestrator-handoff.json` is formally hard-mode-implement-only per
-`@.claude/docs/architecture/handoff-schema.md`; research agents return status exclusively through
+`.claude/docs/architecture/handoff-schema.md`; research agents return status exclusively through
 `.return-meta.json`.
 
 **Defensive case, if this prohibition is ever reversed**: should a future variant of this agent

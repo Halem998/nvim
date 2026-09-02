@@ -255,4 +255,4 @@ Thin wrapper structure ensures delegation-first control flow. For the complement
 - @.claude/context/patterns/skill-lifecycle.md - Complete skill lifecycle
 - @.claude/context/formats/subagent-return.md - Return format
 - @.claude/context/standards/postflight-tool-restrictions.md - Postflight boundary rules
-- @.claude/docs/guides/creating-skills.md - Step-by-step guide
+- `.claude/docs/guides/creating-skills.md` - Step-by-step guide

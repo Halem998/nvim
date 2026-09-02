@@ -356,8 +356,8 @@ mkdir -p specs/{NNN}_{SLUG}/reports/  # when agent writes report
 
 ## Related Documentation
 
-- @.claude/docs/guides/component-selection.md - User-facing decision guide
-- @.claude/docs/guides/creating-commands.md - Command creation details
-- @.claude/docs/guides/creating-skills.md - Skill creation details
-- @.claude/docs/guides/creating-agents.md - Agent creation details
+- `.claude/docs/guides/component-selection.md` - User-facing decision guide
+- `.claude/docs/guides/creating-commands.md` - Command creation details
+- `.claude/docs/guides/creating-skills.md` - Skill creation details
+- `.claude/docs/guides/creating-agents.md` - Agent creation details
 - @.claude/context/patterns/anti-stop-patterns.md - Patterns to avoid

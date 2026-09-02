@@ -517,20 +517,20 @@ Re-confirm with `grep -c zulip agent-system/extensions/core/merge-sources/claude
 
 ---
 
-### Phase 7: Normalize `@.claude/docs` prose references [NOT STARTED]
+### Phase 7: Normalize `@.claude/docs` prose references [COMPLETED]
 
 **Goal**: Convert `@.claude/docs/...` prose citations to plain backticked paths, so the files stop
 modelling the `@`-import syntax that the context-loading normalization removed everywhere else.
 
 **Tasks**:
-- [ ] Re-derive the occurrence list: `grep -rn '@\.claude/docs' agent-system/extensions/`. Do not
+- [x] Re-derive the occurrence list: `grep -rn '@\.claude/docs' agent-system/extensions/`. Do not *(completed)*
       work from this plan's count.
-- [ ] For each occurrence, confirm it is a **prose citation**, not a live `@`-import in a context or
+- [x] For each occurrence, confirm it is a **prose citation**, not a live `@`-import in a context or *(completed)*
       rule file whose loader actually resolves `@` syntax. A genuine import must not be converted —
       if any is found, leave it and record it as a named residual rather than forcing the change.
-- [ ] Convert each prose citation from `@.claude/docs/path/file.md` to `` `.claude/docs/path/file.md` ``,
+- [x] Convert each prose citation from `@.claude/docs/path/file.md` to `` `.claude/docs/path/file.md` ``, *(completed)*
       preserving the surrounding sentence.
-- [ ] Confirm each cited path still exists on disk; a citation that is both stylistically wrong and
+- [x] Confirm each cited path still exists on disk; a citation that is both stylistically wrong and *(completed)*
       broken should be fixed on both counts, and a broken one flagged if the target is genuinely
       gone.
 

@@ -79,13 +79,13 @@ Load these on-demand using @-references:
 
 | Mode | Files to Load |
 |------|---------------|
-| interactive | `@.claude/docs/guides/component-selection.md` (after Stage 0 inventory) |
-| prompt | `@.claude/docs/guides/component-selection.md` |
+| interactive | `.claude/docs/guides/component-selection.md` (after Stage 0 inventory) |
+| prompt | `.claude/docs/guides/component-selection.md` |
 | analyze | Read `{target_root}/.claude/CLAUDE.md`, Read `{target_root}/.claude/context/index.json` (runtime instruction — analyze mode inventories the **target** system, so static `@`-syntax cannot be used here; it would load the agent's own deployed copy instead) |
 
 **Stages 3-5 (Interview/Analysis - On-Demand)**:
-- When user selects commands: `@.claude/docs/guides/creating-commands.md`
-- When user selects skills/agents: `@.claude/docs/guides/creating-skills.md`, `@.claude/docs/guides/creating-agents.md`
+- When user selects commands: `.claude/docs/guides/creating-commands.md`
+- When user selects skills/agents: `.claude/docs/guides/creating-skills.md`, `.claude/docs/guides/creating-agents.md`
 - When discussing templates: `@.claude/context/templates/thin-wrapper-skill.md`, `@.claude/context/templates/agent-template.md`
 
 **Stages 5-6 (Task Creation/Status Updates)**:

@@ -174,4 +174,4 @@ would be ~1.2x instead of ~3x.
 - @.claude/context/architecture/system-overview.md - System architecture overview
 - @.claude/context/patterns/thin-wrapper-skill.md - Thin wrapper pattern reference
 - @.claude/context/templates/thin-wrapper-skill.md - Full skill template
-- @.claude/docs/guides/creating-skills.md - Step-by-step skill creation guide
+- `.claude/docs/guides/creating-skills.md` - Step-by-step skill creation guide

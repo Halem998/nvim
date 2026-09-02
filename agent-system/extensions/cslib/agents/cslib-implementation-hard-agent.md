@@ -331,7 +331,7 @@ compares against the value it minted for this cycle — see
 written under `handoffs/`. This flat string field is the ONLY canonical writable continuation
 form. Never write the nested `continuation_context` object — it has zero live writers
 system-wide and is retained only as a deprecated, read-only-accepted legacy shape per
-`@.claude/docs/architecture/handoff-schema.md`.
+`.claude/docs/architecture/handoff-schema.md`.
 
 **`artifacts` linking rationale**: `artifacts` is what the orchestrator's artifact-linking step
 consumes to link the produced summary file into `state.json`. It is an array of objects with

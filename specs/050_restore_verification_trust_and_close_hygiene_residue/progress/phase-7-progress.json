@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "Normalize @.claude/docs prose references",
+  "started_at": "2026-09-02T03:50:00Z",
+  "last_updated": "2026-09-02T04:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive occurrence list via grep -rn '@\\.claude/docs' agent-system/extensions/", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm each occurrence is a prose citation, not a live @-import", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Convert each prose citation to backticked plain path", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+      "agent-system/extensions/core/docs/fork-patterns.md",
+      "agent-system/extensions/core/agents/meta-builder-agent.md",
+      "agent-system/extensions/core/context/patterns/thin-wrapper-skill.md",
+      "agent-system/extensions/core/context/architecture/component-checklist.md",
+      "agent-system/extensions/core/context/architecture/system-overview.md"
+    ]},
+    {"id": 4, "description": "Confirm each cited path still exists on disk", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "live_derivation": {
+    "occurrence_count_live": 15,
+    "file_count_live": 8,
+    "note": "Matches the plan's Scope Hypothesis (15 occurrences across 8 files) exactly -- the only phase where the live re-derivation matched the plan's stated estimate rather than drifting.",
+    "genuine_import_investigation": "meta-builder-agent.md's 4 occurrences sit inside a '## Context References' section whose adjacent 'analyze mode' comment claims 'static @-syntax cannot be used here; it would load the agent's own deployed copy instead', raising the plan's named risk of a genuine live @-import. Investigated via direct first-hand evidence: this implementing agent's own dispatch instructions (this same general-implementation-agent.md contract) carry an identically-shaped '## Context References' section with backtick-wrapped @.claude/context/... paths annotated '(always load)' / '(when creating summary)' etc., and those paths were NOT auto-expanded into this session's context at dispatch time -- they required manual Read/ToolSearch action, exactly like any other prose pointer. Confirmed: no live @-import mechanism operates on agent .md files' Context References sections in this system; all 15 occurrences (across all 8 files, including the 4 'Related Documentation'-style bullet lists in thin-wrapper-skill.md, component-checklist.md, system-overview.md, and fork-patterns.md) are stale prose citations, none is a named residual.",
+    "scope_boundary_note": "Several files (fork-patterns.md, meta-builder-agent.md, thin-wrapper-skill.md, component-checklist.md) carry sibling @.claude/context/... and @.claude/templates/... references in the same bullet lists / tables as the targeted @.claude/docs/... lines. These are OUT of this phase's declared grep-derived scope (@\\.claude/docs only) and were deliberately left untouched, not silently expanded to."
+  }
+}
