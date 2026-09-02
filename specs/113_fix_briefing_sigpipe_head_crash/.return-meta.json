@@ -1,0 +1,28 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/113_fix_briefing_sigpipe_head_crash/reports/01_sigpipe-head-crash-fix.md",
+      "summary": "Confirms the jq-whole-object-into-head-1-under-pipefail SIGPIPE root cause at literature-briefing.sh:238-241,245-247 with a live reproduction; validates and recommends the jq-internal first()/-c fix over the head-1 idiom; audits all 10 head -1 sites in the file (8 confirmed safe/scalar)."
+    }
+  ],
+  "next_steps": "Run /plan 113 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788382844_27990c_113",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 600,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "Bash idiom bug class: `jq <query-that-can-emit-an-object-or-array> | head -N` under `set -o pipefail` can SIGPIPE (exit 141) when the pretty-printed JSON is large enough that head closes the pipe before jq finishes writing -- a pipe-buffer-size race, so it only fails on large payloads, not small ones (looks intermittent). Fix: either add `-c` to force single-line output so head -N reads exactly what jq wrote, or (preferred) bound the result inside jq itself with `first(EXPR)` or `limit(N; EXPR)` and drop `head` from the pipeline entirely -- this also avoids scanning the whole input after the first match, which the head-based idiom wastefully does. Verified: `first(...)`/`limit(1;...)` over an empty match still exits 0 with empty output under `set -e`, so no `|| true` guard is needed when replacing a `head -1` no-match fallback pattern.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/113_fix_briefing_sigpipe_head_crash/reports/01_sigpipe-head-crash-fix.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "SIGPIPE", "pipefail", "head -1", "first", "limit", "bash", "exit 141"]
+    }
+  ]
+}

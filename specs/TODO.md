@@ -27,14 +27,14 @@ next_project_number: 151
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
+20 [RESEARCHING] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-72 [NOT STARTED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
+72 [RESEARCHING] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
-125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+125 [IMPLEMENTING] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
   └─ 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
     └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
@@ -50,7 +50,7 @@ next_project_number: 151
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-144 [NOT STARTED] — Narrow the coarse whole-directory file_scope declarations that ma
+144 [RESEARCHING] — Narrow the coarse whole-directory file_scope declarations that ma
 
 ### Extensions
 
@@ -64,7 +64,7 @@ next_project_number: 151
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
+113 [RESEARCHED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
 
@@ -73,7 +73,7 @@ next_project_number: 151
 ### Opencode
 
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
-27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
+27 [RESEARCHING] — .opencode/scripts/execute-command.sh is a command router that can
 
 ## Tasks
 
@@ -238,7 +238,7 @@ Team mode is deleted by this task's predecessor, so the `--team`/`--team-size` r
 ---
 
 ### 144. Narrow coarse file scope declarations
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -957,7 +957,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 125. Delete base lifecycle skills
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 124
@@ -1459,10 +1459,11 @@ RELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same de
 ---
 
 ### 113. Fix briefing sigpipe head crash
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [113_fix_briefing_sigpipe_head_crash/reports/01_sigpipe-head-crash-fix.md]
 
 **Description**: Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified at task-creation time: the Logos/Theory deploy copy of literature-briefing.sh is byte-identical to the source store, so there is no drift to reconcile.
 
@@ -2456,7 +2457,7 @@ in isolation.
 
 ### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2994,7 +2995,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 27. Remove the dead .opencode command router and its self-referential test scripts
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: opencode
 - **Dependencies**: None
@@ -3117,7 +3118,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
