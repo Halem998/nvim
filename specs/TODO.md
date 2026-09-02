@@ -53,16 +53,16 @@ next_project_number: 139
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-102 [RESEARCHED] — Characterize when the PyMuPDF column-clustering fallback tier act
+102 [PLANNED] — Characterize when the PyMuPDF column-clustering fallback tier act
   └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
     └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
   └─ 109 [NOT STARTED] — Fix three distinct failure modes in the online-ingest bridge, eac
-103 [RESEARCHED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
-106 [RESEARCHED] — Route skill-literature's convert path through literature-convert.
-108 [RESEARCHED] — Make the topic-scoped coverage-delta guard fast enough that every
+103 [PLANNING] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
+106 [PLANNING] — Route skill-literature's convert path through literature-convert.
+108 [PLANNING] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
-110 [RESEARCHED] — Stop Tier 3 online discovery from being a single point of failure
+110 [PLANNING] — Stop Tier 3 online discovery from being a single point of failure
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
@@ -1200,7 +1200,7 @@ COORDINATION NOTE (no dependency deliberately added). Task 89 restructures this 
 
 ### 110. Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3
 - **Effort**: 6-10 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1280,7 +1280,7 @@ TEST VEHICLE. Automated discovery could not be exercised during the observed ses
 
 ### 108. Eliminate literature-coverage-delta.sh per-entry jq spawns so --lit stops timing out
 - **Effort**: 4-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1356,7 +1356,7 @@ A NEGATIVE RESULT IS A COMPLETE OUTCOME. If no content signal separates OCR garb
 
 ### 106. Route skill literature convert through gated pipeline
 - **Effort**: 6-10 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1446,7 +1446,7 @@ MANDATORY RECONCILIATION. Whichever route wins MUST reconcile itself with the pr
 ---
 
 ### 103. Fix fidelity audit chunk-only blindness and the absent-baseline majority
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1493,11 +1493,12 @@ COORDINATE, DO NOT DUPLICATE: the converter-tier task warns that "scanned/OCR'd 
 ---
 
 ### 102. Characterize converter-tier behavior and correct the falsified universal-remedy claim
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md]
+- **Plan**: [102_characterize_converter_tiers_and_ocr_vintage/plans/01_correct-converter-tier-remedy-claim.md]
 
 **Description**: Characterize when the PyMuPDF column-clustering fallback tier actually helps versus hurts, and correct the now-falsified claim that it is the universal remedy for gate rejections. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
