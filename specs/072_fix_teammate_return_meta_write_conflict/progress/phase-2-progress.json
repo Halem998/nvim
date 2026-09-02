@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Correlate subagent-postflight.sh marker selection",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add stdin read + CC_SESSION_ID capture", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 2, "description": "Rewrite find_marker() to enumerate and match", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 3, "description": "Correlate global-fallback branch", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 4, "description": "Fail-safe on no match", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 5, "description": "log_debug diagnostic for no-correlation", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 6, "description": "Header comment on accepted limitation", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 7, "description": "Confirm orphaned-loop-guard cleanup cannot delete foreign guard", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

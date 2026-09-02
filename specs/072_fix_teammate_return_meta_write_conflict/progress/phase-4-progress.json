@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Label deletion provenance in the hook log",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "CAP-REACHED DELETE label in check_loop_guard()", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 2, "description": "STOP-HOOK-ACTIVE DELETE label in stop_hook_active branch", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]},
+    {"id": 3, "description": "Comment noting skill_cleanup's silent removal", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/subagent-postflight.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

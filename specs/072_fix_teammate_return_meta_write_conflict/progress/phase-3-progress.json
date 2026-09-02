@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Correlate events-log-lifecycle.sh SubagentStop marker selection",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace MARKER_FILE head-1 selection with enumerate-and-match", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 2, "description": "Preserve malformed-marker deviation path via emit_malformed_marker_event()", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 3, "description": "Apply fail-safe: exit_success with no event on no match", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 4, "description": "Update header comment with correlation + cross-reference", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

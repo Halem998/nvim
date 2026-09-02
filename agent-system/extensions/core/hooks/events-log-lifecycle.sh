@@ -15,8 +15,13 @@
 # reconstructed via existing correlation mechanisms rather than inventing a new one:
 #
 #   SubagentStop path: locates the `.postflight-pending` marker file the same way
-#     subagent-postflight.sh does (`find specs -maxdepth 3 -name ".postflight-pending"`).
-#     The marker itself carries `session_id`/`skill`/`operation`
+#     subagent-postflight.sh does -- enumerating every marker under
+#     `find specs -maxdepth 3 -name ".postflight-pending"` (plus the `specs/.postflight-pending`
+#     global fallback) and selecting only the one whose `cc_session_id` field matches this
+#     hook's own CC_SESSION_ID (captured below from stdin's `.session_id`). This is a deliberate
+#     mirror of subagent-postflight.sh's `find_marker()` -- see that hook's header comment for
+#     the full correlation rationale and the fail-safe (no match means no marker selected, never
+#     an arbitrary `head -1` pick). The marker itself carries `session_id`/`skill`/`operation`
 #     (see skill_create_postflight_marker in scripts/skill-base.sh); the task number is
 #     recovered from the marker's parent task directory name.
 #
@@ -120,49 +125,87 @@ CC_SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null ||
 
 if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
-  # SubagentStop path: marker-file correlation
+  # SubagentStop path: marker-file correlation (mirrors subagent-postflight.sh's find_marker())
   # ─────────────────────────────────────────────────────────────────────────
-  MARKER_FILE=$(find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null | head -1) || true
-  [ -z "$MARKER_FILE" ] && exit_success || true
 
-  if ! jq empty "$MARKER_FILE" 2>/dev/null; then
-    # Malformed marker: the well-formed path below reads session_id straight out of the
-    # marker itself, which is unavailable here. Recover the task number from the marker's
-    # parent task directory name (available pre-parse, same `specs/([0-9]+)_` regex used
-    # further down in this file's own Stop path) and resolve session_id via
-    # specs/state.json's active_projects entry -- the identical lookup the Stop path already
-    # performs -- so the malformed-marker case leaves a durable `deviation` event instead of
-    # silently collapsing into exit_success with zero trace.
+  # Malformed marker: cc_session_id is unreadable, so it cannot be correlated to CC_SESSION_ID.
+  # The enumeration below reaches it, does not select it, and calls this to leave a durable
+  # `deviation` event -- exactly the diagnostic the original single-marker code emitted, just
+  # now scoped per-marker so one malformed marker does not stop the enumeration from reaching a
+  # correlated marker afterward. Recovers session_id from the marker's parent task directory
+  # name via specs/state.json's active_projects entry (the marker itself is unparseable),
+  # mirroring the Stop path's identical lookup further down this file. `return 0` (not
+  # exit_success) on an unresolvable session_id -- skipping this marker's event must never end
+  # the whole hook while other markers remain to enumerate.
+  emit_malformed_marker_event() {
+    local marker="$1"
+    local parse_err task_dir task session_id detail_json
+    local -a event_args
     # `|| true` guards against `set -euo pipefail` (this file's shell options, unlike
     # subagent-postflight.sh's) tripping on jq's non-zero parse-error exit inside the pipeline.
-    parse_err=$(jq empty "$MARKER_FILE" 2>&1 >/dev/null | head -1) || true
-    task_dir=$(dirname "$MARKER_FILE")
+    parse_err=$(jq empty "$marker" 2>&1 >/dev/null | head -1) || true
+    task_dir=$(dirname "$marker")
     task=""
     if [[ "$task_dir" =~ specs/([0-9]+)_ ]]; then
       task="${BASH_REMATCH[1]}"
     fi
-    [ -z "$task" ] && exit_success || true
+    [ -z "$task" ] && return 0
 
-    [ -f specs/state.json ] || exit_success
-    jq empty specs/state.json 2>/dev/null || exit_success
+    [ -f specs/state.json ] || return 0
+    jq empty specs/state.json 2>/dev/null || return 0
 
     session_id=$(jq -r --argjson num "$task" \
       '.active_projects[]? | select(.project_number == $num) | .session_id // empty' \
       specs/state.json 2>/dev/null)
-    [ -z "$session_id" ] && exit_success || true
+    [ -z "$session_id" ] && return 0
 
-    detail_json=$(jq -n --arg path "$MARKER_FILE" --arg err "$parse_err" \
+    detail_json=$(jq -n --arg path "$marker" --arg err "$parse_err" \
       '{marker_path: $path, parse_error: $err}')
     event_args=(--event-type malformed_postflight_marker --category deviation \
       --checkpoint postflight --session "$session_id" --task "$task" \
-      --message "Postflight marker at ${MARKER_FILE} could not be parsed as JSON" \
+      --message "Postflight marker at ${marker} could not be parsed as JSON" \
       --detail-json "$detail_json")
     [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
     [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
-    exit_success
+    return 0
+  }
+
+  # Enumerate every `.postflight-pending` marker and select only the one whose `cc_session_id`
+  # matches CC_SESSION_ID. Fail-safe: on no correlated match, MARKER_FILE stays empty and the
+  # branch exits cleanly below -- never an event attributed to a marker this session does not
+  # own.
+  MARKER_FILE=""
+  marker=""
+  marker_cc_session_id=""
+  while IFS= read -r marker; do
+    [ -z "$marker" ] && continue
+    if ! jq empty "$marker" 2>/dev/null; then
+      emit_malformed_marker_event "$marker"
+      continue
+    fi
+    marker_cc_session_id=$(jq -r '.cc_session_id // empty' "$marker" 2>/dev/null)
+    if [ -n "$CC_SESSION_ID" ] && [ -n "$marker_cc_session_id" ] && [ "$marker_cc_session_id" = "$CC_SESSION_ID" ]; then
+      MARKER_FILE="$marker"
+      break
+    fi
+  done < <(find specs -maxdepth 3 -name ".postflight-pending" -type f 2>/dev/null)
+
+  # Global-fallback marker (backward compatibility during migration) is subject to the same
+  # correlation check.
+  if [ -z "$MARKER_FILE" ] && [ -f "specs/.postflight-pending" ]; then
+    if ! jq empty "specs/.postflight-pending" 2>/dev/null; then
+      emit_malformed_marker_event "specs/.postflight-pending"
+    else
+      marker_cc_session_id=$(jq -r '.cc_session_id // empty' "specs/.postflight-pending" 2>/dev/null)
+      if [ -n "$CC_SESSION_ID" ] && [ -n "$marker_cc_session_id" ] && [ "$marker_cc_session_id" = "$CC_SESSION_ID" ]; then
+        MARKER_FILE="specs/.postflight-pending"
+      fi
+    fi
   fi
+
+  [ -z "$MARKER_FILE" ] && exit_success || true
 
   session_id=$(jq -r '.session_id // empty' "$MARKER_FILE" 2>/dev/null)
   [ -z "$session_id" ] && exit_success || true

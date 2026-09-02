@@ -177,34 +177,34 @@ key set exists; if one is found, treat it as in scope for this phase's key-set c
 
 ---
 
-### Phase 2: Correlate subagent-postflight.sh marker selection [NOT STARTED]
+### Phase 2: Correlate subagent-postflight.sh marker selection [COMPLETED]
 
 **Goal**: `find_marker()` selects only the marker whose `cc_session_id` matches the stopping
 session, and selects nothing when none matches.
 
 **Tasks**:
-- [ ] Add a stdin read at the top of `subagent-postflight.sh` using the `read -t 0.1` drain idiom
+- [x] Add a stdin read at the top of `subagent-postflight.sh` using the `read -t 0.1` drain idiom
       from `events-log-lifecycle.sh` (default `{}` when stdin is empty or absent), and extract
       `CC_SESSION_ID=$(... | jq -r '.session_id // empty')`. This hook currently reads no stdin;
-      the read must never block.
-- [ ] Rewrite `find_marker()` to enumerate every `.postflight-pending` under
+      the read must never block. *(completed)*
+- [x] Rewrite `find_marker()` to enumerate every `.postflight-pending` under
       `specs -maxdepth 3` (a `while read -r` loop over `find`, not `head -1`), and for each:
       run the existing `jq empty` malformed-marker guard, then compare
       `jq -r '.cc_session_id // empty'` against `CC_SESSION_ID`. Select on equality only.
-      Set `MARKER_FILE`, `TASK_DIR`, `LOOP_GUARD_FILE` from the matched marker.
-- [ ] Apply the same correlation to the `specs/.postflight-pending` global-fallback branch: an
+      Set `MARKER_FILE`, `TASK_DIR`, `LOOP_GUARD_FILE` from the matched marker. *(completed)*
+- [x] Apply the same correlation to the `specs/.postflight-pending` global-fallback branch: an
       uncorrelated global marker is not selected. Leaving that branch uncorrelated would preserve
-      the defect through a second door.
-- [ ] Enforce the fail-safe explicitly: when `CC_SESSION_ID` is empty, or no marker's
+      the defect through a second door. *(completed)*
+- [x] Enforce the fail-safe explicitly: when `CC_SESSION_ID` is empty, or no marker's
       `cc_session_id` matches, or the matching value is empty, leave `MARKER_FILE` unset so main
-      takes the existing "no marker — allow normal stop" path. Never fall back to the first hit.
-- [ ] Add a `log_debug` line for the no-correlation case that names how many markers were
+      takes the existing "no marker — allow normal stop" path. Never fall back to the first hit. *(completed)*
+- [x] Add a `log_debug` line for the no-correlation case that names how many markers were
       enumerated and the stopping `CC_SESSION_ID`, so a stuck legacy marker is diagnosable from
-      the log rather than silent.
-- [ ] Add a header comment recording the accepted limitation: two markers within one Claude Code
-      session are not disambiguated by `cc_session_id`.
-- [ ] Confirm the orphaned-loop-guard cleanup in the no-marker path cannot now delete a foreign
-      task's loop guard — with no marker selected, `LOOP_GUARD_FILE` must stay unset.
+      the log rather than silent. *(completed)*
+- [x] Add a header comment recording the accepted limitation: two markers within one Claude Code
+      session are not disambiguated by `cc_session_id`. *(completed)*
+- [x] Confirm the orphaned-loop-guard cleanup in the no-marker path cannot now delete a foreign
+      task's loop guard — with no marker selected, `LOOP_GUARD_FILE` must stay unset. *(completed)*
 
 **Timing**: 1 hour
 
@@ -228,25 +228,25 @@ session, and selects nothing when none matches.
 
 ---
 
-### Phase 3: Correlate events-log-lifecycle.sh SubagentStop marker selection [NOT STARTED]
+### Phase 3: Correlate events-log-lifecycle.sh SubagentStop marker selection [COMPLETED]
 
 **Goal**: The SubagentStop branch attributes its event to the marker owned by the stopping
 session, or emits no event at all.
 
 **Tasks**:
-- [ ] Replace the SubagentStop branch's `MARKER_FILE=$(find ... | head -1)` with the same
+- [x] Replace the SubagentStop branch's `MARKER_FILE=$(find ... | head -1)` with the same
       enumerate-and-match selection as Phase 2, matching each marker's `cc_session_id` against the
-      `CC_SESSION_ID` this hook already captures from stdin's `.session_id`.
-- [ ] Preserve the branch's existing malformed-marker deviation path: a marker that fails
+      `CC_SESSION_ID` this hook already captures from stdin's `.session_id`. *(completed)*
+- [x] Preserve the branch's existing malformed-marker deviation path: a marker that fails
       `jq empty` cannot be correlated (its `cc_session_id` is unreadable), so decide and implement
       one behavior explicitly — enumerate past it without selecting it, and keep the existing
       `malformed_postflight_marker` deviation event only for a marker the enumeration reached.
-      Whichever is chosen, the malformed case must not resurrect an arbitrary pick.
-- [ ] Apply the fail-safe: no correlated marker means `exit_success` with no event appended,
-      never an event attributed to a marker this session does not own.
-- [ ] Update the file's header comment, which currently states the SubagentStop path "locates the
+      Whichever is chosen, the malformed case must not resurrect an arbitrary pick. *(completed: extracted emit_malformed_marker_event(), called per malformed marker reached during enumeration)*
+- [x] Apply the fail-safe: no correlated marker means `exit_success` with no event appended,
+      never an event attributed to a marker this session does not own. *(completed)*
+- [x] Update the file's header comment, which currently states the SubagentStop path "locates the
       marker file the same way subagent-postflight.sh does" — keep that statement true by naming
-      the correlation, and add a cross-reference to the mirrored logic in the other hook.
+      the correlation, and add a cross-reference to the mirrored logic in the other hook. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -273,21 +273,21 @@ before editing; if the Stop path turns out to share the defect, it is in scope f
 
 ---
 
-### Phase 4: Label deletion provenance in the hook log [NOT STARTED]
+### Phase 4: Label deletion provenance in the hook log [COMPLETED]
 
 **Goal**: A cap-reached deletion is textually distinguishable from the `stop_hook_active` removal
 and from a silent `skill_cleanup` removal.
 
 **Tasks**:
-- [ ] In `check_loop_guard()`'s `MAX_CONTINUATIONS` branch, replace the bare
+- [x] In `check_loop_guard()`'s `MAX_CONTINUATIONS` branch, replace the bare
       `"Loop guard triggered: $count >= $MAX_CONTINUATIONS"` line with an explicitly labelled
       message (e.g. a `CAP-REACHED DELETE:` prefix) naming the marker path, the task number, the
-      marker's `session_id`, and the correlated `cc_session_id`.
-- [ ] Give the `stop_hook_active` removal branch an equally explicit, textually distinct label so
-      the two deletion paths cannot be confused when reading the log.
-- [ ] Add a comment noting that `skill_cleanup`'s removal is a silent `rm -f` with no log line —
+      marker's `session_id`, and the correlated `cc_session_id`. *(completed)*
+- [x] Give the `stop_hook_active` removal branch an equally explicit, textually distinct label so
+      the two deletion paths cannot be confused when reading the log. *(completed)*
+- [x] Add a comment noting that `skill_cleanup`'s removal is a silent `rm -f` with no log line —
       the third removal path is identified by the absence of any labelled line, and the two
-      labelled paths must therefore stay distinct from each other.
+      labelled paths must therefore stay distinct from each other. *(completed)*
 
 **Timing**: 0.25 hours
 
