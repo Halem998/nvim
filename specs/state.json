@@ -690,7 +690,7 @@
     {
       "project_number": 87,
       "project_name": "mode_gated_section_loading_convention",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -702,13 +702,18 @@
         "agent-system/extensions/core/scripts/measure-eager-context.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-02T14:08:04Z",
+      "last_updated": "2026-09-02T14:15:50Z",
       "session_id": "sess_1788357501_0d2431_87",
       "artifacts": [
         {
           "path": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
           "type": "report",
           "summary": "Formalizes the existing context/patterns pointer precedent into a documented convention with a paired branch-gated marker, an allowlist lint wired as verify-deploy Gate 19, and an independent pilot recommendation."
+        },
+        {
+          "path": "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md",
+          "type": "plan",
+          "summary": "6-phase plan: convention doc, branch-gated marker lint with 8,000 B threshold, nine-case fixture test, verify-deploy Gate 19, and an email-cleanup pilot extraction."
         }
       ]
     },
@@ -1668,10 +1673,11 @@
         124
       ],
       "file_scope": [
-        "agent-system/extensions/core/skills/skill-researcher/",
-        "agent-system/extensions/core/skills/skill-planner/",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/merge-sources/claudemd.md",
         "agent-system/extensions/core/skills/skill-implementer/",
-        "agent-system/extensions/core/merge-sources/claudemd.md"
+        "agent-system/extensions/core/skills/skill-planner/",
+        "agent-system/extensions/core/skills/skill-researcher/"
       ],
       "artifacts": [
         {

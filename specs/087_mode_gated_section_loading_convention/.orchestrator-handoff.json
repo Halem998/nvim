@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "summary": "Created a 6-phase, 7.25-hour implementation plan for the mode-gated section loading convention: convention doc at core/context/patterns/mode-gated-section-loading.md, paired branch-gated:begin/end marker, lint-branch-gated-sections.sh with a fixture test, verify-deploy Gate 19, and a pilot extraction of skill-email-cleanup's --all Mode section. Does not touch skill-orchestrate, skill-distill, skill-literature, or commands/task.md.",
+  "artifacts": [
+    "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md"
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Dispatch /implement 87 against plans/01_mode-gated-section-convention.md"
+}

@@ -26,7 +26,7 @@ next_project_number: 142
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
-87 [RESEARCHED] — Establish the convention that fixes the single largest token leve
+87 [PLANNED] — Establish the convention that fixes the single largest token leve
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
@@ -1840,11 +1840,12 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 ---
 
 ### 87. Mode gated section loading convention
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md]
+- **Plan**: [087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md]
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
 
