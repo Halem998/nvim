@@ -822,6 +822,36 @@ else
 fi
 
 say ""
+
+# Gate 19: branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
+#
+# Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
+# 17, 18): only the source store (agent-system/extensions/core/**) is validated, regardless of
+# which copy (source store or deployed .claude/) invoked this script. Invokes the source-store
+# copy directly, resolving REPO_ROOT the same way gate 18 does.
+say "19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)"
+CURRENT_GATE="gate19"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- branch-gated section threshold lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh" ]; then
+  fail "lint-branch-gated-sections.sh not found in source store"
+else
+  branch_gated_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh" --verbose 2>&1)
+  branch_gated_lint_status=$?
+  if [ "$branch_gated_lint_status" -eq 0 ]; then
+    pass "branch-gated section threshold lint reports no marked-but-unextracted sections over threshold"
+  else
+    fail "branch-gated section threshold lint reported marked-but-unextracted sections over threshold" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r branch_gated_lint_line; do
+        FINDINGS_LIST+=("FINDING gate19 ${branch_gated_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$branch_gated_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""

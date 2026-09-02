@@ -358,23 +358,23 @@ line in the phase's completion note. Also asserted: `run-all.sh` auto-discovers
 
 ---
 
-### Phase 4: Wire the lint as verify-deploy Gate 19 [NOT STARTED]
+### Phase 4: Wire the lint as verify-deploy Gate 19 [COMPLETED]
 
 **Goal**: `verify-deploy.sh` runs the new lint as Gate 19, following Gate 18's call shape exactly,
 so the convention is enforced on every deploy verification.
 
 **Tasks**:
-- [ ] Re-confirm Gate 18 is still the last gate in `scripts/verify-deploy.sh` before appending
+- [x] Re-confirm Gate 18 is still the last gate in `scripts/verify-deploy.sh` before appending *(completed: confirmed via grep)*
   Gate 19 (another in-flight change may have claimed the number).
-- [ ] Copy Gate 18's block structure verbatim, substituting the new script: the
+- [x] Copy Gate 18's block structure verbatim, substituting the new script: the *(completed)*
   `[ ! -d "$TARGET/agent-system/extensions" ]` deploy-consumer `[SKIP]` branch, the
   script-existence `fail`, the `cd "$TARGET" && REPO_ROOT="$TARGET" bash ... --verbose` invocation,
   the pass/fail messages, `CURRENT_GATE="gate19"`, and the `FINDINGS_LIST+=("FINDING gate19 ...")`
   loop keyed on `[VIOLATION]` lines.
-- [ ] Update the gate count/summary text in `verify-deploy.sh` and any place that names the
+- [x] Update the gate count/summary text in `verify-deploy.sh` and any place that names the *(completed: no such place found)*
   highest gate number, if such a place exists (grep for `gate18` and for the gate total before
   assuming there is none).
-- [ ] Run `verify-deploy.sh` end to end against the source store and confirm Gate 19 appears,
+- [x] Run `verify-deploy.sh` end to end against the source store and confirm Gate 19 appears, *(completed: Gate 19 PASS; 2 pre-existing failures on specs/state.json unrelated to this change, from concurrent sibling-task edits)*
   runs, and passes.
 
 **Timing**: 0.5 hours
