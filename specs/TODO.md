@@ -11,8 +11,8 @@ next_project_number: 141
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,104,105,109,111,112,113,121,125,129,134,137,138,139 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,107,127,136,140 | 29,74,87,91,104,121,139 | core-agent-system, extensions, literature |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,107,113,121,125,129,134,137,138,139 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,75,76,89,127,136,140 | 29,74,87,91,121,139 | core-agent-system, extensions |
 | 3 | 88 | 87,127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -55,12 +55,7 @@ next_project_number: 141
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-104 [PLANNED] — Resolve the sentence_boundary_glue_count() false-positive class o
-  └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
-105 [PLANNED] — Add an OCR tier to the literature converter, or make the pre-OCR 
-109 [PLANNED] — Fix three distinct failure modes in the online-ingest bridge, eac
-111 [PLANNED] — Two small, independent correctness fixes in literature tooling. S
-112 [PLANNED] — Make global-corpus briefing actually return results instead of si
+107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
@@ -1203,12 +1198,13 @@ FILE-OVERLAP NOTE: task 112 also edits literature-briefing.sh (global-mode query
 
 ### 112. Fix literature-briefing.sh --global FTS5 over-constraint returning zero segments
 - **Effort**: 6-10 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 108
 - **Research**: [112_fix_briefing_fts5_over_constraint/reports/01_fix-briefing-fts5-recall.md]
 - **Plan**: [112_fix_briefing_fts5_over_constraint/plans/01_fix-briefing-fts5-recall.md]
+- **Summary**: [112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md]
 
 **Description**: Make global-corpus briefing actually return results instead of silently finding nothing. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1243,12 +1239,13 @@ DEPENDENCY NOTE: serialized after task 108 purely as FILE-OVERLAP protection on 
 
 ### 111. Add literature-audit.sh argument validation and scope the /literature --validate schema check
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md]
 - **Plan**: [111_fix_audit_arg_validation_and_validate_schema_scoping/plans/01_audit-arg-validation-and-validate-schema-scoping.md]
+- **Summary**: [111_fix_audit_arg_validation_and_validate_schema_scoping/summaries/01_audit-arg-validation-and-validate-schema-scoping-summary.md]
 
 **Description**: Two small, independent correctness fixes in literature tooling. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1321,12 +1318,13 @@ VERIFICATION BAR. Demonstrate a real end-to-end discovery producing a schema-val
 
 ### 109. Fix literature-ingest-online.sh failure modes: arXiv create, orphan cleanup, pipeline fallback
 - **Effort**: 8-14 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 102
 - **Research**: [109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md]
 - **Plan**: [109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md]
+- **Summary**: [109_fix_ingest_online_failure_modes/summaries/01_ingest-online-failure-modes-summary.md]
 
 **Description**: Fix three distinct failure modes in the online-ingest bridge, each observed on a real record. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1478,12 +1476,13 @@ ACCEPTANCE: an ingest of a known-bad document through `/literature <path>` produ
 ---
 
 ### 105. Add an OCR tier for image-only and poor-vintage-OCR PDFs
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 102
 - **Research**: [105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md]
 - **Plan**: [105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md]
+- **Summary**: [105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md]
 
 **Description**: Add an OCR tier to the literature converter, or make the pre-OCR prerequisite an explicit checked failure, so image-only scanned PDFs stop hard-failing the quality gate with a misleading rejection. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -1502,12 +1501,13 @@ DEPENDS ON the converter-tier characterization task both for file-overlap serial
 ---
 
 ### 104. Resolve glue-check false-positive class on math-heavy OCR'd scans
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 102
 - **Research**: [104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md]
 - **Plan**: [104_resolve_glue_check_false_positive_class/plans/01_glue-check-false-positive-class.md]
+- **Summary**: [104_resolve_glue_check_false_positive_class/summaries/01_glue-check-false-positive-class-summary.md]
 
 **Description**: Resolve the sentence_boundary_glue_count() false-positive class on math-heavy OCR'd scans, where the documented fallback-tier remedy provably fails. EVALUATE THREE ROUTES AND JUSTIFY THE SELECTION -- DO NOT PRESUPPOSE ANY OF THEM. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
