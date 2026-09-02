@@ -5,7 +5,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Component creation checklist for agent system",
-      "line_count": 363,
+      "line_count": 364,
       "keywords": [
         "component",
         "checklist",
@@ -68,7 +68,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "High-level agent system architecture overview",
-      "line_count": 498,
+      "line_count": 505,
       "keywords": [
         "architecture",
         "system",
@@ -517,7 +517,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 308,
+      "line_count": 307,
       "keywords": [
         "guide",
         "extension",
@@ -584,7 +584,7 @@
       "domain": "core",
       "subdomain": "meta",
       "summary": "Domain-specific patterns for extensions",
-      "line_count": 143,
+      "line_count": 142,
       "keywords": [
         "meta",
         "domain",
@@ -605,7 +605,7 @@
       "domain": "core",
       "subdomain": "meta",
       "summary": "Comprehensive guide for meta tasks",
-      "line_count": 259,
+      "line_count": 260,
       "keywords": [
         "meta",
         "guide"
@@ -874,7 +874,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Checkpoint-based execution pattern",
-      "line_count": 254,
+      "line_count": 252,
       "keywords": [
         "patterns",
         "checkpoint",
@@ -1119,7 +1119,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 675,
+      "line_count": 688,
       "keywords": [
         "patterns",
         "multi-task",
@@ -1186,7 +1186,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 319,
+      "line_count": 321,
       "keywords": [
         "patterns",
         "skill",
@@ -1380,7 +1380,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Mapping of skills to agents",
-      "line_count": 154,
+      "line_count": 160,
       "keywords": [
         "reference",
         "skill",
@@ -1834,7 +1834,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 219,
+      "line_count": 218,
       "keywords": [
         "standards",
         "postflight",
@@ -2687,7 +2687,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Consolidated routing model: the four manifest blocks, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 233,
+      "line_count": 231,
       "keywords": [
         "routing",
         "manifest",
@@ -2796,7 +2796,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context-protective lead pattern: orchestrators route and delegate, never read full artifacts",
-      "line_count": 266,
+      "line_count": 264,
       "keywords": [
         "context-budget",
         "lead-agent",
@@ -2820,7 +2820,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 4a literature-mode sub-index detection flow imported by --lit-capable skills",
-      "line_count": 274,
+      "line_count": 275,
       "keywords": [
         "literature",
         "lit-flag",
@@ -2860,7 +2860,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 7/7a/8/8a/9 postflight status update, memory-candidate propagation, artifact linking, TTS notify, and cleanup block imported by lifecycle skills",
-      "line_count": 192,
+      "line_count": 193,
       "keywords": [
         "postflight",
         "memory_candidates",
