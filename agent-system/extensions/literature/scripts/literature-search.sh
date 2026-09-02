@@ -10,6 +10,20 @@
 #   literature-search.sh --next <chunk_id>   # Next chunk in sequence (metadata + first paragraph)
 #   literature-search.sh --prev <chunk_id>   # Previous chunk in sequence (metadata + first paragraph)
 #   literature-search.sh --doc <doc_id>      # List all chunks for a document
+#   printf '%s\n' "term one" "term two" | literature-search.sh --multi [limit]
+#                                             # Multi-query mode: run N short queries
+#                                             # (one per stdin line) inside this ONE process
+#                                             # (one DB open, one fidelity-map load) and
+#                                             # return a single rank-merged, chunk_id-deduped
+#                                             # envelope -- one process for per-term recall
+#                                             # instead of N. Envelope adds `total_matched`
+#                                             # (top-level: de-duplicated, post-quarantine,
+#                                             # pre-limit-slice count) and `matched_terms`
+#                                             # (per row: how many distinct sub-queries
+#                                             # surfaced it, a rank tiebreak only).
+#                                             # query_error is non-null only when every
+#                                             # sub-query failed against every database that
+#                                             # exists.
 #
 # Output: JSON to stdout. Errors as {"error": "...", "code": N} to stdout, exit non-zero.
 #
@@ -766,6 +780,376 @@ PYEOF
   echo "$results"
 }
 
+# --- Multi-query search ---
+# Runs N short queries inside ONE literature-search.sh process (one DB open per
+# database, one fidelity-map load per database) and returns a single
+# rank-merged, chunk_id-deduped envelope. This is the mechanism that lets a
+# caller replace a single AND-all-terms query with per-term recall without
+# re-creating the per-invocation process-spawn cost a multi-process fan-out
+# would cost (see literature-briefing.sh's filtered-term --global call site,
+# the sole caller today).
+#
+# Usage: printf '%s\n' "term one" "term two" | literature-search.sh --multi [limit]
+# stdin: newline-separated RAW (unsanitized) queries, one per line.
+do_multi_search() {
+  local limit="${1:-$LITERATURE_LIMIT}"
+  local project_filter="$PROJECT_FILTER"
+  local include_unverified="$INCLUDE_UNVERIFIED"
+
+  # Read raw queries from stdin.
+  local raw_queries=()
+  local line
+  while IFS= read -r line || [ -n "$line" ]; do
+    [ -n "$line" ] && raw_queries+=("$line")
+  done
+
+  # sanitize_query() stays the single source of sanitization truth -- loop it
+  # once per query here in the bash layer rather than porting/duplicating its
+  # rules into the search heredoc below. Drop entries that sanitize to empty
+  # and dedupe (a repeated term costs a wasted MATCH for no additional recall).
+  local sanitized_queries=()
+  declare -A _seen_sanitized=()
+  local raw sanitized
+  for raw in "${raw_queries[@]}"; do
+    export _SEARCH_QUERY="$raw"
+    sanitized=$(sanitize_query "$raw")
+    unset _SEARCH_QUERY
+    if [ -n "$sanitized" ] && [ -z "${_seen_sanitized[$sanitized]:-}" ]; then
+      _seen_sanitized["$sanitized"]=1
+      sanitized_queries+=("$sanitized")
+    fi
+  done
+
+  if [ ${#sanitized_queries[@]} -eq 0 ]; then
+    error_json "Multi-query list is empty (no queries on stdin, or all queries sanitized to empty)" 1
+  fi
+
+  local queries_json
+  queries_json=$(printf '%s\n' "${sanitized_queries[@]}" | jq -R . | jq -s -c .)
+
+  local db_paths
+  db_paths=$(find_databases)
+  local local_db="${db_paths%%:*}"
+  local global_db="${db_paths##*:}"
+
+  local allowed_doc_ids=""
+  if [ -n "$project_filter" ]; then
+    allowed_doc_ids=$(get_project_doc_ids "$project_filter")
+  fi
+
+  export _MULTI_QUERIES_JSON="$queries_json"
+  local results
+  results=$(python3 << PYEOF
+import sqlite3
+import json
+import os
+import re
+import sys
+
+local_db = "$local_db"
+global_db = "$global_db"
+limit = $limit
+allowed_doc_ids_raw = """$allowed_doc_ids"""
+literature_dir = "$LITERATURE_DIR"
+include_unverified = "$include_unverified" == "true"
+quarantined_fidelity = set("$QUARANTINED_FIDELITY_VALUES".split())
+queries = json.loads(os.environ["_MULTI_QUERIES_JSON"])
+
+allowed_doc_ids = [d.strip() for d in allowed_doc_ids_raw.strip().splitlines() if d.strip()]
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name-keyed (matches chunks_data.doc_id exactly). See do_search's
+    # heredoc above for the full docstring/rationale.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
+# --- Fallback ladder tiers (same vocabulary as do_search's single-query ladder) ---
+TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
+ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
+
+
+def ensure_trigram(conn):
+    """Identical to do_search's ensure_trigram() above -- see that copy's docstring
+    for the full rationale on the real-MATCH probe and the explicit commit."""
+    try:
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram USING fts5("
+            "content, content='chunks_data', content_rowid='id', tokenize='trigram')"
+        )
+        sample = conn.execute(
+            "SELECT id, content FROM chunks_data WHERE content IS NOT NULL"
+            " AND length(content) >= 8 LIMIT 1"
+        ).fetchone()
+        if sample is not None:
+            sample_id, sample_content = sample
+            m = re.search(r'[A-Za-z]{6,}', sample_content or '')
+            if m:
+                probe_term = '"' + m.group(0)[:6] + '"'
+                hit = conn.execute(
+                    "SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH ? AND rowid = ?",
+                    (probe_term, sample_id),
+                ).fetchone()[0]
+                if hit == 0:
+                    conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
+                    conn.commit()
+        return True
+    except sqlite3.OperationalError:
+        return False
+
+
+def build_sql(table, rank_expr, allowed_doc_ids):
+    if allowed_doc_ids:
+        placeholders = ','.join('?' * len(allowed_doc_ids))
+        sql = f"""
+            SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
+                   d.token_count, d.cross_refs, d.source_path,
+                   d.prev_chunk_id, d.next_chunk_id,
+                   {rank_expr} AS rank,
+                   substr(d.content, 1, 200) AS snippet
+            FROM {table}
+            JOIN chunks_data d ON d.id = {table}.rowid
+            WHERE {table} MATCH ?
+            AND d.doc_id IN ({placeholders})
+            ORDER BY rank
+            LIMIT ?
+        """
+    else:
+        sql = f"""
+            SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
+                   d.token_count, d.cross_refs, d.source_path,
+                   d.prev_chunk_id, d.next_chunk_id,
+                   {rank_expr} AS rank,
+                   substr(d.content, 1, 200) AS snippet
+            FROM {table}
+            JOIN chunks_data d ON d.id = {table}.rowid
+            WHERE {table} MATCH ?
+            ORDER BY rank
+            LIMIT ?
+        """
+    return sql
+
+
+def run_ladder(conn, query, limit, allowed_doc_ids, db_path):
+    """Run the existing 3-rung ladder (bm25 -> phrase_retry on syntax error ->
+    trigram on zero rows) for ONE query against an already-open connection.
+    Same semantics as do_search's per-query ladder, factored out so
+    search_db_multi() can call it once per filtered term without paying a new
+    DB-open cost per term. Returns (rows, tier, query_error)."""
+    query_error = None
+    rows = []
+    tier = 'none'
+    params_tail = allowed_doc_ids + [limit] if allowed_doc_ids else [limit]
+
+    try:
+        sql = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", allowed_doc_ids)
+        rows = conn.execute(sql, [query] + params_tail).fetchall()
+        if rows:
+            tier = 'bm25'
+    except sqlite3.OperationalError as e:
+        query_error = str(e)
+        print(f"[search] Query error ({query!r}): {e}", file=sys.stderr)
+        rows = []
+
+    if query_error is not None:
+        phrase_query = '"' + query.replace('"', '') + '"'
+        try:
+            sql = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", allowed_doc_ids)
+            rows = conn.execute(sql, [phrase_query] + params_tail).fetchall()
+            if rows:
+                tier = 'phrase_retry'
+        except sqlite3.OperationalError as e:
+            print(f"[search] Phrase-retry query error ({query!r}): {e}", file=sys.stderr)
+            rows = []
+
+    if not rows:
+        if ensure_trigram(conn):
+            trigram_query = '"' + query.replace('"', '') + '"'
+            try:
+                sql = build_sql("chunks_trigram", "bm25(chunks_trigram)", allowed_doc_ids)
+                rows = conn.execute(sql, [trigram_query] + params_tail).fetchall()
+                if rows:
+                    tier = 'trigram'
+            except sqlite3.OperationalError as e:
+                print(f"[search] Trigram query error ({query!r}): {e}", file=sys.stderr)
+                rows = []
+        elif query_error is None:
+            query_error = f"trigram fallback unavailable for {db_path} (create/rebuild failed, e.g. read-only database)"
+
+    return rows, tier, query_error
+
+
+def search_db_multi(db_path, queries, limit, allowed_doc_ids):
+    """Run every query in 'queries' against db_path inside ONE connection,
+    dedupe results by chunk_id (keeping the best/lowest rank occurrence and a
+    per-chunk matched_terms corroboration count -- how many distinct
+    sub-queries surfaced that chunk), and report how many of the N queries
+    failed outright (zero rows AND a query_error) so the caller can apply the
+    'query_error only when ALL sub-queries failed' aggregation rule."""
+    if not os.path.isfile(db_path):
+        return {'results': [], 'failed_terms': 0, 'attempted_terms': 0, 'errors': []}
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+    except Exception as e:
+        print(f"[search] Database error ({db_path}): {e}", file=sys.stderr)
+        return {'results': [], 'failed_terms': len(queries), 'attempted_terms': len(queries), 'errors': [str(e)]}
+
+    by_chunk = {}
+    failed_terms = 0
+    errors = []
+
+    for q in queries:
+        try:
+            rows, tier, query_error = run_ladder(conn, q, limit, allowed_doc_ids, db_path)
+        except Exception as e:
+            rows, tier, query_error = [], 'none', str(e)
+
+        if not rows and query_error is not None:
+            failed_terms += 1
+            errors.append(f"{q!r}: {query_error}")
+            continue
+
+        match_tier = ROW_TIER_LABEL.get(tier, 'bm25')
+        for row in rows:
+            cid = row['chunk_id']
+            cross_refs = row['cross_refs'] or '[]'
+            try:
+                cross_refs = json.loads(cross_refs)
+            except (json.JSONDecodeError, TypeError):
+                cross_refs = []
+            rank = row['rank']
+            existing = by_chunk.get(cid)
+            if existing is None:
+                by_chunk[cid] = {
+                    'chunk_id': cid,
+                    'doc_id': row['doc_id'],
+                    'section_path': row['section_path'],
+                    'title': row['title'],
+                    'summary': row['summary'],
+                    'token_count': row['token_count'],
+                    'cross_refs': cross_refs,
+                    'rank': rank,
+                    'snippet': (row['snippet'] or '').strip()[:200],
+                    'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
+                    'match_tier': match_tier,
+                    'matched_terms': 1,
+                }
+            else:
+                existing['matched_terms'] += 1
+                if rank < existing['rank']:
+                    existing['rank'] = rank
+                    existing['match_tier'] = match_tier
+
+    conn.close()
+    return {
+        'results': list(by_chunk.values()),
+        'failed_terms': failed_terms,
+        'attempted_terms': len(queries),
+        'errors': errors,
+    }
+
+
+local_out = search_db_multi(local_db, queries, limit, allowed_doc_ids if allowed_doc_ids else None)
+global_out = search_db_multi(global_db, queries, limit, allowed_doc_ids if allowed_doc_ids else None)
+local_results = local_out['results']
+global_results = global_out['results']
+
+# Local-over-global doc_id precedence -- identical rule to do_search's
+# single-query merge: any global row whose doc_id already has a local
+# occurrence is dropped wholesale, never partially combined with it.
+local_doc_ids = {r['doc_id'] for r in local_results}
+merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
+
+# Quarantine: exclude unverified/no-baseline docs from default ranking (same
+# rule as do_search; always retrievable via --include-unverified/--read/--toc).
+if not include_unverified:
+    merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
+
+# total_matched: the de-duplicated, post-quarantine, PRE-limit-slice count --
+# literature-briefing.sh's seg_count/coverage_count is pinned to this field so
+# the sparse=true marker stays honest. Never a sum of per-term totals.
+total_matched = len(merged)
+
+# Sort by rank ascending (bm25 is more-negative-is-better); matched_terms is a
+# tiebreak ONLY among equal-rank rows, never a replacement for rank.
+merged.sort(key=lambda r: (r['rank'], -r['matched_terms']))
+merged = merged[:limit]
+
+if merged:
+    tiers_present = {r.get('match_tier', 'bm25') for r in merged}
+    if 'bm25' in tiers_present:
+        fallback_tier = 'bm25'
+    elif 'phrase_retry' in tiers_present:
+        fallback_tier = 'phrase_retry'
+    elif 'trigram_fallback' in tiers_present:
+        fallback_tier = 'trigram'
+    else:
+        fallback_tier = 'none'
+else:
+    fallback_tier = 'none'
+degraded = fallback_tier != 'bm25'
+
+# Conservative query_error aggregation: a hard, non-null query_error surfaces
+# ONLY when every sub-query attempted against every database that actually
+# exists failed outright -- one hostile term among valid ones (or a term that
+# fails against one database but succeeds against the other) must never
+# poison the whole multi-query response. A database that does not exist
+# contributes 0 attempted/0 failed (see search_db_multi's early return), so
+# it never counts toward "all failed".
+total_attempted = local_out['attempted_terms'] + global_out['attempted_terms']
+total_failed = local_out['failed_terms'] + global_out['failed_terms']
+if total_attempted > 0 and total_failed == total_attempted:
+    all_errors = local_out['errors'] + global_out['errors']
+    n = len(queries)
+    query_error = f"all {n} sub-quer{'y' if n == 1 else 'ies'} failed: " + "; ".join(all_errors[:5])
+else:
+    query_error = None
+
+envelope = {
+    'results': merged,
+    'degraded': degraded,
+    'fallback_tier': fallback_tier,
+    'query_error': query_error,
+    'total_matched': total_matched,
+}
+
+print(json.dumps(envelope, indent=2, ensure_ascii=False))
+PYEOF
+)
+  unset _MULTI_QUERIES_JSON
+
+  echo "$results"
+}
+
+
 # --- Read chunk ---
 do_read() {
   local chunk_id="$1"
@@ -1133,7 +1517,7 @@ PYEOF
 
 # --- Main dispatch ---
 if [ $# -eq 0 ]; then
-  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] [--include-unverified] \"query\" | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
+  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] [--include-unverified] \"query\" | --multi [limit] (queries on stdin) | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
 fi
 
 # Pre-scan for --project / --include-unverified flags (may appear before any subcommand)
@@ -1194,8 +1578,15 @@ case "${remaining_args[0]}" in
     fi
     do_toc "${remaining_args[1]}"
     ;;
+  --multi)
+    # Composable with the pre-scanned --project / --include-unverified flags
+    # above (PROJECT_FILTER/INCLUDE_UNVERIFIED are read directly inside
+    # do_multi_search). Queries come from stdin, one per line; the optional
+    # positional argument is a result limit, not a query.
+    do_multi_search "${remaining_args[1]:-$LITERATURE_LIMIT}"
+    ;;
   -*)
-    error_json "Unknown flag: ${remaining_args[0]}. Use --project, --read, --toc, --refs, --next, --prev, --doc, or a search query string." 1
+    error_json "Unknown flag: ${remaining_args[0]}. Use --project, --read, --toc, --refs, --next, --prev, --doc, --multi, or a search query string." 1
     ;;
   *)
     # Default: full-text search

@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Multi-query search mode in literature-search.sh",
+  "started_at": "2026-09-01T00:15:00Z",
+  "last_updated": "2026-09-01T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --multi entry point reading newline-separated queries from stdin", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Loop sanitize_query() once per query, drop empty entries", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 3, "description": "Generalize the 3-rung ladder to run per query inside one open connection", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 4, "description": "Merge across queries: dedupe on chunk_id, keep best rank", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 5, "description": "Record per-chunk matched_terms as rank tiebreak only", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 6, "description": "Preserve post-merge pipeline: local-over-global precedence, quarantine, sort, limit slice", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 7, "description": "Conservative envelope aggregation: query_error only when all sub-queries fail", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 8, "description": "Add total_matched additive envelope field (pre-limit deduped count)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 9, "description": "Confirm single-query path byte-compatible (do_search untouched) and only literature-briefing.sh consumes the envelope", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Embedding a Python docstring with backtick-quoted `queries` inside the unquoted << PYEOF heredoc", "result": "failed", "reason": "Bash performs command substitution on backticks even inside an unquoted heredoc body, causing a spurious 'queries: command not found' stderr line; fixed by using single-quotes in the docstring instead of backticks."}
+  ],
+  "handoff_count": 0
+}

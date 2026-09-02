@@ -147,36 +147,36 @@ independently of the merge redesign.
 
 ---
 
-### Phase 2: Multi-query search mode in literature-search.sh [NOT STARTED]
+### Phase 2: Multi-query search mode in literature-search.sh [COMPLETED]
 
 **Goal**: Let one `literature-search.sh` invocation run N short queries and return one
 rank-merged, `chunk_id`-deduped envelope — so the briefing gets per-term recall at one-process cost.
 
 **Tasks**:
-- [ ] Add a multi-query entry point to the main dispatch (alongside `--read`/`--toc`/`--refs`/…):
+- [x] Add a multi-query entry point to the main dispatch (alongside `--read`/`--toc`/`--refs`/…): *(completed)*
       a `--multi` flag reading newline-separated queries from stdin. Keep it composable with the
       existing pre-scanned `--project` / `--include-unverified` flags, and reject an empty query
       list through the existing `error_json` path.
-- [ ] In the bash layer, loop the existing `sanitize_query()` once per query and drop entries that
+- [x] In the bash layer, loop the existing `sanitize_query()` once per query and drop entries that *(completed)*
       sanitize to empty. `sanitize_query()` stays the **single** source of sanitization truth — do
       not port or duplicate its rules into the search heredoc.
-- [ ] Generalize `search_db()` to accept a list of sanitized queries: run the existing three-rung
+- [x] Generalize `search_db()` to accept a list of sanitized queries: run the existing three-rung *(completed)*
       ladder (bm25 -> phrase_retry on syntax error -> trigram on zero rows) **per query**, inside
       the one already-open connection, accumulating rows across queries.
-- [ ] Merge across queries: dedupe on `chunk_id`, keeping the occurrence with the best (lowest,
+- [x] Merge across queries: dedupe on `chunk_id`, keeping the occurrence with the best (lowest, *(completed)*
       most negative) `rank`. Consume the existing `rank`; do not compute a new relevance score.
-- [ ] Record a per-chunk `matched_terms` integer (how many distinct sub-queries surfaced that
+- [x] Record a per-chunk `matched_terms` integer (how many distinct sub-queries surfaced that *(completed)*
       chunk) during the merge, expose it on each result row, and use it only as a tiebreak among
       equal-rank rows — never as a replacement for `rank`.
-- [ ] Preserve the existing post-merge pipeline unchanged: local-over-global `doc_id` precedence,
+- [x] Preserve the existing post-merge pipeline unchanged: local-over-global `doc_id` precedence, *(completed)*
       the `include_unverified` quarantine filter, the final `rank` sort, and the `limit` slice.
-- [ ] Aggregate the envelope conservatively: `fallback_tier`/`degraded` continue to derive from the
+- [x] Aggregate the envelope conservatively: `fallback_tier`/`degraded` continue to derive from the *(completed)*
       `match_tier` values of the rows that actually survive quarantine (existing logic works
       unchanged on merged rows); `query_error` is non-null **only** when every sub-query errored,
       and carries a message naming how many of N sub-queries failed.
-- [ ] Add a `total_matched` field to the envelope: the de-duplicated merged count taken **before**
+- [x] Add a `total_matched` field to the envelope: the de-duplicated merged count taken **before** *(completed)*
       the `limit` slice. Add fields only — never rename or remove an existing envelope field.
-- [ ] Confirm the single-query path is byte-compatible: a one-element multi-query list and the
+- [x] Confirm the single-query path is byte-compatible: a one-element multi-query list and the *(completed)*
       existing positional-query path must produce the same `results` for the same input.
 
 **Timing**: 2 hours
