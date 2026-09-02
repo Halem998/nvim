@@ -193,7 +193,7 @@ CI runs regardless of marker on:
 
 Both forms below go through `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
 implementation of path-scoped, mutex-serialized committing — never a bare `git add` followed by a
-bare `git commit -m`.
+a bare `git commit`.
 
 ### Standard Commit
 ```bash

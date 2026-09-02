@@ -15,7 +15,7 @@ This agent system uses **git as the primary safety mechanism** for all risky ope
 alike — goes through `.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation
 of the scoped-commit contract (path-scoped staging plus mutex-serialized commit; see
 `context/standards/git-staging-scope.md`). Never a bare `git add` followed by a bare
-`git commit -m`.
+bare `git add` plus a bare `git commit`.
 
 ---
 

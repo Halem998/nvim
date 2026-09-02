@@ -547,7 +547,7 @@ scope is whatever remains after Phases 6-8, not this count.
 
 ---
 
-### Phase 10: End-to-end exercise and acceptance verification [NOT STARTED]
+### Phase 10: End-to-end exercise and acceptance verification [IN PROGRESS]
 
 **Goal**: Prove the migrated path actually works by producing a real commit through it, and
 confirm the acceptance criterion holds across the whole source store.

@@ -132,7 +132,7 @@
           "nix"
         ]
       },
-      "line_count": 208,
+      "line_count": 211,
       "domain": "project",
       "subdomain": "nix",
       "summary": "NixOS system rebuild commands and workflows"

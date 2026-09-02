@@ -62,7 +62,7 @@
         "mcp"
       ],
       "summary": "Troubleshooting guide for memory system issues",
-      "line_count": 250,
+      "line_count": 253,
       "load_when": {
         "commands": [
           "/learn",

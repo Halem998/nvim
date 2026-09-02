@@ -89,7 +89,7 @@
       "domain": "core",
       "subdomain": "checkpoints",
       "summary": "Git commit checkpoint pattern for commands",
-      "line_count": 124,
+      "line_count": 119,
       "keywords": [
         "checkpoint",
         "commit",
@@ -943,7 +943,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "File-based metadata exchange between agents",
-      "line_count": 314,
+      "line_count": 315,
       "keywords": [
         "patterns",
         "metadata",
@@ -1261,7 +1261,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Implementation phase workflow details",
-      "line_count": 574,
+      "line_count": 578,
       "keywords": [
         "process",
         "implementation",
@@ -1282,7 +1282,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Planning phase workflow details",
-      "line_count": 539,
+      "line_count": 538,
       "keywords": [
         "process",
         "planning",
@@ -1303,7 +1303,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Research phase workflow details",
-      "line_count": 564,
+      "line_count": 563,
       "keywords": [
         "process",
         "research",
@@ -1757,7 +1757,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Error handling standards and patterns",
-      "line_count": 1056,
+      "line_count": 1054,
       "keywords": [
         "standards",
         "error",
@@ -1801,7 +1801,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 571,
+      "line_count": 566,
       "keywords": [
         "standards",
         "git",
@@ -2027,7 +2027,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating new commands",
-      "line_count": 134,
+      "line_count": 137,
       "keywords": [
         "template",
         "command"
@@ -2540,7 +2540,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 212,
+      "line_count": 215,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -2757,7 +2757,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Git checkpoint procedure to run before context-window overflow during implementation",
-      "line_count": 176,
+      "line_count": 177,
       "keywords": [
         "checkpoint",
         "context-exhaustion",
@@ -2945,7 +2945,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Continuation loop pattern for resuming a successor subagent from a handoff artifact",
-      "line_count": 215,
+      "line_count": 216,
       "keywords": [
         "continuation",
         "handoff",
