@@ -11,7 +11,7 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,29,39,43,44,45,51,72,74,89,91,113,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,22,29,39,43,44,45,51,74,89,91,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,136,140,145 | 29,74,91,139,149 | core-agent-system, extensions |
 | 3 | 146 | 145 | core-agent-system |
 | 4 | 147 | 146 | core-agent-system |
@@ -26,10 +26,8 @@ next_project_number: 151
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-20 [IMPLEMENTING] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-72 [IMPLEMENTING] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
@@ -62,7 +60,6 @@ next_project_number: 151
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-113 [IMPLEMENTING] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
 
@@ -1503,12 +1500,13 @@ RELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same de
 ---
 
 ### 113. Fix briefing sigpipe head crash
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [113_fix_briefing_sigpipe_head_crash/reports/01_sigpipe-head-crash-fix.md]
 - **Plan**: [113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md]
+- **Summary**: [113_fix_briefing_sigpipe_head_crash/summaries/01_fix-briefing-sigpipe-crash-summary.md]
 
 **Description**: Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified at task-creation time: the Logos/Theory deploy copy of literature-briefing.sh is byte-identical to the source store, so there is no drift to reconcile.
 
@@ -2502,12 +2500,13 @@ in isolation.
 
 ### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md]
 - **Plan**: [072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md]
+- **Summary**: [072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md]
 
 **Description**: === REVISED 2026-09-02 (team mode deleted; narrowed to the marker-correlation defect) ===
 SUPERSEDING SCOPE. Team mode is being removed from the system (specs/PATH.md, Decisions), so Part A below (teammate .return-meta.json ownership) is moot: there are no teammates. Part B survives on its own merits and is now this task's whole scope, because the defect is not team-specific: hooks/subagent-postflight.sh's find_marker() picks the FIRST .postflight-pending marker under specs/ (`head -1`) with no correlation to the stopping subagent's session, so with several concurrent single-task sessions the hook can act on, burn the continuation budget of, or on cap DELETE a marker belonging to a different session. The marker JSON already carries session_id (written by skill_create_postflight_marker in skill-base.sh); the hook never reads it.
@@ -3201,12 +3200,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md]
 - **Plan**: [020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md]
+- **Summary**: [020_fix_todo_metrics_sync_precommit_phantom_paths/summaries/01_phantom-path-existence-safety-summary.md]
 
 **Description**: /todo's repository-metrics sync runs before its git commit, so the health probe measures a tree whose git index still points at pre-move paths. Every archived-away file is counted as a structural failure, inflating build_errors and flipping status to "critical" on a healthy tree.
 

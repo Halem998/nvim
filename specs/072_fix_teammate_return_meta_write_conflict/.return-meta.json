@@ -1,15 +1,93 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 72,
   "session_id": "sess_1788390027_14a27d",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "artifacts": [],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md",
+      "summary": "All six plan phases complete: cc_session_id added to the marker writer/schema, both hooks' marker selection correlated to the stopping session with a strict fail-safe, deletion provenance labelled, cross-session fixture tests added (9 -> 20 passing), and postflight-control.md synced."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a cc_session_id correlation key to the .postflight-pending marker and rewrote both subagent-postflight.sh's and events-log-lifecycle.sh's marker selection to act only on the marker owned by the stopping Claude Code session (fail-safe: no match means no action), with distinguishable deletion-provenance logging, 11 new cross-session fixture-test assertions, and a synced postflight-control.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+    "agent-system/extensions/core/hooks/subagent-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh",
+    "agent-system/extensions/core/context/patterns/postflight-control.md",
+    "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-1-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-2-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-3-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-4-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-5-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/progress/phase-6-progress.json",
+    "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md"
+  ],
   "blockers": [],
-  "memory_candidates": [],
-  "modified_files": [],
+  "memory_candidates": [
+    {
+      "content": "For an on-disk marker/lock file protocol shared by concurrent Claude Code sessions (e.g. .postflight-pending), correlate marker selection to the acting session by writing a cc_session_id field sourced from ${CLAUDE_CODE_SESSION_ID:-} at write time, then having every consumer enumerate all candidate files and match hook stdin's top-level .session_id against that field -- never `find ... | head -1`. Fail-safe: on no match (empty env var, no marker matches, or matching value itself empty), act on NO file at all rather than falling back to the first hit. This is the same id space as hook stdin's .session_id and update-task-status.sh's workflow-active-<key> marker precedent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "cc_session_id",
+        "marker correlation",
+        "concurrency",
+        "fail-safe",
+        "postflight-pending"
+      ]
+    },
+    {
+      "content": "A test harness that resolves a script's deployed copy (.claude/scripts/foo.sh) before its source-store fallback (agent-system/extensions/core/scripts/foo.sh) will silently test STALE code after a source-store-only edit. Run `bash .claude/scripts/deploy-headless.sh` (non-destructive resync) to sync the deployed tree before running such tests post-edit -- this is the sanctioned deploy-process exemption to the source-store/deploy boundary rule, not a violation of it.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "source-store",
+        "test verification",
+        "deployed copy",
+        "stale test"
+      ]
+    },
+    {
+      "content": "When a fixture-test file's enumeration logic changes to require a specific field on every existing marker/fixture (e.g. adding cc_session_id), a case that specifically tests the MALFORMED/unparseable variant of that fixture cannot simply be re-parameterised with the new field -- doing so would contradict the case's own premise. Instead, rewrite that case's assertions to match the new, correct behavior (here: an unparseable marker can never correlate and so is never selected, changing its expected outcome from a diagnostic block reason to a clean fail-safe {}), and log it explicitly as a deviation rather than silently changing the test's meaning.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "test fixture",
+        "malformed marker",
+        "false pass",
+        "deviation",
+        "correlation"
+      ]
+    }
+  ],
   "metadata": {
-    "phases_completed": 0,
+    "session_id": "sess_1788390027_14a27d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

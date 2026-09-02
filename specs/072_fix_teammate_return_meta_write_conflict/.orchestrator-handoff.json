@@ -1,15 +1,38 @@
 {
-  "dispatch_seq": 2,
-  "status": "planned",
-  "summary": "Six-phase implementation plan written for the marker/session correlation defect. Adds cc_session_id to the .postflight-pending writer, correlates both hooks' marker selection (subagent-postflight.sh and events-log-lifecycle.sh) with a binding no-match-means-no-action fail-safe, labels cap-reached deletion distinctly, extends the existing fixture test with cross-session cases, and syncs postflight-control.md.",
+  "dispatch_seq": 5,
+  "status": "implemented",
+  "summary": "Correlated .postflight-pending marker selection to the stopping Claude Code session across both consumer hooks. Added a cc_session_id field (from $CLAUDE_CODE_SESSION_ID) to the marker writer; subagent-postflight.sh and events-log-lifecycle.sh's SubagentStop branch now enumerate every marker and act only on the one matching hook stdin's .session_id, with a strict fail-safe (no match, no action). Deletion provenance is now distinguishably logged, cross-session fixture tests were added (9 -> 20 passing), and postflight-control.md was synced. All 6 plan phases complete.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md",
+      "summary": "Six-phase implementation: cc_session_id marker field, correlated selection in both hooks with fail-safe, deletion-provenance logging, cross-session fixture tests (9 -> 20 passing), and postflight-control.md sync."
+    },
     {
       "type": "plan",
       "path": "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
-      "summary": "Six-phase plan, 4.25h, dependency waves [1],[2,3],[4],[5,6]."
+      "summary": "All 6 phases marked [COMPLETED]; Testing & Validation checklist fully checked off with verification evidence."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
-  "blockers": []
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "files_modified": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+    "agent-system/extensions/core/hooks/subagent-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh",
+    "agent-system/extensions/core/context/patterns/postflight-control.md",
+    "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
+    "specs/072_fix_teammate_return_meta_write_conflict/summaries/01_correlate-marker-to-session-summary.md"
+  ],
+  "decisions_made": [
+    "Each hook keeps its own mirrored correlation logic (cross-referenced by comment) rather than a shared helper, per the plan's resolution: the two hooks differ in shell options and sourcing conventions, matching the existing precedent of the duplicated malformed-marker guard.",
+    "events-log-lifecycle.sh's malformed-marker deviation-event logic was extracted into emit_malformed_marker_event() and is now called per malformed marker the enumeration reaches, since enumeration can now encounter more than one marker per invocation."
+  ],
+  "dead_ends": [],
+  "next_action_hint": "Task complete. Optional follow-up (out of this plan's declared scope): agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md carries its own pre-existing, unlabelled 'find ... | head -1' snippet describing the superseded selection behavior."
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Correlate subagent-postflight marker selection to the stopping session
 
 - **Task**: 72 - Correlate subagent-postflight marker selection to the stopping session
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md
