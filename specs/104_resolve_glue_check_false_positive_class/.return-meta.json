@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md",
+      "summary": "Evaluates the three routes and selects route (a): targeted 2-page re-OCR drops joyce_1999 from 4 hits to 2 (below the >=3 threshold) with zero gate/exemption/threshold changes; rejects routes (b) and (c) with reasoning, and recommends an additive docstring/guide reconciliation plus a 104-executes/105-owns-tooling split."
+    }
+  ],
+  "next_steps": "Run /plan 104 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9_104",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "When a quality-gate rejection is driven by a small count of hits over a threshold, check whether the rejection is composed of distinct sub-classes (genuine defects vs. benign-but-unexempted noise) before reaching for a regex-exemption fix. If fixing only the genuine-defect sub-class already drops the count below threshold, no gate/exemption change is needed at all -- the benign sub-class never needs to be matched or tolerated by the check. This avoids the risk of overfitting an exemption regex to a handful of non-generalizable false-positive strings (e.g. garbled OCR renderings of math notation with no shared structural shape).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["quality gate", "threshold arithmetic", "false positive decomposition", "regex exemption risk", "OCR remediation"]
+    },
+    {
+      "content": "In the literature extension, 'scanned vs. born-digital' is not a safe document-class boundary for calibration or tier-selection decisions -- task 102 established the real discriminator is defect origin (primary-tier structuring artifact vs. text-layer/OCR-vintage defect), which requires inspecting where post-conversion hits fall rather than being computable from document metadata. Any future task proposing a scanned/OCR-keyed threshold or calibration class should check this precedent first, since known scanned/OCR documents in the corpus (hott_book_2013, ahrens_north) are correctly-rejected genuine-corruption cases that a class-wide threshold bump would risk un-rejecting.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature extension", "quality gate", "scanned vs born-digital", "class boundary", "calibration"]
+    }
+  ]
+}
