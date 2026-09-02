@@ -223,16 +223,16 @@ report the actual shape rather than forcing the estimate.
 
 ---
 
-### Phase 3: Fidelity audit consumes the shared function [NOT STARTED]
+### Phase 3: Fidelity audit consumes the shared function [COMPLETED]
 
 **Goal**: `literature-fidelity-audit.sh` has exactly one definition of the scan-source signal —
 the shared one — with its fail-open contract and its seven-value enum behavior unchanged.
 
 **Tasks**:
-- [ ] Run `grep -rn 'SCAN_SOURCE_SIGNATURE_RE' agent-system/ .claude/ specs/` and record the hit
+- [x] Run `grep -rn 'SCAN_SOURCE_SIGNATURE_RE' agent-system/ .claude/ specs/` and record the hit
       set before removing anything. If any consumer outside `literature-fidelity-audit.sh` exists,
-      stop and report rather than removing.
-- [ ] Add `from literature_quality_gate import scan_pipeline_provenance` to the audit heredoc,
+      stop and report rather than removing. *(completed)*
+- [x] Add `from literature_quality_gate import scan_pipeline_provenance` to the audit heredoc,
       after the existing `sys.path.insert(0, os.environ["LITERATURE_SCRIPT_DIR"])` line.
       Use a **plain, unguarded import**, not the `try/except ImportError` graceful-degrade shape
       used a few lines above for `literature_combining_detect`. Rationale to record in a comment:
@@ -240,23 +240,23 @@ the shared one — with its fail-open contract and its seven-value enum behavior
       `literature_quality_gate` imports only `re` and `unicodedata`, ships in the same scripts
       directory, and is already imported unguarded by `literature-convert.sh`. A silent
       ImportError degrade here would turn the scan gate off and let documents fall through to the
-      certifying ratio branch — the wrong failure direction to make silent.
-- [ ] Delete the module-level `SCAN_SOURCE_SIGNATURE_RE` constant and its comment block.
-- [ ] Rewrite `scan_source_check(pdf_path)`'s body to call `scan_pipeline_provenance(creator,
+      certifying ratio branch — the wrong failure direction to make silent. *(completed)*
+- [x] Delete the module-level `SCAN_SOURCE_SIGNATURE_RE` constant and its comment block. *(completed)*
+- [x] Rewrite `scan_source_check(pdf_path)`'s body to call `scan_pipeline_provenance(creator,
       producer)` on the strings it already parses out of `pdfinfo` output. Keep its
       `subprocess.run(..., text=True)` call, its 30s timeout, its `try/except` + stderr warn, and
       its `return False` failure default exactly as they are — the docstring's explanation of why
       `False` is the safe default (the check is only a gate ahead of the ratio branch, so an
-      unevaluable gate falls through to today's behavior) stays accurate and must be preserved.
-- [ ] Move the "single extension point for widening or replacing the scan-source signal" comment
-      to point at `literature_quality_gate.scan_pipeline_provenance` as the new home.
-- [ ] Update the script header's signal-2 description: the sentence currently reading that broader
+      unevaluable gate falls through to today's behavior) stays accurate and must be preserved. *(completed)*
+- [x] Move the "single extension point for widening or replacing the scan-source signal" comment
+      to point at `literature_quality_gate.scan_pipeline_provenance` as the new home. *(completed)*
+- [x] Update the script header's signal-2 description: the sentence currently reading that broader
       content-based detection is "a separate, not-yet-built detector's scope" must be replaced
       with the measured finding — content-based OCR-misrecognition detection was evaluated across
       four refinement rounds against 11 known scan-pipeline documents and 6 born-digital
       dense-math controls and did not separate the two groups at any threshold, so this
       metadata-only check is very likely the ceiling rather than a placeholder. Do not cite a
-      task number or a `specs/` path here (see Phase 5's constraint note).
+      task number or a `specs/` path here (see Phase 5's constraint note). *(completed)*
 
 **Timing**: 1 hour
 

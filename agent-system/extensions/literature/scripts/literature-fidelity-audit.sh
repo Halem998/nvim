@@ -22,16 +22,21 @@
 #     2. Scan-source gate (evaluated ahead of the ratio>=threshold certification branch
 #        only): does any PDF in the directory carry a known scan/OCR-pipeline Creator or
 #        Producer signature (ABBYY FineReader, Acrobat Capture/Import Plug-in, Image
-#        Conversion Plug-in — see SCAN_SOURCE_SIGNATURE_RE)? If so, the ratio is
-#        self-referential by construction (comparing a pdftotext extraction to
-#        pdftotext's own extraction of the same scanned source, ~1.0 regardless of true
-#        page-content fidelity) and cannot certify -> unverified_scan_source instead of
-#        verified_conversion. Deliberately metadata-only (Creator/Producer strings via
-#        `pdfinfo`), not a general OCR-misrecognition text detector — that broader,
-#        content-based detection is a separate, not-yet-built detector's scope; this
-#        signal is a bounded, known-signature allowlist and is expected to miss a scan
-#        pipeline whose tool string isn't in the list (accepted gap, see the module-level
-#        constant's comment for the extension point).
+#        Conversion Plug-in — see literature_quality_gate.scan_pipeline_provenance)? If
+#        so, the ratio is self-referential by construction (comparing a pdftotext
+#        extraction to pdftotext's own extraction of the same scanned source, ~1.0
+#        regardless of true page-content fidelity) and cannot certify ->
+#        unverified_scan_source instead of verified_conversion. Deliberately
+#        metadata-only (Creator/Producer strings via `pdfinfo`), not a general
+#        OCR-misrecognition text detector — a content-based detector was evaluated
+#        separately across four refinement rounds against 11 known scan-pipeline
+#        documents and 6 born-digital dense-math controls and did not separate the two
+#        groups at any threshold, so this metadata-only check is very likely the
+#        ceiling here, not a placeholder for a future replacement; this signal is a
+#        bounded, known-signature allowlist and is expected to miss a scan pipeline
+#        whose tool string isn't in the list (accepted gap, see
+#        literature_quality_gate.scan_pipeline_provenance's own docstring for the
+#        extension point and the full measured record).
 #     3. Disclosure check (only when ratio < 0.75): does the .md content or the
 #        matching index.json summary text admit to being a selective/partial
 #        conversion? If so -> verified_conversion (disclosed partial).
@@ -218,6 +223,18 @@ except ImportError as e:
           f"check disabled for this run: {e}", file=sys.stderr)
     _COMBINING_CHECK_AVAILABLE = False
 
+# Plain, UNGUARDED import (deliberately not the try/except graceful-degrade
+# shape used just above for literature_combining_detect): that guard exists
+# because the combining module carries a PyMuPDF dependency that may not be
+# provisioned; literature_quality_gate imports only `re` and `unicodedata`,
+# ships in this same scripts directory, and is already imported unguarded by
+# literature-convert.sh. A silent ImportError degrade here would turn the
+# scan-source gate off entirely and let every scan-pipeline document fall
+# through to the certifying ratio branch -- the wrong failure direction to
+# make silent, unlike the combining-mark check above (which only disables
+# one additive signal, not a certification gate).
+from literature_quality_gate import scan_pipeline_provenance
+
 
 def combining_mark_check(dirpath, dirname):
     """Returns (checked: bool, dropped: bool|None, missing: int|None). Only
@@ -240,16 +257,11 @@ def combining_mark_check(dirpath, dirname):
 RATIO_THRESHOLD = 0.75
 PROOF_ADEQUACY_THRESHOLD = 0.6
 
-# Known scan/OCR-pipeline Creator/Producer signature, matched case-insensitively
-# against pdfinfo's Creator+Producer fields. This is the single extension point for
-# widening or replacing the scan-source signal (e.g. if a future general
-# OCR-misrecognition text detector supersedes this metadata-only check) without
-# another classify_dir() rewrite -- see scan_source_check() below and the "Scan-source
-# gate" signal in the module docstring.
-SCAN_SOURCE_SIGNATURE_RE = re.compile(
-    r"capture|finereader|image conversion",
-    re.IGNORECASE,
-)
+# The scan/OCR-pipeline Creator/Producer signature itself now lives in
+# literature_quality_gate.scan_pipeline_provenance (imported above) -- that is
+# the single extension point for widening or replacing the scan-source
+# signal, not a constant in this file. See scan_source_check() below and the
+# "Scan-source gate" signal in the module docstring.
 
 DISCLOSURE_RE = re.compile(
     r"selective conversion|extracted:?\s*chapter|truncated|excerpt|chapters?\s+\d+\s+and\s+\d+",
@@ -308,8 +320,7 @@ def scan_source_check(pdf_path):
                 creator = line[len("Creator:"):].strip()
             elif line.startswith("Producer:"):
                 producer = line[len("Producer:"):].strip()
-        combined = f"{creator}|{producer}"
-        return bool(SCAN_SOURCE_SIGNATURE_RE.search(combined))
+        return scan_pipeline_provenance(creator, producer)
     except Exception as e:
         print(f"[warn] pdfinfo failed for {pdf_path}: {e}", file=sys.stderr)
         return False

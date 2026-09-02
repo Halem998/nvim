@@ -1,0 +1,12 @@
+{
+  "phase": 3,
+  "phase_name": "Fidelity audit consumes the shared function",
+  "started_at": "2026-09-02T00:20:00Z",
+  "last_updated": "2026-09-02T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Grep SCAN_SOURCE_SIGNATURE_RE consumers, import scan_pipeline_provenance, remove duplicate constant, rewrite scan_source_check body, move comment, update header docstring", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"], "note": "Baseline vs post-edit unverified_scan_source verdict count: 11 == 11 (unchanged). grep for SCAN_SOURCE_SIGNATURE_RE outside literature-fidelity-audit.sh found only prose references in provenance-fidelity.md context doc (updated in Phase 5) and the deployed .claude/ copy (regenerated, not a hand-edit target) -- no functional consumer outside this file."}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
