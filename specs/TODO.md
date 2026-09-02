@@ -28,15 +28,15 @@ next_project_number: 141
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-  └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins
+  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
-  └─ 127 [BLOCKED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-    └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins (see above)
-125 [BLOCKED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+121 [RESEARCHED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+125 [RESEARCHED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -603,7 +603,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 127. Collapse routing ladder to routing agents
-- **Status**: [BLOCKED]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124, Task 121
@@ -649,7 +649,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 125. Delete base lifecycle skills
-- **Status**: [BLOCKED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 124
@@ -738,7 +738,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 121. Delete hard mode lifecycle files
-- **Status**: [BLOCKED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 120, Task 128
@@ -1787,7 +1787,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 88. Mode gate skill orchestrate multi task section
-- **Status**: [BLOCKED]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87, Task 127

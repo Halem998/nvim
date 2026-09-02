@@ -693,7 +693,7 @@
     {
       "project_number": 88,
       "project_name": "mode_gate_skill_orchestrate_multi_task_section",
-      "status": "blocked",
+      "status": "not_started",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1459,7 +1459,7 @@
     {
       "project_number": 121,
       "project_name": "delete_hard_mode_lifecycle_files",
-      "status": "blocked",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
@@ -1630,7 +1630,7 @@
     {
       "project_number": 125,
       "project_name": "delete_base_lifecycle_skills",
-      "status": "blocked",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).\n\nPRECONDITION (verify before starting). Both the dispatch-prep rehome and the command deletions must already be landed -- once /research, /plan, /implement are deleted, nothing calls these three skills any longer (skill-orchestrate already bypasses them entirely by dispatching agents directly, per the design report's re-verified dispatch-bypass finding), so this task is pure deletion, not rewiring.\n\nWORK. Delete skills/skill-researcher/SKILL.md (424 lines), skills/skill-planner/SKILL.md (508 lines), skills/skill-implementer/SKILL.md (725 lines), each in full (directory removal). Confirm a repo-wide grep for each skill's name (excluding this task's own specs/ artifacts, and excluding the now-historical CLAUDE.md Skill-to-Agent Mapping table row removal, which this task also performs) returns zero hits. Update the Skill-to-Agent Mapping table in CLAUDE.md / merge-sources/claudemd.md to remove the three rows.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-researcher/, .../skill-planner/, .../skill-implementer/, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 migration note, A7 ledger).\n",
@@ -1740,7 +1740,7 @@
     {
       "project_number": 127,
       "project_name": "collapse_routing_ladder_to_routing_agents",
-      "status": "blocked",
+      "status": "not_started",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "=== REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===\nADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block (\"present:grant\" -> \"skill-grant:assemble\" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nCollapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.\n\nCONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.\n\nWORK. (1) Remove the routing and routing_hard blocks from every extension manifest that declares them, retaining only routing_agents (plus any extension-specific op like present's critique). (2) Retire command-route-skill.sh -- confirm no remaining caller (only the now-deleted /research, /plan, /implement, /revise-adjacent paths called it; /revise itself does not use this resolver and is unaffected). (3) Update context/guides/manifest-routing-schema.md to document the collapsed two-block model (down from four), including the completeness-lint contract re-scoped to check only routing_agents completeness against itself. (4) Re-scope lint-routing-wiring.sh's Checks A/C accordingly.\n\nDEPENDS ON both the command deletions (routing/skill-dispatch has no remaining caller) and the hard-mode file deletions (routing_hard/routing_agents_hard has no remaining caller) having already landed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19), agent-system/extensions/core/scripts/command-route-skill.sh, agent-system/extensions/core/context/guides/manifest-routing-schema.md, agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).\n",
