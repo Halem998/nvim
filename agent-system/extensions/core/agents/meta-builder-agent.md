@@ -1458,11 +1458,16 @@ determine unambiguously where artifacts landed.
      2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
    ```
 
-5. **Git Commit**: the single documented exception to the absolute-path default (Stage 1 Path
-   Qualification Convention) — issued as **one chained Bash call**, because shell cwd from a `cd` in
-   one Bash tool invocation does not persist into a later, separate invocation:
+5. **Git Commit**: via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+   implementation of path-scoped, mutex-serialized committing. Invoke the script at
+   `$TARGET_ROOT`'s own path — this is the single documented exception to the absolute-path
+   default (Stage 1 Path Qualification Convention) — so it derives `PROJECT_ROOT` (and therefore
+   `cd`s) from `$TARGET_ROOT` rather than the current repo; no separate `cd` is needed:
 ```bash
-cd "$TARGET_ROOT" && git add specs/ && git commit -m "meta: create {N} tasks for {domain}"
+bash "${TARGET_ROOT}/.claude/scripts/git-commit-scoped.sh" \
+  --message "meta: create {N} tasks for {domain}" \
+  --session "${session_id}" \
+  -- specs/
 ```
 
 Note: skill-meta's postflight also issues a commit at `target_root` after this agent returns; if

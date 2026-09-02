@@ -211,18 +211,18 @@ should list exactly these four files and no others.
 
 ---
 
-### Phase 3: Migrate the core skills and agents [NOT STARTED]
+### Phase 3: Migrate the core skills and agents [COMPLETED]
 
 **Goal**: Convert the remaining core skill and agent definition files.
 
 **Tasks**:
-- [ ] `core/skills/skill-reviser/SKILL.md` (2 occurrences).
-- [ ] `core/skills/skill-spawn/SKILL.md` (1 occurrence).
-- [ ] `core/skills/skill-meta/SKILL.md` (1 occurrence).
-- [ ] `core/skills/skill-project-overview/SKILL.md` (1 occurrence).
-- [ ] `core/skills/skill-fix-it/SKILL.md` (1 occurrence).
-- [ ] `core/agents/meta-builder-agent.md` (1 occurrence).
-- [ ] For each, reuse the pathspecs the site already stages; where a site stages a task directory,
+- [x] `core/skills/skill-reviser/SKILL.md` (2 occurrences).
+- [x] `core/skills/skill-spawn/SKILL.md` (1 occurrence).
+- [x] `core/skills/skill-meta/SKILL.md` (1 occurrence).
+- [x] `core/skills/skill-project-overview/SKILL.md` (1 occurrence).
+- [x] `core/skills/skill-fix-it/SKILL.md` (1 occurrence).
+- [x] `core/agents/meta-builder-agent.md` (1 occurrence).
+- [x] For each, reuse the pathspecs the site already stages; where a site stages a task directory,
       do not hand-write the ephemeral exclusion set — the script injects it.
 
 **Timing**: 0.75 hours

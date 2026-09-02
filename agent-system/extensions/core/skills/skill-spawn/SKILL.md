@@ -479,14 +479,11 @@ for idx in $(echo "$dependency_order" | jq -r '.[]'); do
     task_slug=$(echo "$task_title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/[^a-z0-9_]//g')
     stage_paths+=("specs/${new_padded}_${task_slug}/")
 done
-git add "${stage_paths[@]}"
-git commit -m "$(cat <<'EOF'
-task {N}: spawn {M} tasks to resolve blocker
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: spawn {M} tasks to resolve blocker" \
+  --session "${session_id}" \
+  --honest-index-rows {N} \
+  -- "${stage_paths[@]}"
 ```
 
 Commit failure is non-blocking (log and continue).

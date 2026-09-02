@@ -413,35 +413,25 @@ Non-blocking: called in background after artifacts are linked. Speaks "Tab N STA
 ### Stage 9: Git Commit
 
 Apply task-dir scope from `.claude/context/standards/git-staging-scope.md` — targeted staging,
-never a repo-wide add:
-
-```bash
-git add \
-  "specs/${padded_num}_${project_name}/" \
-  "specs/TODO.md" \
-  "specs/state.json"
-```
+never a repo-wide add — then commit via `.claude/scripts/git-commit-scoped.sh`, the single
+sanctioned implementation of path-scoped, mutex-serialized committing:
 
 **For Plan Revision:**
 ```bash
-git commit -m "$(cat <<'EOF'
-task {N}: revise plan (v{NEW_VERSION})
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: revise plan (v{NEW_VERSION})" \
+  --session "${session_id}" \
+  --honest-index-rows {N} \
+  -- "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 ```
 
 **For Description Update:**
 ```bash
-git commit -m "$(cat <<'EOF'
-task {N}: revise description
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: revise description" \
+  --session "${session_id}" \
+  --honest-index-rows {N} \
+  -- "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 ```
 
 Commit failure is non-blocking (log and continue).

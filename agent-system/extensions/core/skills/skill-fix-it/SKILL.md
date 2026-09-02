@@ -601,14 +601,15 @@ Show summary of created tasks:
 
 ### Step 11: Git Commit (Postflight)
 
-If tasks were created, commit changes:
+If tasks were created, commit changes via `.claude/scripts/git-commit-scoped.sh`, the single
+sanctioned implementation of path-scoped, mutex-serialized committing:
 
 ```bash
 task_count={number of tasks created}
-git add specs/TODO.md specs/state.json
-git commit -m "fix-it: create $task_count tasks from tags
-
-Session: $session_id
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "fix-it: create $task_count tasks from tags" \
+  --session "$session_id" \
+  -- specs/TODO.md specs/state.json
 ```
 
 ---

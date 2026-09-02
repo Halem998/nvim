@@ -431,11 +431,15 @@ bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed 
 
 #### 5.6: Git Commit
 
-```bash
-git add "$task_dir" specs/TODO.md specs/state.json
-git commit -m "task ${next_num}: create and complete research
+Via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation of path-scoped,
+mutex-serialized committing:
 
-Session: ${session_id}"
+```bash
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${next_num}: create and complete research" \
+  --session "${session_id}" \
+  --honest-index-rows "${next_num}" \
+  -- "$task_dir" specs/TODO.md specs/state.json
 ```
 
 ### Step 6: Display Next Steps

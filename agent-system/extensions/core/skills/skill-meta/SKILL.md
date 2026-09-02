@@ -272,17 +272,19 @@ The postflight phase is LIMITED TO:
 
 ### Postflight Git Commit
 
-If the agent return indicates tasks were created, commit at `target_root` (resolved in Section 1).
-This MUST be issued as a **single Bash tool call** — shell cwd from a `cd` in one Bash invocation
-does not persist into a later, separate Bash invocation, so `GLOBAL_ROOT`/`target_root` must be
-re-derived and chained inline at the point of use, every time:
+If the agent return indicates tasks were created, commit at `target_root` (resolved in Section 1)
+via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation of path-scoped,
+mutex-serialized committing. Invoke the script at `target_root`'s own path so it derives
+`PROJECT_ROOT` (and therefore `cd`s) from `GLOBAL_ROOT`/`target_root` rather than the current
+repo — no separate `cd` is needed:
 
 ```bash
 GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
-cd "$GLOBAL_ROOT" && git add specs/ && git commit -m "task {N}: create {title}
-
-Session: {session_id}
-"
+bash "${GLOBAL_ROOT}/.claude/scripts/git-commit-scoped.sh" \
+  --message "task {N}: create {title}" \
+  --session "${session_id}" \
+  --honest-index-rows {N} \
+  -- specs/
 ```
 
 In local mode, the identical block runs with `target_root` (the current repo root) substituted
