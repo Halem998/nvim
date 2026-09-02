@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/027_remove_dead_opencode_command_router/summaries/01_remove-dead-opencode-router-summary.md",
+      "summary": "Deletion of the dead .opencode command router, its three test scripts, and its stale test-results note, with verification of the four acceptance criteria."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted .opencode/scripts/execute-command.sh (a command router with no working dispatch branch), its three test scripts, and its stale test-results.md; re-checked README.md needed no edit. Verified zero remaining non-specs references, bash -n clean across all 52 remaining scripts, and build_errors unchanged (1 before/after, cause pre-existing and unrelated)."
+  },
+  "memory_candidates": [],
+  "modified_files": [
+    ".opencode/scripts/execute-command.sh",
+    ".opencode/scripts/test-command.sh",
+    ".opencode/scripts/test-execution-system.sh",
+    ".opencode/scripts/test-execution.sh",
+    ".opencode/scripts/test-results.md"
+  ],
+  "next_steps": "Postflight may commit the staged deletions and transition task status to [COMPLETED].",
+  "metadata": {
+    "session_id": "sess_1788382844_27990c_27",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  }
+}

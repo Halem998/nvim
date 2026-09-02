@@ -2999,6 +2999,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 - **Task Type**: meta
 - **Topic**: opencode
 - **Dependencies**: None
+- **Summary**: [027_remove_dead_opencode_command_router/summaries/01_remove-dead-opencode-router-summary.md]
 
 **Description**: .opencode/scripts/execute-command.sh is a command router that cannot execute anything and is called by nothing but its own tests. Delete it and the three test scripts that exist only to exercise it.
 
