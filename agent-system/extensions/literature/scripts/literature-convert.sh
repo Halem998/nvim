@@ -111,6 +111,7 @@ from literature_quality_gate import (
     sentence_boundary_glue_count,
     control_char_count,
     printable_ratio,
+    scan_pipeline_provenance,
 )
 
 MARK = "̸"  # COMBINING LONG SOLIDUS OVERLAY
@@ -227,6 +228,43 @@ gate_check("printable-ratio-clean-prose-near-one", clean_ratio >= 0.99,
 empty_ratio, empty_count = printable_ratio("")
 gate_check("printable-ratio-empty-string-no-crash", (empty_ratio, empty_count) == (1.0, 0),
            f"expected (1.0, 0), got {(empty_ratio, empty_count)!r}")
+
+# scan_pipeline_provenance: positive fixtures use the real Creator/Producer
+# strings measured during research; negative fixtures cover common
+# born-digital toolchains plus the empty/None case. The trailing-NUL fixture
+# is the regression lock for the bug that undercounted the corpus's
+# scan-pipeline document count: Acrobat Capture embeds a literal NUL byte at
+# the end of its Creator/Producer strings, which silently truncates a bash
+# `$(...)` + `grep` match. Python string handling is immune (`str.search`
+# treats NUL as an ordinary character), so this fixture is what keeps the
+# check on the Python path rather than regressing to a bash grep pipeline.
+gate_check("scan-pipeline-provenance-capture-plugin",
+           scan_pipeline_provenance("Acrobat 3.0 Capture Plug-in", "Acrobat 3.0 Import Plug-in"),
+           "expected an Acrobat Capture Plug-in Creator/Producer pair to be flagged")
+gate_check("scan-pipeline-provenance-capture-plugin-windows",
+           scan_pipeline_provenance("Acrobat 4.0 Capture Plug-in for Windows", ""),
+           "expected an Acrobat 4.0 Capture Plug-in for Windows Creator to be flagged")
+gate_check("scan-pipeline-provenance-finereader-empty-producer",
+           scan_pipeline_provenance("ABBYY FineReader", ""),
+           "expected an ABBYY FineReader Creator with an empty Producer to be flagged")
+gate_check("scan-pipeline-provenance-image-conversion",
+           scan_pipeline_provenance("", "Adobe Acrobat 7.0 Image Conversion Plug-in"),
+           "expected an Adobe Acrobat 7.0 Image Conversion Plug-in Producer to be flagged")
+gate_check("scan-pipeline-provenance-pdftex-not-flagged",
+           not scan_pipeline_provenance("pdfTeX-1.40.20", "pdfTeX-1.40.20"),
+           "expected a pdfTeX Creator/Producer pair to NOT be flagged")
+gate_check("scan-pipeline-provenance-cairo-not-flagged",
+           not scan_pipeline_provenance("cairo 1.16.0", "cairo 1.16.0 (https://cairographics.org)"),
+           "expected a cairo Creator/Producer pair to NOT be flagged")
+gate_check("scan-pipeline-provenance-empty-none-not-flagged",
+           not scan_pipeline_provenance(None, None) and not scan_pipeline_provenance("", ""),
+           "expected None/None and empty-string/empty-string to NOT be flagged, and not raise")
+gate_check("scan-pipeline-provenance-nul-byte-regression-lock",
+           scan_pipeline_provenance("Acrobat 3.0 Capture Plug-in\x00", ""),
+           "expected a trailing-NUL Creator string to still be flagged (Python path, not bash grep)")
+gate_check("scan-pipeline-provenance-born-digital-substring-not-flagged",
+           not scan_pipeline_provenance("LaTeX with hyperref package", "pdfTeX-1.40.21"),
+           "expected a common born-digital LaTeX/pdfTeX pair to NOT accidentally match a substring")
 
 # Moved-function regression (Phase 2 refactor behavior-preservation): one
 # known-flagging and one known-clean input each, including the Ph.D./binder

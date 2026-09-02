@@ -175,29 +175,29 @@ producer)` with behavior byte-identical to `literature-fidelity-audit.sh`'s exis
 
 ---
 
-### Phase 2: Self-test fixtures for the new function [NOT STARTED]
+### Phase 2: Self-test fixtures for the new function [COMPLETED]
 
 **Goal**: The `--self-test` gate-fixture block exercises `scan_pipeline_provenance` in both
 directions, including the NUL-byte case that defeated the original bash detection.
 
 **Tasks**:
-- [ ] Add `scan_pipeline_provenance` to the `from literature_quality_gate import (...)` list in
+- [x] Add `scan_pipeline_provenance` to the `from literature_quality_gate import (...)` list in
       the **self-test heredoc's** import block in `literature-convert.sh` (the earlier of the two
       import sites in this file — the one preceding the `gate_check()` helper, not the live
-      conversion heredoc's).
-- [ ] Add `gate_check(...)` fixtures using the real Creator/Producer strings measured in research:
+      conversion heredoc's). *(completed)*
+- [x] Add `gate_check(...)` fixtures using the real Creator/Producer strings measured in research:
       positives `Acrobat 3.0 Capture Plug-in`, `Acrobat 4.0 Capture Plug-in for Windows`,
       `ABBYY FineReader` (with an empty Producer), and
-      `Adobe Acrobat 7.0 Image Conversion Plug-in`.
-- [ ] Add negative fixtures: a pdfTeX Creator/Producer pair, a cairo pair, and the
-      empty-string/`None` pair.
-- [ ] Add the regression-lock fixture: a Creator string with a trailing NUL byte
+      `Adobe Acrobat 7.0 Image Conversion Plug-in`. *(completed)*
+- [x] Add negative fixtures: a pdfTeX Creator/Producer pair, a cairo pair, and the
+      empty-string/`None` pair. *(completed)*
+- [x] Add the regression-lock fixture: a Creator string with a trailing NUL byte
       (`"Acrobat 3.0 Capture Plug-in\x00"`) must still return `True`. Comment it with why it
       exists — Acrobat Capture embeds a literal NUL that silently truncates bash `$(...)` +
       `grep` matching, which is how the corpus scan count was undercounted; Python string
-      handling is immune, and this fixture is what keeps the check on the Python path.
-- [ ] Add a negative fixture proving the regex is not accidentally matching a substring of a
-      common born-digital producer string.
+      handling is immune, and this fixture is what keeps the check on the Python path. *(completed)*
+- [x] Add a negative fixture proving the regex is not accidentally matching a substring of a
+      common born-digital producer string. *(completed)*
 
 **Timing**: 0.5 hours
 

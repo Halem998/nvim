@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "Self-test fixtures for the new function",
+  "started_at": "2026-09-02T00:10:00Z",
+  "last_updated": "2026-09-02T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add scan_pipeline_provenance to self-test import list + positive/negative/NUL fixtures", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
