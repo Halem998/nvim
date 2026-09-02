@@ -219,51 +219,51 @@ migration task) has one authority to point at.
 
 ---
 
-### Phase 2: Implement the branch-gated section lint [NOT STARTED]
+### Phase 2: Implement the branch-gated section lint [COMPLETED]
 
 **Goal**: `scripts/lint/lint-branch-gated-sections.sh` exists, resolves its scan root correctly in
 both source-store and deployed layouts, and fails loudly and namedly when a runtime-loaded `.md`
 surface carries marked-but-unextracted branch sections summing above the threshold.
 
 **Tasks**:
-- [ ] Read `scripts/lint/lint-task-lookup-adoption.sh` in full first and copy its structure:
+- [x] Read `scripts/lint/lint-task-lookup-adoption.sh` in full first and copy its structure: *(completed)*
   argument parsing (`--verbose`, `--quiet`, optional `path...`), the dual-mode root-resolution
   probe (`core/manifest.json` one level under a candidate root distinguishes source-store from
   deployed), the `[VIOLATION]`-tagged output line format that `verify-deploy.sh` greps, and the
   three-value exit-code contract (0 clean / 1 violations / 2 script error).
-- [ ] **Strict-mode posture**: default to Class A (`set -euo pipefail`), matching the sibling
+- [x] **Strict-mode posture**: default to Class A (`set -euo pipefail`), matching the sibling *(completed: Class A, no counter idiom)*
   lint's actual posture. Only choose Class B (`set -uo pipefail`) if the counter/report-everything
   admission test in `context/standards/shell-strict-mode.md` genuinely applies to the
   implementation as written, and say which was chosen and why in the header.
-- [ ] **Scope by construction, never by exclusion list**: `commands/*.md` and `skills/*/SKILL.md`
+- [x] **Scope by construction, never by exclusion list**: `commands/*.md` and `skills/*/SKILL.md` *(completed)*
   across each extension. `docs/`, `context/`, `rules/`, `agents/` are out of scope because the
   scan never visits them.
-- [ ] **Layer 1 (structural)**: for each in-scope file, pair every `<!-- branch-gated:begin ... -->`
+- [x] **Layer 1 (structural)**: for each in-scope file, pair every `<!-- branch-gated:begin ... -->` *(completed)*
   with the next `<!-- branch-gated:end -->` and sum the byte spans. Report a violation when a
   file's sum exceeds the threshold. Handle and report, as a distinct named diagnostic (not a
   silent skip), the three malformed cases: an unmatched `begin`, an unmatched `end`, and a
   nested/overlapping pair.
-- [ ] **Layer 2 (file-level allowlist)**: an `EXCLUDED_FILES`-style block in the same shape as the
+- [x] **Layer 2 (file-level allowlist)**: an `EXCLUDED_FILES`-style block in the same shape as the *(completed: starts empty)*
   sibling lint's. Every entry carries an inline reason; bare paths are prohibited by construction.
-- [ ] **Convention-selection check (do this, do not skip it)**: run the honest live count of
+- [x] **Convention-selection check (do this, do not skip it)**: run the honest live count of *(completed: live count is 0)*
   marked-but-unextracted files across the tree before finalizing. Expect zero (no markers exist
   yet outside the pilot). Record in the lint header the deliberate decision that the allowlist
   mechanism is present but **starts empty** — chosen over zero-tolerance because per-file
   migration work will legitimately produce a marked-but-unextracted intermediate state, which a
   zero-tolerance assertion would block outright. If the live count comes back non-zero, that is
   new information: record what was found and populate the allowlist with reasoned entries.
-- [ ] **Threshold**: implement as a single named constant at the top of the script (e.g.
+- [x] **Threshold**: implement as a single named constant at the top of the script (e.g. *(completed: THRESHOLD_BYTES=8000)*
   `THRESHOLD_BYTES=8000`) with a header comment giving the calibration: below every known
   instance (17,309 / 25,883 / 43,254 / 65,772 / 103,462 B) by a wide margin so it needs no
   re-tuning as those land, and above small legitimately-inline branch content whose extraction
   overhead (new file, pointer, index entry) would exceed the win.
-- [ ] **Known-limitation block** in the header, in the sibling lint's plain-spoken style: this is
+- [x] **Known-limitation block** in the header, in the sibling lint's plain-spoken style: this is *(completed)*
   a marker-keyed lint; an unmarked new offender evades it entirely; a clean run means "no marked
   section exceeds the threshold", never "no branch-gated section is inline anywhere".
-- [ ] Add `"lint/lint-branch-gated-sections.sh"` to `provides.scripts` in
+- [x] Add `"lint/lint-branch-gated-sections.sh"` to `provides.scripts` in *(completed)*
   `agent-system/extensions/core/manifest.json` (that list enumerates files individually; without
   this entry the script is never deployed).
-- [ ] Run the lint against the live source store and confirm it exits 0.
+- [x] Run the lint against the live source store and confirm it exits 0. *(completed: 133 files checked, exit 0; deployed-mode .claude scan also exercised, 50 files, exit 0)*
 
 **Timing**: 2 hours
 

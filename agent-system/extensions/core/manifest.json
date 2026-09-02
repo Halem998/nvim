@@ -125,6 +125,7 @@
       "lib/status-vocabulary.sh",
       "lifecycle-notify.sh",
       "lint/lint-agent-contracts.sh",
+      "lint/lint-branch-gated-sections.sh",
       "lint/lint-contract-compliance.sh",
       "lint/lint-lifecycle-status-var.sh",
       "lint/lint-postflight-boundary.sh",
