@@ -22,11 +22,28 @@
 #     behavior the plan's Phase 4 rationale depends on. Requires a deployed
 #     .claude/scripts/generate-todo.sh (its own deploy-root-guard.sh refuses the source-store
 #     copy) -- SKIPPED with a named [INFO] line, not counted as FAILED, when absent.
+#   Bar 4 (phantom-only, git fixture) -- a THIRD fixture kind: a real git work tree (git
+#     init/add/commit), unlike every case above. One tracked *.sh stays in place (so
+#     total_candidates remains nonzero) and a second tracked *.sh is `mv`'d without staging.
+#     Asserts build_errors == 0, status == "healthy", and phantom_paths == 1 -- a
+#     moved-but-unstaged tracked file must contribute nothing to build_errors.
+#   Bar 5 (phantom plus real defect, git fixture) -- same shape as Bar 4, but the file left in
+#     place carries a deliberate syntax error instead of being valid. Asserts build_errors == 1
+#     exactly (explicitly neither 0 nor 2), status == "critical", and phantom_paths == 1 -- a
+#     real defect is still counted despite a phantom entry also being present.
+#   Bar 6 (all-phantom degenerate, git fixture) -- the fixture's only tracked structural
+#     candidate is moved away unstaged, leaving zero real candidates. Asserts build_errors is
+#     JSON null (explicitly neither 0 nor 1), status == "unknown", and phantom_paths == 1 --
+#     proving phantom paths are excluded from total_candidates itself, not merely from the error
+#     count.
 #
-# Non-git-fixture note: every fixture above is built under a `mktemp -d` workdir, which is never a
-# git work tree. Every case therefore exercises assess-repo-health.sh's `find`-based enumeration
-# fallback, not its `git ls-files` path -- Bars 1-2 and the clean control all passing IS the proof
-# that fallback works, not an incidental detail. See the info() line emitted at suite start.
+# Non-git-fixture note: every fixture in Bars 1-3 and the clean control is built under a
+# `mktemp -d` workdir, which is never a git work tree. Those cases therefore exercise
+# assess-repo-health.sh's `find`-based enumeration fallback, not its `git ls-files` path -- all
+# passing IS the proof that fallback works, not an incidental detail. See the info() line emitted
+# at suite start. Bars 4-6 are the complementary git-work-tree fixture kind, added to exercise the
+# `git ls-files` path specifically -- see the info() line emitted just before them, and SKIPPED
+# with a named [INFO] line (not counted as FAILED) when `git` is unavailable on PATH.
 #
 # Negative-control demonstration (manual, not automated in this file -- see
 # context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes"): before
@@ -277,6 +294,156 @@ EOF
     fi
   else
     fail "Bar 3 (frontmatter idempotence): generate-todo.sh exited non-zero; stderr: $(cat "$WORKDIR/bar3_stderr_1" "$WORKDIR/bar3_stderr_2" 2>/dev/null)"
+  fi
+fi
+
+# =====================================================================
+# Bars 4-6: git-fixture regression cases, locking both directions of the phantom-path existence
+# fix. Unlike every fixture above (all built under mktemp -d, never a git work tree), these
+# fixtures ARE real git work trees (git init/add/commit) -- exercising assess-repo-health.sh's
+# git ls-files enumeration path specifically, which is where a phantom index entry (a tracked
+# path moved/renamed/deleted but not yet staged) actually arises.
+# =====================================================================
+if ! command -v git >/dev/null 2>&1; then
+  info "Bars 4-6 (git-fixture regression cases): SKIPPED -- git not found on PATH."
+else
+  info "Bars 4-6 below build real git work trees (git init/add/commit), unlike every mktemp -d fixture above -- they exercise assess-repo-health.sh's git ls-files enumeration path, not its find fallback."
+
+  git_fixture_init() {
+    local dir="$1"
+    mkdir -p "$dir"
+    git -C "$dir" init -q
+    git -C "$dir" -c user.email="test@example.com" -c user.name="Test" commit -q --allow-empty -m "init"
+  }
+
+  git_fixture_commit() {
+    local dir="$1" msg="$2"
+    git -C "$dir" add -A
+    git -C "$dir" -c user.email="test@example.com" -c user.name="Test" commit -q -m "$msg"
+  }
+
+  # ===================================================================
+  # Bar 4: phantom-only -- a valid tracked *.sh stays in place (so total_candidates remains
+  # nonzero after the existence filter) and a second valid tracked *.sh is moved without
+  # staging. Proves a moved-but-unstaged tracked file contributes zero to build_errors while
+  # status stays "healthy" (the degenerate all-phantom "unknown" case is Bar 6, below).
+  # ===================================================================
+  BAR4_DIR="$WORKDIR/bar4"
+  git_fixture_init "$BAR4_DIR"
+  cat > "$BAR4_DIR/stays.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "stays"
+EOF
+  cat > "$BAR4_DIR/moves.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "moves"
+EOF
+  git_fixture_commit "$BAR4_DIR" "add stays.sh and moves.sh"
+  mv "$BAR4_DIR/moves.sh" "$BAR4_DIR/moved.sh"
+
+  if BAR4_OUT="$(bash "$TOOL" --root "$BAR4_DIR" 2>"$WORKDIR/bar4_stderr")"; then
+    if echo "$BAR4_OUT" | jq -e '.build_errors == 0' >/dev/null 2>&1; then
+      pass "Bar 4 (phantom-only, git fixture): build_errors == 0"
+    else
+      fail "Bar 4 (phantom-only, git fixture): build_errors != 0 (got: $(echo "$BAR4_OUT" | jq -c '.build_errors'))"
+    fi
+    bar4_status="$(echo "$BAR4_OUT" | jq -r '.status')"
+    if [ "$bar4_status" = "healthy" ]; then
+      pass "Bar 4 (phantom-only, git fixture): status == healthy"
+    else
+      fail "Bar 4 (phantom-only, git fixture): status != healthy (got: $bar4_status)"
+    fi
+    if echo "$BAR4_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
+      pass "Bar 4 (phantom-only, git fixture): phantom_paths == 1"
+    else
+      fail "Bar 4 (phantom-only, git fixture): phantom_paths != 1 (got: $(echo "$BAR4_OUT" | jq -c '.phantom_paths'))"
+    fi
+    assert_status_in_enum "$bar4_status" "Bar 4"
+  else
+    fail "Bar 4 (phantom-only, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar4_stderr")"
+  fi
+
+  # ===================================================================
+  # Bar 5: phantom plus real defect -- same fixture shape as Bar 4, but the file left in place
+  # carries a deliberate syntax error instead of being valid. Proves build_errors counts the
+  # real defect exactly once (neither 0 nor 2) while the phantom entry still contributes
+  # nothing.
+  # ===================================================================
+  BAR5_DIR="$WORKDIR/bar5"
+  git_fixture_init "$BAR5_DIR"
+  cat > "$BAR5_DIR/broken.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "unterminated
+EOF
+  cat > "$BAR5_DIR/moves.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "moves"
+EOF
+  git_fixture_commit "$BAR5_DIR" "add broken.sh and moves.sh"
+  mv "$BAR5_DIR/moves.sh" "$BAR5_DIR/moved.sh"
+
+  if BAR5_OUT="$(bash "$TOOL" --root "$BAR5_DIR" 2>"$WORKDIR/bar5_stderr")"; then
+    if echo "$BAR5_OUT" | jq -e '.build_errors == 1' >/dev/null 2>&1; then
+      pass "Bar 5 (phantom + real defect, git fixture): build_errors == 1 exactly"
+    else
+      fail "Bar 5 (phantom + real defect, git fixture): build_errors != 1 (got: $(echo "$BAR5_OUT" | jq -c '.build_errors'))"
+    fi
+    bar5_status="$(echo "$BAR5_OUT" | jq -r '.status')"
+    if [ "$bar5_status" = "critical" ]; then
+      pass "Bar 5 (phantom + real defect, git fixture): status == critical"
+    else
+      fail "Bar 5 (phantom + real defect, git fixture): status != critical (got: $bar5_status)"
+    fi
+    if echo "$BAR5_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
+      pass "Bar 5 (phantom + real defect, git fixture): phantom_paths == 1"
+    else
+      fail "Bar 5 (phantom + real defect, git fixture): phantom_paths != 1 (got: $(echo "$BAR5_OUT" | jq -c '.phantom_paths'))"
+    fi
+    assert_status_in_enum "$bar5_status" "Bar 5"
+  else
+    fail "Bar 5 (phantom + real defect, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar5_stderr")"
+  fi
+
+  # ===================================================================
+  # Bar 6: all-phantom degenerate -- the fixture's only tracked structural candidate is moved
+  # away unstaged, leaving zero real candidates. Proves phantom paths are excluded from
+  # total_candidates itself, not merely from the error count: build_errors must be JSON null
+  # (explicitly neither 0 nor 1) and status must be "unknown", not "healthy".
+  # ===================================================================
+  BAR6_DIR="$WORKDIR/bar6"
+  git_fixture_init "$BAR6_DIR"
+  cat > "$BAR6_DIR/only.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "only"
+EOF
+  git_fixture_commit "$BAR6_DIR" "add only.sh"
+  mv "$BAR6_DIR/only.sh" "$BAR6_DIR/moved.sh"
+
+  if BAR6_OUT="$(bash "$TOOL" --root "$BAR6_DIR" 2>"$WORKDIR/bar6_stderr")"; then
+    if echo "$BAR6_OUT" | jq -e '.build_errors == null' >/dev/null 2>&1; then
+      pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is JSON null"
+    else
+      fail "Bar 6 (all-phantom degenerate, git fixture): build_errors is not JSON null (got: $(echo "$BAR6_OUT" | jq -c '.build_errors'))"
+    fi
+    if echo "$BAR6_OUT" | jq -e '.build_errors != 0 and .build_errors != 1' >/dev/null 2>&1; then
+      pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is explicitly neither 0 nor 1"
+    else
+      fail "Bar 6 (all-phantom degenerate, git fixture): build_errors equals 0 or 1 (should be null/not-measured)"
+    fi
+    bar6_status="$(echo "$BAR6_OUT" | jq -r '.status')"
+    if [ "$bar6_status" = "unknown" ]; then
+      pass "Bar 6 (all-phantom degenerate, git fixture): status == unknown"
+    else
+      fail "Bar 6 (all-phantom degenerate, git fixture): status != unknown (got: $bar6_status)"
+    fi
+    if echo "$BAR6_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
+      pass "Bar 6 (all-phantom degenerate, git fixture): phantom_paths == 1"
+    else
+      fail "Bar 6 (all-phantom degenerate, git fixture): phantom_paths != 1 (got: $(echo "$BAR6_OUT" | jq -c '.phantom_paths'))"
+    fi
+    assert_status_in_enum "$bar6_status" "Bar 6"
+  else
+    fail "Bar 6 (all-phantom degenerate, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar6_stderr")"
   fi
 fi
 

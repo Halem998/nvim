@@ -178,37 +178,45 @@ choke point and record the correction.
 
 ---
 
-### Phase 2: Git-fixture regression cases [NOT STARTED]
+### Phase 2: Git-fixture regression cases [COMPLETED]
 
 **Goal**: The regression suite proves, on an actual git work tree, that a moved-but-unstaged
 tracked file contributes zero errors while a genuinely broken tracked file still contributes
 exactly one.
 
 **Tasks**:
-- [ ] Add a git-fixture helper to
+- [x] Add a git-fixture helper to
       `agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh` that builds a
       throwaway work tree under the suite's existing `WORKDIR` (`git init`, `git add`,
       `git commit` with `-c user.email=` / `-c user.name=` or equivalent local config so the
-      fixture never depends on the caller's global git identity).
-- [ ] Case: **phantom-only**. Commit one syntactically valid tracked `*.sh`, then `mv` it to a new
+      fixture never depends on the caller's global git identity). *(completed: `git_fixture_init`
+      / `git_fixture_commit`)*
+- [x] Case: **phantom-only**. Commit one syntactically valid tracked `*.sh`, then `mv` it to a new
       path without staging. Assert `build_errors == 0`, `status == "healthy"`, and
-      `phantom_paths == 1`.
-- [ ] Case: **phantom plus real defect**. Same fixture with a second tracked `*.sh` carrying a
+      `phantom_paths == 1`. *(deviation: altered — see progress file phase-2 `deviations[0]`; a
+      companion untouched valid `*.sh` was added so `total_candidates` stays nonzero post-filter,
+      otherwise this exact fixture shape hits Phase 1's all-phantom degenerate branch (which is
+      Bar 6's subject) instead of healthy/0. Assertions verified to fail against the pre-fix
+      script.)*
+- [x] Case: **phantom plus real defect**. Same fixture with a second tracked `*.sh` carrying a
       deliberate syntax error, left in place and unmoved. Assert `build_errors == 1` exactly
       (explicitly asserted to be neither 0 nor 2), `status == "critical"`, and `phantom_paths == 1`.
-- [ ] Case: **all-phantom degenerate**. A fixture whose only tracked structural candidates have
+      *(completed as Bar 5)*
+- [x] Case: **all-phantom degenerate**. A fixture whose only tracked structural candidates have
       all been moved away unstaged. Assert `build_errors` is JSON `null` (explicitly neither 0 nor
       1) and `status == "unknown"` — proving phantom paths are excluded from `total_candidates`,
-      not merely from the error count.
-- [ ] Reuse the suite's existing `pass()` / `fail()` / `info()` helpers and PASSED/FAILED counters;
-      do not restructure existing cases.
-- [ ] Add an `info()` line at the new cases' start noting that these fixtures — unlike every
+      not merely from the error count. *(completed as Bar 6; verified to fail against the pre-fix
+      script, which reports build_errors: 1 / status: critical for this fixture)*
+- [x] Reuse the suite's existing `pass()` / `fail()` / `info()` helpers and PASSED/FAILED counters;
+      do not restructure existing cases. *(completed)*
+- [x] Add an `info()` line at the new cases' start noting that these fixtures — unlike every
       pre-existing one — are real git work trees and therefore exercise the `git ls-files`
-      enumeration path rather than the `find` fallback.
-- [ ] Update the suite's header `Cases:` block to describe the new cases and the third fixture
-      kind.
-- [ ] Skip the git cases with a named `[INFO]` line (not a FAILED) if `git` is unavailable on
+      enumeration path rather than the `find` fallback. *(completed)*
+- [x] Update the suite's header `Cases:` block to describe the new cases and the third fixture
+      kind. *(completed)*
+- [x] Skip the git cases with a named `[INFO]` line (not a FAILED) if `git` is unavailable on
       PATH, matching the suite's existing skip convention for the `generate-todo.sh` case.
+      *(completed)*
 
 **Timing**: 1 hour
 

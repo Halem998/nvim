@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Git-fixture regression cases",
+  "started_at": "2026-09-02T23:25:00Z",
+  "last_updated": "2026-09-02T23:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add git-fixture helper to test-assess-repo-health.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 2, "description": "Case: phantom-only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 3, "description": "Case: phantom plus real defect", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 4, "description": "Case: all-phantom degenerate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 5, "description": "Reuse pass()/fail()/info() helpers, PASSED/FAILED counters", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 6, "description": "Add info() line noting real git work trees vs find fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 7, "description": "Update suite header Cases: block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]},
+    {"id": 8, "description": "Skip git cases with [INFO] if git unavailable", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Case: phantom-only (\"Commit one syntactically valid tracked *.sh, then mv it to a new path without staging. Assert build_errors == 0, status == \"healthy\", and phantom_paths == 1.\")",
+      "type": "altered",
+      "reason": "The plan's literal fixture (a single tracked file, moved) leaves zero real candidates after Phase 1's existence filter, which by Phase 1's own documented degenerate-case rule yields build_errors: null and status: \"unknown\" -- not build_errors == 0 / status == \"healthy\" as this case asserts. That exact shape (single candidate, all-phantom) is already the correct subject of Bar 6 (\"all-phantom degenerate\"). To make Bar 4's literal assertions (0/healthy) true while still proving a moved file contributes zero, the fixture adds one companion valid *.sh that stays in place (unmoved), so total_candidates remains nonzero after filtering. Verified against the negative control: the pre-fix script reports build_errors: 1 / status: critical for this fixture, confirming it is still a genuine regression lock.",
+      "annotation": "*(deviation: altered — added a companion untouched valid *.sh so total_candidates stays nonzero post-filter, since the literal single-file fixture would hit Phase 1's all-phantom degenerate branch instead of healthy/0)*"
+    }
+  ],
+  "handoff_count": 0
+}
