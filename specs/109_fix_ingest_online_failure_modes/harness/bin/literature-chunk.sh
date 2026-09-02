@@ -3,8 +3,10 @@
 #   literature-chunk.sh <md_file> <doc_dir> --doc-id <id>
 # Behavior controlled by HARNESS_CHUNK_MODE:
 #   success  (default) write <doc_dir>/chunks.json with one minimal chunk, print "1" to stdout
-#   fail     print "0" to stdout, write no chunks.json (exercises the chunking-failure
-#            continue branch)
+#   fail     print nothing to stdout, exit 1, write no chunks.json -- the real caller's own
+#            `2>/dev/null || echo "0"` fallback supplies CHUNK_COUNT="0" in this case; printing
+#            our own "0" here too would double up into "0\n0" and break the caller's
+#            `[ "$CHUNK_COUNT" -eq 0 ]` integer test
 set -euo pipefail
 
 MD_FILE="${1:-}"
@@ -21,7 +23,6 @@ done
 MODE="${HARNESS_CHUNK_MODE:-success}"
 
 if [ "$MODE" = "fail" ]; then
-  echo "0"
   exit 1
 fi
 

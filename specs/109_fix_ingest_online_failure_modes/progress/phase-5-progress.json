@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Remove orphaned doc directories on failure branches (defect b, part 2)",
+  "started_at": "2026-09-02T00:15:00Z",
+  "last_updated": "2026-09-02T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm DOC_DIR fresh-this-iteration ordering before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add rm -rf DOC_DIR to quality-gate, OCR-needed, hard-fail, no-md, and chunk-fail continue branches (5 sites, not the plan's assumed 4)", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 3, "description": "Fix pre-existing set-e/pipefail crash making the no-md branch unreachable", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 4, "description": "Add optional rmdir safety sub-step for BASE_DOC_ID != DOC_ID", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest.sh"]},
+    {"id": 5, "description": "Verify via harness (5 forced-failure scenarios + success control) and standalone rmdir-safety test", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Print '0' from the harness literature-chunk.sh stub on failure, matching a naive mirror of the success path", "result": "failed", "reason": "double-printed with the real caller's own `|| echo \"0\"` fallback, producing a two-line CHUNK_COUNT that broke the [ -eq 0 ] integer test; fixed by having the stub print nothing on failure"}
+  ],
+  "deviations": [
+    {"task_id": "5.2", "description": "Scope Hypothesis: exactly four no-cleanup continue branches", "type": "altered", "reason": "a concurrent, independently-committed task (OCR-needed bucketing) added a fifth no-cleanup continue branch to literature-ingest.sh while this task was in flight; fixed identically alongside the original four since it is the same class of defect", "annotation": "*(deviation: altered — see Correction note under Phase 5 tasks)*"},
+    {"task_id": "5.2", "description": "Add rm -rf DOC_DIR to the 'conversion reported success but no .md file found' branch", "type": "altered", "reason": "that branch was found to be dead code (unreachable) due to a pre-existing set -e/pipefail interaction crashing the whole script before the branch's own if-check ever ran; required an additional one-line fix (|| true guard on the DOC_ID assignment) to make the branch -- and hence this defect-b-part-2 fix -- actually reachable", "annotation": "*(deviation: altered — see Correction note item 2 under Phase 5 tasks)*"}
+  ],
+  "handoff_count": 0
+}

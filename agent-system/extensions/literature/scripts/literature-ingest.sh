@@ -238,6 +238,12 @@ print('yes' if existing else 'no')
     GATE_FAILED=$((GATE_FAILED + 1))
     rm -rf "$TMP_MD_DIR"
     rm -f "$CONVERT_STDERR_FILE"
+    # DOC_DIR was freshly mkdir -p'd above (line ~214) and is empty at this point -- the
+    # pre-existing re-ingestion branch above already guarantees it is fresh-this-iteration
+    # before conversion runs, so an unconditional rm -rf here cannot destroy a populated
+    # corpus directory. Without this, a quality-gate-rejected file leaves an orphaned, empty,
+    # unindexed sources/<doc_id>/ directory behind.
+    rm -rf "$DOC_DIR"
     continue
   elif [ "$CONVERT_EXIT" -eq 2 ] && grep -q 'NO TEXT LAYER:' "$CONVERT_STDERR_FILE" 2>/dev/null; then
     # Exit 2 is OVERLOADED (see literature-convert.sh's header): this branch
@@ -255,6 +261,9 @@ print('yes' if existing else 'no')
     OCR_NEEDED=$((OCR_NEEDED + 1))
     rm -rf "$TMP_MD_DIR"
     rm -f "$CONVERT_STDERR_FILE"
+    # Same orphan-directory leak as the quality-gate branch above: DOC_DIR is
+    # fresh-this-iteration (see the re-ingestion branch above), so this rm -rf is safe.
+    rm -rf "$DOC_DIR"
     continue
   elif [ "$CONVERT_EXIT" -ne 0 ]; then
     log "ERROR: Conversion failed for $BASENAME (exit $CONVERT_EXIT)"
@@ -262,6 +271,8 @@ print('yes' if existing else 'no')
     rm -rf "$TMP_MD_DIR"
     rm -f "$CONVERT_STDERR_FILE"
     FAILED=$((FAILED + 1))
+    # Same orphan-directory leak as the quality-gate branch above.
+    rm -rf "$DOC_DIR"
     continue
   fi
 
@@ -269,12 +280,21 @@ print('yes' if existing else 'no')
 
   # Exit 0: the last line of stdout is the doc_id, but derive it from the
   # actual output filename too (belt-and-suspenders against stdout noise).
-  DOC_ID=$(ls "$TMP_MD_DIR"/*.md 2>/dev/null | head -1 | xargs -I{} basename {} .md)
+  # `|| true` is load-bearing, not decorative: under this script's `set -eo pipefail`, when
+  # literature-convert.sh exits 0 but writes no .md (the branch immediately below exists
+  # specifically to catch this), the unmatched `*.md` glob makes `ls` exit non-zero, and
+  # pipefail propagates that through `head`/`xargs` to the whole command substitution --
+  # without the guard, `set -e` kills the script outright with a bare, unexplained exit
+  # instead of ever reaching the `if [ -z "$DOC_ID" ]` handling two lines down.
+  DOC_ID=$(ls "$TMP_MD_DIR"/*.md 2>/dev/null | head -1 | xargs -I{} basename {} .md) || true
 
   if [ -z "$DOC_ID" ] || ! ls "$TMP_MD_DIR"/*.md >/dev/null 2>&1; then
     log "ERROR: Conversion reported success but no .md file found for $BASENAME"
     rm -rf "$TMP_MD_DIR"
     FAILED=$((FAILED + 1))
+    # Same orphan-directory leak as the quality-gate branch above -- DOC_DIR still points at
+    # sources/$BASE_DOC_ID here (the DOC_ID reassignment below never runs on this branch).
+    rm -rf "$DOC_DIR"
     continue
   fi
 
@@ -284,6 +304,15 @@ print('yes' if existing else 'no')
   # Update DOC_DIR to use the actual doc_id, still under sources/<id>/
   DOC_DIR="$LITERATURE_DIR/sources/$DOC_ID"
   mkdir -p "$DOC_DIR"
+
+  # Optional, safety-bounded cleanup: when the converter-derived $DOC_ID differs from
+  # $BASE_DOC_ID, the earlier mkdir -p at line ~214 (sources/$BASE_DOC_ID) is now unused.
+  # rmdir (never rm -rf) is the guard here -- it fails harmlessly on a non-empty directory,
+  # which is exactly the protection needed against destroying a pre-existing populated corpus
+  # directory that happens to share $BASE_DOC_ID's name for an unrelated reason.
+  if [ "$DOC_ID" != "$BASE_DOC_ID" ]; then
+    rmdir "$LITERATURE_DIR/sources/$BASE_DOC_ID" 2>/dev/null || true
+  fi
 
   log "doc_id: $DOC_ID"
 
@@ -295,6 +324,10 @@ print('yes' if existing else 'no')
   if [ "$CHUNK_COUNT" -eq 0 ] || [ ! -f "$DOC_DIR/chunks.json" ]; then
     log "ERROR: Chunking failed for $DOC_ID"
     FAILED=$((FAILED + 1))
+    # DOC_DIR was reassigned above to sources/$DOC_ID (the converter-derived id, which may
+    # differ from $BASE_DOC_ID) and freshly mkdir -p'd; same orphan-directory leak as the
+    # quality-gate branch above.
+    rm -rf "$DOC_DIR"
     continue
   fi
 

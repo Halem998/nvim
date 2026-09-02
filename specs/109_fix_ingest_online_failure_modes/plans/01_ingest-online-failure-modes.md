@@ -348,33 +348,59 @@ header-contract documentation hits (lines ~60 and ~104), and edit every executab
 
 ---
 
-### Phase 5: Remove orphaned doc directories on failure branches (defect b, part 2) [NOT STARTED]
+### Phase 5: Remove orphaned doc directories on failure branches (defect b, part 2) [COMPLETED]
 
 **Goal**: Stop `literature-ingest.sh`'s per-file loop from leaving an empty, unindexed
 `sources/<doc_id>/` directory behind when conversion or chunking fails.
 
 **Tasks**:
-- [ ] Re-read `literature-ingest.sh` lines 193-212 first and confirm the ordering the safety of
+- [x] Re-read `literature-ingest.sh` lines 193-212 first and confirm the ordering the safety of
   this fix depends on: the re-ingestion branch (`EXISTING == yes -> rm -rf "$DOC_DIR"`) runs
   **before** `mkdir -p "$DOC_DIR"`, so `DOC_DIR` is always fresh-this-iteration by conversion time
-- [ ] Add `rm -rf "$DOC_DIR"` to the quality-gate rejection branch (`CONVERT_EXIT -eq 3`, `continue`
-  at line ~239)
-- [ ] Add `rm -rf "$DOC_DIR"` to the hard conversion-failure branch (`CONVERT_EXIT -ne 0`,
-  `continue` at line ~246)
-- [ ] Add `rm -rf "$DOC_DIR"` to the "conversion reported success but no `.md` file found" branch
+  *(completed: re-read at implementation time; ordering confirmed unchanged, now at lines 197-214)*
+- [x] Add `rm -rf "$DOC_DIR"` to the quality-gate rejection branch (`CONVERT_EXIT -eq 3`, `continue`
+  at line ~239) *(completed: landed at line 244, shifted by task 105's concurrent OCR-branch
+  insertion — see Correction below)*
+- [x] Add `rm -rf "$DOC_DIR"` to the hard conversion-failure branch (`CONVERT_EXIT -ne 0`,
+  `continue` at line ~246) *(completed: landed at line 274)*
+- [x] Add `rm -rf "$DOC_DIR"` to the "conversion reported success but no `.md` file found" branch
   (`continue` at line ~259) — **this branch was not identified by the research** and leaks
-  identically
-- [ ] Add `rm -rf "$DOC_DIR"` to the chunking-failure branch (`CHUNK_COUNT -eq 0 || ! -f
+  identically *(completed: landed at line 294 — see also the Correction below: this branch was
+  found to be UNREACHABLE as originally written and required an additional fix to reach at all)*
+- [x] Add `rm -rf "$DOC_DIR"` to the chunking-failure branch (`CHUNK_COUNT -eq 0 || ! -f
   "$DOC_DIR/chunks.json"`, `continue` at line ~279). Note this branch runs after `DOC_DIR` has been
-  reassigned to the converter-derived `DOC_ID` (line ~266-267)
-- [ ] Optional, safety-bounded: at the `DOC_DIR` reassignment (line ~266), when the derived
+  reassigned to the converter-derived `DOC_ID` (line ~266-267) *(completed: landed at line 327)*
+- [x] Optional, safety-bounded: at the `DOC_DIR` reassignment (line ~266), when the derived
   `DOC_ID` differs from `BASE_DOC_ID`, `rmdir` the now-unused `sources/$BASE_DOC_ID` directory with
   `|| true`. Use `rmdir`, never `rm -rf` — it fails harmlessly on a non-empty directory, which is
   exactly the guard needed against destroying a pre-existing populated corpus directory. Skip this
   sub-step if it cannot be verified cleanly; it is a success-path observation, not one of the three
-  reported defects
-- [ ] Add no "did we create it this run" bookkeeping — the existing re-ingestion `rm -rf` makes it
-  unnecessary
+  reported defects *(completed: added; safety verified via a standalone rmdir-on-non-empty-dir
+  test rather than a harness scenario, since the stub converter never produces a DOC_ID differing
+  from BASE_DOC_ID, so the branch's guard condition can't be triggered naturally through the
+  harness — POSIX rmdir semantics on a non-empty directory are not scenario-dependent)*
+- [x] Add no "did we create it this run" bookkeeping — the existing re-ingestion `rm -rf` makes it
+  unnecessary *(completed: no bookkeeping added)*
+
+**Correction (confirmed at implementation time, two divergences from this phase's plan)**:
+
+1. **Branch count is now five, not four.** A concurrent, independently-committed task
+   (`literature-ingest.sh`'s OCR-needed bucketing) landed a fifth no-cleanup `continue` branch
+   between the quality-gate and hard-fail branches while this plan was being executed. It is the
+   same class of defect (an empty `sources/<doc_id>/` orphan on a `continue`), so it was fixed
+   identically alongside the original four rather than left inconsistent.
+2. **The "no `.md` file found" branch was found to be dead code, not merely un-cleaned-up.**
+   Under this script's `set -eo pipefail`, `DOC_ID=$(ls "$TMP_MD_DIR"/*.md 2>/dev/null | head -1 |
+  xargs -I{} basename {} .md)` crashes the entire script (bare exit 2, no log line) when no `.md`
+  exists, because the unmatched glob makes `ls` exit non-zero and `pipefail` propagates that
+  through the pipeline into the assignment's own exit status — `set -e` then kills the script
+  before the very `if [ -z "$DOC_ID" ]` check that branch's cleanup lives in ever runs, so my
+  `rm -rf "$DOC_DIR"` addition there was originally dead code. This was empirically confirmed with
+  the harness's `no-md-orphan` scenario (added proactively, beyond Phase 5's own Verification
+  bullets) and reproduced with a minimal standalone `bash -c` test isolating the exact glob/
+  pipefail interaction. Fixed with a one-line, non-scope-creeping guard (`|| true` on the
+  assignment) so the branch is actually reachable — without this, defect (b) part 2 would not
+  have been fixed for this specific sub-case despite the `rm -rf "$DOC_DIR"` line being present.
 
 **Timing**: 0.75 hours
 
