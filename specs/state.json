@@ -908,14 +908,14 @@
     {
       "project_number": 106,
       "project_name": "route_skill_literature_convert_through_gated_pipeline",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "literature",
       "effort": "6-10 hours",
       "dependencies": [],
       "description": "Route skill-literature's convert path through literature-convert.sh so that /literature ingests are quality-gated. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nTHE DEFECT -- TWO CONVERSION PATHS, ONLY ONE GATED. literature-convert.sh runs literature_quality_gate.py on every document it converts. But skill-literature's own Mode: Convert (handle_convert, \"Convert Step 3b: Extract Full Text and Determine Chunking\") does NOT call it -- it shells out directly:\n\n    full_text=$(pdftotext -layout \"$src\" - 2>/dev/null)\n\nand proceeds straight to chunking, metadata prompts, index.json write, literature-chunk.sh, and literature-build-index.sh. No gate check runs at any point. Every ingest through `/literature <path>` therefore bypasses the entire quality-gate layer, no matter how good that layer becomes.\n\nCONFIRMED BY A LIVE INGEST, not by reading alone. goldblatt_1989 was ingested through this exact path on 2026-08-26 (74 chunks, indexed, in both the global index and BimodalLogic's sub-index). It is a badly OCR-garbled 2001 Acrobat Capture scan. No gate ran. Nothing warned.\n\nWHY THIS IS THE STRUCTURAL ONE. The sibling tasks in this cluster all improve the gate or the audit. This task is what makes those improvements reachable from the path operators actually use interactively. A better gate that handle_convert never calls protects nothing.\n\nALSO NOTE THE TIER GAP: handle_convert uses bare `pdftotext -layout`, which is literature-convert.sh's THIRD and last-resort tier. So /literature-path ingests do not merely skip the gate -- they skip the pymupdf4llm primary tier and the PyMuPDF column-clustering fallback entirely, always landing on the weakest engine. Both defects have the same fix.\n\nSCOPE DECISION THIS TASK MUST MAKE. Choose between (i) replacing the inline pdftotext call with a delegation to literature-convert.sh, inheriting the full ladder and gate; and (ii) keeping the inline path but invoking literature_quality_gate.py on its output and surfacing rejections. (i) is the better shape and removes a duplicated conversion implementation; (ii) is cheaper if delegation turns out to conflict with handle_convert's interactive chunk-boundary and metadata prompts, which literature-convert.sh knows nothing about. Weigh the interaction model before committing -- the interactive prompts are handle_convert's reason for existing.\n\nDO NOT let a gate rejection become a silent skip. Whatever shape is chosen, a rejected document must surface an actionable message to the operator (the existing gate's rejection prose is the model), never be written to the index as though it converted cleanly. The corpus already contains a document that was.\n\nACCEPTANCE: an ingest of a known-bad document through `/literature <path>` produces a visible gate rejection or an explicit recorded caveat; the pymupdf4llm tier is reached on a document where it is the right engine; no second conversion implementation remains in the skill.",
       "created": "2026-08-26T06:10:00Z",
-      "last_updated": "2026-09-02T04:53:48Z",
+      "last_updated": "2026-09-02T04:59:34Z",
       "file_scope": [
         "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
       ],
@@ -926,6 +926,11 @@
           "path": "specs/106_route_skill_literature_convert_through_gated_pipeline/reports/01_route-convert-through-gate.md",
           "type": "report",
           "summary": "Confirms skill-literature's Mode: Convert bypasses literature-convert.sh's engine tiers and quality gate; recommends delegating Convert Step 3b's text extraction to literature-convert.sh (mirroring literature-ingest.sh's exit-code-handling pattern) rather than bolting the gate onto the inline pdftotext path."
+        },
+        {
+          "path": "specs/106_route_skill_literature_convert_through_gated_pipeline/plans/01_route-convert-through-gate.md",
+          "type": "plan",
+          "summary": "5-phase plan delegating skill-literature Mode: Convert Step 3b text extraction to literature-convert.sh, surfacing gate rejections as actionable skips, loosening the pdftotext hard gate, syncing the Error Handling contract, and verifying all three acceptance criteria via live runs."
         }
       ]
     },

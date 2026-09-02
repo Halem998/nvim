@@ -59,7 +59,7 @@ next_project_number: 139
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
   └─ 109 [NOT STARTED] — Fix three distinct failure modes in the online-ingest bridge, eac
 103 [PLANNED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
-106 [PLANNING] — Route skill-literature's convert path through literature-convert.
+106 [PLANNED] — Route skill-literature's convert path through literature-convert.
 108 [PLANNING] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
 110 [PLANNING] — Stop Tier 3 online discovery from being a single point of failure
@@ -1356,11 +1356,12 @@ A NEGATIVE RESULT IS A COMPLETE OUTCOME. If no content signal separates OCR garb
 
 ### 106. Route skill literature convert through gated pipeline
 - **Effort**: 6-10 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [106_route_skill_literature_convert_through_gated_pipeline/reports/01_route-convert-through-gate.md]
+- **Plan**: [106_route_skill_literature_convert_through_gated_pipeline/plans/01_route-convert-through-gate.md]
 
 **Description**: Route skill-literature's convert path through literature-convert.sh so that /literature ingests are quality-gated. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
