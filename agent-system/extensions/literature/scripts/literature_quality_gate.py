@@ -247,8 +247,8 @@ def sentence_boundary_glue_count(text):
     the primary tier to 5 on the fallback tier, because both tiers read
     the same corrupted characters and the fallback tier's own
     column-clustering can add unrelated noise. See
-    context/guides/literature-organization.md's Converter Tier
-    Selection section for the full diagnostic guidance —
+    context/guides/literature-organization.md's
+    Converter Tier Selection section for the full diagnostic guidance —
     never widening this exemption further, tuning the threshold-3 cutoff, or a manual override.
 
     Exemption is applied by stripping the exempted substrings first, THEN

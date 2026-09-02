@@ -243,28 +243,28 @@ when each converter tier helps, keyed on defect origin rather than document prov
 
 ---
 
-### Phase 4: Consistency and regression gate [NOT STARTED]
+### Phase 4: Consistency and regression gate [COMPLETED]
 
 **Goal**: Confirm the three edits are mutually consistent, the preserved invariant held, and
 nothing in the literature extension's test surface regressed.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh`
+- [x] Run `bash agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh`
       and record the result. If the harness cannot run because the real corpus fixtures under
       `~/Projects/Literature/sources/` are unavailable, record that as a skip with the exact
-      failure output rather than reporting a pass.
-- [ ] Run `bash agent-system/extensions/literature/scripts/tests/test-literature-convert.sh` and
-      record the result under the same skip-vs-pass discipline.
-- [ ] Verify the cross-reference chain end to end: the docstring names the guide section, the
-      guide section heading matches byte-for-byte, and the README points at the same name.
-- [ ] Re-confirm the prohibition clause invariant with a literal `grep -F` (same check as Phase 1,
-      re-run after all edits land).
-- [ ] Run the repo-wide task-reference lint
+      failure output rather than reporting a pass. *(completed: all 5 fixtures passed, exit 0 — real corpus fixtures were available)*
+- [x] Run `bash agent-system/extensions/literature/scripts/tests/test-literature-convert.sh` and
+      record the result under the same skip-vs-pass discipline. *(completed: 13 passed, 0 failed, exit 0)*
+- [x] Verify the cross-reference chain end to end: the docstring names the guide section, the
+      guide section heading matches byte-for-byte, and the README points at the same name. *(completed: found a docstring line-wrap that split "Converter Tier Selection" across two lines, breaking a literal grep match; re-wrapped so the phrase sits on one line in the docstring, matching the guide heading and README text exactly)*
+- [x] Re-confirm the prohibition clause invariant with a literal `grep -F` (same check as Phase 1,
+      re-run after all edits land). *(completed: 1 match)*
+- [x] Run the repo-wide task-reference lint
       (`bash .claude/scripts/check-task-references.sh` or the equivalent entry point in
       `scripts/lib/task-reference-patterns.sh`'s consumer) and confirm the three touched files
-      introduce no new violations.
-- [ ] Confirm no file under `.claude/` was modified: `git status --short` shows changes only
-      under `agent-system/extensions/literature/` and `specs/`.
+      introduce no new violations. *(completed: `check-task-references.sh agent-system/extensions/literature` reports 0 unexempted occurrences)*
+- [x] Confirm no file under `.claude/` was modified: `git status --short` shows changes only
+      under `agent-system/extensions/literature/` and `specs/`. *(completed: no `.claude/**` paths touched by this task's edits; the working tree also carries pre-existing unrelated modifications from before this dispatch and concurrent sibling-task edits under `agent-system/extensions/literature/`, none of which this task introduced or altered)*
 
 **Timing**: 25 minutes
 
