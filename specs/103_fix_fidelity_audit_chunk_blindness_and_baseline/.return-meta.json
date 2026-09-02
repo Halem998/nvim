@@ -1,0 +1,48 @@
+{
+  "status": "researched",
+  "summary": "Confirmed defect (a) (chunk-blindness) exactly as described, but found the naive fix (delete the chunk exclusion) regresses task #839's earlier double-count fix; verified a conditional fix (count chunks only when no canonical .md exists) against the live corpus by simulation. Re-measured defect (b) live: the delegation's cited symptom (zero search results) does not currently reproduce -- most of the corpus already carries a no_source_pdf stamp from a prior audit run -- but the conditional (a) fix alone resolves 76% of the corpus to no_source_pdf (non-quarantined), so no new baseline mechanism is needed for this task's scope; flagged that running --write under the unfixed script would actively regress currently-working stamps. Confirmed defect (c) live via a pdfinfo Creator/Producer metadata survey: 9 of 10 known scan-pipeline-sourced PDFs are currently falsely stamped verified_conversion at ratio ~1.0; recommended a 7th enum value (unverified_scan_source) gated by the metadata check, following the existing 'unadjudicated' precedent, updating both literature-search.sh and literature-briefing.sh fail-open lists. Also surfaced an unrelated but in-scope orphaned enum value (unverified_conversion, 10 live entries) that neither consumer recognizes.",
+  "session_id": "sess_1788323839_c3b8b4_103",
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md",
+      "summary": "Research report covering defects (a) chunk-blindness, (b) absent-baseline majority, and (c) self-referential ratio on scan-sourced PDFs, with corpus measurements and two verified dry-run simulations."
+    }
+  ],
+  "next_steps": "Run /plan 103 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In literature-fidelity-audit.sh's classify_dir(), any change to the chunk_NNNN.md exclusion in the `mds` glob must be conditional (count chunks toward has_md/md_words only when the directory has no non-chunk .md), never a blanket removal -- some corpus directories carry both a canonical .md AND its own chunk_NNNN.md FTS re-split of the same content (task #839's original double-count fix), while others (chunk-only pipeline ingests) have no canonical .md at all. A blanket un-exclusion double-counts the former; leaving the exclusion in place blinds has_md for the latter. Verified live: burgess_1982_i's ratio inflates from 1.0982 (correct) to 2.2476 (fabricated) under a naive fix.",
+      "category": "PATTERN",
+      "source_artifact": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature-fidelity-audit", "chunk-blindness", "double-count", "provenance_fidelity", "classify_dir"]
+    },
+    {
+      "content": "The word_ratio = md_words / pdf_words check in literature-fidelity-audit.sh is self-referential (and therefore uninformative) whenever the stored .md was itself produced by pdftotext extraction of the same PDF -- both sides of the ratio become the same extraction, so ratio ~1.0 by construction even when the OCR text layer is badly garbled. A pdfinfo Creator/Producer metadata check (regex on 'capture|finereader|image conversion', case-insensitive) reliably identifies known scan-pipeline-sourced PDFs in the ~/Projects/Literature corpus and should gate (not merely annotate) the verified_conversion verdict for such documents, since the ratio alone cannot detect this failure mode.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["provenance_fidelity", "pdfinfo", "scan-detection", "OCR", "self-referential-ratio", "literature-fidelity-audit"]
+    },
+    {
+      "content": "Any allowlist-style fail-open check keyed on a bounded enum (e.g. literature-search.sh's QUARANTINED_FIDELITY_VALUES, literature-briefing.sh's needs_fidelity_marker()) silently treats an unrecognized/orphaned value as 'not a concern' rather than failing closed. Found live: 10 ~/Projects/Literature/index.json entries carry provenance_fidelity='unverified_conversion', a string no current classify_dir() branch produces (predates the present 6-value enum) -- both consumers pass these through unmarked and unquarantined. Self-heals on the next correct --write, but is a general lesson: enum-based allowlists should be audited for values the enum no longer produces whenever the enum changes.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["fail-open", "enum-drift", "provenance_fidelity", "allowlist", "literature-search"]
+    }
+  ],
+  "metadata": {
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "duration_seconds": null,
+    "delegation_depth": 2
+  },
+  "modified_files": [
+    "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md",
+    "specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/.return-meta.json"
+  ],
+  "errors": []
+}
