@@ -475,29 +475,41 @@ confirmed hard-failure mechanism and the implemented mitigation.
 
 ---
 
-### Phase 7: Integration verification and source-store boundary check [NOT STARTED]
+### Phase 7: Integration verification and source-store boundary check [COMPLETED]
 
 **Goal**: Confirm all four fixes hold together on a single end-to-end path, and that nothing landed
 in the deploy artifact.
 
 **Tasks**:
-- [ ] Run the full harness suite against the fixed scripts: arXiv-only record through item-add,
+- [x] Run the full harness suite against the fixed scripts: arXiv-only record through item-add,
   forced item-add failure, forced attach failure, forced quality-gate rejection, forced chunking
-  failure, and one clean success path
-- [ ] Confirm the stable contract is intact: for each forced failure, stdout is exactly one
+  failure, and one clean success path *(completed: ran all 10 scenarios the harness accumulated
+  across Phases 1-5 — arxiv-only-fixed, doi-present-unaffected, staging-cleanup-create,
+  staging-cleanup-attach, quality-gate-orphan, hard-fail-orphan, no-md-orphan, chunk-fail-orphan,
+  pipeline-failed-message, success-control — all passed)*
+- [x] Confirm the stable contract is intact: for each forced failure, stdout is exactly one
   directive token and the exit code matches the header's documented mapping (1/2/3/5/6). No token
-  spelling, exit number, or input field name changed
-- [ ] Confirm no leftovers under the scratch `LITERATURE_DIR`: no staging PDF, no empty
-  `sources/<doc_id>/`, no partial index entries
-- [ ] Run `git status --short` and `git diff --stat` and confirm **no path under `.claude/`** was
-  modified — all edits are under `agent-system/extensions/literature/`
-- [ ] Confirm the real corpus at the default `LITERATURE_DIR` was never written to during any
-  verification run
-- [ ] Record before/after evidence (command, observed output, observed filesystem state) for each of
-  the three defects in the implementation summary
-- [ ] Note in the summary that `literature-ingest.sh` was modified despite the bridge header calling
+  spelling, exit number, or input field name changed *(completed: verified per-scenario in Phases
+  2-4's individual runs and re-confirmed in this phase's full-suite run)*
+- [x] Confirm no leftovers under the scratch `LITERATURE_DIR`: no staging PDF, no empty
+  `sources/<doc_id>/`, no partial index entries *(completed)*
+- [x] Run `git status --short` and `git diff --stat` and confirm **no path under `.claude/`** was
+  modified — all edits are under `agent-system/extensions/literature/` *(completed: confirmed, no
+  `.claude/` path in either)*
+- [x] Confirm the real corpus at the default `LITERATURE_DIR` was never written to during any
+  verification run *(completed: run-harness.sh's before/after snapshot trap fired clean on every
+  invocation across all phases)*
+- [x] Record before/after evidence (command, observed output, observed filesystem state) for each of
+  the three defects in the implementation summary *(completed: see summary)*
+- [x] Note in the summary that `literature-ingest.sh` was modified despite the bridge header calling
   it the "UNMODIFIED literature-ingest.sh pipeline" — a narrow cleanup fix benefiting every caller,
-  with no change to pipeline semantics, output, or exit codes
+  with no change to pipeline semantics, output, or exit codes *(completed: see summary)*
+
+**Scope Hypothesis resolution**: the six-scenario suite hypothesized above was superseded by the
+harness's own accumulated 10-scenario suite (Phases 1-5 progressively added arxiv-only-fixed,
+doi-present-unaffected, staging-cleanup-create, staging-cleanup-attach, quality-gate-orphan,
+hard-fail-orphan, no-md-orphan, chunk-fail-orphan, pipeline-failed-message, success-control) —
+broader coverage than planned, not narrower, so no gap.
 
 **Timing**: 0.75 hours
 
