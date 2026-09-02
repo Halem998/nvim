@@ -414,24 +414,39 @@ behavior — the snippets would tell an operator to make exactly the arbitrary p
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh` — zero
+- [x] `bash agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh` — zero
       failures, `cc_session_id` present in the exact key set, set/unset round-trip cases pass.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh` — zero
+      *(verified: 12 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh` — zero
       failures; all pre-existing cases still reach the branches they assert on; new cross-session,
-      cap-deletion, legacy-marker, and events-hook cases pass.
-- [ ] AC — correlated selection: with markers from two unrelated concurrent tasks present, the
+      cap-deletion, legacy-marker, and events-hook cases pass. *(verified: 20 passed, 0 failed.
+      Deviation note: cases (c) and (e) now reach the fail-safe {} branch rather than the block
+      branch -- see Phase 5's logged deviation -- and their assertions were revised accordingly,
+      not silently left to pass vacuously)*
+- [x] AC — correlated selection: with markers from two unrelated concurrent tasks present, the
       hook acts only on the marker correlated to the stopping session (fixture, Phase 5).
-- [ ] AC — event attribution: a foreign subagent's stop no longer produces a `subagent_stop` line
+      *(verified: case (f))*
+- [x] AC — event attribution: a foreign subagent's stop no longer produces a `subagent_stop` line
       pairing one session's `session_id` with another's `cc_session_id` (fixture, Phase 5).
-- [ ] AC — deletion provenance: a cap-reached deletion is distinguishable in the log from the
+      *(verified: events companion cross-session case)*
+- [x] AC — deletion provenance: a cap-reached deletion is distinguishable in the log from the
       `stop_hook_active` removal and from a silent `skill_cleanup` removal (Phase 4).
-- [ ] AC — ownership: no marker can be deleted by a session that does not own it; the foreign
+      *(verified: case (g), manual smoke test)*
+- [x] AC — ownership: no marker can be deleted by a session that does not own it; the foreign
       marker is asserted byte-identical after both the block case and the cap case.
-- [ ] `bash -n` on all three modified shell files.
-- [ ] `grep -rn 'postflight-pending' agent-system/ | grep 'head -1'` returns no live-code hit
-      (documentation override snippets from Phase 6 excepted and labelled).
-- [ ] Confirm no edit landed under `.claude/**` (`git status --porcelain .claude/` clean of
-      hand-authored changes).
+      *(verified: cases (f) and (g))*
+- [x] `bash -n` on all three modified shell files. *(verified: skill-base.sh,
+      subagent-postflight.sh, events-log-lifecycle.sh all pass)*
+- [x] `grep -rn 'postflight-pending' agent-system/ | grep 'head -1'` returns no live-code hit
+      (documentation override snippets from Phase 6 excepted and labelled). *(verified: zero
+      `.sh:` hits; the only hits are labelled snippets in postflight-control.md. Note: a
+      pre-existing, out-of-scope `head -1` snippet was also found in
+      `context/troubleshooting/workflow-interruptions.md` -- not a live-code hit, not touched by
+      this plan's declared scope, left as a follow-up)*
+- [x] Confirm no edit landed under `.claude/**` (`git status --porcelain .claude/` clean of
+      hand-authored changes). *(verified: `.claude/` is gitignored; `deploy-headless.sh` was run
+      to sync the deployed tree for test verification only, per the sanctioned deploy-process
+      exemption in source-store-deploy-boundary.md)*
 
 ## Artifacts & Outputs
 
