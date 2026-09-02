@@ -242,7 +242,6 @@ check_b_model_presence() {
 # human/agent applying the same classification rule; this check does not infer scope on its own.
 IN_SCOPE_RELATIVE_PATHS=(
   "core/agents/general-implementation-agent.md"
-  "core/agents/general-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
   "cslib/agents/cslib-implementation-hard-agent.md"
   "cslib/agents/pr-review-implementation-agent.md"
@@ -259,7 +258,6 @@ IN_SCOPE_RELATIVE_PATHS=(
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
   "core/agents/planner-agent.md"
-  "core/agents/planner-hard-agent.md"
   "core/agents/reviser-agent.md"
   "core/agents/meta-builder-agent.md"
   "filetypes/agents/document-agent.md"

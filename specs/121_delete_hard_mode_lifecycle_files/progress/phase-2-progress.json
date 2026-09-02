@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Retarget the lint scripts off the deletion targets",
+  "started_at": "2026-09-02T16:35:00Z",
+  "last_updated": "2026-09-02T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "lint-contract-compliance.sh Check A retarget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 2, "description": "lint-contract-compliance.sh Check C retarget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 3, "description": "lint-contract-compliance.sh Check E retarget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 4, "description": "lint-contract-compliance.sh Check F coverage list prune", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 5, "description": "lint-agent-contracts.sh prune two in-scope paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 6, "description": "lint-task-lookup-adoption.sh prune four paths", "status": "blocked", "files_touched": [], "note": "Attempted and reverted -- breaks Phase 2's own green-baseline requirement since the four -hard SKILL.md files still exist and each carries one genuine hand-rolled violation only exempted by the file-level allowlist entry. Deferred to Phase 4's atomic-batch commit (landed together with file deletion). See plan Phase 2 Deviation note and Phase 4's added task item."},
+    {"id": 7, "description": "Re-run all three lints, confirm no regression vs baseline", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Remove all four -hard SKILL.md entries from lint-task-lookup-adoption.sh EXCLUDED_FILES in Phase 2", "result": "failed", "reason": "Un-exempts one genuine hand-rolled task-lookup violation per file (4 total) while the files still exist pre-Phase-4; breaks the phase's own green-baseline verification requirement. Reverted; deferred to Phase 4 atomic batch."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "scripts/lint/lint-task-lookup-adoption.sh — remove the four -hard SKILL.md entries from its path list",
+      "type": "deferred",
+      "reason": "EXCLUDED_FILES is a file-level exemption allowlist, not a mere inventory. Each -hard SKILL.md still contains one genuine hand-rolled task-lookup shape that is only accepted today via the whole-file allowlist entry. Removing the entry while the file still exists (true until Phase 4 deletes it) surfaces 4 new violations, which is worse than the Phase 1 baseline (0). Deleting the file and removing its exemption entry must land in the same commit -- exactly the same atomicity reasoning Phase 4 already states for its own deletion+manifest-surgery commit.",
+      "annotation": "*(deviation: deferred to phase 4)*"
+    }
+  ]
+}

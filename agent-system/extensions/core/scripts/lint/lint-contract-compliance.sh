@@ -6,12 +6,14 @@
 # (source store) -- deployed at .claude/context/contracts/ in a consuming repo.
 #
 # WHAT THIS SCRIPT CHECKS (Tier 1 static file-content checks):
-#   A. Hard agents reference their required contracts in Context References sections
+#   A. skill-orchestrate/SKILL.md's hard-mode contract injection references the required
+#      contracts per phase (the standalone hard agents that used to declare these were deleted)
 #   B. All 5 contract files exist and contain H-technique identifiers
-#   C. Each hard skill dispatches to the correct hard agent (SKILL.md wiring)
+#   C. skill-orchestrate/SKILL.md's Stage 1b wires the correct per-phase caller-default agent
+#      (the standalone hard skills that used to do this dispatch were deleted)
 #   D. skill-orchestrate/SKILL.md contains convergence policing fields (hard_mode branch)
-#   E. general-implementation-hard-agent.md contains H2 vocabulary
-#   F. index-entries.json has at least one context entry per hard agent
+#   E. context/contracts/anti-analysis.md contains H2 vocabulary
+#   F. index-entries.json carries no dangling references to a deleted core hard agent
 #
 # WHAT THIS SCRIPT DOES NOT CHECK (Tier 3 runtime behavior -- deferred):
 #   - Whether agents actually honor read budgets at runtime
@@ -50,12 +52,12 @@ while [[ $# -gt 0 ]]; do
       echo "Runs static compliance checks for hard-mode behavioral contracts."
       echo ""
       echo "Checks:"
-      echo "  A. Hard agent contract @-references"
+      echo "  A. Engine hard-mode contract injection references"
       echo "  B. Contract file existence and H-technique identifiers"
-      echo "  C. Hard skill -> hard agent dispatch wiring"
+      echo "  C. Engine dispatch wiring (Stage 1b caller-default agents)"
       echo "  D. Convergence policing fields in skill-orchestrate"
-      echo "  E. H2 vocabulary in general-implementation-hard-agent"
-      echo "  F. index-entries.json contract coverage for hard agents"
+      echo "  E. H2 vocabulary in context/contracts/anti-analysis.md"
+      echo "  F. index-entries.json has no dangling deleted-hard-agent references"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found"
       exit 0
@@ -116,65 +118,72 @@ log_info() {
 }
 
 # ---------------------------------------------------------------------------
-# Check A: Hard agent contract @-references
-# Each hard agent must reference its required contracts in its Context References section
+# Check A: Hard-mode contract injection references (skill-orchestrate/SKILL.md)
+# The three standalone hard agents were deleted; the hard-mode contract set they used to
+# @-reference now lives in skill-orchestrate/SKILL.md's Stage 3.5 Dispatch Prep
+# `<hard-mode-contracts>` injection block, whose per-phase `core_contracts` case arms name the
+# same contracts the deleted agents formerly declared.
 # ---------------------------------------------------------------------------
 check_a_hard_agent_contract_references() {
   echo ""
-  echo "--- Check A: Hard agent contract @-references ---"
+  echo "--- Check A: Hard-mode contract injection references (skill-orchestrate/SKILL.md) ---"
 
-  # research agent requires: anti-analysis, reference-grounding
-  local research_agent="$CORE_ROOT/agents/general-research-hard-agent.md"
-  if [[ ! -f "$research_agent" ]]; then
-    log_fail "general-research-hard-agent.md not found"
-  else
-    log_info "Checking $research_agent"
-    if grep -qF "@.claude/context/contracts/anti-analysis.md" "$research_agent"; then
-      log_pass "general-research-hard-agent: references anti-analysis contract"
-    else
-      log_fail "general-research-hard-agent: missing @-reference to anti-analysis.md"
-    fi
-    if grep -qF "@.claude/context/contracts/reference-grounding.md" "$research_agent"; then
-      log_pass "general-research-hard-agent: references reference-grounding contract"
-    else
-      log_fail "general-research-hard-agent: missing @-reference to reference-grounding.md"
-    fi
+  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
+  if [[ ! -f "$orchestrate_skill" ]]; then
+    log_fail "skill-orchestrate/SKILL.md not found"
+    return
   fi
 
-  # planner agent requires: reference-grounding
-  local planner_agent="$CORE_ROOT/agents/planner-hard-agent.md"
-  if [[ ! -f "$planner_agent" ]]; then
-    log_fail "planner-hard-agent.md not found"
-  else
-    log_info "Checking $planner_agent"
-    if grep -qF "@.claude/context/contracts/reference-grounding.md" "$planner_agent"; then
-      log_pass "planner-hard-agent: references reference-grounding contract"
-    else
-      log_fail "planner-hard-agent: missing @-reference to reference-grounding.md"
-    fi
+  log_info "Checking $orchestrate_skill"
+
+  local case_block
+  case_block=$(awk '/case "\$phase" in/,/^esac/' "$orchestrate_skill")
+
+  if [[ -z "$case_block" ]]; then
+    log_fail "skill-orchestrate: core_contracts case statement not found"
+    return
   fi
 
-  # implementation agent requires: anti-analysis, wrap-up, territory
-  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
-  if [[ ! -f "$impl_agent" ]]; then
-    log_fail "general-implementation-hard-agent.md not found"
+  # research phase requires: anti-analysis, reference-grounding
+  local research_arm
+  research_arm=$(echo "$case_block" | awk '/research\)/,/;;/')
+  if echo "$research_arm" | grep -qF "anti-analysis.md"; then
+    log_pass "skill-orchestrate research phase: references anti-analysis contract"
   else
-    log_info "Checking $impl_agent"
-    if grep -qF "@.claude/context/contracts/anti-analysis.md" "$impl_agent"; then
-      log_pass "general-implementation-hard-agent: references anti-analysis contract"
-    else
-      log_fail "general-implementation-hard-agent: missing @-reference to anti-analysis.md"
-    fi
-    if grep -qF "@.claude/context/contracts/wrap-up.md" "$impl_agent"; then
-      log_pass "general-implementation-hard-agent: references wrap-up contract"
-    else
-      log_fail "general-implementation-hard-agent: missing @-reference to wrap-up.md"
-    fi
-    if grep -qF "@.claude/context/contracts/territory.md" "$impl_agent"; then
-      log_pass "general-implementation-hard-agent: references territory contract"
-    else
-      log_fail "general-implementation-hard-agent: missing @-reference to territory.md"
-    fi
+    log_fail "skill-orchestrate research phase: missing anti-analysis.md reference"
+  fi
+  if echo "$research_arm" | grep -qF "reference-grounding.md"; then
+    log_pass "skill-orchestrate research phase: references reference-grounding contract"
+  else
+    log_fail "skill-orchestrate research phase: missing reference-grounding.md reference"
+  fi
+
+  # plan phase requires: reference-grounding
+  local plan_arm
+  plan_arm=$(echo "$case_block" | awk '/plan\)/,/;;/')
+  if echo "$plan_arm" | grep -qF "reference-grounding.md"; then
+    log_pass "skill-orchestrate plan phase: references reference-grounding contract"
+  else
+    log_fail "skill-orchestrate plan phase: missing reference-grounding.md reference"
+  fi
+
+  # implement phase requires: anti-analysis, wrap-up, territory (territory conditional on $territory)
+  local implement_arm
+  implement_arm=$(echo "$case_block" | awk '/implement\)/,/esac/')
+  if echo "$implement_arm" | grep -qF "anti-analysis.md"; then
+    log_pass "skill-orchestrate implement phase: references anti-analysis contract"
+  else
+    log_fail "skill-orchestrate implement phase: missing anti-analysis.md reference"
+  fi
+  if echo "$implement_arm" | grep -qF "wrap-up.md"; then
+    log_pass "skill-orchestrate implement phase: references wrap-up contract"
+  else
+    log_fail "skill-orchestrate implement phase: missing wrap-up.md reference"
+  fi
+  if echo "$implement_arm" | grep -qF "territory.md"; then
+    log_pass "skill-orchestrate implement phase: references territory contract (conditional)"
+  else
+    log_fail "skill-orchestrate implement phase: missing territory.md reference"
   fi
 }
 
@@ -216,44 +225,38 @@ check_b_contract_files() {
 }
 
 # ---------------------------------------------------------------------------
-# Check C: Hard skill -> hard agent dispatch wiring
-# Each hard skill SKILL.md must dispatch to the correct hard agent
+# Check C: Engine dispatch wiring (skill-orchestrate/SKILL.md Stage 1b)
+# The three standalone hard skills were deleted; hard-mode dispatch is now the SAME per-phase
+# agent resolution the engine already uses in base mode -- Stage 1b's three command-route-agent.sh
+# calls, each with a caller-default agent name -- rather than a separate hard skill dispatching to
+# a separate hard agent. This check asserts those three caller defaults are still wired correctly.
 # ---------------------------------------------------------------------------
 check_c_hard_skill_dispatch() {
   echo ""
-  echo "--- Check C: Hard skill -> hard agent dispatch wiring ---"
+  echo "--- Check C: Engine dispatch wiring (skill-orchestrate/SKILL.md Stage 1b) ---"
 
-  declare -A SKILL_AGENTS=(
-    ["skill-researcher-hard"]="general-research-hard-agent"
-    ["skill-planner-hard"]="planner-hard-agent"
-    ["skill-implementer-hard"]="general-implementation-hard-agent"
-  )
-
-  for skill in "${!SKILL_AGENTS[@]}"; do
-    local expected_agent="${SKILL_AGENTS[$skill]}"
-    local skill_file="$CORE_ROOT/skills/$skill/SKILL.md"
-
-    if [[ ! -f "$skill_file" ]]; then
-      log_fail "$skill: SKILL.md not found"
-    else
-      log_info "Checking $skill_file for reference to $expected_agent"
-      if grep -q "$expected_agent" "$skill_file" 2>/dev/null; then
-        log_pass "$skill -> $expected_agent (wired)"
-      else
-        log_fail "$skill: does not reference $expected_agent"
-      fi
-    fi
-  done
-
-  # skill-orchestrate dispatches to all hard agents via its hard_mode-gated per-phase-dispatch
-  # (H1) branch -- the mechanism formerly lived in a standalone hard-mode skill file, since
-  # merged into skill-orchestrate/SKILL.md.
   local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
+
   if [[ ! -f "$orchestrate_skill" ]]; then
     log_fail "skill-orchestrate: SKILL.md not found"
-  else
-    log_pass "skill-orchestrate: SKILL.md exists"
+    return
   fi
+
+  declare -A PHASE_DEFAULT_AGENTS=(
+    ["research"]="general-research-agent"
+    ["plan"]="planner-agent"
+    ["implement"]="general-implementation-agent"
+  )
+
+  for phase in "${!PHASE_DEFAULT_AGENTS[@]}"; do
+    local default_agent="${PHASE_DEFAULT_AGENTS[$phase]}"
+    log_info "Checking Stage 1b command-route-agent.sh call for phase '$phase' -> '$default_agent'"
+    if grep -qF "command-route-agent.sh \"$phase\" \"\$TASK_TYPE\" \"$default_agent\"" "$orchestrate_skill"; then
+      log_pass "skill-orchestrate Stage 1b: $phase phase wired to $default_agent (caller default)"
+    else
+      log_fail "skill-orchestrate Stage 1b: $phase phase missing wired caller default $default_agent"
+    fi
+  done
 }
 
 # ---------------------------------------------------------------------------
@@ -283,47 +286,56 @@ check_d_convergence_policing() {
 }
 
 # ---------------------------------------------------------------------------
-# Check E: H2 vocabulary in general-implementation-hard-agent.md
-# The implementation hard agent must mention key H2 contract terms
+# Check E: H2 vocabulary in context/contracts/anti-analysis.md
+# The standalone core implementation-hard agent that used to restate this vocabulary is deleted;
+# it now has a single home in the contract file itself, which the engine's hard-mode contract
+# injection (Check A) points every implement-phase dispatch at via `<hard-mode-contracts>`.
 # ---------------------------------------------------------------------------
 check_e_h2_vocabulary() {
   echo ""
-  echo "--- Check E: H2 vocabulary in general-implementation-hard-agent ---"
+  echo "--- Check E: H2 vocabulary in context/contracts/anti-analysis.md ---"
 
-  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
+  local anti_analysis="$CORE_ROOT/context/contracts/anti-analysis.md"
 
-  if [[ ! -f "$impl_agent" ]]; then
-    log_fail "general-implementation-hard-agent.md not found -- skipping H2 vocabulary checks"
+  if [[ ! -f "$anti_analysis" ]]; then
+    log_fail "context/contracts/anti-analysis.md not found -- skipping H2 vocabulary checks"
     return
   fi
 
-  log_info "Checking H2 vocabulary in $impl_agent"
+  log_info "Checking H2 vocabulary in $anti_analysis"
 
   # forbidden conclusions (exact phrase or close variant)
-  if grep -qiE "Forbidden [Cc]onclusions|forbidden-conclusions|forbidden conclusions" "$impl_agent" 2>/dev/null; then
-    log_pass "general-implementation-hard-agent: contains 'Forbidden Conclusions' H2 term"
+  if grep -qiE "Forbidden [Cc]onclusions|forbidden-conclusions|forbidden conclusions" "$anti_analysis" 2>/dev/null; then
+    log_pass "anti-analysis.md: contains 'Forbidden Conclusions' H2 term"
   else
-    log_fail "general-implementation-hard-agent: missing 'Forbidden Conclusions' H2 vocabulary"
+    log_fail "anti-analysis.md: missing 'Forbidden Conclusions' H2 vocabulary"
   fi
 
   # defect bar (exact phrase or variant)
-  if grep -qiE "[Dd]efect [Bb]ar|defect-bar" "$impl_agent" 2>/dev/null; then
-    log_pass "general-implementation-hard-agent: contains 'Defect Bar' H2 term"
+  if grep -qiE "[Dd]efect [Bb]ar|defect-bar" "$anti_analysis" 2>/dev/null; then
+    log_pass "anti-analysis.md: contains 'Defect Bar' H2 term"
   else
-    log_fail "general-implementation-hard-agent: missing 'Defect Bar' H2 vocabulary"
+    log_fail "anti-analysis.md: missing 'Defect Bar' H2 vocabulary"
   fi
 
   # settled-design (H2 concept: re-opening settled decisions requires counterexample)
-  if grep -qiE "settled[- ][Dd]esign|settled design" "$impl_agent" 2>/dev/null; then
-    log_pass "general-implementation-hard-agent: contains 'settled-design' H2 term"
+  if grep -qiE "settled[- ][Dd]esign|settled design" "$anti_analysis" 2>/dev/null; then
+    log_pass "anti-analysis.md: contains 'settled-design' H2 term"
   else
-    log_warn "general-implementation-hard-agent: 'settled-design' term not found (optional H2 vocabulary)"
+    log_warn "anti-analysis.md: 'settled-design' term not found (optional H2 vocabulary)"
   fi
 }
 
 # ---------------------------------------------------------------------------
 # Check F: index-entries.json contract coverage for hard agents
-# Each hard agent must appear in at least one context entry's load_when.agents array.
+# The three standalone core hard agents this check used to assert coverage for are deleted from
+# agent-system/extensions/core/. Coverage is no longer a meaningful assertion for them -- there
+# is nothing left in core to have "at least one context entry" for -- so the coverage list is
+# emptied rather than repointed. Pruning the dangling load_when.agents[] entries that still name
+# these deleted agents is a SEPARATE, already-tracked concern (index-entries.json cleanup, plus
+# test-index-entries-schema.sh), not this check's job: asserting their absence here would fail
+# immediately, before that pruning has landed, breaking this lint's baseline.
+# cslib's and lean's own `-hard` agents are unaffected and were never in this check's scope.
 # Reads core's SOURCE `index-entries.json` (not the deployed, merged `.claude/context/index.json`
 # artifact) -- consistent with this script validating the source store throughout.
 # ---------------------------------------------------------------------------
@@ -343,11 +355,12 @@ check_f_index_coverage() {
     return
   fi
 
-  local hard_agents=(
-    "general-research-hard-agent"
-    "planner-hard-agent"
-    "general-implementation-hard-agent"
-  )
+  # No core hard agents remain to check coverage for -- see header comment.
+  local hard_agents=()
+
+  if [[ ${#hard_agents[@]} -eq 0 ]]; then
+    log_pass "index-entries.json: no core hard agents remain to check coverage for (deleted)"
+  fi
 
   for agent in "${hard_agents[@]}"; do
     local count

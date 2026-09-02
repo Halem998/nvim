@@ -200,39 +200,58 @@ progress note.
 
 ---
 
-### Phase 2: Retarget the lint scripts off the deletion targets [NOT STARTED]
+### Phase 2: Retarget the lint scripts off the deletion targets [COMPLETED]
 
 **Goal**: Make the three lint scripts that hard-require the deletion targets by path assert
 against `skill-orchestrate/SKILL.md`'s hard-mode branch (or drop the assertion where the
 capability no longer has a separate home), so they stay green after Phase 4.
 
 **Tasks**:
-- [ ] `scripts/lint/lint-contract-compliance.sh` — Check A
+- [x] `scripts/lint/lint-contract-compliance.sh` — Check A
       (`check_a_hard_agent_contract_references`): the three `local ..._agent=` paths and their
       `log_fail "... not found"` branches assert that the deleted agent files carry `@`-references
       to the contract files. Retarget to assert that `skill-orchestrate/SKILL.md`'s
-      `<hard-mode-contracts>` block references the same contracts.
-- [ ] `scripts/lint/lint-contract-compliance.sh` — Check C
+      `<hard-mode-contracts>` block references the same contracts. *(completed: retargeted to the
+      per-phase `core_contracts` case arms)*
+- [x] `scripts/lint/lint-contract-compliance.sh` — Check C
       (`check_c_hard_skill_dispatch`): the `SKILL_AGENTS` associative array still maps the three
       deleted skills to the three deleted agents and `log_fail`s per missing SKILL.md. Task 120
       retargeted only the trailing `skill-orchestrate-hard` special case and left this loop
       untouched. Retarget the loop to the engine's dispatch sites or remove it, matching what
-      Check C's stated purpose can still verify.
-- [ ] `scripts/lint/lint-contract-compliance.sh` — Check E (`check_e_h2_vocabulary`): retarget the
+      Check C's stated purpose can still verify. *(completed: retargeted to Stage 1b's
+      command-route-agent.sh caller-default wiring)*
+- [x] `scripts/lint/lint-contract-compliance.sh` — Check E (`check_e_h2_vocabulary`): retarget the
       H2 vocabulary assertions from `general-implementation-hard-agent.md` to wherever the H2
       vocabulary now lives (`context/contracts/anti-analysis.md` or the engine's contract-injection
-      block); update the check's header comment and its `usage` line.
-- [ ] `scripts/lint/lint-contract-compliance.sh` — Check F (`check_f_index_coverage`): remove the
-      three deleted agent names from its coverage list.
-- [ ] `scripts/lint/lint-agent-contracts.sh` — remove
+      block); update the check's header comment and its `usage` line. *(completed: retargeted to
+      context/contracts/anti-analysis.md; header and --help text updated)*
+- [x] `scripts/lint/lint-contract-compliance.sh` — Check F (`check_f_index_coverage`): remove the
+      three deleted agent names from its coverage list. *(completed: coverage list emptied with an
+      explanatory pass, per the header comment's reasoning)*
+- [x] `scripts/lint/lint-agent-contracts.sh` — remove
       `"core/agents/general-implementation-hard-agent.md"` and `"core/agents/planner-hard-agent.md"`
-      from `IN_SCOPE_RELATIVE_PATHS`.
+      from `IN_SCOPE_RELATIVE_PATHS`. *(completed)*
 - [ ] `scripts/lint/lint-task-lookup-adoption.sh` — remove the four
       `"core/skills/skill-{implementer,orchestrate,planner,researcher}-hard/SKILL.md"` entries from
-      its path list.
-- [ ] Re-run all three lints and confirm the pass/fail counts are no worse than
+      its path list. *(deviation: deferred to Phase 4 — see below)*
+- [x] Re-run all three lints and confirm the pass/fail counts are no worse than
       `.gate-baseline-before.txt` (the targets still exist at this point, so these must be green
-      *before* deletion too).
+      *before* deletion too). *(completed: all three exit 0, plus their meta-tests
+      test-lint-agent-contracts.sh and test-lint-task-lookup-adoption.sh both exit 0)*
+
+**Deviation (recorded)**: the `lint-task-lookup-adoption.sh` `EXCLUDED_FILES` entry removal was
+attempted as chartered and found to break this same phase's own verification requirement. That
+array is a file-level *exemption* list (deferred-known-offenders), not a mere path inventory:
+each of the four `-hard` SKILL.md files still contains exactly one genuine hand-rolled
+`select(.project_number == $num)` shape that is only accepted today because the whole file is
+allowlisted. Removing the allowlist entry while the file still exists (true until Phase 4 deletes
+it) un-exempts that one real violation per file — 4 new failures, worse than
+`.gate-baseline-before.txt`'s 0. Deleting the file and removing its exemption entry must land
+together, exactly like the reasoning Phase 4 already gives for why its own deletion and manifest
+surgery are one atomic-batch commit. The edit is therefore deferred to Phase 4's atomic batch,
+where the file's removal and its exemption-list removal land in the same commit and the check
+never goes red. Verified: reverting the edit restores `lint-task-lookup-adoption.sh` to the exact
+baseline result (349 files checked, 329 scanned, 329 exempted, 0 violations, exit 0).
 
 **Timing**: 1.75 hours
 
@@ -349,6 +368,12 @@ directories are deleted while `routing_hard` still targets them. Neither half is
 - [ ] Validate all three manifests parse as JSON.
 - [ ] Run `scripts/lint/lint-routing-wiring.sh` and `scripts/check-extension-docs.sh` and confirm
       no new failures versus baseline.
+- [ ] *(deviation carried in from Phase 2)* `scripts/lint/lint-task-lookup-adoption.sh` — remove
+      the four `"core/skills/skill-{implementer,orchestrate,planner,researcher}-hard/SKILL.md"`
+      entries from `EXCLUDED_FILES`, in the same commit as the file deletion above (removing the
+      exemption while the file still exists un-exempts one genuine hand-rolled violation per
+      file — see Phase 2's Deviation note). Re-run the lint and its meta-test
+      (`scripts/tests/test-lint-task-lookup-adoption.sh`) after both land together.
 
 **Timing**: 1.0 hours
 
