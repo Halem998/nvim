@@ -397,31 +397,31 @@ the next adoption-lint task does not re-derive the distinction from three separa
 
 ---
 
-### Phase 7: Bounded migration slice and direction-metrics record [NOT STARTED]
+### Phase 7: Bounded migration slice and direction-metrics record [COMPLETED]
 
 **Goal**: Satisfy the acceptance criterion that adopter count rises and duplicate count falls,
 without spending effort on files the core-collapse effort may delete — and record both numbers so
 the next review measures direction rather than re-deriving it.
 
 **Tasks**:
-- [ ] Determine which of Phase 1's offender sites are NOT named as deletion/rewrite candidates by
+- [x] Determine which of Phase 1's offender sites are NOT named as deletion/rewrite candidates by
       the core-collapse effort (read that task's description/artifacts under `specs/` to get the
       named file list; do not guess).
-- [ ] From the qualifying set, select at most three `SKILL.md` sites as a migration pilot.
-- [ ] For each candidate, verify variable parity before editing: the site must consume only
+- [x] From the qualifying set, select at most three `SKILL.md` sites as a migration pilot. *(completed: skill-spawn/SKILL.md, web/skill-web-research/SKILL.md, web/skill-web-implementation/SKILL.md)*
+- [x] For each candidate, verify variable parity before editing: the site must consume only
       variables `skill_validate_input()` actually exports (`TASK_DATA`, `TASK_TYPE`, `TASK_STATUS`,
       `PROJECT_NAME`, `PADDED_NUM`, `TASK_DIR`, `TASK_DIR_ABS`) and must tolerate `exit 1` rather
       than `return 1` failure semantics. A site failing either check is left alone and recorded.
-- [ ] Migrate each verified candidate: replace the inline jq block with a `skill_validate_input`
+- [x] Migrate each verified candidate: replace the inline jq block with a `skill_validate_input`
       call after the existing `source .../skill-base.sh`, and remove the corresponding allowlist
       entry from `lint-task-lookup-adoption.sh`.
-- [ ] Re-run the lint after each migration; it must stay green (the removed allowlist entry is only
+- [x] Re-run the lint after each migration; it must stay green (the removed allowlist entry is only
       safe to remove once the site no longer carries the pattern).
-- [ ] Write the durable metrics record: adopter count and duplicate count, before and after, with
+- [x] Write the durable metrics record: adopter count and duplicate count, before and after, with
       the exact commands that produced each, into
       `specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md`
       (or the summary the implementer writes at completion), so the next review can compare.
-- [ ] If **no** candidate qualifies (every offender is in the deletion set, or none passes the
+- [ ] If **no** candidate qualifies (every offender is in the deletion set, or none passes the *(deviation: skipped — three candidates qualified and were migrated; the exclusions branch does not apply)*
       parity check), close this phase `[COMPLETED WITH EXCLUSIONS]` with a
       `#### Reasoned Exclusions` table enumerating the rejected candidates, the reason per
       candidate, and the evidence (the deletion-set list, or the failing parity check). The metrics

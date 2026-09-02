@@ -312,7 +312,6 @@ EXCLUDED_FILES=(
     "core/skills/skill-researcher-hard/SKILL.md"
     "core/skills/skill-researcher/SKILL.md"
     "core/skills/skill-reviser/SKILL.md"
-    "core/skills/skill-spawn/SKILL.md"
     "core/skills/skill-status-sync/SKILL.md"
     "cslib/skills/skill-cslib-implementation-hard/SKILL.md"
     "cslib/skills/skill-cslib-research-hard/SKILL.md"
@@ -342,8 +341,6 @@ EXCLUDED_FILES=(
     "present/skills/skill-slide-planning/SKILL.md"
     "present/skills/skill-slides/SKILL.md"
     "present/skills/skill-timeline/SKILL.md"
-    "web/skills/skill-web-implementation/SKILL.md"
-    "web/skills/skill-web-research/SKILL.md"
 
     # This lint and its fixture test both contain the anti-pattern text by necessity -- one as
     # the detection pattern in comments/examples, the other as deliberate dirty fixtures.

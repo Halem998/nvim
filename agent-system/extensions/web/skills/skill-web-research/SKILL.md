@@ -35,21 +35,19 @@ Validate required inputs:
 - `focus_prompt` - Optional focus for research direction
 
 ```bash
-# Lookup task
-task_data=$(jq -r --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num)' \
-  specs/state.json)
+# Lookup task (skill_validate_input exits 1 with its own not-found/terminal-state message; no
+# separate existence check needed)
+source .claude/scripts/skill-base.sh
+skill_validate_input "$task_number"
+task_data="$TASK_DATA"
 
-# Validate exists
-if [ -z "$task_data" ]; then
-  return error "Task $task_number not found"
-fi
-
-# Extract fields
+# Extract fields. task_type is re-derived from task_data rather than aliased directly from
+# TASK_TYPE, to preserve this skill's "web" default (skill_validate_input's own TASK_TYPE
+# default is "general").
 task_type=$(echo "$task_data" | jq -r '.task_type // "web"')
-status=$(echo "$task_data" | jq -r '.status')
-project_name=$(echo "$task_data" | jq -r '.project_name')
-description=$(echo "$task_data" | jq -r '.description // ""')
+status="$TASK_STATUS"
+project_name="$PROJECT_NAME"
+description="$DESCRIPTION"
 ```
 
 ---

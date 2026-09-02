@@ -1,0 +1,61 @@
+{
+  "phase": 7,
+  "phase_name": "Bounded migration slice and direction-metrics record",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read task 116's (core-collapse) deletion ledger to determine the qualifying (non-deletion-set) offender sites, excluding task 125's territory (skill-researcher/planner/implementer)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Per-site variable-parity and exit-semantics verification for candidate SKILL.md sites",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Migrate 3 verified candidates to skill_validate_input() and remove their allowlist entries",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+        "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+        "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+        "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "rejected_candidates": [
+    {
+      "site": "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+      "reason": "Explicitly documented as working regardless of task status (\"No status-based ABORT rules. The skill works regardless of task status. Routing is determined by plan file existence, not status.\"). skill_validate_input() blocks completed/abandoned/expanded tasks with exit 1 -- migrating would remove documented, intentional behavior (revising a plan for a task in any status, including terminal ones). Left alone per the plan's per-site judgment requirement.",
+      "evidence": "agent-system/extensions/core/skills/skill-reviser/SKILL.md, Stage 1 section, the line immediately following the task-lookup block"
+    },
+    {
+      "site": "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+      "reason": "Used for manual status corrections and recovery when workflow skills fail, including recovering tasks potentially stuck in unusual states, and for testing status-update behavior in isolation. Its own Stage 1 validation only checks existence (no status/task_type/project_name extraction at all), unlike the other candidates. Imposing skill_validate_input()'s terminal-state block risks blocking legitimate recovery operations this skill exists to perform. Left alone per the plan's per-site judgment requirement.",
+      "evidence": "agent-system/extensions/core/skills/skill-status-sync/SKILL.md, \"Standalone Use Only\" section (\"Recovery operations when workflow skills fail\", \"Testing status update behavior in isolation\")"
+    }
+  ],
+  "metrics_before_after": {
+    "measurement_note": "Both counts measured with the real balanced-paren-aware Layer 1 classifier (lint-task-lookup-adoption.sh with EXCLUDED_FILES emptied), which is more accurate than Phase 1's plain-regex spot-check -- it found 3 additional real narrow-pattern occurrences Phase 1's regex missed (nested-paren tonumber() shapes) and multiple per-file occurrence counts Phase 1 undercounted.",
+    "narrow_duplicate_class_before": {"files": 67, "occurrences": 74},
+    "narrow_duplicate_class_after": {"files": 64, "occurrences": 71},
+    "skill_validate_input_real_callers_before": 0,
+    "skill_validate_input_real_callers_after": 3,
+    "gate_in_adopters_before": 8,
+    "gate_in_adopters_after": 8,
+    "migrated_sites": [
+      "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+      "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+      "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md"
+    ]
+  }
+}

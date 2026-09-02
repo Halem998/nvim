@@ -42,30 +42,23 @@ Validate required inputs:
 - Task status must allow implementation (planned, implementing, partial)
 
 ```bash
-# Lookup task
-task_data=$(jq -r --arg num "$task_number" \
-  '.active_projects[] | select(.project_number == ($num | tonumber))' \
-  specs/state.json)
-
-# Validate exists
-if [ -z "$task_data" ]; then
-  return error "Task $task_number not found"
-fi
+# Lookup task (skill_validate_input exits 1 with its own not-found/terminal-state message;
+# "terminal state" covers completed -- and also abandoned/expanded, a stricter but consistent
+# superset of the prior completed-only check -- so the separate completed check below is
+# removed as dead code, unreachable once skill_validate_input has already exited)
+source .claude/scripts/skill-base.sh
+skill_validate_input "$task_number"
+task_data="$TASK_DATA"
 
 # Extract fields
-task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
-status=$(echo "$task_data" | jq -r '.status')
-project_name=$(echo "$task_data" | jq -r '.project_name')
-description=$(echo "$task_data" | jq -r '.description // ""')
+task_type="$TASK_TYPE"
+status="$TASK_STATUS"
+project_name="$PROJECT_NAME"
+description="$DESCRIPTION"
 
 # Validate language
 if [ "$task_type" != "web" ]; then
   return error "Task $task_number is not a web task"
-fi
-
-# Validate status
-if [ "$status" = "completed" ]; then
-  return error "Task already completed"
 fi
 ```
 

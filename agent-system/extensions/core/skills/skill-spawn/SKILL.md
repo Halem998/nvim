@@ -39,22 +39,17 @@ task_number=$1
 session_id="$2"
 blocker_prompt="$3"  # May be empty
 
-# Lookup task data
-task_data=$(jq -r --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num)' \
-  specs/state.json)
-
-# Validate exists
-if [ -z "$task_data" ]; then
-  echo "Error: Task $task_number not found"
-  exit 1
-fi
+# Lookup task data (skill_validate_input exits 1 with its own not-found/terminal-state message;
+# no separate existence check needed)
+source .claude/scripts/skill-base.sh
+skill_validate_input "$task_number"
+task_data="$TASK_DATA"
 
 # Extract fields
-project_name=$(echo "$task_data" | jq -r '.project_name')
-task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
-status=$(echo "$task_data" | jq -r '.status')
-description=$(echo "$task_data" | jq -r '.description // ""')
+project_name="$PROJECT_NAME"
+task_type="$TASK_TYPE"
+status="$TASK_STATUS"
+description="$DESCRIPTION"
 parent_topic=$(echo "$task_data" | jq -r '.topic // ""')  # Inherited by spawned tasks
 ```
 
