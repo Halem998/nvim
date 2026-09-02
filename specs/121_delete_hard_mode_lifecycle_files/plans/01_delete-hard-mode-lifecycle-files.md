@@ -432,7 +432,7 @@ if cslib or lean has gained an entry naming a deleted asset since plan time, rem
 
 ---
 
-### Phase 5: Prune dead agent references from the index-entries files [NOT STARTED]
+### Phase 5: Prune dead agent references from the index-entries files [COMPLETED]
 
 **Goal**: Remove the deleted agent names from `load_when.agents[]` arrays across the three
 extensions that register them. Entries listed in `agents[]` are auto-loaded at agent spawn
@@ -440,16 +440,29 @@ regardless of any tier label, so a dangling name there is a live dead reference,
 metadata.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/index-entries.json` — remove `general-research-hard-agent`,
+- [x] `agent-system/extensions/core/index-entries.json` — remove `general-research-hard-agent`,
       `planner-hard-agent`, and `general-implementation-hard-agent` from every
-      `entries[].load_when.agents[]` array.
-- [ ] `agent-system/extensions/cslib/index-entries.json` — same removal from `load_when.agents[]`,
+      `entries[].load_when.agents[]` array. *(completed: 45 occurrences pruned across the relevant
+      entries; entry count unchanged at 145, no path lost)*
+- [x] `agent-system/extensions/cslib/index-entries.json` — same removal from `load_when.agents[]`,
       plus one prose occurrence inside an `entries[].summary` string that must be reworded.
-- [ ] `agent-system/extensions/lean/index-entries.json` — same removal from `load_when.agents[]`.
-- [ ] For any entry whose `agents[]` becomes empty, decide per the schema whether an empty array
+      *(completed: 3 array occurrences pruned; the `contracts/adversarial-verification.md` summary
+      reworded to drop its "union with general-research-hard-agent" framing since that entry is
+      now core-only-on-demand)*
+- [x] `agent-system/extensions/lean/index-entries.json` — same removal from `load_when.agents[]`.
+      *(completed: 5 occurrences pruned across 3 entries — reference-grounding.md (2),
+      anti-analysis.md (2), adversarial-verification.md (1))*
+- [x] For any entry whose `agents[]` becomes empty, decide per the schema whether an empty array
       is valid or the `load_when` key should be restructured; do not leave a schema violation.
-- [ ] Validate all three files parse as JSON and run
-      `scripts/tests/test-index-entries-schema.sh`.
+      *(completed: 20 core entries whose entire `load_when` (agents+task_types+commands) became
+      empty were marked `"on_demand": true`, per index.schema.json's documented Dead-Entry-Check
+      exemption marker — verified this did NOT touch the 4 pre-existing, unrelated dead entries
+      already lacking the marker before this task. One entry (`patterns/jq-escaping-workarounds.md`)
+      needed no marker since its `commands[]` hook stayed non-empty. No cslib or lean entry's
+      `load_when` became fully empty (all retain `task_types`))*
+- [x] Validate all three files parse as JSON and run
+      `scripts/tests/test-index-entries-schema.sh`. *(completed: all three valid JSON;
+      test-index-entries-schema.sh exits 0, 9 passed 0 failed)*
 
 **Timing**: 1.0 hours
 

@@ -329,8 +329,7 @@
       "load_when": {
         "agents": [
           "cslib-research-hard-agent",
-          "cslib-implementation-hard-agent",
-          "planner-hard-agent"
+          "cslib-implementation-hard-agent"
         ],
         "task_types": [
           "cslib",
@@ -353,8 +352,7 @@
       "line_count": 82,
       "load_when": {
         "agents": [
-          "planner-agent",
-          "planner-hard-agent"
+          "planner-agent"
         ],
         "task_types": [
           "cslib"
@@ -377,7 +375,6 @@
       "line_count": 117,
       "load_when": {
         "agents": [
-          "general-research-hard-agent",
           "cslib-research-hard-agent"
         ],
         "task_types": [
@@ -386,7 +383,7 @@
       },
       "domain": "project",
       "subdomain": "cslib",
-      "summary": "H4 adversarial verification contract (cslib mirror copy): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, domain specialization for cslib/lean4. Union-valued load_when.agents (general-research-hard-agent + cslib-research-hard-agent) so the upsert-by-path merge does not silently drop core's hook when cslib wins the collision on this shared path.",
+      "summary": "H4 adversarial verification contract (cslib mirror copy): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, domain specialization for cslib/lean4. load_when.agents carries cslib-research-hard-agent only -- the core research-hard agent this entry used to also union in was deleted, and core's own copy of this contract is now on-demand only.",
       "keywords": [
         "cslib",
         "hard-mode",

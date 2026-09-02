@@ -557,9 +557,7 @@
       "load_when": {
         "agents": [
           "lean-research-hard-agent",
-          "lean-implementation-hard-agent",
-          "general-research-hard-agent",
-          "planner-hard-agent"
+          "lean-implementation-hard-agent"
         ],
         "task_types": [
           "lean4"
@@ -582,9 +580,7 @@
       "load_when": {
         "agents": [
           "lean-research-hard-agent",
-          "lean-implementation-hard-agent",
-          "general-implementation-hard-agent",
-          "general-research-hard-agent"
+          "lean-implementation-hard-agent"
         ],
         "task_types": [
           "lean4"
@@ -606,8 +602,7 @@
       "line_count": 93,
       "load_when": {
         "agents": [
-          "lean-research-hard-agent",
-          "general-research-hard-agent"
+          "lean-research-hard-agent"
         ],
         "task_types": [
           "lean4"

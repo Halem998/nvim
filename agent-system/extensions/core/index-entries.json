@@ -99,13 +99,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "checkpoints/checkpoint-gate-in.md",
@@ -122,13 +120,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "checkpoints/checkpoint-gate-out.md",
@@ -145,13 +141,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "checkpoints/README.md",
@@ -996,9 +990,7 @@
         "troubleshooting"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": [
           "/errors",
@@ -1675,13 +1667,11 @@
         "quality"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent",
-          "general-research-hard-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/ci-workflow.md",
@@ -1698,12 +1688,11 @@
         "devops"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/code-patterns.md",
@@ -1789,12 +1778,11 @@
         "devops"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/git-safety.md",
@@ -1811,12 +1799,11 @@
         "devops"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/interactive-selection.md",
@@ -1857,12 +1844,11 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/shell-script-testing.md",
@@ -1882,12 +1868,11 @@
         "quality"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/shell-strict-mode.md",
@@ -1907,12 +1892,11 @@
         "quality"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [],
         "commands": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "standards/status-markers.md",
@@ -2300,12 +2284,11 @@
         "research"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/anti-analysis.md",
@@ -2328,13 +2311,11 @@
         "implementation"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent",
-          "general-research-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/convergence.md",
@@ -2409,12 +2390,11 @@
         "implementation"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/reference-grounding.md",
@@ -2437,13 +2417,11 @@
         "research"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent",
-          "planner-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/territory.md",
@@ -2466,12 +2444,11 @@
         "parallel-dispatch"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/phase-closure.md",
@@ -2496,7 +2473,6 @@
       "load_when": {
         "agents": [
           "general-implementation-agent",
-          "general-implementation-hard-agent",
           "neovim-implementation-agent",
           "nix-implementation-agent"
         ],
@@ -2527,7 +2503,6 @@
       "load_when": {
         "agents": [
           "general-implementation-agent",
-          "general-implementation-hard-agent",
           "neovim-implementation-agent",
           "nix-implementation-agent"
         ],
@@ -2556,12 +2531,11 @@
         "handoff"
       ],
       "load_when": {
-        "agents": [
-          "general-implementation-hard-agent"
-        ],
+        "agents": [],
         "commands": [],
         "task_types": []
-      }
+      },
+      "on_demand": true
     },
     {
       "path": "contracts/no-task-references-bullet.md",
@@ -2768,9 +2742,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-research-hard-agent",
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ],
         "task_types": []
       }
@@ -2815,9 +2787,7 @@
       "load_when": {
         "agents": [
           "general-research-agent",
-          "general-research-hard-agent",
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ]
       }
     },
@@ -2860,12 +2830,9 @@
         "literature"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent",
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ]
-      }
+        "agents": []
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/skill-preflight-flow.md",
@@ -2884,12 +2851,9 @@
         "lifecycle"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent",
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ]
-      }
+        "agents": []
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/skill-postflight-flow.md",
@@ -2909,12 +2873,9 @@
         "lifecycle"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent",
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ]
-      }
+        "agents": []
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/skill-self-execution-fallback.md",
@@ -2933,12 +2894,9 @@
         "lifecycle"
       ],
       "load_when": {
-        "agents": [
-          "general-research-hard-agent",
-          "general-implementation-hard-agent",
-          "planner-hard-agent"
-        ]
-      }
+        "agents": []
+      },
+      "on_demand": true
     },
     {
       "path": "patterns/subagent-continuation-loop.md",
@@ -2957,8 +2915,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ]
       }
     },
@@ -3025,8 +2982,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ],
         "commands": [
           "/orchestrate",
@@ -3119,8 +3075,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ],
         "commands": [
           "/orchestrate"
@@ -3146,8 +3101,7 @@
       ],
       "load_when": {
         "agents": [
-          "general-implementation-agent",
-          "general-implementation-hard-agent"
+          "general-implementation-agent"
         ],
         "commands": [
           "/orchestrate"

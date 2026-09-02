@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Prune dead agent references from the index-entries files",
+  "started_at": "2026-09-02T18:35:00Z",
+  "last_updated": "2026-09-02T19:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "core/index-entries.json prune", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "cslib/index-entries.json prune + summary reword", "status": "done", "files_touched": ["agent-system/extensions/cslib/index-entries.json"]},
+    {"id": 3, "description": "lean/index-entries.json prune", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 4, "description": "on_demand marker for entries whose load_when became fully empty", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Validate JSON + test-index-entries-schema.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "20 core entries got on_demand:true (not 21 -- patterns/jq-escaping-workarounds.md kept a non-empty commands[] hook so needed no marker).",
+    "Verified the on_demand fix touched none of the 4 pre-existing, unrelated dead entries (checkpoints/README.md, patterns/mcp-server-ownership.md, README.md, reference/README.md) that already lacked the marker before this task -- out of scope, left untouched.",
+    "cslib's contracts/adversarial-verification.md summary reworded: it used to describe a deliberate union of core's general-research-hard-agent hook with cslib's own cslib-research-hard-agent hook; since core's hook is now on_demand-only, the union framing was stale and rewritten to state the current (cslib-only) reality."
+  ]
+}
