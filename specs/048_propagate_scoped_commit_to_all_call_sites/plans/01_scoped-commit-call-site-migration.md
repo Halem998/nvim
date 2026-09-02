@@ -1,7 +1,7 @@
 # Implementation Plan: Propagate scoped commit to all call sites
 
 - **Task**: 48 - Propagate scoped commit to all call sites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.25 hours
 - **Dependencies**: Task 124
 - **Research Inputs**: specs/048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md
@@ -116,30 +116,30 @@ concurrently, provided each uses its own scoped commit.
 
 ---
 
-### Phase 1: Fix the copy-paste root cause [NOT STARTED]
+### Phase 1: Fix the copy-paste root cause [COMPLETED]
 
 **Goal**: Correct the two scaffold templates and the four core "how to commit" reference docs, so
 that every subsequent migration phase — and every future new command or skill — has a correct
 pattern to copy.
 
 **Tasks**:
-- [ ] `core/context/templates/command-template.md` (1 occurrence): replace the raw `git add` +
+- [x] `core/context/templates/command-template.md` (1 occurrence): replace the raw `git add` +
       bare `git commit -m` block with the `git-commit-scoped.sh` invocation shape.
-- [ ] `core/docs/templates/command-template.md` (1 occurrence): same replacement; confirm the two
+- [x] `core/docs/templates/command-template.md` (1 occurrence): same replacement; confirm the two
       templates stay textually consistent with each other.
-- [ ] `core/context/standards/git-safety.md` (13 occurrences): the most stale artifact in the
+- [x] `core/context/standards/git-safety.md` (13 occurrences): the most stale artifact in the
       tree — it predates `git-commit-scoped.sh` and mentions it zero times. Rewrite its commit
       guidance to name `git-commit-scoped.sh` as the sanctioned path, and update every XML
       `<stage>` block (these are quoted near-verbatim by `implementation-workflow.md`, so the two
       must agree after Phase 4 lands).
-- [ ] `core/context/contracts/wrap-up.md` (1 occurrence): migrate the postflight commit reference.
-- [ ] `core/context/checkpoints/checkpoint-commit.md` (1 occurrence): migrate the generic
+- [x] `core/context/contracts/wrap-up.md` (1 occurrence): migrate the postflight commit reference.
+- [x] `core/context/checkpoints/checkpoint-commit.md` (1 occurrence): migrate the generic
       "Create Commit" checkpoint stage.
-- [ ] `core/skills/skill-git-workflow/SKILL.md` (2 occurrences): the dedicated "how to git commit"
+- [x] `core/skills/skill-git-workflow/SKILL.md` (2 occurrences): the dedicated "how to git commit"
       skill currently does not use its own sibling script. Migrate both.
-- [ ] Use `core/skills/skill-planner/SKILL.md`'s existing invocation block as the reference shape:
+- [x] Use `core/skills/skill-planner/SKILL.md`'s existing invocation block as the reference shape:
       `bash .claude/scripts/git-commit-scoped.sh --message "..." --session "${session_id}" -- <pathspecs>`.
-- [ ] For any of these sites that stage `specs/state.json` or `specs/TODO.md`, add
+- [x] For any of these sites that stage `specs/state.json` or `specs/TODO.md`, add
       `--honest-index-rows <task_number>`.
 
 **Timing**: 1 hour
