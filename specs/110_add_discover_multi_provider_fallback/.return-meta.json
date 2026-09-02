@@ -1,32 +1,54 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md",
-      "summary": "7-phase plan adding optional S2_API_KEY support and an ordered OpenAlex/Crossref fallback chain to literature-discover.sh Tier 3 via a shared tier3_emit_record() extraction, with a byte-identical pre/post-refactor regression gate and an end-to-end ingest-bridge verification."
+      "type": "summary",
+      "path": "specs/110_add_discover_multi_provider_fallback/summaries/01_multi-provider-tier3-fallback-summary.md",
+      "summary": "All 7 phases completed: S2_API_KEY support, tier3_emit_record() extraction (byte-identical regression gate), OpenAlex/Crossref provider functions, ordered fallback chain with aggregated TIER3_STATUS line, end-to-end ingest-bridge verification, and documentation updates."
     }
   ],
-  "next_steps": "Run /implement 110 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788323839_c3b8b4_110",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 8,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6, 7]]
+  "completion_data": {
+    "completion_summary": "Added optional S2_API_KEY/OPENALEX_API_KEY support and an ordered Semantic Scholar -> OpenAlex -> Crossref fallback chain to literature-discover.sh's Tier 3, via a behavior-preserving tier3_emit_record() extraction verified byte-identical against a pre-refactor golden baseline. Proved the end-to-end bar (S2 forced to 429 -> schema-valid record -> literature-ingest-online.sh --dry-run does not exit 64) and confirmed commands/literature.md needed no edit."
   },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-discover.sh",
+    "agent-system/extensions/literature/scripts/tests/curl-stub.sh",
+    "agent-system/extensions/literature/scripts/tests/test-literature-discover-tier3.sh",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-crossref-200.json",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-golden-baseline.json",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-openalex-200.json",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-semanticscholar-200.json",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-semanticscholar-empty-200.json",
+    "agent-system/extensions/literature/scripts/tests/fixtures/tier3-unpaywall-200.json",
+    "agent-system/extensions/literature/README.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-command-modes.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+    "agent-system/extensions/literature/context/project/literature/domain/tier3-provider-fallback.md",
+    "specs/110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md",
+    "specs/110_add_discover_multi_provider_fallback/summaries/01_multi-provider-tier3-fallback-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When adding alternative providers/backends behind an existing single-provider code path, sequence the work as extract-then-add, never add-then-unify: first lift the incumbent's per-record normalization, ID derivation, and dedup logic into one shared emit helper and prove the refactor byte-identical against a golden baseline captured before the change, then have each new provider do nothing but map its own response shape onto that helper's parameter list. This makes output-schema identity true by construction rather than by parallel reimplementation, and gives a clean partial-rollback point (refactor kept, providers reverted) if the new backends prove unworkable. Capturing the golden baseline requires a deterministic transport stub -- for shell scripts calling bare `curl`, a PATH-shadowing stub script dispatching on request host is sufficient and needs no code change in the script under test.",
+      "content": "To verify a bash script that calls bare `curl` deterministically without a real network, install a PATH-shadowing stub named `curl` ahead of the real one on PATH, and dispatch canned responses by request host inside the stub, keyed off per-host env vars (e.g. CURL_STUB_<HOST>_CODE / CURL_STUB_<HOST>_BODY). Support a magic code value (e.g. `curl_fail`) that makes the stub exit non-zero with no output, to simulate a genuine transport failure distinct from a stubbed non-200 HTTP response -- callers need both failure modes exercised separately. To test one function from a larger script in isolation (rather than running the whole script as a subprocess), extract just that function's definition plus its dependencies via `sed -n '/^fn_start() {/,/^next_fn() {/p' script.sh | sed '$d'`, prepend any required global variable assignments the extracted code references at its own top level (not just inside function bodies), and source/run the result in a scratch script. Capture the invoked function's own return status explicitly (`fn; rc=$?; ...; exit $rc`) rather than trusting the wrapper script's own exit code, which reflects only its last statement.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/110_add_discover_multi_provider_fallback/summaries/01_multi-provider-tier3-fallback-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["curl-stub", "path-shadowing", "bash-testing", "function-isolation", "transport-failure-simulation"]
+    },
+    {
+      "content": "When adding N parallel provider/backend branches that must share one dedup/normalization/ID-derivation contract, give each provider function an identical (query, budget) -> 0|1 signature: return 0 the instant a real, parseable answer arrives (even an empty one), return 1 only on genuine failure, and communicate failure detail (reason, http_code) via caller-visible non-local variables rather than a second return channel. The orchestrating loop then advances to the next provider only on that 1, breaking immediately on any 0 -- this is what correctly distinguishes 'this provider ran and found nothing' from 'this provider could not run', a distinction worth preserving explicitly rather than collapsing both into a single failure/empty-array signal.",
       "category": "PATTERN",
-      "source_artifact": "specs/110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["provider-fallback", "extract-then-add", "golden-baseline", "schema-identity", "curl-stub", "refactor-ordering"]
+      "source_artifact": "specs/110_add_discover_multi_provider_fallback/summaries/01_multi-provider-tier3-fallback-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["provider-chain", "fallback-contract", "ran-vs-couldnt-run", "failure-signaling", "ordered-fallback"]
     }
   ],
-  "modified_files": [
-    "specs/110_add_discover_multi_provider_fallback/plans/01_multi-provider-tier3-fallback.md"
-  ]
+  "metadata": {
+    "session_id": "sess_1788323839_c3b8b4",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
