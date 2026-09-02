@@ -14,10 +14,14 @@
 Deleted the three base lifecycle skills (`skill-researcher`, `skill-planner`, `skill-implementer`)
 from the core extension source store, landed the two wiring fixes required to keep
 `validate-wiring.sh` and the core `manifest.json` deploy list truthful post-deletion, and swept
-115 files across `agent-system/**` so a repo-wide word-boundary grep for all three names returns
-zero hits outside `specs/**` (exempt as frozen task-management history). All 10 plan phases
-completed; every named lint/test gate passes; the deployed `.claude/skills/` tree no longer
-contains the three directories.
+115 files across `agent-system/**` (the plan's sole declared scope) so a repo-wide word-boundary
+grep for all three names returns zero hits across `agent-system/**` outside `specs/**` (exempt as
+frozen task-management history). This does not extend to `.opencode/`: 114 files under that
+separate, out-of-scope OpenCode agent-system mirror still reference the three names, including
+its own `command-route-skill.sh` and `skill-base.sh`; neither the research report nor the plan
+ever named `.opencode/` in their file scope, so those references were never swept. All 10 plan
+phases completed; every named lint/test gate passes; the deployed `.claude/skills/` tree no
+longer contains the three directories.
 
 ## What Changed
 
@@ -97,6 +101,14 @@ contains the three directories.
   that swept in an unrelated, pre-existing untracked pyenv cache file
   (`agent-system/extensions/literature/scripts/literature-pyenv/.cclib_path`). Reverted in a
   follow-up commit that restored its untracked status without deleting the file from disk.
+- **14 stale `index-entries.json` `line_count` declarations, corrected post-hoc.** Phases 5-9
+  changed the line counts of 14 `agent-system/extensions/core/context/**` files without updating
+  their corresponding `index-entries.json` entries (a gate this task's own commit-by-commit lint
+  runs never exercised — `check-extension-docs.sh`'s Rule R only surfaced this on a subsequent
+  full `verify-deploy.sh` run). Derived every actual count independently with `wc -l`, updated the
+  14 entries, re-ran `check-extension-docs.sh` (core: PASS) and `verify-deploy.sh` (3 remaining
+  failures, all pre-existing and unrelated — the same three seen throughout this task), and
+  committed scoped strictly to `index-entries.json`.
 
 ## Verification
 
@@ -110,8 +122,10 @@ contains the three directories.
 - Deploy: `deploy-headless.sh --wipe` regenerated `.claude/`; `.claude/skills/skill-{researcher,
   planner,implementer}/` confirmed absent; `verify-deploy.sh`'s whole-tree orphan-detection gate
   passes with 0 findings (was 3 before the wipe)
-- Repo-wide grep: `grep -rnE '\bskill-(researcher|planner|implementer)\b'` across `agent-system/`,
-  `docs/`, `lua/`, `*.md` returns zero hits; zero hits outside `specs/**` entirely
+- Grep of the plan's declared scope: `grep -rnE '\bskill-(researcher|planner|implementer)\b'`
+  across `agent-system/`, `docs/`, `lua/`, `*.md` returns zero hits; zero hits outside `specs/**`
+  within that scope. `.opencode/` (114 files, never in the plan's scope) was not swept — see
+  Overview.
 - Files verified: Yes (`jq .` parses every touched `manifest.json`/`.json`; `bash -n` passes on
   every touched shell script)
 
@@ -130,8 +144,11 @@ contains the three directories.
 
 ## Follow-ups
 
-- None. The task's own completion bar (zero-hit repo-wide grep, all named gates passing, deploy
-  clean) is fully met.
+- `.opencode/` (114 files, including its own `command-route-skill.sh` and `skill-base.sh`) still
+  references the three deleted skill names. This is a separate OpenCode agent-system mirror that
+  the plan never named in scope (its own file scope is `agent-system/**`), so it was left
+  untouched. Whether `.opencode/` should be swept, retired, or left alone is a decision for a
+  future task, not implied here.
 
 ## References
 

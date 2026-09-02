@@ -8,7 +8,7 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Deleted the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer) from the core source store, landed the two accompanying wiring fixes (validate-wiring.sh, core manifest.json), pruned 15 extension manifests' dangling routing entries, and swept 115 files across agent-system/** so a repo-wide grep for all three names returns zero hits outside specs/**. All named gates pass; a --wipe redeploy confirms .claude/skills/ no longer contains the three directories."
+    "completion_summary": "Deleted the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer) from the core source store, landed the two accompanying wiring fixes (validate-wiring.sh, core manifest.json), pruned 15 extension manifests' dangling routing entries, and swept 115 files across agent-system/** (the plan's sole declared scope) so a repo-wide grep for all three names returns zero hits within that scope outside specs/**. Fixed 14 stale index-entries.json line_count declarations that phases 5-9 left out of sync with actual file lengths. All named gates pass; a --wipe redeploy confirms .claude/skills/ no longer contains the three directories. Note: .opencode/ (a separate, out-of-scope mirror never named in the plan) still has 114 files referencing the three names -- not swept."
   },
   "modified_files": [
     "agent-system/extensions/core/README.md",
@@ -165,6 +165,20 @@
         "staged-deletion",
         "pathspec",
         "V2-safety-gate"
+      ]
+    },
+    {
+      "content": "When editing markdown files under agent-system/extensions/core/context/ (or any domain covered by an index-entries.json), a content edit that changes the file's line count silently desyncs that file's declared line_count field in index-entries.json. check-extension-docs.sh's Rule R only catches this on its own dedicated run -- it is NOT part of the routine lint/test gates run after each phase, so a multi-phase sweep touching many context files can accumulate several stale line_count entries before anyone notices, and verify-deploy.sh's doc-lint check will then fail in aggregate at the very end. When a task's own work involves editing prose files indexed this way, run check-extension-docs.sh (not just the narrower lints) before declaring the task done, and update line_count with `wc -l` for every touched file whose line count changed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/125_delete_base_lifecycle_skills/summaries/01_delete-base-lifecycle-skills-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "check-extension-docs",
+        "doc-lint",
+        "verify-deploy",
+        "Rule R"
       ]
     }
   ],
