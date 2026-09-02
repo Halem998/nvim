@@ -1,7 +1,7 @@
 # Implementation Plan: Task #108
 
 - **Task**: 108 - Eliminate literature-coverage-delta.sh per-entry jq spawns so --lit stops timing out
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md
@@ -111,33 +111,38 @@ parallel-safe.
 
 ---
 
-### Phase 1: Baseline capture and equivalence harness [NOT STARTED]
+### Phase 1: Baseline capture and equivalence harness [COMPLETED]
 
 **Goal**: Produce the BEFORE side of the verification bar and a reusable harness that can re-run
 the identical comparison after the edits, so equivalence is proven mechanically rather than
 eyeballed.
 
 **Tasks**:
-- [ ] Write a harness script under the task directory (e.g.
+- [x] Write a harness script under the task directory (e.g.
       `specs/108_eliminate_coverage_delta_per_entry_jq_spawns/harness/run-delta-compare.sh`) that,
       for a given copy of `literature-coverage-delta.sh` + `literature-term-match.sh`, runs the
       guard against the live `~/Projects/Literature/index.json` with a forced 2-entry sub-index
       (so `delta_gap` clears `LITERATURE_COVERAGE_GAP_MIN`) and `--top-n 1000` so the FULL
       unbounded candidate list is emitted, capturing wall time and the candidate-id list per query.
-- [ ] Encode at minimum these 5 queries (from the research report, covering both branches of the
+      *(completed: `harness/run-delta-compare.sh`, parameterized by script-copy-root + output-dir;
+      isolated fake sub-index resolved via PROJECT_ROOT=script-copy-root)*
+- [x] Encode at minimum these 5 queries (from the research report, covering both branches of the
       `MULTI_TERM_MATCH_THRESHOLD` rule): the 10-term
       `modal logic temporal completeness axiomatization graphs games monadic theory canonicity`;
       `erdos graph theory`; `since until tense operator`;
       `quantum field theory renormalization`;
-      `finite model theory ehrenfeucht fraisse games composition`.
-- [ ] Add at least two queries deliberately targeting non-ASCII titles in the live corpus (e.g. a
+      `finite model theory ehrenfeucht fraisse games composition`. *(completed)*
+- [x] Add at least two queries deliberately targeting non-ASCII titles in the live corpus (e.g. a
       term drawn from a `Büchi` / `Fraïssé` / `Erdős` / `Π¹₁` bearing title) so the Phase 4
-      divergence audit has direct coverage rather than incidental coverage.
-- [ ] Snapshot the pristine `literature-coverage-delta.sh` and `literature-term-match.sh` into the
+      divergence audit has direct coverage rather than incidental coverage. *(completed: q6
+      "buchi automata", q7 "erdos renyi random", both matching non-ASCII-titled entries)*
+- [x] Snapshot the pristine `literature-coverage-delta.sh` and `literature-term-match.sh` into the
       harness directory as the BEFORE reference implementation, so the AFTER comparison does not
-      depend on git checkout gymnastics mid-task.
-- [ ] Run the harness against the BEFORE snapshot; store per-query candidate-id lists,
-      `delta_candidates` counts, and `time` output as committed baseline artifacts.
+      depend on git checkout gymnastics mid-task. *(completed: harness/before/fakeroot/scripts/)*
+- [x] Run the harness against the BEFORE snapshot; store per-query candidate-id lists,
+      `delta_candidates` counts, and `time` output as committed baseline artifacts. *(completed:
+      harness/baseline/SUMMARY.tsv + per-query .stdout.txt/.stderr.txt/.candidate-ids.sorted.txt/.time.txt;
+      total wall 2m12s across 7 queries, per-query 9.9s-32.3s, all delta_checked=true delta_gap=290)*
 
 **Timing**: 0.75 hours
 
@@ -149,7 +154,8 @@ eyeballed.
 entries via 7+ queries. Confirm at implementation time by running
 `jq '[.entries[] | select(.parent_doc == null or .parent_doc == "")] | length'` against the live
 index and recording the actual number in the baseline artifact; if the corpus has changed since
-research, record the new number rather than restating 292.
+research, record the new number rather than restating 292. *(confirmed: 292 top-level docs / 11,545
+total entries, unchanged from research; 7 queries encoded)*
 
 **Files to modify**:
 - `specs/108_eliminate_coverage_delta_per_entry_jq_spawns/harness/` - new harness script and

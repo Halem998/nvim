@@ -1,0 +1,8 @@
+query_key	query_text	wall_seconds	delta_checked	delta_gap	global_docs	subindex_docs	delta_candidates
+q3-since-until	since until tense operator	17.491	true	290	292	2	49
+q6-nonascii-buchi	buchi automata	9.906	true	290	292	2	21
+q1-modal-10term	modal logic temporal completeness axiomatization graphs games monadic theory canonicity	32.322	true	290	292	2	107
+q4-quantum-field	quantum field theory renormalization	17.805	true	290	292	2	64
+q2-erdos-graph	erdos graph theory	14.419	true	290	292	2	72
+q5-fmt-ehrenfeucht	finite model theory ehrenfeucht fraisse games composition	24.765	true	290	292	2	38
+q7-nonascii-erdos-title	erdos renyi random	15.135	true	290	292	2	5
