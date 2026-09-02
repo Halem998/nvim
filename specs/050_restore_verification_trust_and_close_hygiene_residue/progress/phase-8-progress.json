@@ -1,0 +1,30 @@
+{
+  "phase": 8,
+  "phase_name": "Closing verification, closed-item notes, and the full gate run",
+  "started_at": "2026-09-02T04:10:00Z",
+  "last_updated": "2026-09-02T04:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run full verify-deploy.sh end-to-end, record per-gate result", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run scripts/tests/run-all.sh, record result, distinguish flakiness from regression via re-run", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run session-ID and jq #1132 closed-item measurement commands, record closing evidence", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write both closed-item findings into the implementation summary", "status": "done", "files_touched": ["specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md"]},
+    {"id": 5, "description": "Re-run and record the two out-of-scope failures; confirm counts unchanged from baseline", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no .claude/** modification attributable to this task", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm no task-number reference introduced outside specs/**", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "gate_results": {
+    "verify_deploy_full": "2 of 28 checks failed -- exactly validate-state.sh --deep and state-writer boundary lint (both named out-of-scope)",
+    "run_all_sh": "3 consecutive clean runs (1 inline in verify-deploy.sh + 2 standalone): 59/59 passed every time",
+    "check_task_references_sh": "PASS, 0 unexempted occurrences across 4 trees",
+    "claude_tree_modification": "None -- .claude/ is gitignored and git log across all 7 commits for this task shows zero .claude/ paths"
+  },
+  "closed_item_evidence": {
+    "session_id_one_liner": "grep -rl 'sess_\\$(date' --include=\"*.sh\" agent-system/extensions/ returns exactly 2 files: scripts/lib/common.sh (canonical source) and scripts/tests/test-common-lib.sh (its own test suite); zero .md offenders across commands/skills/agents in any extension",
+    "jq_1132_pointer_conversion": "36 files mention '1132'; exactly 2 (core/merge-sources/claudemd.md, core/context/patterns/jq-escaping-workarounds.md) carry the full multi-line block (both canonical); the other 34 carry 1-4 mentions each, consistent with short pointers"
+  },
+  "measurement_artifact_note": "validate-state.sh --deep invoked directly from the source-store copy (agent-system/extensions/core/scripts/validate-state.sh) spuriously reports a third failure ('generate-todo.sh failed while regenerating TODO.md') because its sibling generate-todo.sh refuses to run outside a deployed scripts/ tree. This is an invocation-context artifact of running the source-store copy directly, not a real state.json defect -- the deployed copy (.claude/scripts/validate-state.sh) reports exactly the 2 expected, named, out-of-scope failures and nothing else."
+}

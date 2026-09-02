@@ -1,7 +1,7 @@
 # Implementation Plan: Task #50
 
 - **Task**: 50 - Restore verification trust and close hygiene residue
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: Task 48 (completed)
 - **Research Inputs**: specs/050_restore_verification_trust_and_close_hygiene_residue/reports/01_hygiene-residue-remeasurement.md
@@ -565,40 +565,40 @@ actually there and state the live count in the commit message.
 
 ---
 
-### Phase 8: Closing verification, closed-item notes, and the full gate run [NOT STARTED]
+### Phase 8: Closing verification, closed-item notes, and the full gate run [COMPLETED]
 
 **Goal**: Run the complete gate set, record the two already-resolved sub-items as verified-closed
 with evidence, and assert the two out-of-scope failures are still present and still unowned rather
 than silently absorbed.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (or the source-store equivalent) end-to-end and
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (or the source-store equivalent) end-to-end and *(completed)*
       record the per-gate result. The doc-lint gate must now pass on the three test scripts
       (Phase 3's work).
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and record the result. Note
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and record the result. Note *(completed)*
       that this suite is known non-deterministic under concurrency and is owned by a separate task —
       report the result honestly, and do not treat a flaky failure as this task's regression without
       first re-running and comparing.
-- [ ] Re-run the two already-resolved items' measurement commands and record their output as the
+- [x] Re-run the two already-resolved items' measurement commands and record their output as the *(completed)*
       closing evidence:
       `grep -rl 'sess_$(date' agent-system/extensions/ | wc -l` (expected: only library, test, and
       illustrative-prose sites) and a check that only the two canonical sources carry the full jq
       #1132 block while the rest are pointers.
-- [ ] Write both closed-item findings into the implementation summary with their commands and
+- [x] Write both closed-item findings into the implementation summary with their commands and *(completed)*
       output, so a future audit reading the stale filed prose can see they were re-verified rather
       than assumed. If a defect-ledger entry asserts either as open, close it with this evidence.
-- [ ] Re-run and record the two explicitly out-of-scope failures so their continued existence is
+- [x] Re-run and record the two explicitly out-of-scope failures so their continued existence is *(completed)*
       documented, not implied:
       `bash agent-system/extensions/core/scripts/validate-state.sh --deep` (expected: the
       `abandon_reason` / `blocks_note` unknown-field failures) and
       `bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose`
       (expected: the `test-force-phases.sh` fixture violations). Confirm the counts are unchanged
       from the research baseline — an increase would mean this task caused it.
-- [ ] Confirm no file under `.claude/**` was modified by any phase:
+- [x] Confirm no file under `.claude/**` was modified by any phase: *(completed)*
       `git status --short | grep '^.* \.claude/'` returns nothing attributable to this task.
-- [ ] Confirm no task-number reference was introduced outside `specs/**`:
+- [x] Confirm no task-number reference was introduced outside `specs/**`: *(completed)*
       `bash .claude/scripts/check-task-references.sh`.
-- [ ] Write the implementation summary to
+- [x] Write the implementation summary to *(completed)*
       `specs/050_restore_verification_trust_and_close_hygiene_residue/summaries/01_verification-trust-hygiene-closeout-summary.md`,
       naming every completed item, every recorded decision, both closed-with-evidence items, and
       both named-but-unowned residuals.
