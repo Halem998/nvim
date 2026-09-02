@@ -11,7 +11,7 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,43,44,45,51,72,74,89,91,113,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,29,39,43,44,45,51,72,74,89,91,113,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,136,140,145 | 29,74,91,139,149 | core-agent-system, extensions |
 | 3 | 146 | 145 | core-agent-system |
 | 4 | 147 | 146 | core-agent-system |
@@ -71,7 +71,6 @@ next_project_number: 151
 ### Opencode
 
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
-27 [RESEARCHING] — .opencode/scripts/execute-command.sh is a command router that can
 
 ## Tasks
 
@@ -2996,7 +2995,7 @@ VERIFICATION: build a scratchpad fixture project, load an extension declaring a 
 ---
 
 ### 27. Remove the dead .opencode command router and its self-referential test scripts
-- **Status**: [RESEARCHING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: opencode
 - **Dependencies**: None
