@@ -291,35 +291,50 @@ research report without re-reading the code, since Phase 2's edit shifts every l
 
 ---
 
-### Phase 4: End-to-End Verification Against the Observed Failing Case [NOT STARTED]
+### Phase 4: End-to-End Verification Against the Observed Failing Case [COMPLETED]
 
 **Goal**: Satisfy verification bars #1, #2, and #3 — the fixed script completes with exit 0 and a
 non-empty briefing against the real 52-entry Logos/Theory sub-index, and the emitted content is
 identical to the Phase 1 baseline for every document the pre-fix run processed.
 
 **Tasks**:
-- [ ] Re-run the same command Phase 1 ran, against the same repo and the same query, invoking the
+- [x] Re-run the same command Phase 1 ran, against the same repo and the same query, invoking the
       **source-store** script by absolute path:
       `cd ~/Projects/Logos/Theory && bash /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing.sh --query "game theory self-play" > FIXED.out 2> FIXED.err; echo $?`
-- [ ] Confirm exit code is **0** (bar #1).
-- [ ] Confirm `FIXED.out` is non-empty and contains actual briefing content, not just a header
-      (bar #1).
-- [ ] Diff against the baseline: `diff BASELINE.out FIXED.out`. Every line present in
+      *(deviation: altered — same root cause as Phase 1's task 1.4: the literal command doesn't
+      reach repo mode. Re-used the Phase 1 scratch harness, re-synced with the fixed source-store
+      script, and ran the equivalent invocation there instead. Result: exit 0, FIXED.out 18774
+      bytes)*
+- [x] Confirm exit code is **0** (bar #1). *(completed: exit 0)*
+- [x] Confirm `FIXED.out` is non-empty and contains actual briefing content, not just a header
+      (bar #1). *(completed: 52 resolved documents listed with title/authors/chunk/token metadata,
+      not just a header)*
+- [x] Diff against the baseline: `diff BASELINE.out FIXED.out`. Every line present in
       `BASELINE.out` must appear identically in `FIXED.out`; `FIXED.out` may contain *additional*
       documents (the ones the pre-fix run died before reaching). A changed or reordered line for a
       document present in both is a **failed implementation** (bar #2). If the Phase 1 baseline
       was empty because the script died immediately, record that and rely on the per-document
-      selection argument plus the Phase 2 structural greps instead.
-- [ ] Confirm the run covers `horty_2001_agency-and-deontic-logic` specifically (bar #3): grep
+      selection argument plus the Phase 2 structural greps instead. *(completed: Phase 1's
+      authoritative baseline was 0 bytes — died immediately at exit 141 — so this falls under the
+      explicit empty-baseline fallback clause; diff shows 238 pure additions, zero modified/removed
+      shared lines, and Phase 2's structural greps plus the selection-order argument in the Risks
+      table stand as the bar #2 evidence)*
+- [x] Confirm the run covers `horty_2001_agency-and-deontic-logic` specifically (bar #3): grep
       `FIXED.out` for that doc_id, or if the chosen query does not surface it, re-run with a query
-      that does and confirm exit 0 and a non-empty briefing for that document.
-- [ ] Confirm the `<!-- lit-coverage ... -->` marker is still present and well-formed in
-      `FIXED.out`, since `lit-stage4a-flow.md` greps it to drive sparse re-prompting.
-- [ ] Run a second repo-mode invocation with an unrelated query to confirm the fix is not
-      query-specific.
-- [ ] Confirm `.claude/scripts/literature-briefing.sh` was **not** modified by this task
+      that does and confirm exit 0 and a non-empty briefing for that document. *(completed: present
+      as entry #48/52, 296 chunks, ~124241 tokens — this is the exact doc_id that crashed the Phase
+      1 baseline run)*
+- [x] Confirm the `<!-- lit-coverage ... -->` marker is still present and well-formed in
+      `FIXED.out`, since `lit-stage4a-flow.md` greps it to drive sparse re-prompting. *(completed:
+      `<!-- lit-coverage mode=repo seg_count=52 sparse=false threshold=3 requested=52 resolved=52
+      skipped=0 skip_rate=0 delta_checked=true delta_gap=240 delta_candidates=73 -->`)*
+- [x] Run a second repo-mode invocation with an unrelated query to confirm the fix is not
+      query-specific. *(completed: `--query "separation logic frame rule"`, exit 0, 237 output
+      lines)*
+- [x] Confirm `.claude/scripts/literature-briefing.sh` was **not** modified by this task
       (`git status` plus a `diff` against the source store will now show expected drift — the
-      deploy copy is stale until the next sync, which is correct and out of scope).
+      deploy copy is stale until the next sync, which is correct and out of scope). *(completed:
+      `git status --short .claude/scripts/literature-briefing.sh` returns no output — untouched)*
 
 **Timing**: 0.5 hours
 
@@ -343,17 +358,20 @@ identical to the Phase 1 baseline for every document the pre-fix run processed.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/literature/scripts/literature-briefing.sh` exits 0.
-- [ ] `grep -c "head -1"` on the file returns 8 (was 10).
-- [ ] `grep -n "parent_entry"` returns exactly 4 hits — the two-step lookup structure is intact.
-- [ ] `(.id // .doc_id)` tolerance present at both rewritten sites.
-- [ ] `set -euo pipefail` at line 63 unchanged.
-- [ ] Repo-mode run against `~/Projects/Logos/Theory` exits 0 and emits a non-empty briefing.
-- [ ] `diff BASELINE.out FIXED.out` contains no modified shared lines.
-- [ ] `horty_2001_agency-and-deontic-logic` covered by a successful run.
-- [ ] `<!-- lit-coverage ... -->` marker semantics unchanged.
-- [ ] Every remaining `| head -1` site individually classified as scalar-emitting.
-- [ ] Only `agent-system/extensions/literature/scripts/literature-briefing.sh` modified; nothing
+- [x] `bash -n agent-system/extensions/literature/scripts/literature-briefing.sh` exits 0.
+- [x] `grep -c "head -1"` on the file returns 8 (was 10).
+- [x] `grep -n "parent_entry"` returns exactly 4 hits — the two-step lookup structure is intact.
+- [x] `(.id // .doc_id)` tolerance present at both rewritten sites.
+- [x] `set -euo pipefail` at line 63 unchanged.
+- [x] Repo-mode run against `~/Projects/Logos/Theory` exits 0 and emits a non-empty briefing.
+      *(via the equivalent scratch harness reproducing that repo's real sub-index content and the
+      real live global index — see Phase 1/4 deviations)*
+- [x] `diff BASELINE.out FIXED.out` contains no modified shared lines. *(baseline was 0 bytes; only
+      additions, per the plan's own empty-baseline fallback clause)*
+- [x] `horty_2001_agency-and-deontic-logic` covered by a successful run.
+- [x] `<!-- lit-coverage ... -->` marker semantics unchanged.
+- [x] Every remaining `| head -1` site individually classified as scalar-emitting.
+- [x] Only `agent-system/extensions/literature/scripts/literature-briefing.sh` modified; nothing
       hand-written into `.claude/`.
 
 ## Artifacts & Outputs
