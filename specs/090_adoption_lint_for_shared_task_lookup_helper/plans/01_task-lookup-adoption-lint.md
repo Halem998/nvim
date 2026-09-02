@@ -354,26 +354,26 @@ actually deploy.
 
 ---
 
-### Phase 6: Adoption-lint conventions context document [NOT STARTED]
+### Phase 6: Adoption-lint conventions context document [COMPLETED]
 
 **Goal**: Record the two competing adoption-lint conventions and the decision rule between them, so
 the next adoption-lint task does not re-derive the distinction from three separate files.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/patterns/adoption-lint-conventions.md` naming:
+- [x] Create `agent-system/extensions/core/context/patterns/adoption-lint-conventions.md` naming:
       the zero-tolerance convention (precedent: `tests/test-common-lib.sh`'s single-source
       assertion) and the structural-plus-reasoned-allowlist convention (precedent:
       `scripts/lint/lint-state-writer-boundary.sh`).
-- [ ] State the decision rule explicitly: non-zero migration debt at landing time selects the
+- [x] State the decision rule explicitly: non-zero migration debt at landing time selects the
       allowlist convention; a class already migrated to ~zero selects zero-tolerance.
-- [ ] Record the two structural requirements every adoption lint in this repo must satisfy:
+- [x] Record the two structural requirements every adoption lint in this repo must satisfy:
       deterministic dual-mode root resolution (source-store vs. deployed), and executable-surface
       file scope by construction (`*.sh` plus `*.md` under `commands/`/`skills/`/`agents/` only).
-- [ ] Record the allowlist hygiene rule: every entry carries an inline reason, no bare paths, and
+- [x] Record the allowlist hygiene rule: every entry carries an inline reason, no bare paths, and
       the list is expected to shrink.
-- [ ] Cite durable anchors only — filenames, function names, section headings. No task-number
+- [x] Cite durable anchors only — filenames, function names, section headings. No task-number
       references (this file is outside `specs/**`).
-- [ ] Add the corresponding entry to `agent-system/extensions/core/index-entries.json` with `path`
+- [x] Add the corresponding entry to `agent-system/extensions/core/index-entries.json` with `path`
       `patterns/adoption-lint-conventions.md`, `domain` `core`, `subdomain` `patterns`, a one-line
       `summary`, an accurate `line_count`, keywords, topics, empty `load_when` arrays, and
       `on_demand: true` — matching the existing entry shape.

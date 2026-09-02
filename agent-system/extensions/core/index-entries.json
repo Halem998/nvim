@@ -3283,6 +3283,33 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/adoption-lint-conventions.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "The two adoption-lint conventions used in this repo (zero-tolerance vs. structural-plus-reasoned-allowlist) and the decision rule between them, plus the two structural requirements every adoption lint must satisfy",
+      "line_count": 88,
+      "keywords": [
+        "adoption-lint",
+        "allowlist",
+        "zero-tolerance",
+        "dual-mode-root",
+        "executable-surface-scope",
+        "lint-convention"
+      ],
+      "topics": [
+        "lint",
+        "conventions",
+        "migration-debt",
+        "verification"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }
