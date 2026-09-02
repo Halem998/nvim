@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy, static duplicate-implementation check, and live acceptance verification",
+  "started_at": "2026-09-01T00:30:00Z",
+  "last_updated": "2026-09-01T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Static grep confirms zero pdftotext/djvutxt extraction calls in Mode: Convert", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Live acceptance criterion 1 (negative): fused-word fixture rejected, index/chunk counts unchanged", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Live acceptance criterion 2 (positive): two-column fixture, pymupdf4llm engine tier + heading markers confirmed", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Regression suite test-literature-convert.sh: 13 passed, 0 failed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.deploy",
+      "description": "Regenerate the .claude/ deploy artifact from the source store",
+      "type": "skipped",
+      "reason": "deploy-headless.sh's automated-caller authorization is limited to skill-orchestrate Stage MT-3 step 7 and command-gate-out.sh's postflight completion-deploy gate; general-implementation-agent is not an authorized caller",
+      "annotation": "*(deviation: deferred — see note below)*"
+    },
+    {
+      "task_id": "5.interactive",
+      "description": "Confirm the interactive path (chunk-boundary prompt, metadata prompts, index.json write) still works end to end live",
+      "type": "skipped",
+      "reason": "requires the deployed skill (excluded above); risk closed independently via byte-for-byte diff showing Steps 3c-3h unedited",
+      "annotation": "*(deviation: not independently live-tested — see note below)*"
+    }
+  ]
+}

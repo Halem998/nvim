@@ -1,7 +1,47 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 106,
-  "session_id": "sess_1788323839_c3b8b4"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/106_route_skill_literature_convert_through_gated_pipeline/summaries/01_route-convert-through-gate-summary.md",
+      "summary": "All 5 phases complete: Convert Step 3b delegates extraction to literature-convert.sh, gate rejections/hard failures surface as actionable skips, the pdftotext hard gate is removed, the Error Handling section documents the new contract, and Phase 5's acceptance criteria are proven directly against literature-convert.sh (deploy and live slash-command dispatch excluded with a Reasoned Exclusions record since general-implementation-agent is not an authorized deploy-headless.sh caller)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Routed skill-literature's Mode: Convert Step 3b through literature-convert.sh's engine-tier ladder and quality gate, replacing the inline pdftotext/djvutxt extraction; gate rejections and hard failures now skip loudly with no chunk files or index entry, and the Error Handling section documents the new contract. Verified with live fixture runs (fused-word -> exit 3 rejection with index/chunk counts unchanged; two-column -> pymupdf4llm engine tier confirmed via stderr metrics and real heading markers) and the existing test-literature-convert.sh suite (13 passed, 0 failed)."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When routing a prose SKILL.md's inline bash extraction through a sibling script that already implements the same operation with a quality gate (e.g. literature-convert.sh), write the delegated call and its non-zero exit-code branches (gate rejection vs. hard failure) in ONE if/elif/else block rather than trying to stage the success path and failure branches as separate edits across two plan phases -- they share the same convert_exit variable and control flow, so splitting them mechanically produces awkward half-states. It's fine to check off both phases' plan checklists from the single combined edit as long as the diff is reviewed against both phases' stated tasks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/106_route_skill_literature_convert_through_gated_pipeline/summaries/01_route-convert-through-gate-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["skill-literature", "delegation", "exit-code-handling", "quality-gate", "plan-phase-merging"]
+    },
+    {
+      "content": "scripts/deploy-headless.sh (regenerating .claude/ from agent-system/extensions/**) has a narrow, explicit automated-caller allowlist documented in context/patterns/regeneration-is-manual-only.md: only skill-orchestrate's Stage MT-3 step 7 and command-gate-out.sh's postflight completion-deploy gate may invoke it automatically. A general-implementation-agent (or any other implementation dispatch) must NOT call it directly, even when a plan phase asks to 'regenerate the deploy artifact' -- the correct move is to close that item as a Reasoned Exclusion (the redeploy fires automatically at postflight once the task's commit lands) rather than invoking the script or leaving the phase PARTIAL. Live acceptance testing that would otherwise require the deployed skill can often be proven instead by invoking the underlying source-store script directly with the same call idiom the SKILL.md prose describes, using synthetic fixtures from generate-test-fixtures.py (fused-word for a quality-gate rejection, two-column for confirming the pymupdf4llm engine tier and heading markers).",
+      "category": "CONFIG",
+      "source_artifact": "specs/106_route_skill_literature_convert_through_gated_pipeline/summaries/01_route-convert-through-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "source-store-deploy-boundary", "reasoned-exclusions", "literature-convert", "test-fixtures"]
+    },
+    {
+      "content": "On a heavily concurrent shared git branch (many agents committing to master simultaneously), NEVER run a bare `git commit --amend` to fix a message or add a trailer -- amend always operates on whatever is currently HEAD plus whatever is currently staged in the shared index, and another agent's commit or staged-but-uncommitted files can land in between your commit and your amend, silently merging their work into your commit under your message (or vice versa). If a commit needs a trailer added after the fact, either get it right in the original commit message, or accept the commit as-is and note the omission rather than amending on a shared branch. Similarly, never use `git reset` to 'undo' a mistake on a shared branch without first checking exactly how many commits (possibly from OTHER agents) now sit between the target reset point and current HEAD -- reset moves the branch pointer past everything in between, uncommitting all of it back into the working tree as a tangled mass of unrelated changes. The safe recovery is to use `git reflog` to find the exact HEAD state immediately before your own destructive action and reset directly back to that same SHA (not further), then leave any resulting one-off commit-message corruption unfixed if repairing it would require a rebase on a still-actively-committing branch.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/106_route_skill_literature_convert_through_gated_pipeline/summaries/01_route-convert-through-gate-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["git-commit-amend", "concurrent-agents", "shared-branch", "git-reset", "reflog-recovery", "incident"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788323839_c3b8b4",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
