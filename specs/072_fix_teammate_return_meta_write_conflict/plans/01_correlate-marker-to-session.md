@@ -362,27 +362,30 @@ before editing and updating each one found; do not assume the fixture self-check
 
 ---
 
-### Phase 6: Sync postflight-control.md to the corrected behavior [NOT STARTED]
+### Phase 6: Sync postflight-control.md to the corrected behavior [COMPLETED]
 
 **Goal**: The marker protocol documentation and its manual-recovery snippets describe the
 correlated selection rather than the `head -1` behavior that was just removed.
 
 **Tasks**:
-- [ ] Add `cc_session_id` to the Fields table in
+- [x] Add `cc_session_id` to the Fields table in
       `agent-system/extensions/core/context/patterns/postflight-control.md`, stating its source
       (`${CLAUDE_CODE_SESSION_ID:-}` at write time) and that it is distinct from the
-      agent-system `session_id`.
-- [ ] Update the example writer heredocs in that file to include the field, so a reader copying
-      them produces a correlatable marker.
-- [ ] Rewrite the "SubagentStop Hook Behavior" numbered steps: the hook enumerates all markers and
+      agent-system `session_id`. *(completed)*
+- [x] Update the example writer heredocs in that file to include the field, so a reader copying
+      them produces a correlatable marker. *(completed)*
+- [x] Rewrite the "SubagentStop Hook Behavior" numbered steps: the hook enumerates all markers and
       selects the one matching the stopping session; the global fallback is likewise correlated;
       no match means no action. Mirror how the file already documents the malformed-marker guard.
-- [ ] Update the emergency-bypass and manual-recovery snippets that use
+      *(completed: also updated "Consistency Between the Two Hooks on a Malformed Marker" and
+      added a "Deletion Provenance" subsection for the Phase 4 log labels)*
+- [x] Update the emergency-bypass and manual-recovery snippets that use
       `find ... | head -1`: those instruct an operator to reproduce the exact selection the hooks
       no longer make. Either scope them by `cc_session_id` or state plainly that they are a
-      deliberate operator-driven override of correlation.
-- [ ] Do not use task-number references in this file — it lives outside `specs/**`. Cite the
-      hook and script filenames as the durable anchors.
+      deliberate operator-driven override of correlation. *(completed: all three head -1 snippets
+      labelled "Deliberate operator override of correlation")*
+- [x] Do not use task-number references in this file — it lives outside `specs/**`. Cite the
+      hook and script filenames as the durable anchors. *(completed)*
 
 **Timing**: 0.5 hours
 

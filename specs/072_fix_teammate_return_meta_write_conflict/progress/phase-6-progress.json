@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "phase_name": "Sync postflight-control.md to the corrected behavior",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add cc_session_id to Fields table", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/postflight-control.md"]},
+    {"id": 2, "description": "Update example writer heredocs", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/postflight-control.md"]},
+    {"id": 3, "description": "Rewrite SubagentStop Hook Behavior steps + malformed-marker consistency + deletion provenance", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/postflight-control.md"]},
+    {"id": 4, "description": "Label all head -1 snippets as operator overrides", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/postflight-control.md"]},
+    {"id": 5, "description": "No task-number references check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
