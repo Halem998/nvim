@@ -1,49 +1,26 @@
 {
-  "status": "researched",
-  "session_id": "sess_1788382844_27990c_72",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
   "task_number": 72,
-  "task_type": "meta",
-  "operation": "research",
-  "findings_count": 12,
+  "session_id": "sess_1788390027_14a27d_72",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md",
-      "summary": "Confirms the head-1 marker-selection defect in subagent-postflight.sh and the identical independent defect in events-log-lifecycle.sh; establishes that $CLAUDE_CODE_SESSION_ID (already exported into every Bash tool call, same id space as hook stdin .session_id) is the correlation key; recommends adding a cc_session_id field to the marker schema written by skill_create_postflight_marker and having find_marker() select only the marker matching the stopping session's own cc_session_id, never falling back to an arbitrary marker; flags that events-log-lifecycle.sh must also be touched to satisfy the events.jsonl attribution acceptance criterion, which is outside the delegation's stated two-file SOURCE-STORE RULE."
+      "type": "plan",
+      "path": "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
+      "summary": "Six-phase plan correlating both uncorrelated .postflight-pending marker selection sites to the stopping session via a new cc_session_id marker field, with deletion-provenance logging, cross-session fixture tests, and a doc sync."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Claude Code exports $CLAUDE_CODE_SESSION_ID into every Bash tool invocation within a session -- the same id space as hook stdin's top-level .session_id field (Claude Code's native session UUID, documented in events-format.md as cc_session_id). A script running as a Bash tool call can read this directly without needing a hook to capture it first. Prior art: update-task-status.sh keys its workflow-active-<key> marker by ${CLAUDE_CODE_SESSION_ID:-$session_id}; the memory extension's bootstrap-harvest scripts treat it as a hard FATAL-if-unset requirement for self-exclusion.",
-      "category": "PATTERN",
-      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["CLAUDE_CODE_SESSION_ID", "cc_session_id", "hook stdin session_id", "session correlation", "SubagentStop"]
-    },
-    {
-      "content": "subagent-postflight.sh and events-log-lifecycle.sh each independently implement `find specs -maxdepth 3 -name \".postflight-pending\" | head -1` marker selection. They are separate code paths with separate MARKER_FILE variables -- fixing one does not fix the other. Any future defect or enhancement touching one hook's marker-selection logic must check the other for the identical pattern; postflight-control.md's 'Consistency Between the Two Hooks on a Malformed Marker' section is the established precedent for fixing both together.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["subagent-postflight.sh", "events-log-lifecycle.sh", "postflight marker", "duplicated logic", "hooks"]
-    },
-    {
-      "content": "test-postflight-marker-schema.sh asserts an EXACT key set (EXPECTED_KEYS) for the .postflight-pending marker schema produced by skill_create_postflight_marker in skill-base.sh. Any change that adds a field to that marker (e.g. a new cc_session_id correlation field) will fail this test's exact-key-set assertion unless the test is updated in the same change -- a mechanical but easy-to-miss follow-up.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["test-postflight-marker-schema.sh", "EXPECTED_KEYS", "marker schema", "exact key set test"]
-    }
-  ],
-  "next_steps": "Run /plan 72 to create implementation plan",
-  "roadmap_items_addressed": ["PATH.md B.8 (task 72): subagent-postflight marker correlation"],
-  "context_gaps": [
-    {
-      "topic": "Claude Code session-identity correlation",
-      "gap": "The two-id-spaces explanation (agent-system session_id vs. Claude Code's native session UUID / $CLAUDE_CODE_SESSION_ID / cc_session_id) is re-derived in comments across update-task-status.sh, wezterm-preflight-status.sh, events-log-lifecycle.sh, and events-format.md rather than living in one canonical doc.",
-      "recommendation": "Non-blocking for this task; a future /meta pass could add context/patterns/cc-session-correlation.md centralizing this, mirroring postflight-control.md's role for the marker-file protocol."
-    }
-  ]
+  "summary": "Planned the marker/session correlation fix: skill-base.sh's marker writer gains cc_session_id from $CLAUDE_CODE_SESSION_ID; subagent-postflight.sh and events-log-lifecycle.sh each enumerate all markers and act only on the correlated one (fail-safe: no match means no action, including for the global fallback and legacy markers); cap-reached deletion gets a distinct log label; test-subagent-postflight-marker.sh gains cross-session, cap-deletion, legacy-marker, and events-hook cases; postflight-control.md is synced. Resolved the research's open question in favor of mirrored per-hook logic over a shared helper, and flagged one edit target (postflight-control.md) beyond the task's binding five-file list, isolated in its own droppable final phase.",
+  "next_steps": "Run /implement 72 to execute the plan",
+  "blockers": [],
+  "memory_candidates": [],
+  "metadata": {
+    "phase_count": 6,
+    "estimated_hours": 4.25,
+    "dependency_waves": [[1], [2, 3], [4], [5, 6]],
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1
+  }
 }

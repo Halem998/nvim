@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 2,
+  "status": "planned",
+  "summary": "Six-phase implementation plan written for the marker/session correlation defect. Adds cc_session_id to the .postflight-pending writer, correlates both hooks' marker selection (subagent-postflight.sh and events-log-lifecycle.sh) with a binding no-match-means-no-action fail-safe, labels cap-reached deletion distinctly, extends the existing fixture test with cross-session cases, and syncs postflight-control.md.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
+      "summary": "Six-phase plan, 4.25h, dependency waves [1],[2,3],[4],[5,6]."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
