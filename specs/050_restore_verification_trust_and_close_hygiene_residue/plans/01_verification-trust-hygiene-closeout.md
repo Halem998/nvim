@@ -408,32 +408,32 @@ vocabularies, and then delete `specs/ROADMAP.md`.
 
 ---
 
-### Phase 5: Reconcile the topic taxonomy [NOT STARTED]
+### Phase 5: Reconcile the topic taxonomy [COMPLETED]
 
 **Goal**: Prune `active_topics` of declared-but-unused entries, working from a list derived live at
 implementation time.
 
 **Tasks**:
-- [ ] **Re-derive the orphan list from scratch. Do not reuse the filed 10-item list or the research
+- [x] **Re-derive the orphan list from scratch. Do not reuse the filed 10-item list or the research *(completed)*
       report's 13-item snapshot** — the two disagree by four names, and three items moved status
       inside a single research pass. Run:
       `comm -23 <(jq -r '.active_topics[]' specs/state.json | sort -u) <(grep -oP '(?<=\*\*Topic\*\*: )\S+' specs/TODO.md | sort -u)`
-- [ ] Also re-derive the used-but-undeclared side (`comm -13` with the same operands) and confirm it
+- [x] Also re-derive the used-but-undeclared side (`comm -13` with the same operands) and confirm it *(completed)*
       is still empty; if it is not, add the missing topics — an undeclared live topic makes
       `generate-task-order.sh` fall through to its append-extras path with a stderr warning.
-- [ ] For each orphan, check `specs/archive/state.json` before pruning: a topic whose only users are
+- [x] For each orphan, check `specs/archive/state.json` before pruning: a topic whose only users are *(completed)*
       archived/completed tasks is a safe prune; a topic that is orphaned only because its task is
       momentarily between states is not. Record which category each fell into.
-- [ ] Prune the safe orphans from `active_topics`. Route the write through the mutex-guarded state
+- [x] Prune the safe orphans from `active_topics`. Route the write through the mutex-guarded state *(completed)*
       writer (`state-write.sh`, which `manage-topics.sh` already uses) — never a raw
       `jq … > specs/state.json.tmp && mv …`, which is the exact pattern
       `lint-state-writer-boundary.sh` polices.
-- [ ] Note that `manage-topics.sh` exposes only `list`/`add`/`set`/`validate` — there is no `remove`
+- [x] Note that `manage-topics.sh` exposes only `list`/`add`/`set`/`validate` — there is no `remove` *(completed)*
       subcommand. Either add one (preferred: it keeps the encapsulation the script's own header
       claims, and future prunes get a tool) or perform the prune through `state-write.sh` directly
       and record why no subcommand was added.
-- [ ] Regenerate the rendered view: `bash .claude/scripts/generate-todo.sh`.
-- [ ] Record the before/after topic lists and the per-topic prune rationale for the phase's commit
+- [x] Regenerate the rendered view: `bash .claude/scripts/generate-todo.sh`. *(completed)*
+- [x] Record the before/after topic lists and the per-topic prune rationale for the phase's commit *(completed)*
       message and the eventual summary.
 
 **Timing**: 45 minutes

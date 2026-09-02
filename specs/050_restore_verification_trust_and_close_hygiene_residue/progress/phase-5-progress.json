@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Reconcile the topic taxonomy",
+  "started_at": "2026-09-02T02:50:00Z",
+  "last_updated": "2026-09-02T03:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive orphan list live via comm -23 (declared vs used)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-derive used-but-undeclared side via comm -13; confirmed empty", "status": "done", "files_touched": []},
+    {"id": 3, "description": "For each orphan, check specs/archive/state.json (and specs/vault) before pruning", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Prune safe orphans via mutex-guarded state-write.sh (through manage-topics.sh remove)", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 5, "description": "Add remove subcommand to manage-topics.sh (preferred route)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/manage-topics.sh"]},
+    {"id": 6, "description": "Regenerate specs/TODO.md", "status": "done", "files_touched": ["specs/TODO.md"]},
+    {"id": 7, "description": "Record before/after topic lists and per-topic prune rationale", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "live_derivation": {
+    "before_active_topics": ["agent-system","commit-scoping-concurrency","context-loading","core-agent-system","cslib","essential-refactor","extensions","literature","mcp-integration","memory-improvement-loop","neovim","opencode","orchestrate-admission-gate","orchestration-concurrency","status-marker-lifecycle","team-mode-lifecycle","wezterm-notifications","workflow-refactor"],
+    "after_active_topics": ["core-agent-system","extensions","literature","neovim","opencode"],
+    "orphan_count_live": 13,
+    "orphan_count_note": "Differs from both the filed 10-item list and the research report's 13-item snapshot by name set (churn confirmed): 6 orphans (agent-system, context-loading, essential-refactor, mcp-integration, orchestration-concurrency, wezterm-notifications) had prior completed-task users in specs/archive/state.json's completed_projects[] -- safe prune, used only by completed tasks. The other 7 (commit-scoping-concurrency, cslib, memory-improvement-loop, orchestrate-admission-gate, status-marker-lifecycle, team-mode-lifecycle, workflow-refactor) had zero users anywhere: not in active_projects, not in archive/state.json (archived_projects or completed_projects), and not in specs/vault/01-vault/state.json's active_projects -- never used by any task, safe prune.",
+    "used_but_undeclared_count": 0,
+    "post_prune_comm_23_empty": true,
+    "post_prune_comm_13_empty": true
+  },
+  "unrelated_pre_existing_findings_not_fixed": [
+    "generate-task-order.sh --print emits 'Warning: 1 task(s) have no topic and will render under Uncategorized: 138 (non-fatal)' -- task 138's topic field is null, pre-existing and unrelated to active_topics reconciliation (out of this phase's scope: per-task topic assignment, not the active_topics declared-set)",
+    "validate-state.sh (base mode, no --deep) already fails on the plan's two named out-of-scope items (Unknown entry field: abandon_reason on 7 tasks, blocks_note on 3) -- the plan describes these as --deep-only but Check 4 in the current script runs unconditionally; same task numbers as the plan's Non-Goals entry, confirmed pre-existing and unrelated to this phase's active_topics-only edits"
+  ]
+}

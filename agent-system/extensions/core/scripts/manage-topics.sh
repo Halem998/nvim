@@ -7,24 +7,31 @@
 # Usage:
 #   manage-topics.sh list
 #   manage-topics.sh add TOPIC [--session-id SID]
+#   manage-topics.sh remove TOPIC [--session-id SID]
 #   manage-topics.sh set TASK_NUM TOPIC [--session-id SID]
 #   manage-topics.sh validate TOPIC
 #
 # Subcommands:
 #   list              Print all active topics, one per line
 #   add TOPIC         Add TOPIC to active_topics (idempotent; no-op if already present)
+#   remove TOPIC      Remove TOPIC from active_topics (idempotent; no-op if already absent).
+#                      Does NOT check whether any task still carries this topic -- the caller is
+#                      responsible for confirming the topic is genuinely orphaned (no active,
+#                      archived, or vaulted task references it) before removing it. Removing a
+#                      topic still in use by an active task does not clear the task's own
+#                      `topic` field; it only drops the entry from `active_topics`.
 #   set TASK_NUM TOPIC  Set topic on task TASK_NUM and ensure TOPIC is in active_topics
 #   validate TOPIC    Exit 0 if TOPIC is in active_topics, exit 1 if not (no stdout)
 #
-# --session-id SID   Optional, accepted by `add`/`set` (the two write subcommands). Attributes
-#                     the specs/.scope-lock mutex acquisition (via state-write.sh) to this
-#                     session. If omitted, a session_id is generated inline using the same
+# --session-id SID   Optional, accepted by `add`/`remove`/`set` (the three write subcommands).
+#                     Attributes the specs/.scope-lock mutex acquisition (via state-write.sh) to
+#                     this session. If omitted, a session_id is generated inline using the same
 #                     portable pattern command-gate-in.sh uses, so this script remains a
 #                     self-contained drop-in for its many existing callers that have no
 #                     session_id of their own to pass.
 #
 # Exit codes:
-#   0 - Success (list/add/set) or topic found (validate)
+#   0 - Success (list/add/remove/set) or topic found (validate)
 #   1 - Topic not found (validate) or bad arguments
 #   2 - state.json not found or read error
 #   3 - jq write failure (state-write.sh)
@@ -109,6 +116,25 @@ case "$SUBCMD" in
     ;;
 
   # ------------------------------------------------------------------
+  # remove TOPIC: idempotent removal from active_topics
+  # ------------------------------------------------------------------
+  remove)
+    TOPIC="${2:-}"
+    if [[ -z "$TOPIC" ]]; then
+      echo "Usage: $0 remove TOPIC [--session-id SID]" >&2
+      exit 1
+    fi
+
+    # Use select(. == $t | not) pattern (safe under Claude Code Issue #1132 -- no != operator),
+    # matching the add subcommand's index($t) == null convention above.
+    "$SCRIPT_DIR/state-write.sh" \
+      '.active_topics = ((.active_topics // []) | map(select(. == $t | not)))' \
+      --session-id "$SESSION_ID" \
+      --arg t "$TOPIC" \
+      || { echo "Error: state-write.sh failed to update active_topics" >&2; exit 3; }
+    ;;
+
+  # ------------------------------------------------------------------
   # set TASK_NUM TOPIC: assign topic to task and add to active_topics
   # ------------------------------------------------------------------
   set)
@@ -177,6 +203,7 @@ case "$SUBCMD" in
     echo "Usage:" >&2
     echo "  $0 list                    Print all active topics" >&2
     echo "  $0 add TOPIC               Add TOPIC to active_topics (idempotent)" >&2
+    echo "  $0 remove TOPIC            Remove TOPIC from active_topics (idempotent)" >&2
     echo "  $0 set TASK_NUM TOPIC      Assign TOPIC to task and add to active_topics" >&2
     echo "  $0 validate TOPIC          Exit 0 if TOPIC exists, exit 1 if not" >&2
     echo "" >&2
