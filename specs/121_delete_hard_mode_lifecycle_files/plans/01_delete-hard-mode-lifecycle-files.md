@@ -1,7 +1,7 @@
 # Implementation Plan: Task #121
 
 - **Task**: 121 - Delete hard mode lifecycle files
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11.25 hours
 - **Dependencies**: 118, 119, 120, 128 (all completed); 124 (completed — see Precondition Re-Verification)
 - **Research Inputs**: specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md
@@ -665,31 +665,61 @@ reference turns up outside the manifests and the Phase 2-3 lint/test files, trea
 
 ---
 
-### Phase 8: Zero-hit confirmation, full gate run, and deploy refresh [NOT STARTED]
+### Phase 8: Zero-hit confirmation, full gate run, and deploy refresh [COMPLETED]
 
 **Goal**: Discharge the task's own stated completion criterion and confirm the system is no worse
 off than the Phase 1 baseline.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 census grep over `agent-system/` for all seven names and confirm **zero
+- [x] Re-run the Phase 1 census grep over `agent-system/` for all seven names and confirm **zero
       hits**. Write the result to `.reference-census-after.txt` and diff against
-      `.reference-census-before.txt`.
-- [ ] Run the identical repo-wide grep excluding `specs/` and confirm zero hits outside this
-      task's own artifacts — the charter's explicit completion gate.
-- [ ] Confirm `git diff` on `agent-system/extensions/lean/manifest.json` is empty.
-- [ ] Confirm cslib's and lean's four-plus-four `-hard` assets still exist on disk and are still
-      routed by their manifests.
-- [ ] Run the full gate set: `scripts/tests/run-all.sh`, all eight lints in `scripts/lint/`,
+      `.reference-census-before.txt`. *(completed: zero hits confirmed; before-census counted
+      449 raw name occurrences (skill-orchestrate-hard 148, general-implementation-hard-agent 87,
+      general-research-hard-agent 63, planner-hard-agent 46, skill-implementer-hard 47,
+      skill-planner-hard 33, skill-researcher-hard 25); after-census is empty for both the
+      `agent-system/` grep and the repo-wide-excluding-`specs/` grep)*
+- [x] Run the identical repo-wide grep excluding `specs/` and confirm zero hits outside this
+      task's own artifacts — the charter's explicit completion gate. *(completed: 0 hits)*
+- [x] Confirm `git diff` on `agent-system/extensions/lean/manifest.json` is empty. *(completed:
+      empty diff confirmed)*
+- [x] Confirm cslib's and lean's four-plus-four `-hard` assets still exist on disk and are still
+      routed by their manifests. *(completed: all 8 files present; cslib's `routing_hard`/
+      `routing_agents_hard` still route `research.cslib` -> skill-cslib-research-hard /
+      cslib-research-hard-agent and `implement.cslib` -> skill-cslib-implementation-hard /
+      cslib-implementation-hard-agent; lean's still route `research.lean4` and `implement.lean4`
+      to their four `-hard` assets)*
+- [x] Run the full gate set: `scripts/tests/run-all.sh`, all eight lints in `scripts/lint/`,
       `scripts/check-extension-docs.sh`, `scripts/verify-deploy.sh`. Compare against
       `.gate-baseline-before.txt`; any failure must be either pre-existing in the baseline or
-      fixed before the task closes.
-- [ ] Regenerate the `.claude/` deploy artifact so the runtime stops advertising four deleted
+      fixed before the task closes. *(completed: run-all.sh 62/62 passed; all 9 lint scripts in
+      scripts/lint/ (one more than the plan's "eight" — lint-state-writer-boundary.sh was added
+      by an unrelated task after this plan was authored) exit 0 except
+      lint-state-writer-boundary.sh, which fails on 4 pre-existing hand-rolled state.json writes
+      in test-force-phases.sh (last touched by an unrelated task, not part of this task's file
+      scope, and not one of the 7 deletion targets); check-extension-docs.sh reproduces the exact
+      same single pre-existing literature-extension failure recorded in the Phase 1 baseline;
+      verify-deploy.sh reports 3 of 30 checks failed, all three independently confirmed
+      pre-existing and unrelated: (1) the same literature doc-lint failure, (2) validate-state.sh
+      --deep unknown-field findings on project_numbers 94/46/31/64/73/115/132/106/107/109 (none
+      of which is task 121), confirmed present in specs/state.json before this task's first
+      commit, and (3) the same lint-state-writer-boundary.sh finding. No new failure attributable
+      to this task's changes)*
+- [x] Regenerate the `.claude/` deploy artifact so the runtime stops advertising four deleted
       skills (the current `.claude/CLAUDE.md` Skill-to-Agent Mapping still lists all four, and
       `.claude/skills/`, `.claude/agents/` still hold the deleted copies). Confirm the deployed
-      tree no longer contains any of the seven paths.
-- [ ] Note in the summary that `verify-deploy.sh` gate 16 will still warn while cslib and lean
+      tree no longer contains any of the seven paths. *(completed: `deploy-headless.sh` re-run;
+      deployed tree already carried zero hits for the seven names going in — a deploy refresh had
+      evidently landed earlier in this task's lifecycle — and the fresh regeneration confirms
+      `.claude/skills/`, `.claude/agents/`, and `.claude/CLAUDE.md` all remain clean. The
+      regeneration also mechanically corrected `line_count` drift in three `index-entries.json`
+      files for context files whose line counts changed during Phases 6-7's prose edits)*
+- [x] Note in the summary that `verify-deploy.sh` gate 16 will still warn while cslib and lean
       declare `routing_hard`/`routing_agents_hard` — that residue is task 127's scope, not a
-      failure of this task.
+      failure of this task. *(completed: this repository's own `.claude-extensions.json` does not
+      load the cslib or lean extensions, so this repo's own `verify-deploy.sh` run has no
+      cslib/lean manifest to warn about and gate 16 reports PASS here; the warning is expected to
+      surface in a deploy where cslib and/or lean ARE loaded (e.g. the cslib or Logos/Theory
+      repos), and is out of this task's scope regardless — recorded in the summary as directed)*
 
 **Timing**: 1.0 hours
 
@@ -718,18 +748,35 @@ criterion to `agent-system/` — the charter says repo-wide.
 
 ## Testing & Validation
 
-- [ ] All eight scripts in `agent-system/extensions/core/scripts/lint/` exit 0 with no new
-      failures versus the Phase 1 baseline.
-- [ ] `scripts/tests/run-all.sh` shows no regression versus the Phase 1 baseline.
-- [ ] `scripts/tests/test-routing-resolution.sh` passes with core's hard blocks removed and
-      cslib's partially removed.
-- [ ] `scripts/tests/test-index-entries-schema.sh` passes after the `agents[]` pruning.
-- [ ] `scripts/check-extension-docs.sh` reports no unresolvable or undeployed `routing_hard`
-      target.
-- [ ] `scripts/verify-deploy.sh` passes (gate 16's cslib/lean warning is expected and out of scope).
-- [ ] Repo-wide grep for the seven names returns zero hits outside `specs/`.
-- [ ] `/orchestrate --hard` still resolves: standard agents for `general`/`meta`/`markdown` with
+- [x] All eight scripts in `agent-system/extensions/core/scripts/lint/` exit 0 with no new
+      failures versus the Phase 1 baseline. *(completed: of the 9 lint scripts now present in the
+      directory — one, `lint-state-writer-boundary.sh`, was added by an unrelated task after this
+      plan was authored — 8 exit 0; the 9th fails only on a pre-existing, unrelated
+      `test-force-phases.sh` finding, confirmed via `git log` to predate this task's first commit)*
+- [x] `scripts/tests/run-all.sh` shows no regression versus the Phase 1 baseline. *(completed:
+      62 passed, 0 failed, 0 skipped)*
+- [x] `scripts/tests/test-routing-resolution.sh` passes with core's hard blocks removed and
+      cslib's partially removed. *(completed: 13/13 assertions passed)*
+- [x] `scripts/tests/test-index-entries-schema.sh` passes after the `agents[]` pruning.
+      *(completed: 9/9 passed)*
+- [x] `scripts/check-extension-docs.sh` reports no unresolvable or undeployed `routing_hard`
+      target. *(completed: core, cslib, and lean all report PASS with zero unresolvable/undeployed
+      routing_hard findings; the one FAIL present is the pre-existing literature extension
+      line_count drift, unrelated to routing)*
+- [x] `scripts/verify-deploy.sh` passes (gate 16's cslib/lean warning is expected and out of scope).
+      *(deviation: verify-deploy.sh reports 3 of 30 checks failed rather than a clean pass — all
+      three independently confirmed pre-existing and unrelated to this task (literature doc-lint
+      drift, validate-state.sh unknown-field findings on 9 unrelated project numbers, and the
+      lint-state-writer-boundary.sh finding in test-force-phases.sh); gate 16 itself reports PASS
+      in this repo since cslib/lean are not loaded extensions here)*
+- [x] Repo-wide grep for the seven names returns zero hits outside `specs/`. *(completed: 0 hits)*
+- [x] `/orchestrate --hard` still resolves: standard agents for `general`/`meta`/`markdown` with
       contract injection, `cslib-*-hard-agent` for `cslib`, `lean-*-hard-agent` for `lean4`.
+      *(completed: verified via manifest inspection and test-routing-resolution.sh — core has no
+      routing_hard block left (general/meta/markdown fall through to the standard skill, which
+      carries the hard_mode contract-injection block per Phase 1's precondition re-verification);
+      cslib's routing_hard.research/implement.cslib and lean's routing_hard.research/implement.lean4
+      still route to their respective `-hard` skills and agents)*
 
 ## Artifacts & Outputs
 

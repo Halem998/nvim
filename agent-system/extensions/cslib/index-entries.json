@@ -372,7 +372,7 @@
     },
     {
       "path": "contracts/adversarial-verification.md",
-      "line_count": 117,
+      "line_count": 120,
       "load_when": {
         "agents": [
           "cslib-research-hard-agent"

@@ -26,7 +26,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 221,
+      "line_count": 222,
       "keywords": [
         "context",
         "layers",
@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 423,
+      "line_count": 431,
       "keywords": [
         "format",
         "plan",
@@ -1186,7 +1186,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 317,
+      "line_count": 319,
       "keywords": [
         "patterns",
         "skill",
@@ -2295,7 +2295,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H2 anti-analysis contract: read budget enforcement, forbidden conclusions, defect bar, settled-design preamble protocol",
-      "line_count": 111,
+      "line_count": 112,
       "keywords": [
         "anti-analysis",
         "read-budget",
@@ -2349,7 +2349,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestrator-role discipline contract: prohibits inline design/proof analysis, reading implementation source, running builds, and mid-cycle strategy reconsideration by the orchestrator itself; defines the two allowed responses (fresh dispatch or escalation) and the burnout circuit-breaker forced-handoff mechanism",
-      "line_count": 86,
+      "line_count": 87,
       "keywords": [
         "orchestrator-discipline",
         "burnout",
@@ -2374,7 +2374,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
-      "line_count": 87,
+      "line_count": 88,
       "keywords": [
         "fix-forward",
         "recovery-ladder",
@@ -2428,7 +2428,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for hard-mode single-phase dispatch (also applicable to parallel dispatch)",
-      "line_count": 111,
+      "line_count": 112,
       "keywords": [
         "territory",
         "file-ownership",
@@ -2455,7 +2455,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 107,
+      "line_count": 110,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -2485,7 +2485,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Per-item pre-edit verification gate: cheap, blast-radius-proportionate evidence (reference count, build probe, definition lookup) required before applying any item from a mechanically-generated list; failed probes route to Reasoned Exclusions; applies in BOTH standard and hard mode",
-      "line_count": 107,
+      "line_count": 109,
       "keywords": [
         "pre-edit",
         "verification-gate",
@@ -2515,7 +2515,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 215,
+      "line_count": 216,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -2592,7 +2592,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 922,
+      "line_count": 926,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2642,7 +2642,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 74,
+      "line_count": 70,
       "keywords": [
         "reference",
         "orchestrate",
@@ -2666,7 +2666,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Hard-mode routing resolution precedence used by command-route-skill.sh for --hard",
-      "line_count": 173,
+      "line_count": 179,
       "keywords": [
         "hard-mode",
         "routing",
@@ -2687,7 +2687,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Consolidated routing model: the four manifest blocks, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 231,
+      "line_count": 233,
       "keywords": [
         "routing",
         "manifest",
@@ -2924,7 +2924,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1246,
+      "line_count": 1248,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -2995,7 +2995,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 323,
+      "line_count": 326,
       "keywords": [
         "runtime-files",
         "cleanup",

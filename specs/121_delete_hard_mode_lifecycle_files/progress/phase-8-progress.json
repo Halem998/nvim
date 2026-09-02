@@ -1,0 +1,58 @@
+{
+  "phase": 8,
+  "phase_name": "Zero-hit confirmation, full gate run, and deploy refresh",
+  "started_at": "2026-09-02T19:00:00Z",
+  "last_updated": "2026-09-02T19:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run census grep over agent-system/ and repo-wide excluding specs/; write .reference-census-after.txt",
+      "status": "done",
+      "files_touched": [
+        "specs/121_delete_hard_mode_lifecycle_files/.reference-census-after.txt"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Confirm git diff on lean/manifest.json is empty; confirm cslib/lean hard assets exist and are routed",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run full gate set (run-all.sh, 9 lints, check-extension-docs.sh, verify-deploy.sh) and compare against Phase 1 baseline",
+      "status": "done",
+      "files_touched": [
+        "specs/121_delete_hard_mode_lifecycle_files/.gate-baseline-after.txt"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Regenerate .claude/ deploy artifact via deploy-headless.sh; confirm deployed tree contains none of the seven paths",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/cslib/index-entries.json",
+        "agent-system/extensions/lean/index-entries.json"
+      ],
+      "note": "deploy-headless.sh mechanically corrected line_count drift in three index-entries.json files for context files whose line counts changed during Phases 6-7's prose edits. .claude/ itself is gitignored and not tracked."
+    },
+    {
+      "id": 5,
+      "description": "Record verify-deploy.sh gate 16 cslib/lean scope note in the summary",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "gate_results": {
+    "run_all_sh": "62 passed, 0 failed, 0 skipped",
+    "lints_9_of_9_present": "8 of 9 exit 0; lint-state-writer-boundary.sh fails on pre-existing test-force-phases.sh finding unrelated to this task (confirmed via git log to predate task 121's first commit)",
+    "check_extension_docs_sh": "same single pre-existing literature-extension failure as Phase 1 baseline; core/cslib/lean all PASS",
+    "verify_deploy_sh": "3 of 30 checks failed, all independently confirmed pre-existing and unrelated: literature doc-lint drift, validate-state.sh --deep unknown-field findings on unrelated project_numbers (94,46,31,64,73,115,132,106,107,109), and the same lint-state-writer-boundary.sh finding",
+    "census_after": "zero hits in agent-system/ and zero hits repo-wide excluding specs/"
+  },
+  "observation": "Foreign uncommitted modifications observed in the working tree at Phase 8 start, not made by this task: .claude-extensions.json, .memory/memory-index.json, after/ftplugin/{markdown,tex,typst}.lua, agent-system/extensions/latex/README.md, docs/MAPPINGS.md, docs/TYPST.md, lua/neotex/plugins/editor/README.md, lua/neotex/plugins/editor/which-key.lua, lua/neotex/util/README.md, lua/neotex/util/process.lua, specs/events.jsonl, and an untracked agent-system/extensions/literature/scripts/literature-pyenv/ directory. These are excluded from this task's commit staging per the git-staging-scope contract; likely other concurrently-dispatched agents' in-flight work per this session's active-agent roster."
+}

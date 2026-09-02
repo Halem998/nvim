@@ -1,9 +1,9 @@
 {
   "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788364293_dfc521",
+    "session_id": "sess_1788376077_104552",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
   }
 }
