@@ -1,29 +1,32 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 4 meta tasks (102-105, topic literature) for two verified literature-extension defects plus two enabling converter tasks. Tasks start in NOT STARTED status.",
+  "status": "researched",
+  "summary": "Characterized when the PyMuPDF fallback converter tier helps vs. hurts and corrected the falsified universal-remedy claim. Resolved the two candidate class-boundary framings (bibliography density vs. OCR vintage) into one mechanistic discriminator: Class A defects are introduced by the primary tier's own markdown-structuring heuristics (table misdetection, <sup>/<sub> span space-dropping) and are fixed by the fallback tier regardless of scan status (savage_1972, bacon_dorr_2024_classicism, Goldblatt/Hodkinson/Venema 2003); Class B defects are already baked into the source text layer (poor-vintage OCR) and no converter tier can fix them (joyce_1999, fallback makes it slightly worse). Confirmed scanned-vs-born-digital is not the discriminator using an independently-found corroborating case (bacon_dorr_2024_classicism, very likely born-digital) not supplied in the task description. Proposed exact replacement text for the falsified remedy sentence at literature_quality_gate.py:238-239 that preserves the untouched prohibition (lines 236-241) byte-for-byte for task 104 to narrow separately, and proposed a new 'Converter Tier Selection' section for context/guides/literature-organization.md plus a README cross-reference. Did not propose any auto-selection mechanism, per the task's explicit scope discipline.",
   "artifacts": [
-    {"type": "task", "path": "/home/benjamin/.config/nvim/specs/102_characterize_converter_tiers_and_ocr_vintage/", "summary": "Foundational: characterize converter tiers; correct falsified fallback-as-universal-remedy claim"},
-    {"type": "task", "path": "/home/benjamin/.config/nvim/specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/", "summary": "Fix fidelity audit chunk-only blindness and the absent-baseline majority"},
-    {"type": "task", "path": "/home/benjamin/.config/nvim/specs/104_resolve_glue_check_false_positive_class/", "summary": "Resolve glue-check false-positive class; evaluate three routes, reconcile with docstring prohibition"},
-    {"type": "task", "path": "/home/benjamin/.config/nvim/specs/105_add_ocr_tier_for_image_only_pdfs/", "summary": "Add OCR tier for image-only and poor-vintage-OCR PDFs"},
-    {"type": "task_entry", "path": "/home/benjamin/.config/nvim/specs/TODO.md", "summary": "Tasks 102-105 added; Task Order regenerated"},
-    {"type": "task_entry", "path": "/home/benjamin/.config/nvim/specs/state.json", "summary": "4 entries appended; next_project_number advanced to 106"}
+    {
+      "type": "report",
+      "path": "/home/benjamin/.config/nvim/specs/102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md",
+      "summary": "Empirical characterization of converter-tier tradeoffs, the Class A/Class B mechanistic discriminator, proposed docstring replacement text, and proposed context-doc additions."
+    }
   ],
-  "next_steps": "Run /research 102 to begin the foundational converter-tier characterization; 103 is independently startable in parallel.",
+  "next_steps": "Run /plan 102 to turn the report's three deliverables (docstring edit, context-doc addition, README cross-reference) into an implementation plan.",
   "metadata": {
-    "session_id": "sess_1787722278_e21f7b",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 420,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 4
+    "session_id": "sess_1788323839_c3b8b4_102",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "task_type": "meta",
+    "topic": "literature",
+    "target_root": "/home/benjamin/.config/nvim"
   },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/state.json"
-  ],
-  "errors": []
+  "modified_files": [],
+  "errors": [],
+  "memory_candidates": [
+    {
+      "content": "In the literature extension's converter pipeline (agent-system/extensions/literature/scripts/literature_quality_gate.py), 'scanned vs. born-digital' is NOT a reliable predictor of whether LITERATURE_CONVERTER=fallback fixes a gate rejection. The real discriminator is defect origin: defects introduced by the pymupdf4llm primary tier's own markdown-structuring heuristics (table misdetection over dense back matter, <sup>/<sub> footnote-span space-dropping) are fixed by the fallback tier regardless of scan status (proven on both a scanned book, savage_1972, and a born-digital paper, bacon_dorr_2024_classicism). Defects already baked into the source text layer (typically poor-vintage OCR) are untouched by either converter tier and can be slightly worsened by the fallback tier's own column-clustering noise (joyce_1999: 4 primary hits -> 5 fallback hits). Diagnose by inspecting where sentence_boundary_glue_count() hits fall (positionally concentrated near structural boundaries -> try fallback; scattered singly -> suspect OCR text-layer defect, needs re-OCR not a converter switch) rather than by document provenance.",
+      "category": "PATTERN",
+      "source_artifact": "/home/benjamin/.config/nvim/specs/102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature-extension", "converter-tier", "pymupdf4llm", "quality-gate", "sentence-boundary-glue", "OCR"]
+    }
+  ]
 }

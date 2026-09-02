@@ -53,16 +53,16 @@ next_project_number: 139
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-102 [NOT STARTED] — Characterize when the PyMuPDF column-clustering fallback tier act
+102 [RESEARCHED] — Characterize when the PyMuPDF column-clustering fallback tier act
   └─ 104 [NOT STARTED] — Resolve the sentence_boundary_glue_count() false-positive class o
     └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
   └─ 109 [NOT STARTED] — Fix three distinct failure modes in the online-ingest bridge, eac
-103 [NOT STARTED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
-106 [NOT STARTED] — Route skill-literature's convert path through literature-convert.
-108 [NOT STARTED] — Make the topic-scoped coverage-delta guard fast enough that every
+103 [RESEARCHED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
+106 [RESEARCHED] — Route skill-literature's convert path through literature-convert.
+108 [RESEARCHED] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
-110 [NOT STARTED] — Stop Tier 3 online discovery from being a single point of failure
+110 [RESEARCHED] — Stop Tier 3 online discovery from being a single point of failure
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
@@ -1200,10 +1200,11 @@ COORDINATION NOTE (no dependency deliberately added). Task 89 restructures this 
 
 ### 110. Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3
 - **Effort**: 6-10 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md]
 
 **Description**: Stop Tier 3 online discovery from being a single point of failure. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1279,10 +1280,11 @@ TEST VEHICLE. Automated discovery could not be exercised during the observed ses
 
 ### 108. Eliminate literature-coverage-delta.sh per-entry jq spawns so --lit stops timing out
 - **Effort**: 4-8 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md]
 
 **Description**: Make the topic-scoped coverage-delta guard fast enough that every `--lit` invocation does not pay a multi-minute stall. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 
@@ -1354,10 +1356,11 @@ A NEGATIVE RESULT IS A COMPLETE OUTCOME. If no content signal separates OCR garb
 
 ### 106. Route skill literature convert through gated pipeline
 - **Effort**: 6-10 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [106_route_skill_literature_convert_through_gated_pipeline/reports/01_route-convert-through-gate.md]
 
 **Description**: Route skill-literature's convert path through literature-convert.sh so that /literature ingests are quality-gated. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -1443,10 +1446,11 @@ MANDATORY RECONCILIATION. Whichever route wins MUST reconcile itself with the pr
 ---
 
 ### 103. Fix fidelity audit chunk-only blindness and the absent-baseline majority
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md]
 
 **Description**: Fix literature-fidelity-audit.sh so it can verify pipeline-ingested documents at all, and resolve the absent-baseline problem that blocks the overwhelming majority of the corpus. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -1489,10 +1493,11 @@ COORDINATE, DO NOT DUPLICATE: the converter-tier task warns that "scanned/OCR'd 
 ---
 
 ### 102. Characterize converter-tier behavior and correct the falsified universal-remedy claim
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [102_characterize_converter_tiers_and_ocr_vintage/reports/01_converter-tier-characterization.md]
 
 **Description**: Characterize when the PyMuPDF column-clustering fallback tier actually helps versus hurts, and correct the now-falsified claim that it is the universal remedy for gate rejections. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
