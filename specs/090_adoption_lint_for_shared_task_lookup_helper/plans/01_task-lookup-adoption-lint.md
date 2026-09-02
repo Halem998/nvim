@@ -313,26 +313,26 @@ gate worthless, and prove the acceptance criterion — a newly introduced offend
 
 ---
 
-### Phase 5: verify-deploy gate 17 wiring and manifest registration [NOT STARTED]
+### Phase 5: verify-deploy gate 17 wiring and manifest registration [COMPLETED]
 
 **Goal**: Make the lint run as part of deploy verification, and make the new script and test
 actually deploy.
 
 **Tasks**:
-- [ ] Append gate 17 to `agent-system/extensions/core/scripts/verify-deploy.sh` after the existing
+- [x] Append gate 17 to `agent-system/extensions/core/scripts/verify-deploy.sh` after the existing *(deviation: altered — landed as gate 18, since gate 17 was already claimed by lint-scoped-commit-boundary.sh from a concurrent batch; wired line-for-line on gate 12's template as instructed)*
       gate 16 block, copying gate 12's structure line-for-line: the section-rule comment header,
       `say "17. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)"`,
       `CURRENT_GATE="gate17"`, the same skip/missing-file guards gate 12 uses, the
       `cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh" --verbose` invocation, `pass`/`fail` with the
       re-run-for-detail hint, and the `FINDINGS_LIST` `[VIOLATION]` harvesting loop tagged
       `FINDING gate17`.
-- [ ] Confirm gate 17 is placed before the final summary block and followed by `say ""` in the same
+- [x] Confirm gate 17 is placed before the final summary block and followed by `say ""` in the same *(altered to gate 18, same reasoning)*
       rhythm as the preceding gates.
-- [ ] Register `lint/lint-task-lookup-adoption.sh` in `agent-system/extensions/core/manifest.json`
+- [x] Register `lint/lint-task-lookup-adoption.sh` in `agent-system/extensions/core/manifest.json`
       under `provides.scripts`, adjacent to the other `lint/` entries.
-- [ ] Register `tests/test-lint-task-lookup-adoption.sh` in the same block, adjacent to the other
+- [x] Register `tests/test-lint-task-lookup-adoption.sh` in the same block, adjacent to the other
       `tests/test-lint-*.sh` entries.
-- [ ] Validate `manifest.json` parses (`jq . manifest.json > /dev/null`).
+- [x] Validate `manifest.json` parses (`jq . manifest.json > /dev/null`).
 
 **Timing**: 0.75 hours
 

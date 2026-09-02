@@ -792,6 +792,36 @@ else
 fi
 
 say ""
+
+# Gate 18: task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
+#
+# Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
+# 17): only the source store (agent-system/extensions/core/**) is validated, regardless of which
+# copy (source store or deployed .claude/) invoked this script. Invokes the source-store copy
+# directly, resolving REPO_ROOT the same way gate 12 does.
+say "18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)"
+CURRENT_GATE="gate18"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- task-lookup adoption lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh" ]; then
+  fail "lint-task-lookup-adoption.sh not found in source store"
+else
+  task_lookup_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh" --verbose 2>&1)
+  task_lookup_lint_status=$?
+  if [ "$task_lookup_lint_status" -eq 0 ]; then
+    pass "task-lookup adoption lint reports no hand-rolled full-record task-lookup shapes"
+  else
+    fail "task-lookup adoption lint reported hand-rolled full-record task-lookup shapes" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r task_lookup_lint_line; do
+        FINDINGS_LIST+=("FINDING gate18 ${task_lookup_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$task_lookup_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""

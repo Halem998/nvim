@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "verify-deploy gate 17 wiring and manifest registration",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire the lint as a verify-deploy.sh gate, modeled on gate 12's structure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Register the lint script and its test in core/manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Append gate 17 to verify-deploy.sh, copying gate 12's structure line-for-line",
+      "type": "altered",
+      "reason": "gate 17 was already claimed by lint-scoped-commit-boundary.sh, landed by a concurrent sibling task in this same batch (105-file git-commit-scoped.sh migration). Verified live via grep on verify-deploy.sh's CURRENT_GATE assignments before writing. Landed as gate 18 instead, using the exact same wiring template (gate 12's structure, per the plan's own instruction), just renumbered.",
+      "annotation": "*(deviation: altered — landed as gate 18, since gate 17 was already claimed by lint-scoped-commit-boundary.sh from a concurrent batch; wired line-for-line on gate 12's template as instructed)*"
+    }
+  ]
+}
