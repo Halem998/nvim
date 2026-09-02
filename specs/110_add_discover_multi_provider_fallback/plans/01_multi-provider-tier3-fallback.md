@@ -1,7 +1,7 @@
 # Implementation Plan: Multi-Provider Tier 3 Fallback for literature-discover.sh
 
 - **Task**: 110 - Add multi-provider fallback and S2_API_KEY support to literature-discover.sh Tier 3
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md
@@ -125,27 +125,27 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Curl-Stub Harness and Pre-Refactor Golden Baseline [NOT STARTED]
+### Phase 1: Curl-Stub Harness and Pre-Refactor Golden Baseline [COMPLETED]
 
 **Goal**: Establish the PATH-shadowing `curl` stub convention this repo does not yet have, and
 capture the pre-refactor Semantic Scholar output that Phase 3's regression check compares against.
 
 **Tasks**:
-- [ ] Confirm `literature-discover.sh` invokes bare `curl` (not `command curl`, not an absolute
-      path) so a `PATH`-shadowing stub actually intercepts it.
-- [ ] Add a stub script under `agent-system/extensions/literature/scripts/tests/` (following the
+- [x] Confirm `literature-discover.sh` invokes bare `curl` (not `command curl`, not an absolute
+      path) so a `PATH`-shadowing stub actually intercepts it. *(completed)*
+- [x] Add a stub script under `agent-system/extensions/literature/scripts/tests/` (following the
       existing `test-literature-*.sh` naming convention there) that dispatches on the requested
       URL host: canned responses for `api.semanticscholar.org`, `api.openalex.org`,
       `api.crossref.org`, and `api.unpaywall.org`, with per-host status/body controlled by
-      environment variables so one stub serves every later scenario.
-- [ ] Store canned JSON fixtures for each provider shaped like the real responses documented in
+      environment variables so one stub serves every later scenario. *(completed: curl-stub.sh)*
+- [x] Store canned JSON fixtures for each provider shaped like the real responses documented in
       the research report (Semantic Scholar `.data[]`; OpenAlex `.results[]` with a **prefixed**
-      DOI; Crossref `.message.items[]` with a bare `DOI`).
-- [ ] Prove the stub intercepts: run `literature-discover.sh` with the stub first on `PATH` and
-      confirm no real network call occurs and the stubbed body drives the output.
-- [ ] Capture the golden baseline: with the stub serving a fixed Semantic Scholar 200 fixture and
+      DOI; Crossref `.message.items[]` with a bare `DOI`). *(completed: fixtures/tier3-*.json)*
+- [x] Prove the stub intercepts: run `literature-discover.sh` with the stub first on `PATH` and
+      confirm no real network call occurs and the stubbed body drives the output. *(completed: stub-intercept scenario)*
+- [x] Capture the golden baseline: with the stub serving a fixed Semantic Scholar 200 fixture and
       a fixed Unpaywall response, run the **current, unmodified** script and save stdout to a
-      fixture file for the Phase 3 diff.
+      fixture file for the Phase 3 diff. *(completed: fixtures/tier3-golden-baseline.json)*
 
 **Timing**: 0.75 hours
 

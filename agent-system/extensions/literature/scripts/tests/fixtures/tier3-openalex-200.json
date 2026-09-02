@@ -1,0 +1,13 @@
+{
+  "results": [
+    {
+      "id": "https://openalex.org/W123",
+      "title": "Stub OpenAlex Paper",
+      "publication_year": 2022,
+      "doi": "https://doi.org/10.5678/openalex-stub",
+      "authorships": [{"author": {"display_name": "O. Alex"}}],
+      "primary_location": {"pdf_url": "https://example.org/openalex-stub.pdf"},
+      "open_access": {"oa_url": "https://example.org/openalex-stub-oa.pdf"}
+    }
+  ]
+}

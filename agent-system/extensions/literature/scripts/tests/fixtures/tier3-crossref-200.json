@@ -1,0 +1,12 @@
+{
+  "message": {
+    "items": [
+      {
+        "DOI": "10.9999/crossref-stub",
+        "title": ["Stub Crossref Paper"],
+        "issued": {"date-parts": [[2021]]},
+        "author": [{"given": "C.", "family": "Rossref"}]
+      }
+    ]
+  }
+}

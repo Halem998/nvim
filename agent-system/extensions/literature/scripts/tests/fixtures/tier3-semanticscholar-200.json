@@ -1,0 +1,14 @@
+{
+  "total": 1,
+  "offset": 0,
+  "data": [
+    {
+      "paperId": "abc123ss",
+      "title": "Stub Semantic Scholar Paper",
+      "year": 2023,
+      "authors": [{"authorId": "1", "name": "S. Scholar"}],
+      "externalIds": {"DOI": "10.1234/ss-stub", "ArXiv": null},
+      "openAccessPdf": {"url": "https://example.org/ss-stub.pdf"}
+    }
+  ]
+}

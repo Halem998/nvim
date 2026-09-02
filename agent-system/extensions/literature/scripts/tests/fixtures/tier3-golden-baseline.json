@@ -1,0 +1,15 @@
+[
+  {
+    "title": "Stub Semantic Scholar Paper",
+    "authors": [
+      "S. Scholar"
+    ],
+    "year": 2023,
+    "doc_id": "10_1234_ss-stub",
+    "status": "open_access",
+    "tier": 3,
+    "doi": "10.1234/ss-stub",
+    "arxiv_id": null,
+    "pdf_url": "https://example.org/ss-stub.pdf"
+  }
+]
