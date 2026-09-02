@@ -55,7 +55,7 @@ next_project_number: 141
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-107 [RESEARCHED] — Add an OCR-misrecognition detector to the literature quality gate
+107 [PLANNED] — Add an OCR-misrecognition detector to the literature quality gate
 113 [NOT STARTED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
@@ -1411,11 +1411,12 @@ FILE-OVERLAP NOTE: task 112 (briefing FTS5 fix) is serialized AFTER this task be
 
 ### 107. Add ocr misrecognition detector to quality gate
 - **Effort**: 12-20 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 102, Task 104
 - **Research**: [107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md]
+- **Plan**: [107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md]
 
 **Description**: Add an OCR-misrecognition detector to the literature quality gate. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 

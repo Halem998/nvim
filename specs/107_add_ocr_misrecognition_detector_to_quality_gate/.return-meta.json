@@ -1,39 +1,37 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md",
-      "summary": "Four rounds of measured content-signal candidates (OOV rate, symbol density, prose-restricted anomaly rate, embedded-corruption tokens) fail to separate 11 known scan-pipeline documents from born-digital dense-math controls; recommends promoting the existing provenance-metadata check (already in literature-fidelity-audit.sh) to an importable literature_quality_gate.py function, consumed by both literature-convert.sh (as a non-blocking advisory) and literature-fidelity-audit.sh (replacing its inline duplicate)."
+      "type": "plan",
+      "path": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md",
+      "summary": "Six-phase plan implementing the provenance-only fallback (shared scan_pipeline_provenance function, deduplicated fidelity-audit consumer, non-blocking converter advisory) after research measured the content-based OCR-misrecognition detector as non-viable."
     }
   ],
-  "next_steps": "Run /plan 107 to create an implementation plan for promoting scan_pipeline_provenance() into literature_quality_gate.py as a non-blocking advisory check, per this report's Recommended Implementation section.",
+  "next_steps": "Run /implement 107 to execute the plan",
   "metadata": {
     "session_id": "sess_1788329488_6a27b9_107",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "task_number": 107,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6]],
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1
   },
   "memory_candidates": [
     {
-      "content": "Acrobat Capture Plug-in (v3.0/v4.0) embeds a literal NUL byte at the end of its own PDF Creator/Producer metadata strings. Bash `$(pdfinfo ... | grep -iE 'capture|...')` (without `grep -a`) silently drops matches on these lines instead of erroring loudly -- undercounted a real corpus's scan-pipeline document count by 4/11 (36%) in this task. Fix: use `grep -a`, or read metadata via Python (`fitz.Document.metadata` or `subprocess.run(..., text=True)` both handle the NUL byte correctly without special-casing).",
+      "content": "When a task's primary output is a measured negative result (a proposed detector/heuristic that provably does not work), the plan must include an explicit phase that writes the negative finding plus its decisive measurements into durable repository documentation, not only into the specs/ report. Two forces make this non-optional: (1) deliverable files outside specs/** cannot cite a specs/ artifact path, because that path embeds an ephemeral task number, so the record must be self-contained with the numbers and the failure classes inline; (2) without it the next contributor re-derives the same dead end. Practical shape: name the signal families tried, the decisive cross-over numbers (a genuine positive scoring below a negative control is the strongest single datum), the false-positive class that defeated each refinement round, and the one untried avenue with its cost.",
       "category": "PATTERN",
-      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["pdfinfo", "nul-byte", "acrobat-capture", "grep", "bash-command-substitution", "pdf-metadata"]
-    },
-    {
-      "content": "On a math-heavy academic-paper corpus with idiosyncratic typesetting (Unicode math operators, LaTeX macro leakage from markdown structuring, footnote markers, combining-mark diacritics, em-dash prose, HTML sub/superscript leakage), generic lexical/symbol-shape OCR-misrecognition detectors (OOV rate, mixed-alnum-symbol density, embedded-corruption-token rate) do not converge: each round of exempting one false-positive class exposes a different one, and born-digital dense-math negative controls consistently score as high as or higher than known-corrupt scan-pipeline positives. Four independently designed and refined signals all failed to separate an 11-document positive set from a 6-document negative control set. Provenance metadata (PDF Creator/Producer) remained the only signal with zero measured false positives.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["ocr-misrecognition", "content-signal", "false-positive", "quality-gate", "provenance-detection", "dense-mathematics"]
-    },
-    {
-      "content": "Two extraction tiers that both read the same underlying fitz-extracted PDF text layer (e.g. pymupdf4llm primary tier vs. PyMuPDF-fallback column-clustering tier) are NOT independent extractions for cross-comparison purposes -- an OCR-misrecognition defect already baked into the text layer corrupts both identically, so agreement between them proves nothing about correctness. A genuinely independent second opinion requires a fresh OCR pass (e.g. ocrmypdf/tesseract) over the page images, which is expensive (minutes per document) and therefore suited to an explicit on-demand audit signal, not an automatic per-conversion gate check.",
-      "category": "PATTERN",
-      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md",
+      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md",
       "confidence": 0.75,
-      "suggested_keywords": ["independent-extraction", "cross-validation", "ocr-comparison", "text-layer", "fidelity-audit"]
+      "suggested_keywords": ["negative-result", "plan-decomposition", "documentation-phase", "task-reference-constraint", "detector-infeasibility"]
     }
-  ]
+  ],
+  "modified_files": [
+    "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md"
+  ],
+  "errors": []
 }
