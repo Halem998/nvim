@@ -23,7 +23,7 @@ next_project_number: 139
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-48 [PLANNING] — Propagate the scoped-commit fix to the 65 call sites it never rea
+48 [PLANNED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
@@ -2351,11 +2351,12 @@ ROADMAP RESOLUTION DECIDED: delete specs/ROADMAP.md rather than rewriting it. It
 ---
 
 ### 48. Propagate scoped commit to all call sites
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124
 - **Research**: [048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md]
+- **Plan**: [048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md]
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 

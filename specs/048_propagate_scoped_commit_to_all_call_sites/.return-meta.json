@@ -1,33 +1,127 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": [
+    "orchestrator",
+    "plan",
+    "planner-agent"
+  ],
   "session_id": "sess_1788304786_edca9f_48",
   "task_number": 48,
   "artifacts": [
     {
+      "type": "plan",
+      "path": "specs/048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md",
+      "summary": "11-phase plan migrating 98 raw git-commit call sites in the source store to git-commit-scoped.sh, root-cause templates first, closing with an end-to-end real commit and a new verify-deploy lint gate."
+    },
+    {
       "type": "report",
       "path": "specs/048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md",
-      "summary": "Re-measured inventory of raw `git commit -m` call sites across agent-system/extensions/ (103 files/161 occurrences), categorized into 5 legitimate exceptions and 98 real call sites tiered by migration priority (root-cause templates/docs first, then core commands/skills, then core process docs, then ~68 extension files), plus a lint design modeled on lint-state-writer-boundary.sh."
+      "summary": "Re-measured inventory of raw `git commit -m` call sites across agent-system/extensions/ (103 files/161 occurrences), 5 reasoned exceptions and 98 real call sites tiered by migration priority, plus a lint design modeled on lint-state-writer-boundary.sh."
     }
   ],
-  "findings_count": 98,
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f_48",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ],
+    "phase_count": 11,
+    "estimated_hours": 11.25,
+    "dependency_waves": [
+      [
+        1
+      ],
+      [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      [
+        10
+      ],
+      [
+        11
+      ]
+    ]
+  },
+  "phase_count": 11,
+  "estimated_hours": 11.25,
+  "dependency_waves": [
+    [
+      1
+    ],
+    [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    [
+      10
+    ],
+    [
+      11
+    ]
+  ],
+  "modified_files": [
+    "specs/048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md",
+    "specs/048_propagate_scoped_commit_to_all_call_sites/.orchestrator-handoff.json",
+    "specs/048_propagate_scoped_commit_to_all_call_sites/.return-meta.json"
+  ],
+  "next_steps": "Run /implement 48 to execute the plan",
   "memory_candidates": [
     {
       "content": "In this repo's agent-system/extensions/ source store, command/skill boilerplate patterns (e.g. git commit invocations) propagate almost entirely by copy-paste from context/templates/command-template.md and docs/templates/command-template.md, plus a small set of core 'how-to' reference docs (git-safety.md, wrap-up.md, checkpoint-commit.md, skill-git-workflow/SKILL.md). When fixing a systemic anti-pattern across many call sites, fix these root templates/docs FIRST -- every extension command/skill/agent sampled (founder, present, lean, web, filetypes, epidemiology, cslib, etc.) reproduced the identical anti-pattern shape, confirming copy-paste lineage rather than independent invention.",
       "category": "PATTERN",
       "source_artifact": "specs/048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md",
       "confidence": 0.85,
-      "suggested_keywords": ["source-store", "template-propagation", "copy-paste-drift", "command-template", "root-cause-fix"]
+      "suggested_keywords": [
+        "source-store",
+        "template-propagation",
+        "copy-paste-drift",
+        "command-template",
+        "root-cause-fix"
+      ]
     },
     {
       "content": "lint-state-writer-boundary.sh is the established two-layer design template for new 'detect a hand-rolled anti-pattern across the source store' lints in this repo: (1) a broad candidate regex over .md/.sh files narrowed by a structural line classifier, (2) a short, reason-carrying file-level allowlist (never bare paths) for legitimate exceptions including the lint's own path and its test fixture. New lints of this family (state-writer boundary, scoped-commit boundary, etc.) should be modeled on it and wired into verify-deploy.sh as a new numbered gate plus registered in manifest.json's lint array, using the same [SKIP]-if-not-source-store posture as sibling gates 6/7/9/11/12.",
       "category": "PATTERN",
       "source_artifact": "specs/048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lint-design", "verify-deploy-gate", "state-writer-boundary", "allowlist-pattern", "source-store-lint"]
+      "suggested_keywords": [
+        "lint-design",
+        "verify-deploy-gate",
+        "state-writer-boundary",
+        "allowlist-pattern",
+        "source-store-lint"
+      ]
+    },
+    {
+      "content": "Decomposition strategy for a source-store-wide anti-pattern migration (one shared mechanism exists; N hand-rolled call sites do not use it): shape the plan as root-cause-first with a wide parallel middle. Wave 1 is a single phase fixing ONLY the scaffold templates and canonical reference docs the anti-pattern was copy-pasted from -- it blocks everything else, so later phases crib the corrected pattern instead of propagating the broken one. Wave 2 fans out into territory-disjoint phases partitioned by directory ownership (one per large extension, batched for small ones), which are safely parallel because they share no files. Wave 3 is a single convergence phase that runs the acceptance grep, exercises one migrated path end-to-end with a real invocation, and writes the exemption record. Wave 4 adds the mechanical guardrail (lint + gate) LAST -- a lint added before migration fails on every pre-existing site and yields no signal. Each fan-out phase should re-derive its own file list from a live enumeration grep rather than a plan-time list, making mid-phase interruption self-correcting on resume.",
+      "category": "PATTERN",
+      "source_artifact": "specs/048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "migration-phasing",
+        "root-cause-first",
+        "parallel-waves",
+        "territory-partition",
+        "guardrail-last",
+        "enumeration-grep"
+      ]
     }
-  ],
-  "next_steps": "Run /plan 48 to create implementation plan",
-  "timestamp": "2026-09-01T23:59:59Z"
+  ]
 }

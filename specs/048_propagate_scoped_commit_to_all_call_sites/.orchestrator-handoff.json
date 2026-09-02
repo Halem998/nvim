@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "summary": "Created an 11-phase implementation plan (11.25h) migrating 98 raw `git commit -m` call sites in agent-system/extensions/ to git-commit-scoped.sh. Phase 1 fixes the copy-paste root cause (2 scaffold templates + 4 core reference docs) and blocks a wave of 8 territory-disjoint parallel migration phases; Phase 10 runs a real end-to-end commit plus the acceptance grep and writes the exemption record; Phase 11 adds lint-scoped-commit-boundary.sh, its test, manifest registration, and a new verify-deploy gate. Excludes the three deleted lifecycle command files and all task-lookup duplication sites.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md",
+      "summary": "11-phase scoped-commit call-site migration plan with dependency waves, per-phase verification tiers, and a post-migration lint gate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 11,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "next_action_hint": "Dispatch /implement 48 against plans/01_scoped-commit-call-site-migration.md; Phase 1 must land before the Wave 2 fan-out."
+}
