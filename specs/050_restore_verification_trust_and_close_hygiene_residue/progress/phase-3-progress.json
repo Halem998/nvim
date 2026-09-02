@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Quarantine literature-retrieve.sh and close the manifest-registration gap",
+  "started_at": "2026-09-02T02:00:00Z",
+  "last_updated": "2026-09-02T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm invocation-dead via grep for invocation forms", "status": "done", "files_touched": []},
+    {"id": 2, "description": "git mv literature-retrieve.sh to scripts/deprecated/", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deprecated/literature-retrieve.sh"]},
+    {"id": 3, "description": "Remove literature-retrieve.sh from provides.scripts; validate JSON", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Add three unregistered test scripts to provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Correct literature-organization.md stale live-mechanism description (3 references)", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 6, "description": "Confirm check-extension-docs.sh comment does not name a stale path (no change needed)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Append quarantine entry to scripts/deprecated/README.md", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deprecated/README.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -68,9 +68,21 @@ rather than hard-deleted, per the QUARANTINE-NEVER-DELETE posture (see
   Rule T in `check-extension-docs.sh` confirms Rule T was a deliberate migration target. Recorded
   here explicitly so a future audit does not need to rediscover the supersession.
 
+- **literature-retrieve.sh** - Deprecated by its own header ("superseded by
+  `literature-briefing.sh` ... Do not add new usages") since before this quarantine, but missed
+  the quarantine-never-delete process and remained declared in `manifest.json`
+  `provides.scripts` — deploying on every reload with zero automated callers. Superseded:
+  `literature-briefing.sh` (invoked via `literature-briefing-invoke.sh` from each importing
+  skill's Stage 4a block, per `context/patterns/lit-stage4a-flow.md`) is the current live `--lit`
+  injection mechanism. Confirmed invocation-dead before the move: the only remaining mentions
+  across `agent-system/extensions/` were a doc guide's prose (now corrected — see
+  `literature/context/guides/literature-organization.md`), a `check-extension-docs.sh` comment
+  naming it as an illustrative example, and a `scripts/lib/common.sh` comment listing it among
+  `common_repo_root`'s migrated consumers — none an invocation.
+
 ## Migration Status
 
-None of the eight scripts above is declared in `manifest.json` `provides.scripts`, and none is
+None of the nine scripts above is declared in `manifest.json` `provides.scripts`, and none is
 invoked by any active skill, agent, command, or hook. Every behavior they provided is either
 hand-implemented in `commands/todo.md`/`skills/skill-todo/SKILL.md` prose, or superseded by a
 differently-named live script.

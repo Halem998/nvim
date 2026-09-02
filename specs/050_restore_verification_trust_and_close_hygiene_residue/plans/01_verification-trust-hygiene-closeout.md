@@ -276,37 +276,37 @@ wording still holds but its evidence block must reflect the live census.
 
 ---
 
-### Phase 3: Quarantine `literature-retrieve.sh` and close the manifest-registration gap [NOT STARTED]
+### Phase 3: Quarantine `literature-retrieve.sh` and close the manifest-registration gap [COMPLETED]
 
 **Goal**: Put the deprecated script through the repository's established quarantine-never-delete
 convention, correct the one doc that still presents it as the live `--lit` mechanism, and register
 the three unregistered test scripts so the doc-lint gate goes green on this count.
 
 **Tasks**:
-- [ ] Before moving, re-confirm the script is invocation-dead: grep for invocation forms
+- [x] Before moving, re-confirm the script is invocation-dead: grep for invocation forms *(completed)*
       specifically (`bash .*literature-retrieve`, `\./.*literature-retrieve`,
       `literature-retrieve\.sh [^ ]`) across `agent-system/extensions/`, not just name mentions.
       The three known mentions are a doc guide, a `check-extension-docs.sh` comment, and a
       `lib/common.sh` comment — all prose, none an invocation.
-- [ ] `git mv agent-system/extensions/core/scripts/literature-retrieve.sh
+- [x] `git mv agent-system/extensions/core/scripts/literature-retrieve.sh *(completed)*
       agent-system/extensions/core/scripts/deprecated/` — move, never delete, matching the
       convention the existing quarantine population already follows.
-- [ ] Remove the `"literature-retrieve.sh",` line from `provides.scripts` in
+- [x] Remove the `"literature-retrieve.sh",` line from `provides.scripts` in *(completed)*
       `agent-system/extensions/core/manifest.json` so it stops deploying. Validate the JSON
       (`jq empty`) immediately after.
-- [ ] Add the three on-disk-but-unregistered test scripts to the same `provides.scripts` array:
+- [x] Add the three on-disk-but-unregistered test scripts to the same `provides.scripts` array: *(completed)*
       `scripts/test-state-write-large-payload.sh`, `scripts/tests/test-force-phases.sh`,
       `scripts/tests/test-roadmap-argv-ceiling.sh`. Match the surrounding entries' path-prefix
       convention exactly (inspect neighbouring entries before writing — do not assume).
-- [ ] Update `agent-system/extensions/literature/context/guides/literature-organization.md`: the
+- [x] Update `agent-system/extensions/literature/context/guides/literature-organization.md`: the *(completed)*
       flow description stating that the skill's preflight calls
       `literature-retrieve.sh <task_description> <task_type>` is stale — the current mechanism is
       `literature-briefing.sh`, per the Literature Mode contract and the Stage 4a flow file. Correct
       the flow description and the two other references that present the script as live.
-- [ ] Confirm `check-extension-docs.sh`'s comment that name-checks `literature-retrieve.sh` as a
+- [x] Confirm `check-extension-docs.sh`'s comment that name-checks `literature-retrieve.sh` as a *(completed)*
       legitimate cross-extension mention still resolves correctly against the new
       `scripts/deprecated/` location; adjust the comment if it names the old path.
-- [ ] Append a line to `agent-system/extensions/core/scripts/deprecated/README.md` recording the
+- [x] Append a line to `agent-system/extensions/core/scripts/deprecated/README.md` recording the *(completed)*
       new quarantine entry and its supersession reason, matching the existing entries' format.
 
 **Timing**: 1 hour

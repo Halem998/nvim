@@ -50,8 +50,10 @@ Long documents are chunked into section files inside a named subdirectory. The g
 `specs/literature/index.json` contains one entry per section, with `path` pointing to the
 section file (e.g., `Brastmckie_2024_BimodalLogic/sec02_syntax.md`).
 
-> **Note**: There is no per-book `index.json` inside subdirectories. The `literature-retrieve.sh`
-> script reads only the top-level `specs/literature/index.json`.
+> **Note**: There is no per-book `index.json` inside subdirectories — only the top-level
+> `specs/literature/index.json`. (The now-quarantined `literature-retrieve.sh`,
+> `scripts/deprecated/literature-retrieve.sh`, formerly read only this top-level file; see
+> "How --lit Injection Works" below for the current live mechanism.)
 
 ## Naming Conventions
 
@@ -99,7 +101,8 @@ the system falls back to a blind lexicographic scan.
 ### Entry fields
 
 All fields are written by `/literature --convert` and `/literature --index`. The first four
-fields are read by `literature-retrieve.sh`; the remaining fields are used by tooling and for
+fields were read by the now-quarantined `literature-retrieve.sh` (see "How --lit Injection
+Works" below for the current live mechanism); the remaining fields are used by tooling and for
 human reference.
 
 | Field | Type | Description |
@@ -192,19 +195,28 @@ Re-run this command after significant edits to keep `token_count` accurate.
 
 ### End-to-end flow
 
-1. User runs a command with `--lit` (e.g., `/research 703 --lit`).
-2. The skill's preflight calls `literature-retrieve.sh <task_description> <task_type>`.
-3. The script checks that `$PROJECT_ROOT/specs/literature/` exists. If not, it exits with
-   code 1 and the flag is silently ignored.
-4. If `index.json` exists and the task description is non-empty, the script runs
-   **Mode A: keyword scoring**.
-5. Otherwise, the script runs **Mode B: fallback scan**.
-6. The script writes a `<literature-context>` XML block to stdout.
-7. The skill injects this block into the agent prompt after `<memory-context>` (if any) and
-   before the task-specific instructions.
-8. If the script produces no output (empty stdout or exit 1), `--lit` has no effect.
+The current live mechanism is `literature-briefing.sh` (invoked via
+`literature-briefing-invoke.sh`), driven by each importing skill's Stage 4a block. The full
+resolver-directive branching (`LIT_DISABLED`, `GLOBAL_MISSING`, `SUBINDEX_PRESENT`,
+`AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`, `PROMPT_NEEDED`, the four interactive sub-index
+setup options, sparse-coverage re-prompting, and the `orchestrator_mode` dual-consumer contract)
+is canonically defined in `context/patterns/lit-stage4a-flow.md` — the single executable Stage 4a
+block that `skill-researcher`, `skill-planner`, `skill-implementer`, and their `-hard` variants
+all import directly and execute verbatim. Read that file for the full mechanics; this section is
+a pointer, not a second copy. At a high level: the resolved flow calls
+`literature-briefing.sh`/`literature-briefing-invoke.sh` (never `literature-retrieve.sh`, which
+is quarantined — see below), which resolves metadata from `specs/literature-index.json` (the
+per-repo sub-index) and the global `Literature/` repository's `index.json`, and writes a
+`<literature-briefing>` block into the agent prompt — never an empty block when nothing was
+found (see that file's "Non-Silence Invariant").
 
-### Mode A: keyword-scored injection
+### Mode A: keyword-scored injection (historical — describes the quarantined script)
+
+**This subsection and Mode B below describe `literature-retrieve.sh`'s internal algorithm.**
+That script is quarantined (`scripts/deprecated/literature-retrieve.sh`, removed from
+`manifest.json` `provides.scripts`, zero live callers) and superseded by `literature-briefing.sh`
+per the End-to-end flow above. Retained here for historical reference only — do not treat as a
+description of current `--lit` behavior.
 
 **Step 1 -- Keyword extraction**: The script combines the task description and task type,
 lowercases, strips stop words, filters to tokens longer than 3 characters, deduplicates, and
