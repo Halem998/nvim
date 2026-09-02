@@ -31,7 +31,7 @@ next_project_number: 142
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-121 [PLANNED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+121 [IMPLEMENTING] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
 125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
@@ -768,7 +768,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 121. Delete hard mode lifecycle files
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 120, Task 128

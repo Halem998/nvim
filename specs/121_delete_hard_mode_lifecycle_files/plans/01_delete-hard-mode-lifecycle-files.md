@@ -1,7 +1,7 @@
 # Implementation Plan: Task #121
 
 - **Task**: 121 - Delete hard mode lifecycle files
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.25 hours
 - **Dependencies**: 118, 119, 120, 128 (all completed); 124 (completed — see Precondition Re-Verification)
 - **Research Inputs**: specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md
@@ -136,34 +136,42 @@ no shared edit territory.
 
 ---
 
-### Phase 1: Re-verify precondition and freeze the reference baseline [NOT STARTED]
+### Phase 1: Re-verify precondition and freeze the reference baseline [COMPLETED]
 
 **Goal**: Convert the research report's stale blocking verdict into a current, recorded
 determination, and capture the exact pre-change state of every gate this task can break — so that
 any red in Phase 8 is attributable rather than ambiguous.
 
 **Tasks**:
-- [ ] Confirm `agent-system/extensions/core/commands/` contains no `research.md`, `plan.md`, or
+- [x] Confirm `agent-system/extensions/core/commands/` contains no `research.md`, `plan.md`, or
       `implement.md`, and that task 124 reads `completed` in `specs/state.json`. If either is
       false, STOP and report blocked — the research report's §4 objection is live again.
-- [ ] Confirm the `<hard-mode-contracts>` injection block is present in
-      `skill-orchestrate/SKILL.md` Stage 3.5 Dispatch Prep (report §1).
-- [ ] Confirm the `hard_mode`-gated H1/H4/H5/H6 branches are present in
-      `skill-orchestrate/SKILL.md` (report §2).
-- [ ] Confirm all seven deletion targets still exist on disk, and record each one's line count.
-- [ ] Confirm cslib's and lean's own `-hard` skills and agents exist on disk (the four cslib and
-      four lean assets named in the Scoping Deviation) — these must survive.
-- [ ] Write the reference census to
+      *(completed: confirmed absent; task 124 status = completed)*
+- [x] Confirm the `<hard-mode-contracts>` injection block is present in
+      `skill-orchestrate/SKILL.md` Stage 3.5 Dispatch Prep (report §1). *(completed: present at
+      lines 882-944)*
+- [x] Confirm the `hard_mode`-gated H1/H4/H5/H6 branches are present in
+      `skill-orchestrate/SKILL.md` (report §2). *(completed: all four present — H1 Stage 4/1679,
+      H4 Stage 4/1413+1549, H5/H6 Stage 5b/2626)*
+- [x] Confirm all seven deletion targets still exist on disk, and record each one's line count.
+      *(completed: 1833/275/462/507/332/334/545 lines respectively)*
+- [x] Confirm cslib's and lean's own `-hard` skills and agents exist on disk (the four cslib and
+      four lean assets named in the Scoping Deviation) — these must survive. *(completed: all 8
+      present)*
+- [x] Write the reference census to
       `specs/121_delete_hard_mode_lifecycle_files/.reference-census-before.txt`: the full
       `grep -rn -E` output over `agent-system/` for the seven names, plus a per-file count table.
-- [ ] Run and record the pre-change result (pass/fail counts, not just exit code) of:
+      *(completed: 359 occurrences / 60 files, matches Scope Hypothesis)*
+- [x] Run and record the pre-change result (pass/fail counts, not just exit code) of:
       `scripts/lint/lint-contract-compliance.sh`, `scripts/lint/lint-agent-contracts.sh`,
       `scripts/lint/lint-task-lookup-adoption.sh`, `scripts/lint/lint-routing-wiring.sh`,
       `scripts/check-extension-docs.sh`, `scripts/tests/test-routing-resolution.sh`,
       `scripts/tests/test-resume-scan-nonconformance.sh`,
       `scripts/tests/test-loop-guard-budget-override.sh`,
       `scripts/tests/test-index-entries-schema.sh`, `scripts/test-session-runtime-files.sh`.
-      Store as `.gate-baseline-before.txt` in the task directory.
+      Store as `.gate-baseline-before.txt` in the task directory. *(completed: all 10 gates green;
+      one pre-existing unrelated failure in the `literature` extension noted, not a deletion
+      target)*
 
 **Timing**: 0.75 hours
 

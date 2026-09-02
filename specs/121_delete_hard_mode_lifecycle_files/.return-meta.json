@@ -1,33 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md",
-      "summary": "8-phase plan to delete the four core -hard skills and three -hard agents, perform entry-level manifest routing surgery, and drive 359 references across 60 files to zero."
-    }
-  ],
-  "next_steps": "Run /implement 121 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788357501_0d2431_121",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 121,
-    "phase_count": 8,
-    "estimated_hours": 11.25,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task is chartered as 'pure deletion with zero rewiring' of system files, the charter's own file ledger is a lower bound, not the scope. Measure the real surface first with a repo-wide census of every deleted basename, then partition hits into three classes: (1) executable gates that hard-require the path (lint/test scripts with hardcoded path arrays) -- these must be retargeted BEFORE deletion or the suite goes red and post-deletion failures become unattributable; (2) structurally coupled declarations (manifest routing blocks, index-entries load_when.agents[] arrays) -- these must land in the SAME atomic commit as the deletion, because cross-validating lints fail on either half alone; (3) prose/comment citations -- safely deferred to a post-deletion sweep. Also: a charter directive to remove a whole config block wholesale is often wrong when the block is shared -- check whether each entry actually names a deleted asset before removing siblings that name live ones.",
-      "category": "PATTERN",
-      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deletion-task", "reference-census", "atomic-batch", "manifest-routing", "lint-retargeting", "scope-underestimation"]
-    }
-  ],
-  "modified_files": [
-    "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md"
-  ]
+    "session_id": "sess_1788364293_dfc521",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

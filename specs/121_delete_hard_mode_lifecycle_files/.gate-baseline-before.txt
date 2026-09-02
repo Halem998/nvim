@@ -1,0 +1,770 @@
+=== lint-contract-compliance ===
+========================================
+Contract Compliance Lint
+========================================
+Project root: /home/benjamin/.config/nvim
+
+--- Check A: Hard agent contract @-references ---
+[0;32m[PASS][0m general-research-hard-agent: references anti-analysis contract
+[0;32m[PASS][0m general-research-hard-agent: references reference-grounding contract
+[0;32m[PASS][0m planner-hard-agent: references reference-grounding contract
+[0;32m[PASS][0m general-implementation-hard-agent: references anti-analysis contract
+[0;32m[PASS][0m general-implementation-hard-agent: references wrap-up contract
+[0;32m[PASS][0m general-implementation-hard-agent: references territory contract
+
+--- Check B: Contract file existence and H-technique identifiers ---
+[0;32m[PASS][0m contracts/convergence.md: contains H6 identifier
+[0;32m[PASS][0m contracts/reference-grounding.md: contains H3 identifier
+[0;32m[PASS][0m contracts/territory.md: contains H7 identifier
+[0;32m[PASS][0m contracts/wrap-up.md: contains H9 identifier
+[0;32m[PASS][0m contracts/anti-analysis.md: contains H2 identifier
+
+--- Check C: Hard skill -> hard agent dispatch wiring ---
+[0;32m[PASS][0m skill-researcher-hard -> general-research-hard-agent (wired)
+[0;32m[PASS][0m skill-planner-hard -> planner-hard-agent (wired)
+[0;32m[PASS][0m skill-implementer-hard -> general-implementation-hard-agent (wired)
+[0;32m[PASS][0m skill-orchestrate: SKILL.md exists
+
+--- Check D: Convergence policing fields in skill-orchestrate ---
+[0;32m[PASS][0m skill-orchestrate: contains 'total_churn' churn field
+[0;32m[PASS][0m skill-orchestrate: contains 'target_churn' churn field
+[0;32m[PASS][0m skill-orchestrate: contains 'adversarial_triggers' churn field
+
+--- Check E: H2 vocabulary in general-implementation-hard-agent ---
+[0;32m[PASS][0m general-implementation-hard-agent: contains 'Forbidden Conclusions' H2 term
+[0;32m[PASS][0m general-implementation-hard-agent: contains 'Defect Bar' H2 term
+[0;32m[PASS][0m general-implementation-hard-agent: contains 'settled-design' H2 term
+
+--- Check F: index-entries.json contract coverage for hard agents ---
+[0;32m[PASS][0m index-entries.json: general-research-hard-agent has 10 context entries
+[0;32m[PASS][0m index-entries.json: planner-hard-agent has 8 context entries
+[0;32m[PASS][0m index-entries.json: general-implementation-hard-agent has 27 context entries
+
+========================================
+Summary
+========================================
+Passed:   [0;32m24[0m
+Warnings: [1;33m0[0m
+Failed:   [0;31m0[0m
+
+[0;32mCONTRACT COMPLIANCE LINT PASSED[0m
+[exit 0]
+
+=== lint-agent-contracts ===
+========================================
+Agent Contracts Lint
+========================================
+Repo root:   /home/benjamin/.config/nvim
+Agents root: /home/benjamin/.config/nvim/agent-system/extensions
+
+--- Check A: Frontmatter key validity ---
+[0;32m[PASS][0m Check A: scanned all dispatchable agents for invalid/unknown frontmatter keys
+
+--- Check B: model presence and validity ---
+[0;32m[PASS][0m Check B: scanned all dispatchable agents for model: presence and validity
+
+--- Check C: no-task-references bullet presence ---
+[0;32m[PASS][0m core/agents/general-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m core/agents/general-implementation-hard-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m cslib/agents/cslib-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m cslib/agents/cslib-implementation-hard-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m cslib/agents/pr-review-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m email/agents/email-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m epidemiology/agents/epi-implement-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m founder/agents/founder-implement-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m latex/agents/latex-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m lean/agents/lean-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m lean/agents/lean-implementation-hard-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m nix/agents/nix-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m nvim/agents/neovim-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m python/agents/python-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m typst/agents/typst-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m web/agents/web-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m z3/agents/z3-implementation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m core/agents/planner-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m core/agents/planner-hard-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m core/agents/reviser-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m core/agents/meta-builder-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/document-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/docx-edit-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/filetypes-spreadsheet-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/presentation-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/scrape-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m filetypes/agents/sheet-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m founder/agents/deck-builder-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m founder/agents/meeting-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m present/agents/pptx-assembly-agent.md: carries the no-task-references bullet
+[0;32m[PASS][0m present/agents/slidev-assembly-agent.md: carries the no-task-references bullet
+
+--- Check F: return-meta artifacts template presence ---
+[0;32m[PASS][0m agent-system/extensions/core/agents/general-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/general-implementation-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/general-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/general-research-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/meta-builder-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/planner-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/planner-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/reviser-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/core/agents/spawn-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/cslib-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/cslib-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/cslib-research-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/cslib-vet-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/pr-review-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/cslib/agents/pr-review-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/email/agents/email-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/agents/epi-implement-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/agents/epi-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/document-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/docx-edit-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/filetypes-router-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/presentation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/scrape-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/filetypes/agents/sheet-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/formal/agents/formal-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/formal/agents/logic-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/formal/agents/math-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/formal/agents/physics-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/analyze-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/deck-builder-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/deck-planner-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/deck-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/finance-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/financial-analysis-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/founder-implement-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/founder-plan-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/founder-spreadsheet-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/legal-analysis-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/legal-council-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/market-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/meeting-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/project-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/founder/agents/strategy-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/latex/agents/latex-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/latex/agents/latex-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/lean/agents/lean-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/lean/agents/lean-implementation-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/lean/agents/lean-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/lean/agents/lean-research-hard-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/nix/agents/nix-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/nix/agents/nix-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/nvim/agents/neovim-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/nvim/agents/neovim-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/budget-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/funds-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/grant-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/pptx-assembly-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/slide-critic-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/slide-planner-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/slides-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/slidev-assembly-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/present/agents/timeline-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/python/agents/python-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/python/agents/python-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/typst/agents/typst-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/typst/agents/typst-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/web/agents/web-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/web/agents/web-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/z3/agents/z3-implementation-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m agent-system/extensions/z3/agents/z3-research-agent.md: carries an object-shaped artifacts template (keys: artifacts path summary type)
+[0;32m[PASS][0m Check F: scanned all dispatchable agents for the return-meta artifacts template
+
+========================================
+Summary
+========================================
+Passed:   [0;32m106[0m
+Warnings: [1;33m0[0m
+Failed:   [0;31m0[0m
+
+[0;32mAGENT CONTRACTS LINT PASSED[0m
+[exit 0]
+
+=== lint-task-lookup-adoption ===
+Checking task-lookup adoption boundary compliance...
+Scan root: /home/benjamin/.config/nvim/agent-system/extensions (mode: source-store)
+
+
+================================
+Task-Lookup Adoption Check Summary
+================================
+Files checked: 349
+Candidate lines scanned: 329
+Candidate lines exempted: 329
+Total violations: 0
+[0;32mNo unexcused hand-rolled task-lookup shapes found.[0m
+[exit 0]
+
+=== lint-routing-wiring ===
+========================================
+Routing Wiring Lint
+========================================
+Repo root:  /home/benjamin/.config/nvim
+Ext root:   /home/benjamin/.config/nvim/agent-system/extensions
+
+--- Check A: routing.{op} keys have routing_agents.{op} counterparts ---
+--- Check C: routing_hard.{op} keys have routing_agents_hard.{op} counterparts ---
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.research.general has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.research.markdown has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.research.meta has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.plan.general has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.plan.markdown has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.plan.meta has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.implement.general has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.implement.markdown has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_hard.implement.meta has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.research.cslib has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.research.pr has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.plan.cslib has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.plan.pr has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.implement.cslib has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing.implement.pr has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.research.cslib has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.research.pr has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.plan.cslib has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.plan.pr has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.implement.cslib has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_hard.implement.pr has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing.research.email has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing.plan.email has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing.implement.email has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.research.epi has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.research.epi:study has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.research.epidemiology has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.plan.epi has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.plan.epi:study has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.plan.epidemiology has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.implement.epi has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.implement.epi:study has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing.implement.epidemiology has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:document has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:docx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:presentation has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:scrape has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:spreadsheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.research.filetypes:xlsx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:document has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:docx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:presentation has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:scrape has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:spreadsheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.plan.filetypes:xlsx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:document has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:docx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:presentation has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:scrape has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:spreadsheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing.implement.filetypes:xlsx has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.research.formal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.research.formal:logic has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.research.formal:math has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.research.formal:physics has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.plan.formal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.plan.formal:logic has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.plan.formal:math has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.plan.formal:physics has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.implement.formal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.implement.formal:logic has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.implement.formal:math has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing.implement.formal:physics has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:analyze has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:consult has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:deck has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:finance has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:financial-analysis has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:legal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:market has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:meeting has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:project has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:sheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.research.founder:strategy has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:analyze has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:consult has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:deck has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:finance has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:financial-analysis has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:legal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:market has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:meeting has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:project has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:sheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.plan.founder:strategy has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:analyze has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:consult has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:deck has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:finance has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:financial-analysis has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:legal has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:market has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:meeting has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:project has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:sheet has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing.implement.founder:strategy has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing.research.latex has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing.plan.latex has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing.implement.latex has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.research.lean4 has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.research.lean4:lake has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.research.lean4:version has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.plan.lean4 has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.plan.lean4:lake has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.plan.lean4:version has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.implement.lean4 has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.implement.lean4:lake has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing.implement.lean4:version has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_hard.research.lean4 has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_hard.implement.lean4 has a routing_agents_hard counterpart
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing.research.memory has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing.plan.memory has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing.implement.memory has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing.research.nix has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing.plan.nix has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing.implement.nix has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing.research.neovim has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing.plan.neovim has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing.implement.neovim has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present:budget has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present:funds has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present:grant has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present:slides has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.research.present:timeline has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present:budget has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present:funds has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present:grant has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present:slides has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.present:timeline has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.plan.slides has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present:budget has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present:funds has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present:grant has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present:slides has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.implement.present:timeline has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing.critique.present:slides has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing.research.python has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing.plan.python has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing.implement.python has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing.research.typst has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing.plan.typst has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing.implement.typst has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing.research.web has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing.plan.web has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing.implement.web has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing.research.z3 has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing.plan.z3 has a routing_agents counterpart
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing.implement.z3 has a routing_agents counterpart
+
+--- Check B: every routing_agents/routing_agents_hard value names an existing agent file ---
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.research.general = general-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.research.meta = general-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.research.markdown = general-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.plan.general = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.plan.meta = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.plan.markdown = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.implement.general = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.implement.meta = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents.implement.markdown = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.research.general = general-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.research.meta = general-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.research.markdown = general-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.plan.general = planner-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.plan.meta = planner-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.plan.markdown = planner-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.implement.general = general-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.implement.meta = general-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/core/manifest.json: routing_agents_hard.implement.markdown = general-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.research.cslib = cslib-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.research.pr = pr-review-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.plan.cslib = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.plan.pr = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.implement.cslib = cslib-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents.implement.pr = pr-review-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.research.cslib = cslib-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.research.pr = general-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.plan.cslib = planner-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.plan.pr = planner-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.implement.cslib = cslib-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/cslib/manifest.json: routing_agents_hard.implement.pr = general-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing_agents.research.email = general-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing_agents.plan.email = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/email/manifest.json: routing_agents.implement.email = email-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.research.epi = epi-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.research.epi:study = epi-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.research.epidemiology = epi-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.plan.epi = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.plan.epi:study = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.plan.epidemiology = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.implement.epi = epi-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.implement.epi:study = epi-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/epidemiology/manifest.json: routing_agents.implement.epidemiology = epi-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes = filetypes-router-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:document = filetypes-router-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:spreadsheet = filetypes-spreadsheet-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:presentation = presentation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:scrape = scrape-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:docx = docx-edit-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.research.filetypes:xlsx = sheet-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:document = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:spreadsheet = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:presentation = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:scrape = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:docx = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.plan.filetypes:xlsx = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes = filetypes-router-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:document = filetypes-router-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:spreadsheet = filetypes-spreadsheet-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:presentation = presentation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:scrape = scrape-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:docx = docx-edit-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/filetypes/manifest.json: routing_agents.implement.filetypes:xlsx = sheet-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.research.formal = formal-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.research.formal:logic = logic-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.research.formal:math = math-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.research.formal:physics = physics-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.plan.formal = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.plan.formal:logic = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.plan.formal:math = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.plan.formal:physics = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:logic = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:math = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:physics = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder = market-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:market = market-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:analyze = analyze-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:strategy = strategy-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:legal = legal-council-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:project = project-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:sheet = founder-spreadsheet-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:finance = finance-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:financial-analysis = financial-analysis-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:deck = deck-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:meeting = meeting-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.research.founder:consult = legal-analysis-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:market = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:analyze = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:strategy = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:legal = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:project = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:sheet = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:finance = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:financial-analysis = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:deck = deck-planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:meeting = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.plan.founder:consult = founder-plan-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:market = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:analyze = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:strategy = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:legal = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:project = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:sheet = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:finance = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:financial-analysis = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:deck = deck-builder-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:meeting = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/founder/manifest.json: routing_agents.implement.founder:consult = founder-implement-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing_agents.research.latex = latex-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing_agents.plan.latex = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/latex/manifest.json: routing_agents.implement.latex = latex-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.research.lean4 = lean-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.research.lean4:lake = lean-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.research.lean4:version = lean-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.plan.lean4 = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.plan.lean4:lake = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.plan.lean4:version = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.implement.lean4 = lean-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.implement.lean4:lake = lean-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents.implement.lean4:version = lean-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents_hard.research.lean4 = lean-research-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/lean/manifest.json: routing_agents_hard.implement.lean4 = lean-implementation-hard-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing_agents.research.memory = general-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing_agents.plan.memory = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/memory/manifest.json: routing_agents.implement.memory = general-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing_agents.research.nix = nix-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing_agents.plan.nix = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nix/manifest.json: routing_agents.implement.nix = nix-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing_agents.research.neovim = neovim-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing_agents.plan.neovim = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/nvim/manifest.json: routing_agents.implement.neovim = neovim-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present = grant-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present:grant = grant-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present:budget = budget-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present:timeline = timeline-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present:funds = funds-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.research.present:slides = slides-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present:grant = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present:budget = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present:timeline = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present:funds = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.present:slides = slide-planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.plan.slides = slide-planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present = grant-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present:grant = grant-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present:budget = budget-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present:timeline = timeline-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present:funds = funds-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.implement.present:slides = slidev-assembly-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/present/manifest.json: routing_agents.critique.present:slides = slide-critic-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing_agents.research.python = python-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing_agents.plan.python = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/python/manifest.json: routing_agents.implement.python = python-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing_agents.research.typst = typst-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing_agents.plan.typst = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/typst/manifest.json: routing_agents.implement.typst = typst-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing_agents.research.web = web-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing_agents.plan.web = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/web/manifest.json: routing_agents.implement.web = web-implementation-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing_agents.research.z3 = z3-research-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing_agents.plan.z3 = planner-agent (agent file exists)
+[0;32m[PASS][0m agent-system/extensions/z3/manifest.json: routing_agents.implement.z3 = z3-implementation-agent (agent file exists)
+
+--- Check D (report only): (op, task_type) pairs declared to a general-* agent ---
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.research.general = general-research-agent
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.research.meta = general-research-agent
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.research.markdown = general-research-agent
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.implement.general = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.implement.meta = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/core/manifest.json: routing_agents.implement.markdown = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/email/manifest.json: routing_agents.research.email = general-research-agent
+[1;33m[REPORT][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:logic = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:math = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/formal/manifest.json: routing_agents.implement.formal:physics = general-implementation-agent
+[1;33m[REPORT][0m agent-system/extensions/memory/manifest.json: routing_agents.research.memory = general-research-agent
+[1;33m[REPORT][0m agent-system/extensions/memory/manifest.json: routing_agents.implement.memory = general-implementation-agent
+
+========================================
+Summary
+========================================
+Passed:   [0;32m323[0m
+Failed:   [0;31m0[0m
+
+[0;32mROUTING WIRING LINT PASSED[0m
+[exit 0]
+
+=== check-extension-docs ===
+ERROR: check-extension-docs.sh must run from a deployed scripts/ tree (.claude/scripts/ or
+       .opencode/scripts/), not '/home/benjamin/.config/nvim/agent-system/extensions/core/scripts'.
+       This looks like the agent-system source store, where '../..' resolves to a
+       bogus repo root. Deploy first via <leader>al ('Reload All' / 'Regenerate') or
+       'bash scripts/deploy-headless.sh', then run the deployed copy.
+[exit 1]
+
+=== test-routing-resolution ===
+[INFO] Matrix: 140 standard (op, task_type) pairs, 17 hard (op, task_type) pairs
+[PASS] matrix size (140) matches an independent jq count of declared routing pairs
+
+--- Assert 1: skill resolution ---
+[PASS] Assert 1: all 140 standard + 17 hard pairs resolve to their manifest's declared skill
+[PASS] hard-mode research/general resolves skill-researcher-hard
+[PASS] hard-mode research/meta resolves skill-researcher-hard
+[PASS] hard-mode research/markdown resolves skill-researcher-hard
+[PASS] hard-mode plan/general resolves skill-planner-hard
+[PASS] hard-mode plan/meta resolves skill-planner-hard
+[PASS] hard-mode plan/markdown resolves skill-planner-hard
+[PASS] hard-mode implement/general resolves skill-implementer-hard
+[PASS] hard-mode implement/meta resolves skill-implementer-hard
+[PASS] hard-mode implement/markdown resolves skill-implementer-hard
+
+--- Assert 2: agent existence ---
+[PASS] Assert 2: all 166 routing_agents/routing_agents_hard declarations name an existing agent file
+
+--- Assert 3: intra-file branch coverage ---
+[PASS] Assert 3 (structural): skill-orchestrate (5) invokes command-route-agent.sh at least 3 times (research/plan/implement, Stage 1b)
+[PASS] Assert 3 (structural): no case-table or sed-derivation pattern remains in skill-orchestrate/SKILL.md
+[PASS] Assert 3 (branch-aware): H1 branch heading and base branch heading each occur exactly once
+[PASS] Assert 3 (branch-aware): H1 hard branch dispatches $IMPLEMENT_AGENT
+[PASS] Assert 3 (branch-aware): base branch dispatches $IMPLEMENT_AGENT
+[PASS] Assert 3 (semantic): neovim has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent (neovim-research-agent, via=hard-miss-standard-fallback), not the caller's generic hard default
+[PASS] Assert 3 (semantic): nix has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent (nix-research-agent, via=hard-miss-standard-fallback), not the caller's generic hard default
+[PASS] Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-hard-agent) -- the true total-miss rung
+[PASS] Assert 3 (semantic): lean4 standard (lean-research-agent) and hard (lean-research-hard-agent) resolve to distinct, correctly-declared agents
+
+--- Assert 4: precedence direction (synthetic fixture) ---
+[PASS] Assert 4: non-core manifest wins over core manifest for an identical (op, task_type) key (via=noncore-exact)
+
+========================================
+Summary
+========================================
+Passed: 22
+Failed: 0
+ROUTING RESOLUTION TEST PASSED
+[exit 0]
+
+=== test-resume-scan-nonconformance ===
+[PASS] Site B: extracted sentinel region is bash -n clean
+[PASS] Site A: extracted sentinel region is bash -n clean
+[PASS] Site C: extracted sentinel region is bash -n clean
+[INFO] Fixture A: '### Phase 4C' heading is at line 7
+[PASS] Site B (skill-implementer-hard): Fixture A stderr names the non-conforming '4C' heading
+[PASS] Site B (skill-implementer-hard): Fixture A stderr carries the fixture line number (7) of the 4C heading
+[PASS] Site B (skill-implementer-hard): Fixture A phase_scan_inconclusive is true
+[PASS] Site B (skill-implementer-hard): Fixture A result variable (next_phase) is empty
+[PASS] Site B (skill-implementer-hard): Fixture A result variable is specifically NOT '5'
+[PASS] Site A (skill-orchestrate): Fixture A stderr names the non-conforming '4C' heading
+[PASS] Site A (skill-orchestrate): Fixture A stderr carries the fixture line number (7) of the 4C heading
+[PASS] Site A (skill-orchestrate): Fixture A phase_scan_inconclusive is true
+[PASS] Site A (skill-orchestrate): Fixture A result variable (next_phase) is empty
+[PASS] Site A (skill-orchestrate): Fixture A result variable is specifically NOT '5'
+[PASS] Site C (skill-lean-implementation-hard): Fixture A stderr names the non-conforming '4C' heading
+[PASS] Site C (skill-lean-implementation-hard): Fixture A stderr carries the fixture line number (7) of the 4C heading
+[PASS] Site C (skill-lean-implementation-hard): Fixture A phase_scan_inconclusive is true
+[PASS] Site C (skill-lean-implementation-hard): Fixture A result variable (phase_number) is empty
+[PASS] Site C (skill-lean-implementation-hard): Fixture A result variable is specifically NOT '5'
+[PASS] Site B (skill-implementer-hard): Fixture B (happy path) resolves next_phase=2
+[PASS] Site B (skill-implementer-hard): Fixture B phase_scan_inconclusive is false
+[PASS] Site B (skill-implementer-hard): Fixture B stderr is empty (no-behavior-change on the happy path)
+[PASS] Site A (skill-orchestrate): Fixture B (happy path) resolves next_phase=2
+[PASS] Site A (skill-orchestrate): Fixture B phase_scan_inconclusive is false
+[PASS] Site A (skill-orchestrate): Fixture B stderr is empty (no-behavior-change on the happy path)
+[PASS] Site C (skill-lean-implementation-hard): Fixture B (happy path) resolves phase_number=2
+[PASS] Site C (skill-lean-implementation-hard): Fixture B phase_scan_inconclusive is false
+[PASS] Site C (skill-lean-implementation-hard): Fixture B stderr is empty (no-behavior-change on the happy path)
+[PASS] Site B (skill-implementer-hard): Fixture C (decimal sub-phase) resolves next_phase=3.1
+[PASS] Site A (skill-orchestrate): Fixture C (decimal sub-phase) resolves next_phase=3.1
+[PASS] Site C (skill-lean-implementation-hard): Fixture C (decimal sub-phase) resolves phase_number=3.1
+[PASS] Site B: phase_scan_inconclusive guard (line 182) precedes the cascade's first elif (line 189)
+[PASS] Site B: posture branch contains 'exit 1'
+[PASS] Site A: branch order is phase_scan_inconclusive (1743) < next_phase (1748) < last_skeleton (1876)
+[PASS] Site A: posture branch body contains 'EXIT (partial'
+[PASS] Site A: posture branch body contains neither 'exit 1' nor 'loop_guard_file' nor 'update-task-status.sh'
+[PASS] Site C: posture branch guarded by phase_scan_inconclusive contains 'return error'
+[PASS] Repo-wide: zero occurrences of the racy `nonconforming_phase_headings | grep -q` invocation form under agent-system/extensions/
+[PASS] Site D (update-task-status.sh): bash -n clean
+[PASS] Site D: first_phase_heading auto-advance convenience and its guard were fully deleted -- update_plan_file() writes no per-phase marker on any path
+
+Results: 39 passed, 0 failed
+[exit 0]
+
+=== test-loop-guard-budget-override ===
+[PASS] Exactly one 'budget-continuation-override:begin' marker in skills/SKILL.md
+[PASS] Extracted region is bash -n clean
+[PASS] case1-flag-absent (hard_mode=false): subshell exits 1 (refuses immediately)
+[PASS] case1-flag-absent (hard_mode=false): stderr names the --continue-budget resume command
+[PASS] case1-flag-absent (hard_mode=false): guard left in place, cycle_count unchanged
+[PASS] case2-flag-present (hard_mode=false): subshell exits 0 (continues to resume read)
+[PASS] case2-flag-present (hard_mode=false): exactly one exhausted-guard archive created
+[PASS] case2-flag-present (hard_mode=false): reinitialized guard has cycle_count=0
+[PASS] case2-flag-present (hard_mode=false): dispatch_seq_counter preserved (7), never reset
+[PASS] case2-flag-present (hard_mode=false): detected_defects preserved
+[PASS] case2-flag-present (hard_mode=false): stderr names BUDGET EXHAUSTED and the authorizing flag
+[PASS] case2-flag-present (hard_mode=false): no hard-mode burnout echo under hard_mode=false
+[PASS] case3-below-budget-flag-present (hard_mode=false): subshell exits 0
+[PASS] case3-below-budget-flag-present (hard_mode=false): no archive created (flag inert below budget)
+[PASS] case3-below-budget-flag-present (hard_mode=false): cycle_count untouched (2)
+[PASS] case4-session-id-mismatch (hard_mode=false): subshell exits 0
+[PASS] case4-session-id-mismatch (hard_mode=false): INFO log present, never a gate
+[PASS] case4-session-id-mismatch (hard_mode=false): guard untouched despite session_id mismatch
+[PASS] case1-flag-absent (hard_mode=true): subshell exits 1 (refuses immediately)
+[PASS] case1-flag-absent (hard_mode=true): stderr names the --continue-budget resume command
+[PASS] case1-flag-absent (hard_mode=true): guard left in place, cycle_count unchanged
+[PASS] case2-flag-present (hard_mode=true): subshell exits 0 (continues to resume read)
+[PASS] case2-flag-present (hard_mode=true): exactly one exhausted-guard archive created
+[PASS] case2-flag-present (hard_mode=true): reinitialized guard has cycle_count=0
+[PASS] case2-flag-present (hard_mode=true): dispatch_seq_counter preserved (7), never reset
+[PASS] case2-flag-present (hard_mode=true): detected_defects preserved
+[PASS] case2-flag-present (hard_mode=true): stderr names BUDGET EXHAUSTED and the authorizing flag
+[PASS] case2-flag-present (hard_mode=true): hard-mode burnout echo present
+[PASS] case3-below-budget-flag-present (hard_mode=true): subshell exits 0
+[PASS] case3-below-budget-flag-present (hard_mode=true): no archive created (flag inert below budget)
+[PASS] case3-below-budget-flag-present (hard_mode=true): cycle_count untouched (2)
+[PASS] case4-session-id-mismatch (hard_mode=true): subshell exits 0
+[PASS] case4-session-id-mismatch (hard_mode=true): INFO log present, never a gate
+[PASS] case4-session-id-mismatch (hard_mode=true): guard untouched despite session_id mismatch
+[PASS] skill-orchestrate/SKILL.md Stage 7 MAX_CYCLES message names --continue-budget
+[PASS] test-session-runtime-files.sh passes (Case 3 included)
+
+Results: 36 passed, 0 failed
+[exit 0]
+
+=== test-index-entries-schema ===
+[PASS] Rule T fires on a present 'description' key
+[PASS] Rule T fires on a present 'tags' key
+[PASS] Rule T fires on a present load_when.languages key
+[PASS] Rule T fires on a missing line_count key
+[PASS] Rule T fires on a domain value outside the enum
+[PASS] Rule T stays silent on the fully conformant entry
+[PASS] Rule U fires on a 61-line EXTENSION.md
+[PASS] Rule U stays silent on a 60-line EXTENSION.md
+Checking .claude/extensions/ documentation...
+
+[fixture]
+  FAIL: Rule R: index-entries.json entry 'domain/missing-line-count.md' has no source file at context/domain/missing-line-count.md
+  FAIL: Rule T: index-entries.json entry 'domain/has-description.md' has forbidden key 'description' (fold its detail into 'summary')
+  FAIL: Rule T: index-entries.json entry 'domain/has-tags.md' has forbidden key 'tags' (use 'keywords' instead)
+  FAIL: Rule T: index-entries.json entry 'domain/has-languages.md' has forbidden load_when key 'languages' (allowed: agents, commands, task_types, always)
+  FAIL: Rule T: index-entries.json entry 'domain/missing-line-count.md' is missing the line_count key
+  FAIL: Rule T: index-entries.json entry 'domain/bad-domain.md' has domain 'not-a-real-domain' outside the enum (core, project, system)
+  FAIL: Rule U: EXTENSION.md is 61 lines, exceeding the 60-line limit
+
+[project-wide]
+  OK
+
+=====================================
+Summary
+=====================================
+Extension       Status
+---------       ------
+fixture         FAIL
+project-wide    PASS
+
+FAIL: 7 issue(s) found
+[PASS] SCHEMA_CONFORMANCE_GATE_MODE=hard yields a non-zero exit on the fixture
+
+=====================================
+Results: 9 passed, 0 failed
+=====================================
+[exit 0]
+
+=== test-session-runtime-files ===
+[1;33m[INFO][0m Fixture root built at /tmp/session-runtime-files-test.zkQs1Y
+[0;32m[PASS][0m 1: two distinct session_id multi-state files persist independently with distinct content
+[0;32m[PASS][0m 2: foreign-session content is rejected by the transcribed check, and the live check still exists in orchestrate.md
+[0;32m[PASS][0m 3: loop-guard and churn-state session_id mismatch handling is a log line, never a gate
+[0;32m[PASS][0m 4: stale session-scoped files are reported by --dry-run without deletion, then deleted live
+[0;32m[PASS][0m 5: fresh (within-threshold) session-scoped files are never deleted by --dry-run or a live run
+[0;32m[PASS][0m 6: per-task .orchestrator-loop-guard is untouched by the session-scoped reap sweep
+
+Results: 6 passed, 0 failed
+[exit 0]
+
+
+=== check-extension-docs (re-run from deployed .claude/scripts/ tree, per its own contract) ===
+NOTE: source-store run above errors out by design (script refuses to run outside a deployed tree).
+Re-running via `bash .claude/scripts/check-extension-docs.sh`:
+Extension       Status
+---------       ------
+core            PASS
+cslib           PASS
+email           PASS
+epidemiology    PASS
+filetypes       PASS
+formal          PASS
+founder         PASS
+latex           PASS
+lean            PASS
+literature      FAIL  <-- PRE-EXISTING, unrelated to this task (literature-pyenv/ untracked dir; not one of the 7 deletion targets)
+memory          PASS
+nix             PASS
+nvim            PASS
+present         PASS
+project-wide    PASS
+python          PASS
+slidev          PASS
+typst           PASS
+web             PASS
+z3              PASS
+[exit 1 — 1 pre-existing failure: literature extension, unrelated to hard-mode deletion targets]

@@ -1492,12 +1492,12 @@
     {
       "project_number": 121,
       "project_name": "delete_hard_mode_lifecycle_files",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-02T14:07:59Z",
+      "last_updated": "2026-09-02T16:09:30Z",
       "dependencies": [
         118,
         119,
@@ -1528,7 +1528,7 @@
           "summary": "8-phase deletion plan with pre-deletion gate retargeting, atomic-batch deletion plus manifest surgery, and a repo-wide zero-hit sweep over 359 references in 60 files."
         }
       ],
-      "session_id": "sess_1788357501_0d2431_121"
+      "session_id": "sess_1788364293_dfc521_121"
     },
     {
       "project_number": 122,

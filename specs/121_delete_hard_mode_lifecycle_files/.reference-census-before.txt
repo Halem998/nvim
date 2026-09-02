@@ -1,0 +1,419 @@
+agent-system/extensions/cslib/context/contracts/adversarial-verification.md:11:wins the whole entry, content included), `general-research-hard-agent` may transparently end
+agent-system/extensions/cslib/README.md:14:| `pr` | skill-pr-review-research | skill-planner | skill-pr-review-implementation | skill-researcher-hard / skill-implementer-hard |
+agent-system/extensions/cslib/README.md:116:- `pr` research: skill-researcher-hard
+agent-system/extensions/cslib/README.md:117:- `pr` implement: skill-implementer-hard
+agent-system/extensions/cslib/index-entries.json:333:          "planner-hard-agent"
+agent-system/extensions/cslib/index-entries.json:357:          "planner-hard-agent"
+agent-system/extensions/cslib/index-entries.json:380:          "general-research-hard-agent",
+agent-system/extensions/cslib/index-entries.json:389:      "summary": "H4 adversarial verification contract (cslib mirror copy): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, domain specialization for cslib/lean4. Union-valued load_when.agents (general-research-hard-agent + cslib-research-hard-agent) so the upsert-by-path merge does not silently drop core's hook when cslib wins the collision on this shared path.",
+agent-system/extensions/cslib/manifest.json:62:      "pr": "skill-researcher-hard"
+agent-system/extensions/cslib/manifest.json:65:      "cslib": "skill-planner-hard",
+agent-system/extensions/cslib/manifest.json:66:      "pr": "skill-planner-hard"
+agent-system/extensions/cslib/manifest.json:70:      "pr": "skill-implementer-hard"
+agent-system/extensions/cslib/manifest.json:90:      "pr": "general-research-hard-agent"
+agent-system/extensions/cslib/manifest.json:93:      "cslib": "planner-hard-agent",
+agent-system/extensions/cslib/manifest.json:94:      "pr": "planner-hard-agent"
+agent-system/extensions/cslib/manifest.json:98:      "pr": "general-implementation-hard-agent"
+agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md:40:- `skill-orchestrate-hard` dispatches a CSLib implementation phase
+agent-system/extensions/lean/index-entries.json:561:          "general-research-hard-agent",
+agent-system/extensions/lean/index-entries.json:562:          "planner-hard-agent"
+agent-system/extensions/lean/index-entries.json:586:          "general-implementation-hard-agent",
+agent-system/extensions/lean/index-entries.json:587:          "general-research-hard-agent"
+agent-system/extensions/lean/index-entries.json:610:          "general-research-hard-agent"
+agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md:17:| `lean4` | `skill-lean-research-hard` | `skill-lean-implementation-hard` | `skill-planner-hard` (core) |
+agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md:26:**Note**: `/plan --hard` for lean4 tasks uses `skill-planner-hard` (core hard planner).
+agent-system/extensions/core/scripts/check-extension-docs.sh:1106:# reference a specific contracts/*.md file by path (e.g. skill-orchestrate-hard/SKILL.md citing
+agent-system/extensions/core/scripts/check-extension-docs.sh:1109:# defect: a downstream repo's skill-orchestrate-hard referenced contracts absent from that
+agent-system/extensions/core/scripts/skill-base.sh:667:# previously three independently-maintained copies (skill-implementer, skill-implementer-hard,
+agent-system/extensions/core/scripts/skill-base.sh:889:    "[hard-orchestrate]") gate_attributed_path="agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" ;;
+agent-system/extensions/core/scripts/skill-base.sh:927:# skill-orchestrate-hard/SKILL.md Stage 5 mirrors) — this function changes WHERE the logic lives,
+agent-system/extensions/core/scripts/skill-base.sh:1034:# skill-orchestrate-hard/SKILL.md's Stage 2 and Stage 4/5. Both SKILL.md files keep a <=3-line
+agent-system/extensions/core/scripts/skill-base.sh:1152:# skill-orchestrate-hard/SKILL.md's clean-exit reads it in the SAME fence, BEFORE its own later
+agent-system/extensions/core/manifest.json:33:      "general-research-hard-agent.md",
+agent-system/extensions/core/manifest.json:34:      "general-implementation-hard-agent.md",
+agent-system/extensions/core/manifest.json:35:      "planner-hard-agent.md"
+agent-system/extensions/core/manifest.json:82:      "skill-researcher-hard",
+agent-system/extensions/core/manifest.json:83:      "skill-planner-hard",
+agent-system/extensions/core/manifest.json:84:      "skill-implementer-hard",
+agent-system/extensions/core/manifest.json:85:      "skill-orchestrate-hard"
+agent-system/extensions/core/manifest.json:303:      "general": "skill-researcher-hard",
+agent-system/extensions/core/manifest.json:304:      "meta": "skill-researcher-hard",
+agent-system/extensions/core/manifest.json:305:      "markdown": "skill-researcher-hard"
+agent-system/extensions/core/manifest.json:308:      "general": "skill-planner-hard",
+agent-system/extensions/core/manifest.json:309:      "meta": "skill-planner-hard",
+agent-system/extensions/core/manifest.json:310:      "markdown": "skill-planner-hard"
+agent-system/extensions/core/manifest.json:313:      "general": "skill-implementer-hard",
+agent-system/extensions/core/manifest.json:314:      "meta": "skill-implementer-hard",
+agent-system/extensions/core/manifest.json:315:      "markdown": "skill-implementer-hard"
+agent-system/extensions/core/manifest.json:337:      "general": "general-research-hard-agent",
+agent-system/extensions/core/manifest.json:338:      "meta": "general-research-hard-agent",
+agent-system/extensions/core/manifest.json:339:      "markdown": "general-research-hard-agent"
+agent-system/extensions/core/manifest.json:342:      "general": "planner-hard-agent",
+agent-system/extensions/core/manifest.json:343:      "meta": "planner-hard-agent",
+agent-system/extensions/core/manifest.json:344:      "markdown": "planner-hard-agent"
+agent-system/extensions/core/manifest.json:347:      "general": "general-implementation-hard-agent",
+agent-system/extensions/core/manifest.json:348:      "meta": "general-implementation-hard-agent",
+agent-system/extensions/core/manifest.json:349:      "markdown": "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:103:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:104:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:126:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:127:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:149:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:150:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:1000:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1679:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:1680:          "general-research-hard-agent"
+agent-system/extensions/core/index-entries.json:1702:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1793:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1815:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1861:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1886:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:1911:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2304:          "general-research-hard-agent"
+agent-system/extensions/core/index-entries.json:2332:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2333:          "general-research-hard-agent"
+agent-system/extensions/core/index-entries.json:2413:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2441:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2442:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:2470:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2499:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2530:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2560:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2771:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2773:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2818:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2820:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:2864:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2865:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2866:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:2888:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2889:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2890:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:2913:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2914:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2915:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:2937:          "general-research-hard-agent",
+agent-system/extensions/core/index-entries.json:2938:          "general-implementation-hard-agent",
+agent-system/extensions/core/index-entries.json:2939:          "planner-hard-agent"
+agent-system/extensions/core/index-entries.json:2961:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:3029:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:3123:          "general-implementation-hard-agent"
+agent-system/extensions/core/index-entries.json:3150:          "general-implementation-hard-agent"
+agent-system/extensions/core/scripts/test-session-runtime-files.sh:24:# skills/skill-orchestrate-hard/SKILL.md instruction files by relative path (scripts/, commands/,
+agent-system/extensions/core/scripts/test-session-runtime-files.sh:64:CHURN_SKILL="$ROOT_DIR/skills/skill-orchestrate-hard/SKILL.md"
+agent-system/extensions/core/context/contracts/phase-closure.md:17:`agents/general-implementation-hard-agent.md` (hard mode), and both `skills/skill-implementer/SKILL.md`
+agent-system/extensions/core/context/contracts/phase-closure.md:18:and `skills/skill-implementer-hard/SKILL.md` (discoverability references — the skills delegate
+agent-system/extensions/core/context/contracts/phase-closure.md:99:- **Hard mode** (`skills/skill-implementer-hard/SKILL.md`, Stage 3b "Single-Phase Dispatch
+agent-system/extensions/core/docs/reference/utility-scripts-inventory.md:17:- `.claude/scripts/lint/lint-contract-compliance.sh` - Lint hard-mode H-technique contract wiring: hard agents reference their required contracts, all 5 contract files exist with H-technique identifiers, hard skills dispatch to the correct hard agent, `skill-orchestrate-hard` declares convergence-policing fields, `general-implementation-hard-agent` carries H2 vocabulary, and each hard agent has index coverage. Wired as a `verify-deploy.sh` gate; not automated beyond that — no other automated caller
+agent-system/extensions/core/scripts/update-task-status.sh:251:  : # allowed: explicit override flag passed (e.g. skeleton-exhaustion routing in skill-orchestrate-hard)
+agent-system/extensions/core/context/reference/orchestrator-critical-paths.json:14:      "path": "skills/skill-orchestrate-hard/SKILL.md",
+agent-system/extensions/core/agents/planner-hard-agent.md:2:name: planner-hard-agent
+agent-system/extensions/core/agents/planner-hard-agent.md:38:- `@.claude/context/patterns/context-discovery.md` - Use with agent=`planner-hard-agent`
+agent-system/extensions/core/agents/planner-hard-agent.md:122:any substantive work. Use `agent_type: "planner-hard-agent"` and
+agent-system/extensions/core/agents/planner-hard-agent.md:123:`delegation_path: ["orchestrator", "plan", "planner-hard-agent"]`.
+agent-system/extensions/core/agents/planner-hard-agent.md:218:   postflight (skill-planner-hard) resolves all placeholders to real task numbers in one pass.
+agent-system/extensions/core/agents/planner-hard-agent.md:226:   `dependency_order` (mirroring `.spawn-return.json`'s structure), so `skill-planner-hard`
+agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh:41:# `skill-orchestrate-hard/SKILL.md:tier-c` for hard. These are NOT parallel-derivable from a
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:175:for op_default in "research skill-researcher-hard" "plan skill-planner-hard" "implement skill-implementer-hard"; do
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:300:      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:304:      bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-hard-agent' 'hard' 2>&1 1>/dev/null"
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:318:    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'zzz-unrouted-test-type' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:320:if [ "$_total_miss_actual" = "general-research-hard-agent" ]; then
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:321:  pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-hard-agent) -- the true total-miss rung"
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:323:  fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-hard-agent'"
+agent-system/extensions/core/scripts/tests/test-routing-resolution.sh:334:    bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-hard-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
+agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh:3:# conformance gate wired into the hard-mode per-phase dispatch sites (skill-implementer-hard,
+agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh:67:SITE_B_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
+agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh:120:region_b="$(extract_region "$SITE_B_FILE" "Site B (skill-implementer-hard)")" || exit 2
+agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh:195:declare -A SITE_LABEL=( [B]="Site B (skill-implementer-hard)" [A]="Site A (skill-orchestrate)" [C]="Site C (skill-lean-implementation-hard)" )
+agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh:36:# <detecting_site_prefix> is `skill-orchestrate/SKILL.md` or `skill-orchestrate-hard/SKILL.md`
+agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh:349:    && grep -qF 'skill-orchestrate-hard/SKILL.md' "$WORKDIR/session-runtime.out"; then
+agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh:353:    # skill-orchestrate-hard/SKILL.md on disk (a known, separately-tracked limitation, not
+agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh:357:    info "test-session-runtime-files.sh could not run: its own environment preflight requires skill-orchestrate-hard/SKILL.md, which is outside this task's scope to retarget (separate, already-tracked limitation) -- not treated as a failure of this suite"
+agent-system/extensions/core/context/architecture/context-layers.md:99:`agents/general-implementation-agent.md`, `agents/general-implementation-hard-agent.md`,
+agent-system/extensions/core/context/architecture/context-layers.md:100:`skills/skill-implementer/SKILL.md`, and `skills/skill-implementer-hard/SKILL.md` at minimum, and
+agent-system/extensions/core/scripts/command-route-agent.sh:6:# routing/routing_hard. This is the resolver both skill-orchestrate and skill-orchestrate-hard
+agent-system/extensions/core/scripts/command-route-agent.sh:8:# and (for skill-orchestrate-hard) no-break last-match-wins manifest loop.
+agent-system/extensions/core/scripts/command-route-agent.sh:21:#                         "general-research-hard-agent" etc. (hard mode)
+agent-system/extensions/core/scripts/command-route-agent.sh:37:#     caller-supplied hard default (e.g. "general-research-hard-agent") is reached only on a
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:2:name: skill-researcher-hard
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:9:Hard-mode wrapper that delegates research to `general-research-hard-agent` subagent.
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:14:except it dispatches to `general-research-hard-agent` and logs `adversarial_verification_triggered`.
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:81:skill_name="skill-researcher-hard"
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:141:  "delegation_path": ["orchestrator", "research", "skill-researcher-hard"],
+agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md:173:  - subagent_type: "general-research-hard-agent"
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:37:| `.orchestrator-loop-guard` | `skill-orchestrate`/`skill-orchestrate-hard` Stage 2 (loop-guard init) | Base-mode Stage 2 resume branch: unconditional trust, see Rationale. Hard-mode Stage 2 resume branch: conditional trust — a `loop-guard-staleness` detector runs first; see "Operational staleness: a second, orthogonal freshness axis" below | `rm -f` only at full-loop termination (base Stage 8; hard-mode equivalent); a hard-mode guard that trips the staleness detector is instead archived aside before reinitialization, see below | **Ephemeral** |
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:38:| `.orchestrator-churn-state.json` | `skill-orchestrate-hard` Stage 2 (`churn_file`) | Hard-mode convergence-policing (H6) reads; also archived aside alongside a stale loop guard, inheriting its verdict rather than deriving its own — see "Operational staleness" below | `rm -f` only at full-loop termination, alongside the loop guard; also archived aside (never deleted) when the loop guard it accompanies is found stale | **Ephemeral** |
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:41:| `.orchestrator-handoff.json` | Skills when `orchestrator_mode: true` (currently: the hard-mode implementation agent's H9 wrap-up; see `docs/architecture/handoff-schema.md`) | `skill-orchestrate`/`skill-orchestrate-hard` Stage 5 (single-task) and Stage MT-4 (multi-task) | Overwritten in place each dispatch cycle (static filename, never deleted) | **Durable provenance** |
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:46:| `.continuation-loop-guard` / `.continuation-loop-guard.tmp` | `skill-implementer`/`skill-implementer-hard` (their own internal continuation-retry counter, distinct from the orchestrator loop guard above) | Same skills, own resume branch | Removed at postflight (`orchestrator-postflight.sh` Stage 10 for `implement`; also inline at each skill's own postflight) | **Ephemeral** |
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:99:mode now gates**: `skill-orchestrate-hard/SKILL.md` Stage 2 runs a `loop-guard-staleness` detector
+agent-system/extensions/core/context/standards/orchestrator-runtime-files.md:139:into `skill-orchestrate-hard/SKILL.md` Stage 2, immediately before the pre-existing
+agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh:306:    "core/skills/skill-implementer-hard/SKILL.md"
+agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh:308:    "core/skills/skill-orchestrate-hard/SKILL.md"
+agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh:310:    "core/skills/skill-planner-hard/SKILL.md"
+agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh:312:    "core/skills/skill-researcher-hard/SKILL.md"
+agent-system/extensions/core/agents/general-research-hard-agent.md:2:name: general-research-hard-agent
+agent-system/extensions/core/agents/general-research-hard-agent.md:29:- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-hard-agent`
+agent-system/extensions/core/agents/general-research-hard-agent.md:74:any substantive work. Use `agent_type: "general-research-hard-agent"` and
+agent-system/extensions/core/agents/general-research-hard-agent.md:75:`delegation_path: ["orchestrator", "research", "general-research-hard-agent"]`.
+agent-system/extensions/core/agents/general-research-hard-agent.md:199:research-shaped partial-report handoff. It does NOT rely on or claim a `skill-researcher-hard`
+agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md:25:- Dispatched from `skill-orchestrate-hard` via per-phase dispatch mode
+agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md:112:# Leaf-worker posture (same as skill-implementer-hard's Stage 3b): this check runs strictly
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:2:name: skill-implementer-hard
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:9:Hard-mode wrapper that delegates implementation to `general-implementation-hard-agent` subagent.
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:38:- `skill-orchestrate-hard` dispatches an implementation phase
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:87:skill_name="skill-implementer-hard"
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:130:  # didn't match skill-orchestrate-hard's own TASK_DIR-scoped path). Now scoped per task,
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:131:  # matching skill-orchestrate-hard/SKILL.md:131 (`${TASK_DIR}/.orchestrator-handoff.json`).
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:193:    # skill-orchestrate-hard's job (see its skeleton-exhaustion routing stage) -- out of scope here.
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:243:  "delegation_path": ["orchestrator", "implement", "skill-implementer-hard"],
+agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md:292:  - subagent_type: "general-implementation-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:13:#   E. general-implementation-hard-agent.md contains H2 vocabulary
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:57:      echo "  E. H2 vocabulary in general-implementation-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:127:  local research_agent="$CORE_ROOT/agents/general-research-hard-agent.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:129:    log_fail "general-research-hard-agent.md not found"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:133:      log_pass "general-research-hard-agent: references anti-analysis contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:135:      log_fail "general-research-hard-agent: missing @-reference to anti-analysis.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:138:      log_pass "general-research-hard-agent: references reference-grounding contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:140:      log_fail "general-research-hard-agent: missing @-reference to reference-grounding.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:145:  local planner_agent="$CORE_ROOT/agents/planner-hard-agent.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:147:    log_fail "planner-hard-agent.md not found"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:151:      log_pass "planner-hard-agent: references reference-grounding contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:153:      log_fail "planner-hard-agent: missing @-reference to reference-grounding.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:158:  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:160:    log_fail "general-implementation-hard-agent.md not found"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:164:      log_pass "general-implementation-hard-agent: references anti-analysis contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:166:      log_fail "general-implementation-hard-agent: missing @-reference to anti-analysis.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:169:      log_pass "general-implementation-hard-agent: references wrap-up contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:171:      log_fail "general-implementation-hard-agent: missing @-reference to wrap-up.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:174:      log_pass "general-implementation-hard-agent: references territory contract"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:176:      log_fail "general-implementation-hard-agent: missing @-reference to territory.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:227:    ["skill-researcher-hard"]="general-research-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:228:    ["skill-planner-hard"]="planner-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:229:    ["skill-implementer-hard"]="general-implementation-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:286:# Check E: H2 vocabulary in general-implementation-hard-agent.md
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:291:  echo "--- Check E: H2 vocabulary in general-implementation-hard-agent ---"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:293:  local impl_agent="$CORE_ROOT/agents/general-implementation-hard-agent.md"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:296:    log_fail "general-implementation-hard-agent.md not found -- skipping H2 vocabulary checks"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:304:    log_pass "general-implementation-hard-agent: contains 'Forbidden Conclusions' H2 term"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:306:    log_fail "general-implementation-hard-agent: missing 'Forbidden Conclusions' H2 vocabulary"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:311:    log_pass "general-implementation-hard-agent: contains 'Defect Bar' H2 term"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:313:    log_fail "general-implementation-hard-agent: missing 'Defect Bar' H2 vocabulary"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:318:    log_pass "general-implementation-hard-agent: contains 'settled-design' H2 term"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:320:    log_warn "general-implementation-hard-agent: 'settled-design' term not found (optional H2 vocabulary)"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:347:    "general-research-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:348:    "planner-hard-agent"
+agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh:349:    "general-implementation-hard-agent"
+agent-system/extensions/core/agents/general-implementation-hard-agent.md:2:name: general-implementation-hard-agent
+agent-system/extensions/core/agents/general-implementation-hard-agent.md:100:any substantive work. Use `agent_type: "general-implementation-hard-agent"` and
+agent-system/extensions/core/agents/general-implementation-hard-agent.md:101:`delegation_path: ["orchestrator", "implement", "general-implementation-hard-agent"]`.
+agent-system/extensions/core/agents/general-implementation-hard-agent.md:428:`skill-planner-hard`'s `{{FOLLOWUP:i}}` placeholder-substitution mechanism at plan time — never a
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:16:`skills/skill-orchestrate-hard/SKILL.md` `## Multi-Task Mode` (explicit transcription of the same
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:229:  step 4.5 and its `skill-orchestrate-hard` transcription) may bypass acting on this verdict when
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:394:`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (and its `skill-orchestrate-hard`
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:499:| `skills/skill-orchestrate-hard/SKILL.md` `## Multi-Task Mode` | Updated — explicit transcription added, closing a prior zero-reference gap |
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:539:| `skills/skill-orchestrate-hard/SKILL.md` `## Multi-Task Mode` | Updated — per this file's own explicit CO-MAINTENANCE requirement with the base skill's Stage MT-3 step 4.5, gained the same `--session-id "$session_id"` forwarding and `session_active` defer_reason branch |
+agent-system/extensions/core/docs/architecture/batch-admit-schema.md:584:`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, `skills/skill-orchestrate-hard/SKILL.md`
+agent-system/extensions/core/context/contracts/pre-edit-gate.md:16:`agents/general-implementation-agent.md` (standard mode), `agents/general-implementation-hard-agent.md`
+agent-system/extensions/core/context/contracts/pre-edit-gate.md:17:(hard mode), and both `skills/skill-implementer/SKILL.md` and `skills/skill-implementer-hard/SKILL.md`
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:67:`skill-orchestrate-hard`, not by the research/plan/implement skills above):
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:221:| **Autonomous Loop** | Runs multi-phase lifecycle autonomously, delegates to workflow skills | skill-orchestrate, skill-orchestrate-hard |
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:229:- skill-researcher / skill-researcher-hard (not_started/researched -> researching -> researched)
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:230:- skill-planner / skill-planner-hard (researched -> planning -> planned)
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:231:- skill-implementer / skill-implementer-hard (planned -> implementing -> completed)
+agent-system/extensions/core/context/patterns/skill-lifecycle.md:238:- skill-orchestrate / skill-orchestrate-hard: runs the autonomous lifecycle loop (dispatches to
+agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md:164:| 2 | `skills/skill-orchestrate-hard/SKILL.md` | Hard-mode inherits and extends MT-1..MT-5 for `/orchestrate --hard` batch runs | Same class of silent mis-routing risk as #1, scoped to the hard-mode contract layer |
+agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md:252:     `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`) are read once into the
+agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md:337:`skill-orchestrate-hard` transcription) — never passed to `orchestrate-batch-admit.sh`, which
+agent-system/extensions/core/context/patterns/infra-failure-discrimination.md:74:`skill-orchestrate` and `skill-orchestrate-hard` — not scaled with `MAX_CYCLES` (5 vs. 13),
+agent-system/extensions/core/context/patterns/infra-failure-discrimination.md:101:  = 13 + 3 = 16 (skill-orchestrate-hard)
+agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md:6:**Audience**: `skill-orchestrate`, `skill-orchestrate-hard`, every dispatched agent that writes a
+agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md:66:- `skill-orchestrate-hard/SKILL.md` Stage 5 staleness-gate comment block
+agent-system/extensions/core/context/contracts/orchestrator-discipline.md:83:**`--hard`-only.** This contract governs `skill-orchestrate-hard`'s state-machine loop
+agent-system/extensions/core/context/contracts/recovery.md:12:dispatch paths (`skill-implementer-hard`, `general-implementation-hard-agent`,
+agent-system/extensions/core/context/contracts/recovery.md:13:`skill-orchestrate-hard`) and reference hard-mode-only artifacts (`anti-analysis.md`'s
+agent-system/extensions/core/context/contracts/territory.md:4:today is `skill-orchestrate-hard`'s single-phase dispatch, where it governs file ownership and
+agent-system/extensions/core/context/contracts/territory.md:7:`skill-orchestrate-hard/SKILL.md`'s "Parallel Wave Dispatch: DISABLED" section), but the contract
+agent-system/extensions/core/scripts/validate-handoff.sh:4:# Validates .orchestrator-handoff.json files produced by skill-orchestrate-hard
+agent-system/extensions/core/context/standards/task-reference-exemptions.md:91:  (`planner-agent`, `planner-hard-agent`, `reviser-agent`), and `meta-builder-agent`; research
+agent-system/extensions/core/commands/orchestrate.md:89:read by `skill-orchestrate`/`skill-orchestrate-hard`'s own Stage 2, never forwarded to any
+agent-system/extensions/core/commands/orchestrate.md:564:`skill-orchestrate-hard`'s multi-task mode delegates to the SAME base MT stages per its own Stage
+agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md:43:equivalent handlers in `skill-orchestrate-hard/SKILL.md` — immediately before each handler's
+agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md:62:and `skills/skill-orchestrate-hard/SKILL.md`'s mirrored handlers.
+agent-system/extensions/core/docs/architecture/handoff-schema.md:9:**Read by**: `skill-orchestrate` and `skill-orchestrate-hard` state machine loops
+agent-system/extensions/core/docs/architecture/handoff-schema.md:46:`skill-orchestrate-hard`, Stage 5) remains the mechanism-agnostic backstop should a future
+agent-system/extensions/core/docs/architecture/handoff-schema.md:97:| **Flat** `continuation_path` | top-level string, e.g. `"specs/NNN_slug/handoffs/phase-N-handoff-TS.md"` | The hard-mode implementation agent's H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, and the cslib/lean counterparts) — the only writer of `.orchestrator-handoff.json` | `context/contracts/wrap-up.md`'s Orchestrator Handoff JSON Schema and `context/schemas/orchestrator-handoff-schema.json` — this is the canonical, required shape |
+agent-system/extensions/core/docs/architecture/handoff-schema.md:113:`skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read) all continue to
+agent-system/extensions/core/docs/architecture/handoff-schema.md:174:`skill-orchestrate-hard` compares this value against the value minted for the current cycle:
+agent-system/extensions/core/docs/architecture/handoff-schema.md:276:`general-implementation-hard-agent.md`'s Stage 4C checkpoint sub-section for the full write
+agent-system/extensions/core/docs/architecture/handoff-schema.md:381:| `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | **Flat** `continuation_path` | The only writer of `.orchestrator-handoff.json`; see `context/contracts/wrap-up.md`'s canonical schema |
+agent-system/extensions/core/docs/architecture/handoff-schema.md:399:reads (`skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`) are raw, unguarded
+agent-system/extensions/core/docs/architecture/handoff-schema.md:421:`skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md` Stage 5 pass the current
+agent-system/extensions/core/docs/architecture/handoff-schema.md:524:# In general-implementation-hard-agent.md's Stage 5, after receiving delegation context:
+agent-system/extensions/core/docs/architecture/handoff-schema.md:629:bullet), and `skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read).
+agent-system/extensions/core/docs/architecture/handoff-schema.md:653:`skill-orchestrate-hard/SKILL.md` for the binding wording.
+agent-system/extensions/core/docs/architecture/handoff-schema.md:720:This is the shape hard-mode H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, the only
+agent-system/extensions/core/docs/architecture/handoff-schema.md:822:general-implementation-hard-agent (H9 wrap-up, the only writer):
+agent-system/extensions/core/docs/architecture/handoff-schema.md:824:  └── Writes: .orchestrator-handoff.json      (for skill-orchestrate / skill-orchestrate-hard)
+agent-system/extensions/core/docs/architecture/handoff-schema.md:828:skill-orchestrate / skill-orchestrate-hard (next cycle):
+agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh:245:  "core/agents/general-implementation-hard-agent.md"
+agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh:262:  "core/agents/planner-hard-agent.md"
+agent-system/extensions/core/context/contracts/wrap-up.md:9:(`skill-implementer-hard`, `general-implementation-hard-agent`, `skill-orchestrate-hard`);
+agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md:7:**Audience**: general-implementation-agent, general-implementation-hard-agent,
+agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md:8:general-research-agent, general-research-hard-agent (and any future agent that writes
+agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md:147:Research agents (`general-research-agent`, `general-research-hard-agent`) that adopt this
+agent-system/extensions/core/merge-sources/claudemd.md:158:| skill-orchestrate-hard | (direct execution) |
+agent-system/extensions/core/merge-sources/claudemd.md:159:| skill-researcher-hard | general-research-hard-agent |
+agent-system/extensions/core/merge-sources/claudemd.md:160:| skill-planner-hard | planner-hard-agent |
+agent-system/extensions/core/merge-sources/claudemd.md:161:| skill-implementer-hard | general-implementation-hard-agent |
+agent-system/extensions/core/context/guides/hard-mode-routing.md:78:Core:    routing_hard.implement.meta = "skill-implementer-hard"
+agent-system/extensions/core/context/guides/hard-mode-routing.md:114:| `skill-researcher-hard` | Core manifest routing_hard + Step 4e fallback |
+agent-system/extensions/core/context/guides/hard-mode-routing.md:115:| `skill-planner-hard` | Core manifest routing_hard + Step 4e fallback |
+agent-system/extensions/core/context/guides/hard-mode-routing.md:116:| `skill-implementer-hard` | Core manifest routing_hard + Step 4e fallback |
+agent-system/extensions/core/context/guides/hard-mode-routing.md:119:| `skill-orchestrate-hard` | Not manifest-routed itself; invoked directly by `/orchestrate --hard`, and resolves agents via `command-route-agent.sh` against `routing_agents_hard` (see note below) |
+agent-system/extensions/core/context/guides/hard-mode-routing.md:125:`skill-orchestrate-hard` (invoked by `/orchestrate --hard`) resolves AGENT names (not skill
+agent-system/extensions/core/context/guides/hard-mode-routing.md:131:`skill-orchestrate-hard` now call `command-route-agent.sh` with identical precedence, differing
+agent-system/extensions/core/context/guides/hard-mode-routing.md:149:      "mytype": "skill-planner-hard"
+agent-system/extensions/core/context/guides/hard-mode-routing.md:167:- `.claude/scripts/command-route-agent.sh` — Agent resolution (skill-orchestrate/skill-orchestrate-hard)
+agent-system/extensions/core/context/contracts/anti-analysis.md:49:hard-mode dispatch paths (`skill-implementer-hard`, `general-implementation-hard-agent`,
+agent-system/extensions/core/context/contracts/anti-analysis.md:50:`skill-orchestrate-hard`); STANDARD mode never loads this file and its zero-debt bar is
+agent-system/extensions/core/context/guides/manifest-routing-schema.md:103:`skill-orchestrate-hard`. Before this task's consolidation, `skill-orchestrate-hard` used a
+agent-system/extensions/core/context/guides/manifest-routing-schema.md:118:through directly to the caller-supplied hard default (e.g. `general-research-hard-agent`), never
+agent-system/extensions/core/context/guides/manifest-routing-schema.md:165:Before this task, `skill-orchestrate` and `skill-orchestrate-hard` derived agent names from skill
+agent-system/extensions/core/context/contracts/no-task-references-bullet.md:40:- The planning agents — `planner-agent`, `planner-hard-agent`, `reviser-agent` — because plan
+agent-system/extensions/core/context/contracts/no-task-references-bullet.md:49:  `general-research-agent`, domain research agents, `general-research-hard-agent`). A research
+agent-system/extensions/core/context/contracts/no-task-references-bullet.md:67:(`general-implementation-agent`, `general-implementation-hard-agent`, `cslib-implementation-agent`,
+agent-system/extensions/core/context/patterns/system-defect-discrimination.md:53:- `skills/skill-orchestrate-hard/SKILL.md:888` (hard-mode mirror)
+agent-system/extensions/core/context/patterns/system-defect-discrimination.md:229:| Off-schema Tier C (hard mode) | `skills/skill-orchestrate-hard/SKILL.md:1186` | same, hard-mode mirror | `OFF_SCHEMA_STATUS` |
+agent-system/extensions/core/context/patterns/system-defect-discrimination.md:283:of the Class (a) detection sites above (`skill-orchestrate/SKILL.md`, `skill-orchestrate-hard/SKILL.md`,
+agent-system/extensions/core/context/patterns/system-defect-discrimination.md:328:already contains `skills/skill-orchestrate/SKILL.md`, `skills/skill-orchestrate-hard/SKILL.md`,
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:2:name: skill-orchestrate-hard
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:163:source .claude/scripts/command-route-agent.sh "research" "$TASK_TYPE" "general-research-hard-agent" "hard"
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:165:source .claude/scripts/command-route-agent.sh "plan" "$TASK_TYPE" "planner-hard-agent" "hard"
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:167:source .claude/scripts/command-route-agent.sh "implement" "$TASK_TYPE" "general-implementation-hard-agent" "hard"
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:189:F=agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:697:      # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:779:# skill-implementer-hard/SKILL.md Stage 3b's already-landed fix.
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:898:  # general-implementation-hard-agent). This is deliberate, not an oversight — a prior
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:924:  # `.follow_up_tasks` that skill-implementer-hard's Stage 3b optimistically reads.
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1126:    # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1206:      --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-stale-handoff" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1209:      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1212:      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1213:      "skill-orchestrate-hard/SKILL.md:stage-5-stale-handoff" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1239:      --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-dispatch-seq-mismatch" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1242:      --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1245:      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1246:      "skill-orchestrate-hard/SKILL.md:stage-5-dispatch-seq-mismatch" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1264:  "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1265:  "skill-orchestrate-hard/SKILL.md" "${dispatch_was_transport_error:-false}" "${cycle_count:-0}" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1399:        --detecting-site "skill-orchestrate-hard/SKILL.md:stage-5-handoff-present-probe" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1402:        --attributed-path "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1405:        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1406:        "skill-orchestrate-hard/SKILL.md:stage-5-handoff-present-probe" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1445:    "[hard-orchestrate]" "skill-orchestrate-hard/SKILL.md:tier-c" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1446:    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md" " --hard" \
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1503:  # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md:1795:| Feature | skill-orchestrate | skill-orchestrate-hard |
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:2:name: skill-planner-hard
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:9:Hard-mode wrapper that delegates plan creation to `planner-hard-agent` subagent.
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:13:dispatches to `planner-hard-agent` and passes H8 plan requirements.
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:77:skill_name="skill-planner-hard"
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:154:  "delegation_path": ["orchestrator", "plan", "skill-planner-hard"],
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:195:  - subagent_type: "planner-hard-agent"
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:250:Runs only when `planner-hard-agent` (Stage 4a of `planner-hard-agent.md`) declared a skeleton
+agent-system/extensions/core/skills/skill-planner-hard/SKILL.md:357:`planner-hard-agent` in the just-written plan file to the concrete allocated task number from
+agent-system/extensions/core/context/patterns/task-lock.md:640:  write blocks (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
+agent-system/extensions/core/context/patterns/task-lock.md:641:  `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`,
+agent-system/extensions/core/context/patterns/task-lock.md:1119:   `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write, mirroring it exactly) for
+agent-system/extensions/core/context/patterns/task-lock.md:1123:   `agents/general-implementation-hard-agent.md`'s equivalent call) with `session_id` derived
+agent-system/extensions/core/context/patterns/task-lock.md:1148:   `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
+agent-system/extensions/core/context/patterns/task-lock.md:1171:     refresh (multi-task batch), `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write
+agent-system/extensions/core/context/patterns/task-lock.md:1239:- `.claude/skills/skill-orchestrate-hard/SKILL.md` — `.orchestrator-loop-guard` and
+agent-system/extensions/core/context/formats/plan-format.md:36:`skill-planner-hard` postflight after `{{FOLLOWUP:i}}` placeholder-token substitution (see
+agent-system/extensions/core/context/formats/plan-format.md:37:`planner-hard-agent.md` Stage 4a); the field name `skeleton` reuses `wrap-up.md`'s implement-time
+agent-system/extensions/core/context/formats/plan-format.md:138:inconclusive scan (`skill-implementer-hard`'s and `skill-lean-implementation-hard`'s resume-point
+agent-system/extensions/core/context/formats/plan-format.md:141:orchestration loop (`skill-orchestrate-hard`), which instead routes an inconclusive scan to its
+agent-system/extensions/core/context/formats/plan-format.md:172:block (`general-implementation-agent.md`, `general-implementation-hard-agent.md`),
+agent-system/extensions/core/context/formats/plan-format.md:173:`commands/task.md`'s `/task --review` Step 3 phase enumeration, `skill-implementer-hard`'s and
+agent-system/extensions/core/context/formats/plan-format.md:175:`skill-orchestrate-hard`'s) recovery-count and `next_phase` greps. Reference sites by
+agent-system/extensions/core/context/formats/plan-format.md:282:  token `{{FOLLOWUP:i}}` by the planning agent and substituted by `skill-planner-hard` postflight
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:185:# skill-orchestrate-hard/SKILL.md's Stage 2 carried for its own fixed MAX_CYCLES=13. Base mode's
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:195:# same fence). This is the same call skill-orchestrate-hard/SKILL.md's Stage 2 makes for its own
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:344:  # field to skill-orchestrate-hard/SKILL.md's Stage 2. `// 0` forward-compatible read, matching
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:486:the same mechanism `skill-orchestrate-hard/SKILL.md`'s Stage 2 implements — the decision is
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:494:record appears in `skill-orchestrate-hard/SKILL.md`'s Stage 2 so both engines visibly agree.
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1414:`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1448:      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1550:`skill-orchestrate-hard/SKILL.md`'s `researched` handler, landing corrected matcher patterns
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1584:      # general-research-agent.md / general-research-hard-agent.md and the Handoff Writers table
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1709:# skeleton-exhaustion). Mirrors skill-implementer-hard/SKILL.md Stage 3b's own fix.
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1824:  # general-implementation-hard-agent). This is deliberate, not an oversight — re-deriving "the
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:2328:# skill-orchestrate-hard/SKILL.md's Stage 5 makes, so the two engines cannot drift apart on this
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:2536:# block). This is the same call skill-orchestrate-hard/SKILL.md's Stage 5 makes, so the two
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:2674:        # Decision" in general-research-agent.md / general-research-hard-agent.md and the
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:3054:  contract; `skill-orchestrate-hard/SKILL.md` points back here rather than restating it, so the
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:3108:**Hard-mode finding, recorded, not acted on**: `skills/skill-orchestrate-hard/SKILL.md` has no
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:3114:hard-mode-local shell variables elsewhere in `skill-orchestrate-hard/SKILL.md` belong to its
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:3634:for `defer_ledger`, `skill-orchestrate-hard/SKILL.md` has no MT-stage implementation of its own
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:4442:  legitimately may have nothing left to probe. `skill-orchestrate-hard/SKILL.md` was checked for
+     45 agent-system/extensions/core/index-entries.json
+     36 agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh
+     28 agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md
+     25 agent-system/extensions/core/manifest.json
+     19 agent-system/extensions/core/skills/skill-orchestrate/SKILL.md
+     16 agent-system/extensions/core/docs/architecture/handoff-schema.md
+      9 agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md
+      9 agent-system/extensions/core/context/guides/hard-mode-routing.md
+      8 agent-system/extensions/cslib/manifest.json
+      8 agent-system/extensions/core/skills/skill-planner-hard/SKILL.md
+      8 agent-system/extensions/core/scripts/tests/test-routing-resolution.sh
+      8 agent-system/extensions/core/context/formats/plan-format.md
+      7 agent-system/extensions/core/context/patterns/task-lock.md
+      6 agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md
+      6 agent-system/extensions/core/docs/architecture/batch-admit-schema.md
+      6 agent-system/extensions/core/context/standards/orchestrator-runtime-files.md
+      6 agent-system/extensions/core/context/patterns/skill-lifecycle.md
+      6 agent-system/extensions/core/agents/planner-hard-agent.md
+      5 agent-system/extensions/lean/index-entries.json
+      5 agent-system/extensions/core/scripts/skill-base.sh
+      5 agent-system/extensions/core/agents/general-research-hard-agent.md
+      4 agent-system/extensions/cslib/index-entries.json
+      4 agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh
+      4 agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh
+      4 agent-system/extensions/core/scripts/command-route-agent.sh
+      4 agent-system/extensions/core/merge-sources/claudemd.md
+      4 agent-system/extensions/core/context/patterns/system-defect-discrimination.md
+      4 agent-system/extensions/core/agents/general-implementation-hard-agent.md
+      3 agent-system/extensions/cslib/README.md
+      3 agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh
+      3 agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md
+      3 agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md
+      3 agent-system/extensions/core/context/guides/manifest-routing-schema.md
+      3 agent-system/extensions/core/context/contracts/phase-closure.md
+      3 agent-system/extensions/core/context/contracts/no-task-references-bullet.md
+      2 agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md
+      2 agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md
+      2 agent-system/extensions/core/scripts/test-session-runtime-files.sh
+      2 agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh
+      2 agent-system/extensions/core/scripts/check-extension-docs.sh
+      2 agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md
+      2 agent-system/extensions/core/context/patterns/infra-failure-discrimination.md
+      2 agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md
+      2 agent-system/extensions/core/context/contracts/territory.md
+      2 agent-system/extensions/core/context/contracts/recovery.md
+      2 agent-system/extensions/core/context/contracts/pre-edit-gate.md
+      2 agent-system/extensions/core/context/contracts/anti-analysis.md
+      2 agent-system/extensions/core/context/architecture/context-layers.md
+      2 agent-system/extensions/core/commands/orchestrate.md
+      1 agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md
+      1 agent-system/extensions/cslib/context/contracts/adversarial-verification.md
+      1 agent-system/extensions/core/scripts/validate-handoff.sh
+      1 agent-system/extensions/core/scripts/update-task-status.sh
+      1 agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh
+      1 agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh
+      1 agent-system/extensions/core/docs/reference/utility-scripts-inventory.md
+      1 agent-system/extensions/core/context/standards/task-reference-exemptions.md
+      1 agent-system/extensions/core/context/reference/orchestrator-critical-paths.json
+      1 agent-system/extensions/core/context/contracts/wrap-up.md
+      1 agent-system/extensions/core/context/contracts/orchestrator-discipline.md
