@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md",
+      "summary": "Re-measured the task-lookup jq duplication class (62 executable-surface offenders on the exact skill_validate_input shape, not the dispatched 111/6), found a second un-unified canonical helper (gate_in in command-gate-in.sh) that already has real adopters, identified test-common-lib.sh's corrected single-source gate as the scan-root/file-scope template and lint-state-writer-boundary.sh as the enforcement-convention template, and flagged a sequencing risk against task 116's core-collapse design."
+    }
+  ],
+  "next_steps": "Run /plan 90 to design lint-task-lookup-adoption.sh (structural narrow-pattern detection + reasoned allowlist of ~62 current offenders, self-exempting skill-base.sh and command-gate-in.sh), wire it as verify-deploy.sh gate 17, then scope an incremental migration pass deferring the 47 lifecycle-SKILL.md sites until task 116's sequencing is decided.",
+  "metadata": {
+    "session_id": "sess_1788304786_edca9f_90",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo, two competing conventions exist for landing an 'adoption lint' that polices a shared-helper duplication class: (1) test-common-lib.sh's zero-tolerance single-source assertion, viable only after the class is already migrated to ~zero; (2) lint-state-writer-boundary.sh's structural detection plus a short, explicitly-reasoned file-level allowlist, viable when real migration debt still exists at landing time. Decision rule: non-zero debt at landing -> allowlist convention; class already fully migrated -> zero-tolerance convention. Task 48's own description names lint-state-writer-boundary.sh as the intended precedent for a git-commit adoption lint, confirming this is the established default for new classes.",
+      "category": "PATTERN",
+      "source_artifact": "specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["adoption-lint", "single-source", "allowlist", "lint-state-writer-boundary", "test-common-lib"]
+    },
+    {
+      "content": "test-common-lib.sh's collect_session_id_offenders() function is the corrected template for scanning executable-surface duplication across both source-store and deployed layouts: it probes for core/manifest.json one level under a candidate root to pick source-store vs. deployed mode (reusing run-all.sh's own probe verbatim), then scans *.sh whole-tree plus *.md scoped only to commands/, skills/, agents/ subdirectories -- leaving context/, docs/, rules/ out of scope by construction rather than a growing exclusion list. Reuse this dual-mode-root + file-scope logic directly for any new adoption/duplication lint rather than re-deriving root resolution.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["root-resolution", "source-store", "deployed-mode", "scan-scope", "test-common-lib"]
+    },
+    {
+      "content": "skill-base.sh's skill_validate_input() and command-gate-in.sh's gate_in() are two separate, un-unified canonical implementations of task lookup at different layers (skill-layer vs command-layer), with different export sets and failure semantics (exit vs return). gate_in() has real adopters (task.md, orchestrate.md, review.md, revise.md, todo.md, skill-orchestrate{,-hard}, skill-todo); skill_validate_input() has zero real callers anywhere in the source store -- every hit outside its own definition is a doc example. Any future work citing 'the shared task-lookup helper' must specify which of the two it means; they are not interchangeable.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["skill_validate_input", "gate_in", "task-lookup", "command-gate-in", "skill-base"]
+    }
+  ]
+}

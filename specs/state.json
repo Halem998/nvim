@@ -703,7 +703,7 @@
     {
       "project_number": 90,
       "project_name": "adoption_lint_for_shared_task_lookup_helper",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -716,8 +716,15 @@
         "agent-system/extensions/core/scripts/skill-base.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-01T23:56:20Z",
-      "session_id": "sess_1788304786_edca9f_90"
+      "last_updated": "2026-09-02T00:03:26Z",
+      "session_id": "sess_1788304786_edca9f_90",
+      "artifacts": [
+        {
+          "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md",
+          "type": "report",
+          "summary": "Re-measured task-lookup duplication, distinguishes skill_validate_input from gate_in, and designs the adoption lint."
+        }
+      ]
     },
     {
       "project_number": 91,

@@ -32,7 +32,7 @@ next_project_number: 139
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-90 [RESEARCHING] — The largest duplication class in the repo, and it has never been 
+90 [RESEARCHED] — The largest duplication class in the repo, and it has never been 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
@@ -1640,10 +1640,11 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 ---
 
 ### 90. Adoption lint for shared task lookup helper
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124
+- **Research**: [090_adoption_lint_for_shared_task_lookup_helper/reports/01_task-lookup-adoption-lint.md]
 
 **Description**: The largest duplication class in the repo, and it has never been named in any review: the inline task-lookup jq block. 111 files carry a hand-rolled `jq --argjson num ... '.active_projects[] | select(.project_number == $num)'` lookup against specs/state.json, totalling roughly 62,000 duplicated bytes. The canonical helper skill_validate_input() already exists at skill-base.sh:185 and has SIX callers, with ZERO overlap against the 111.
 
