@@ -48,6 +48,9 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
   "modified_files": [
     "specs/001_setup_lsp_config/reports/01_lsp-config-research.md"
   ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/example-script.sh"
+  ],
   "errors": [
     {
       "type": "validation|execution|timeout",
@@ -66,9 +69,9 @@ invocation — e.g. an implementation agent writes the rich object first, then
 `skill-orchestrate`'s own postflight stage writes again at full-loop termination to update
 `status`/`metadata`. Any writer that runs after an earlier writer in the same invocation MUST
 merge onto the existing file (read-modify-write) rather than overwrite wholesale, touching only
-the fields it owns. `modified_files`, `completion_data`, `memory_candidates`, `reflection`, and
-`artifacts` are producer-owned by the implementation agent and MUST survive a later writer's
-update untouched.
+the fields it owns. `modified_files`, `completion_data`, `memory_candidates`, `reflection`,
+`proposed_file_scope`, and `artifacts` are producer-owned by the implementation agent and MUST
+survive a later writer's update untouched.
 
 ## Field Specifications
 
@@ -377,6 +380,35 @@ detection. The two are complementary and are never merged or reconciled against 
 [State Management Schema](../reference/state-management-schema.md), section "File Scope Field",
 for the `file_scope` side of this contrast.
 
+### proposed_file_scope (optional)
+
+**Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of
+`modified_files` and `memory_candidates`, not nested under `completion_data`.
+
+**Include if**: the operation is `research` and research discovered concrete file targets not
+already covered by the task's declared `file_scope`. Unused and absent for `plan` and
+`implement` operations.
+
+Research agents populate this field when research discovers concrete files the implementation
+will need to touch, but which the task's `file_scope` (declared at creation time, per
+`docs/reference/standards/multi-task-creation-standard.md` Component 4a's "Unknown-Footprint
+Convention") does not yet name. It is a proposal of **additions only** — the consumer
+union-merges it into `active_projects[].file_scope` and never removes an existing entry. An
+absent, `null`, or empty (`[]`) value is a valid no-op: it means research found nothing beyond
+what was already declared.
+
+**Consumer**: `agent-system/extensions/core/scripts/update-task-status.sh`'s `--file-scope-add`
+flag, invoked at research postflight (`operation == postflight && target_status == research`).
+The merge runs inside that script's existing single mutex-guarded `state-write.sh` write — see
+Component 4a's "Unknown-Footprint Convention" subsection (cross-referenced above) for the full
+producer/consumer narrative.
+
+**Producer ownership**: consistent with the "Multiple Sequential Writers" section above,
+`proposed_file_scope` is producer-owned by the research agent that discovers the paths, and MUST
+survive any later writer's read-modify-write update to this file untouched.
+
+**Path form**: entries are repo-relative paths, matching `modified_files`'s path convention.
+
 ### errors (optional)
 
 **Type**: array of objects
@@ -457,6 +489,9 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
     }
   ],
   "next_steps": "Run /plan 1 to create implementation plan",
+  "proposed_file_scope": [
+    "lua/neotex/plugins/lsp/servers/example-server.lua"
+  ],
   "metadata": {
     "session_id": "sess_1736700000_abc123",
     "agent_type": "general-research-agent",

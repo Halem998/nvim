@@ -168,26 +168,26 @@ reintroduces a directory root as a stand-in for "not known yet".
 
 ---
 
-### Phase 2: Add `proposed_file_scope` to the Return Metadata Schema [NOT STARTED]
+### Phase 2: Add `proposed_file_scope` to the Return Metadata Schema [COMPLETED]
 
 **Goal**: Define the field contract that Phase 3's flag consumes, so the producer side
 (research agents) and consumer side (`update-task-status.sh`) are written against one spec.
 
 **Tasks**:
-- [ ] Add `proposed_file_scope` to the `## Schema` JSON block in
+- [x] Add `proposed_file_scope` to the `## Schema` JSON block in
       `agent-system/extensions/core/context/formats/return-metadata-file.md` as an optional
-      array of repo-relative path strings.
-- [ ] Add a `### proposed_file_scope (optional)` field-specification section stating: research
+      array of repo-relative path strings. *(completed)*
+- [x] Add a `### proposed_file_scope (optional)` field-specification section stating: research
       agents populate it when research discovers concrete file targets not already covered by
       the task's declared `file_scope`; it is a proposal of ADDITIONS only; the consumer
-      union-merges and never removes; an absent, null, or empty value is a valid no-op.
-- [ ] State the consumer explicitly: `update-task-status.sh --file-scope-add` at research
-      postflight, and cross-reference Component 4a's convention subsection from Phase 1.
-- [ ] State the producer-ownership rule consistent with the existing `### Multiple Sequential
+      union-merges and never removes; an absent, null, or empty value is a valid no-op. *(completed)*
+- [x] State the consumer explicitly: `update-task-status.sh --file-scope-add` at research
+      postflight, and cross-reference Component 4a's convention subsection from Phase 1. *(completed)*
+- [x] State the producer-ownership rule consistent with the existing `### Multiple Sequential
       Writers` section: `proposed_file_scope` is producer-owned and must survive a later
-      writer's merge untouched.
-- [ ] Add the field to the `### Research Success` example in the same file so the shape is
-      copyable.
+      writer's merge untouched. *(completed)*
+- [x] Add the field to the `### Research Success` example in the same file so the shape is
+      copyable. *(completed)*
 
 **Timing**: 0.5 hours
 
