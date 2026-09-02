@@ -24,6 +24,20 @@
 #     penalized; long, capped task descriptions are) and is the caller's responsibility to
 #     preserve, not this file's -- it only supplies the pieces.
 #
+# Implementation note (fork-free): to_lower() and term_matches() are pure-bash (`${var,,}` /
+# `[[ == *needle* ]]`), not `echo | tr` / `echo | grep -qF` pipelines -- fork/exec was measured as
+# the dominant cost of the callers' keyword-matching loops. The external contract above (case-
+# insensitive substring match, true/false via exit code) is unchanged. Two narrow behavioral
+# deltas versus the old pipe-based implementation are known and accepted, not defects:
+#   - `${var,,}` is locale-aware and case-folds non-ASCII uppercase (e.g. Greek `Π` -> `π`) where
+#     `tr '[:upper:]' '[:lower:]'` operates bytewise and never touches non-ASCII. This can only
+#     ever ADD a match relative to the old behavior, never remove one. See the implementation
+#     summary for the task that introduced this change for the full-corpus divergence audit.
+#   - `${1,,}` neither strips a trailing newline from its argument (the old `$(echo "$1" | tr ...)`
+#     did, via command substitution) nor treats a leading `-n`/`-e` argument as an `echo` option
+#     (the old implementation could swallow one). Both call sites only ever pass single-line,
+#     already-tokenized terms/titles/keywords, so neither delta is reachable in practice today.
+#
 # This file has no `set -e` and is guarded against double-sourcing (BASH_SOURCE-keyed guard
 # variable) since a sourced helper must never alter the sourcing script's shell options or be
 # re-defined redundantly when sourced from more than one call path in the same process.
@@ -34,21 +48,24 @@ fi
 _LITERATURE_TERM_MATCH_SOURCED=1
 
 # ---------------------------------------------------------------------------
-# Helper: lowercase for case-insensitive matching
+# Helper: lowercase for case-insensitive matching (fork-free pure-bash; see the
+# implementation note in the header contract above for the two accepted
+# behavioral deltas versus the prior `echo | tr` pipeline).
 # ---------------------------------------------------------------------------
 to_lower() {
-  echo "$1" | tr '[:upper:]' '[:lower:]'
+  printf '%s' "${1,,}"
 }
 
 # ---------------------------------------------------------------------------
-# Helper: check if term appears in string (case-insensitive)
+# Helper: check if term appears in string (case-insensitive; fork-free
+# pure-bash substring test, replacing the prior `echo | grep -qF` pipeline)
 # ---------------------------------------------------------------------------
 term_matches() {
   local haystack
-  haystack=$(to_lower "$1")
+  haystack="${1,,}"
   local needle
-  needle=$(to_lower "$2")
-  echo "$haystack" | grep -qF "$needle"
+  needle="${2,,}"
+  [[ "$haystack" == *"$needle"* ]]
 }
 
 # ---------------------------------------------------------------------------

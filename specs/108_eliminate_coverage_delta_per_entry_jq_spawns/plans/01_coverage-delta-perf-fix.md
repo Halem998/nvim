@@ -170,29 +170,34 @@ total entries, unchanged from research; 7 queries encoded)*
 
 ---
 
-### Phase 2: Pure-bash to_lower/term_matches in literature-term-match.sh [NOT STARTED]
+### Phase 2: Pure-bash to_lower/term_matches in literature-term-match.sh [COMPLETED]
 
 **Goal**: Remove the dominant cost — the per-comparison `echo|tr` and `echo|grep` forks — while
 preserving the helper's documented contract for both consumers.
 
 **Tasks**:
-- [ ] Replace `to_lower()`'s body with the fork-free `${1,,}` form (printed, not echoed through a
-      pipe), keeping the function name and single-argument signature exactly.
-- [ ] Replace `term_matches()`'s body with fork-free lowercasing of both arguments plus
+- [x] Replace `to_lower()`'s body with the fork-free `${1,,}` form (printed, not echoed through a
+      pipe), keeping the function name and single-argument signature exactly. *(completed:
+      `printf '%s' "${1,,}"`)*
+- [x] Replace `term_matches()`'s body with fork-free lowercasing of both arguments plus
       `[[ "$haystack" == *"$needle"* ]]`, keeping the two-argument signature and the
-      true/false-via-exit-code contract exactly.
-- [ ] Leave `filter_terms`, `STOP_WORDS`, and `MULTI_TERM_MATCH_THRESHOLD` untouched (note that
+      true/false-via-exit-code contract exactly. *(completed)*
+- [x] Leave `filter_terms`, `STOP_WORDS`, and `MULTI_TERM_MATCH_THRESHOLD` untouched (note that
       `filter_terms` calls `to_lower` per raw token and therefore inherits the new implementation —
-      this is intended, and is covered by the Phase 4 audit).
-- [ ] Update the file's header contract comment block to state that the helpers are fork-free
+      this is intended, and is covered by the Phase 4 audit). *(confirmed unchanged)*
+- [x] Update the file's header contract comment block to state that the helpers are fork-free
       pure-bash and that the external contract (case-insensitive substring match, exit-code
       protocol) is unchanged; do not weaken or restate the `MULTI_TERM_MATCH_THRESHOLD`
-      caller-responsibility paragraph.
-- [ ] Record in a comment (or in the summary) the two known behavioral deltas versus the old
+      caller-responsibility paragraph. *(completed: new "Implementation note (fork-free)"
+      paragraph added directly after the existing contract paragraph, which is preserved verbatim)*
+- [x] Record in a comment (or in the summary) the two known behavioral deltas versus the old
       implementation: trailing-newline stripping is no longer applied, and a leading `-n`/`-e`
-      argument is no longer swallowed as an `echo` option.
-- [ ] Confirm the bash 4+ assumption holds (the file is `#!/usr/bin/env bash` source-only and the
-      extension already uses `declare -A` and `${var,,}` elsewhere).
+      argument is no longer swallowed as an `echo` option. *(completed: recorded in the header
+      comment's "Implementation note" paragraph)*
+- [x] Confirm the bash 4+ assumption holds (the file is `#!/usr/bin/env bash` source-only and the
+      extension already uses `declare -A` and `${var,,}` elsewhere). *(confirmed: bash 5.3.9 in
+      this environment; `${var,,}`/`declare -A` already present in literature-ingest.sh,
+      literature-convert.sh, and literature-coverage-delta.sh)*
 
 **Timing**: 0.5 hours
 
@@ -207,7 +212,10 @@ production consumers exist (`literature-coverage-delta.sh`, `literature-discover
 implementation time with
 `grep -rn 'to_lower\|term_matches' agent-system/extensions/literature/scripts/` and record the
 consumer list; note that `zotero-search.sh` defines its own independent `filter_terms` and does NOT
-source this helper — confirm that separation still holds rather than assuming it.
+source this helper — confirm that separation still holds rather than assuming it. *(confirmed:
+exactly two production consumers, `literature-coverage-delta.sh` and `literature-discover.sh`;
+`zotero-search.sh` defines its own independent `filter_terms` at its own line 258 and does not
+source `literature-term-match.sh` — separation holds)*
 
 **Files to modify**:
 - `agent-system/extensions/literature/scripts/literature-term-match.sh` - `to_lower` and
@@ -223,7 +231,7 @@ source this helper — confirm that separation still holds rather than assuming 
 
 ---
 
-### Phase 3: Single-pass @tsv extraction in literature-coverage-delta.sh [NOT STARTED]
+### Phase 3: Single-pass @tsv extraction in literature-coverage-delta.sh [IN PROGRESS]
 
 **Goal**: Eliminate the three per-entry `echo | jq` spawns by having the loop feeder emit
 already-extracted fields, without touching the match rule or the output contract.
