@@ -1,7 +1,7 @@
 # Implementation Plan: Mode-Gated Section Loading Convention
 
 - **Task**: 87 - Mode gated section loading convention
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md
@@ -132,14 +132,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author and register the convention document [NOT STARTED]
+### Phase 1: Author and register the convention document [COMPLETED]
 
 **Goal**: `context/patterns/mode-gated-section-loading.md` exists as the named, citable
 convention, registered in the core context index, so every later phase (and every sibling
 migration task) has one authority to point at.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/context/patterns/mode-gated-section-loading.md` covering:
+- [x] Write `agent-system/extensions/core/context/patterns/mode-gated-section-loading.md` covering: *(completed)*
   - **The problem**, stated once and concretely: skill/command bodies load in full on every
     invocation; `install-extension.sh` has no include/partial/fragment mechanism; deploy is a
     byte-for-byte copy. A mutually-exclusive branch section is therefore paid for on every
@@ -188,13 +188,14 @@ migration task) has one authority to point at.
   - **Enforcement pointer**: names `scripts/lint/lint-branch-gated-sections.sh` and
     `verify-deploy.sh` Gate 19, and states the marker-adoption blind spot plainly.
   - **See Also**: `context/patterns/adoption-lint-conventions.md`.
-- [ ] Add the `index-entries.json` entry for `patterns/mode-gated-section-loading.md` in
+- [x] Add the `index-entries.json` entry for `patterns/mode-gated-section-loading.md` in
   `agent-system/extensions/core/index-entries.json`, matching the shape of the existing
   `patterns/todo-archival-reference.md` entry (`path`, `domain`, `subdomain`, `summary`,
   `line_count`, `keywords`, `load_when`). Set `line_count` to the file's actual final line count.
-- [ ] Confirm no `manifest.json` edit is required (core `provides.context` lists `patterns`).
-- [ ] Verify the file contains no task-number references (`.claude/rules/no-task-references-in-deliverables.md`);
-  refer to sibling work by file name only, never by task number.
+  *(completed: line_count 207, modeled on adoption-lint-conventions.md's on_demand:true shape)*
+- [x] Confirm no `manifest.json` edit is required (core `provides.context` lists `patterns`). *(completed: confirmed)*
+- [x] Verify the file contains no task-number references (`.claude/rules/no-task-references-in-deliverables.md`);
+  refer to sibling work by file name only, never by task number. *(completed: check-task-references.sh PASS, 0 occurrences)*
 
 **Timing**: 1.5 hours
 

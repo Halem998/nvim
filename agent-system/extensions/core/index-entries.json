@@ -3310,6 +3310,31 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/mode-gated-section-loading.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Marker syntax and extraction procedure for mode/branch-gated sections in skill and command bodies -- paired branch-gated:begin/end markers, the imperative pointer test, path selection, and the lint that enforces it",
+      "line_count": 207,
+      "keywords": [
+        "branch-gated",
+        "mode-gated",
+        "extraction",
+        "marker",
+        "pointer",
+        "context-budget"
+      ],
+      "topics": [
+        "conventions",
+        "context-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

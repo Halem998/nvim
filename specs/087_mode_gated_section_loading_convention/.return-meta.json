@@ -1,32 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md",
-      "summary": "Six-phase plan formalizing the branch-gated section extraction convention, its lint (verify-deploy Gate 19), fixture test, and one measured pilot extraction on skill-email-cleanup."
-    }
-  ],
-  "next_steps": "Run /implement 87 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788357501_0d2431_87",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7.25,
-    "dependency_waves": [[1], [2], [3, 4, 5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's source store, agent-system/extensions/core/manifest.json declares provides.context as a WHOLESALE directory list (e.g. \"patterns\"), but provides.scripts as an INDIVIDUALLY ENUMERATED file list including every lint/lint-*.sh and tests/test-*.sh path. Consequence: a new context/patterns/*.md file deploys with no manifest edit (only an index-entries.json entry), while a new script or test file is SILENTLY NEVER DEPLOYED unless explicitly added to provides.scripts. The failure is silent -- the file exists in the source store, verify-deploy passes locally when invoked from the source store, and only a deployed-tree check catches it. Always check whether the relevant provides.* key is wholesale or enumerated before assuming no manifest edit is needed; the two keys differ within the same manifest file.",
-      "category": "CONFIG",
-      "source_artifact": "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manifest", "provides", "deploy", "extension", "index-entries", "source-store"]
-    }
-  ],
-  "modified_files": [
-    "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md"
-  ]
+    "session_id": "sess_1788357501_0d2431",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }
