@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Cross-reference the guide from the extension README",
+  "started_at": "2026-09-01T00:30:00Z",
+  "last_updated": "2026-09-01T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add one-line pointer to README", "status": "done", "files_touched": ["agent-system/extensions/literature/README.md"]},
+    {"id": 2, "description": "Phrase to say what the section answers", "status": "done", "files_touched": ["agent-system/extensions/literature/README.md"]},
+    {"id": 3, "description": "Use deploy-relative path", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

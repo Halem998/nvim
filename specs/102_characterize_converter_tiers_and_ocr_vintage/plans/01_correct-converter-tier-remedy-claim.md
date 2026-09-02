@@ -209,20 +209,20 @@ when each converter tier helps, keyed on defect origin rather than document prov
 
 ---
 
-### Phase 3: Cross-reference the guide from the extension README [NOT STARTED]
+### Phase 3: Cross-reference the guide from the extension README [COMPLETED]
 
 **Goal**: The new guidance is discoverable from the extension's front door.
 
 **Tasks**:
-- [ ] Add a one-line pointer to `context/guides/literature-organization.md`'s
+- [x] Add a one-line pointer to `context/guides/literature-organization.md`'s
       `## Converter Tier Selection` section in `README.md` — natural homes are the end of
       `### Mode B: Integration` (where conversion is described) or the `## Content-Aware
-      Chunking` section; choose one.
-- [ ] Phrase it so it says what the section answers ("which converter tier to force when a
+      Chunking` section; choose one. *(completed: added at end of Mode B: Integration)*
+- [x] Phrase it so it says what the section answers ("which converter tier to force when a
       document is rejected by the quality gate, and when a tier switch will not help"), not just
-      that a section exists.
-- [ ] Use the deploy-relative path `context/guides/literature-organization.md` (matching the
-      docstring's reference and the extension's deployed layout), not the source-store path.
+      that a section exists. *(completed)*
+- [x] Use the deploy-relative path `context/guides/literature-organization.md` (matching the
+      docstring's reference and the extension's deployed layout), not the source-store path. *(completed)*
 
 **Timing**: 15 minutes
 

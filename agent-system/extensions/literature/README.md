@@ -102,6 +102,8 @@ Processes source files (PDF/DJVU) through the ingestion pipeline:
 2. Updates `specs/literature-index.json` with new doc_ids
 3. Marks entries as `[RESOLVED]` in `SOURCES.md`
 
+If conversion is gate-rejected, see `context/guides/literature-organization.md`'s Converter Tier Selection section for which converter tier to force and when a tier switch will not help.
+
 ---
 
 ## --lit Flag Semantics
