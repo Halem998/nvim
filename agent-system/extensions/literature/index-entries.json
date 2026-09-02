@@ -469,10 +469,13 @@
         "ocrmypdf",
         "text-layer",
         "scanned",
-        "converter-tier-selection"
+        "converter-tier-selection",
+        "scan_pipeline_provenance",
+        "ocr-misrecognition",
+        "provenance-advisory"
       ],
-      "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory), how --lit injection selects and budgets content from it, and the Converter Tier Selection remedies for gate-rejected (Class A/B) and image-only, no-text-layer (Class C) documents",
-      "line_count": 414,
+      "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory), how --lit injection selects and budgets content from it, the Converter Tier Selection remedies for gate-rejected (Class A/B) and image-only, no-text-layer (Class C) documents, and the measured negative result on content-based OCR-misrecognition detection",
+      "line_count": 465,
       "load_when": {
         "agents": [
           "general-research-agent",
@@ -621,10 +624,12 @@
         "unverified_summary",
         "unverified_scan_source",
         "fail-open",
-        "literature-fidelity-audit"
+        "literature-fidelity-audit",
+        "scan_pipeline_provenance",
+        "provenance-advisory"
       ],
-      "summary": "The seven-value provenance_fidelity enum stamped by literature-fidelity-audit.sh, its four detector signals (word-ratio, scan-source gate, disclosure check, proof-completeness check), and the fail-open allowlist invariant literature-search.sh and literature-briefing.sh depend on",
-      "line_count": 124,
+      "summary": "The seven-value provenance_fidelity enum stamped by literature-fidelity-audit.sh, its four detector signals (word-ratio, scan-source gate via the shared scan_pipeline_provenance function, disclosure check, proof-completeness check), and the fail-open allowlist invariant literature-search.sh and literature-briefing.sh depend on",
+      "line_count": 136,
       "load_when": {
         "agents": [
           "literature-agent"

@@ -403,6 +403,57 @@ running it automatically inside `literature-ingest.sh`'s batch loop would silent
 wall-clock time for every image-only document in a directory ingest, with no way for the operator
 to opt out per-document.
 
+### Content-Based OCR-Misrecognition Detection: A Measured Negative Result
+
+A content-based OCR-misrecognition detector — one that reads the extracted TEXT for a corruption
+signature, rather than the metadata-only scan-pipeline check documented below — was evaluated and
+found non-viable on this corpus. This is recorded here so the same dead end is not rebuilt.
+
+**Four signal families were tried**, each progressively refined against 11 known scan-pipeline
+corpus documents (real Acrobat Capture/Import/Image-Conversion-Plug-in or ABBYY FineReader
+provenance) and 6 born-digital dense-math negative controls:
+1. Whole-document out-of-vocabulary (OOV) rate.
+2. Whole-document mixed-alphanumeric-symbol density.
+3. Prose-line-restricted anomaly rate (the OOV/density signal computed only over lines classified
+   as ordinary prose, excluding headings/tables/math blocks).
+4. Embedded-corruption-token rate (a narrower pattern targeting the specific garbled-character
+   sequences OCR misrecognition produces).
+
+**None separated the two groups at any threshold.** The decisive counter-example: a genuine
+Acrobat Image Conversion scan (`blackburn_2002`) scored 15.69 hits/10k words, while born-digital
+dense-math controls scored 153.95/10k (`venema_2007`) and 306.22/10k (`ahrens_north`) — the
+negative controls repeatedly outscored the real positive by an order of magnitude. Narrowing the
+signal did not close the gap: at the fourth round's narrowest refinement, `blackburn_2002` still
+scored only 2.70/10k against `ahrens_north`'s 84.55/10k.
+
+**Each refinement round closed exactly one false-positive class and exposed a different one**:
+- Round 1 -> Round 2: proper nouns.
+- Round 2 -> Round 3: typographic quotes.
+- Round 3 -> Round 4: citation-year author codes, combining-mark diacritics, and LaTeX macro
+  leakage.
+- Round 4's own residual false-positive class: em/en-dash and slash compounds, and inline HTML
+  sub/superscript leakage.
+
+**Conclusion**: the metadata-only scan-pipeline provenance check
+(`literature_quality_gate.scan_pipeline_provenance`, consumed by both
+`literature-fidelity-audit.sh`'s scan-source gate and `literature-convert.sh`'s conversion-time
+advisory) is very likely the ceiling for this corpus, not a stepping stone toward a
+content-based replacement. It is a bounded, known-signature Creator/Producer allowlist —
+**provenance-only, and advisory only**: a `True` result is never a quality-gate rejection, never
+a withheld certification, and never a converter-tier selector. Scan provenance does not predict
+remedy — two scanned corpus documents from the Converter Tier Selection table above illustrate
+this directly: `savage_1972_foundations-of-statistics` is Class A (the fallback tier fixes it)
+while `joyce_1999_foundations-causal-decision-theory` is Class B (the fallback tier does not),
+even though both are scans.
+
+**One avenue remains untried**: a genuinely independent second extraction — comparing the
+existing text layer against a **fresh** `ocrmypdf`/Tesseract pass on the same page images —
+would sidestep the blind spot all four tried signal families and both existing engine tiers
+share (they all read the same already-degraded `fitz`-extracted text layer). This was
+deliberately excluded from the four rounds above for cost reasons: a full Tesseract pass over a
+several-hundred-page document is a document-scale, minutes-long operation, unsuited to the
+automatic per-conversion gate. It belongs in an on-demand audit command, if pursued at all.
+
 ## Maintenance
 
 - **Token counts go stale**: After editing a file, re-estimate its `token_count` using the

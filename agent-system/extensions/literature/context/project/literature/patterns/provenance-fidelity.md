@@ -33,15 +33,27 @@ signals):
    computed at all -> `unverified_no_baseline`. Otherwise, `ratio >= RATIO_THRESHOLD` (0.75) is
    the certification threshold.
 2. **Scan-source gate** (evaluated ONLY ahead of the ratio>=threshold certification branch, via
-   `scan_source_check()`): does any PDF in the directory match `SCAN_SOURCE_SIGNATURE_RE`
+   `scan_source_check()`, which calls the shared `literature_quality_gate.scan_pipeline_provenance`
+   function): does any PDF in the directory match the known scan/OCR-pipeline signature
    (case-insensitive `capture|finereader|image conversion` against `pdfinfo`'s Creator+Producer
    fields)? If so, route to `unverified_scan_source` instead of `verified_conversion`. This gate
    is deliberately metadata-only, not a general OCR-misrecognition text detector — a bounded,
    known-signature allowlist that will miss a scan pipeline whose tool string isn't in the list
-   (accepted gap; `SCAN_SOURCE_SIGNATURE_RE` is the single extension point for widening or
-   replacing this signal without another `classify_dir()` rewrite). It is NOT applied to the
-   low-ratio disclosure/proof-completeness paths below — a document already withheld from
-   high-ratio certification does not need a second reason to be withheld.
+   (accepted gap; `literature_quality_gate.scan_pipeline_provenance` is the single extension
+   point for widening or replacing this signal without another `classify_dir()` rewrite). A
+   content-based OCR-misrecognition text detector — one that could in principle catch a scan
+   pipeline outside this allowlist — was evaluated separately across four progressively refined
+   signal families against 11 known scan-pipeline corpus documents and 6 born-digital dense-math
+   controls, and did not separate the two groups at any threshold (a genuine scan scored
+   15.69 hits/10k words while born-digital controls scored 153.95 and 306.22/10k); see
+   `context/guides/literature-organization.md`'s "Content-Based OCR-Misrecognition Detection: A
+   Measured Negative Result" subsection for the full measured record. This metadata-only check is
+   very likely the ceiling on this corpus, not a placeholder for that content-based detector. It
+   is NOT applied to the low-ratio disclosure/proof-completeness paths below — a document already
+   withheld from high-ratio certification does not need a second reason to be withheld.
+   The same shared function also drives a separate, non-blocking ADVISORY in
+   `literature-convert.sh`'s per-conversion quality gate — see that script's `run_quality_gate()`
+   — which is unrelated to this classifier and never affects `provenance_fidelity`.
 3. **Disclosure check** (only when ratio < 0.75): does the `.md` content or the matching
    `index.json` summary text admit to being a selective/partial conversion (regex match on
    "selective conversion", "extracted: chapter", "truncated", "excerpt", "chapters N and M")? If

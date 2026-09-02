@@ -326,13 +326,13 @@ still exits 0. Nothing about the exit-3 rejection path changes.
 
 ---
 
-### Phase 5: Record the negative result and refresh the index [NOT STARTED]
+### Phase 5: Record the negative result and refresh the index [COMPLETED]
 
 **Goal**: The measured negative result and the provenance-only fallback are discoverable from
 repository documentation alone, without reading a task report.
 
 **Tasks**:
-- [ ] Add a subsection to `context/guides/literature-organization.md` adjacent to
+- [x] Add a subsection to `context/guides/literature-organization.md` adjacent to
       `## Converter Tier Selection`, recording: (a) content-based OCR-misrecognition detection was
       evaluated and found non-viable on this corpus; (b) the four signal families tried
       (whole-document OOV rate, whole-document mixed-alnum-symbol density, prose-line-restricted
@@ -344,20 +344,20 @@ repository documentation alone, without reading a task report.
       LaTeX macro leakage, em/en-dash and slash compounds and inline HTML sub/superscript
       leakage); (e) that provenance-only flagging is the fallback and is advisory, never a
       rejection or a tier selector; and (f) the fresh-OCR-pass direction as the one untried
-      avenue, with its document-scale cost named.
-- [ ] **Constraint**: this file is outside `specs/**`, so the note must be self-contained. Do not
+      avenue, with its document-scale cost named. *(completed)*
+- [x] **Constraint**: this file is outside `specs/**`, so the note must be self-contained. Do not
       write "task 107", "see task N", or a `specs/107_.../reports/...` path — a `specs/` artifact
-      path embeds a task number. State the findings and numbers inline instead.
-- [ ] Locate the insertion point by the anchors task 104 left in this section (the Diagnostic
+      path embeds a task number. State the findings and numbers inline instead. *(completed)*
+- [x] Locate the insertion point by the anchors task 104 left in this section (the Diagnostic
       procedure bullets, the resolved-example paragraph, and the "No automatic tier selection"
-      paragraph) and leave all of that text byte-identical.
-- [ ] Update `context/project/literature/patterns/provenance-fidelity.md`'s scan-source-gate
+      paragraph) and leave all of that text byte-identical. *(completed)*
+- [x] Update `context/project/literature/patterns/provenance-fidelity.md`'s scan-source-gate
       signal description: the regex now lives in `literature_quality_gate.scan_pipeline_provenance`
       and is shared with the conversion pipeline's advisory; content-based detection was evaluated
-      and found non-viable. Same no-task-reference constraint.
-- [ ] Refresh `index-entries.json` `line_count` for both edited context files, verified against
+      and found non-viable. Same no-task-reference constraint. *(completed)*
+- [x] Refresh `index-entries.json` `line_count` for both edited context files, verified against
       `wc -l`, and add keywords covering the new material (e.g. `scan_pipeline_provenance`,
-      `ocr-misrecognition`, `provenance-advisory`).
+      `ocr-misrecognition`, `provenance-advisory`). *(completed)*
 
 **Timing**: 1 hour
 
