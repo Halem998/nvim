@@ -6,7 +6,7 @@ next_project_number: 139
 
 ## Task Order
 
-*Updated 2026-09-01. Generated from state.json dependency graph.*
+*Updated 2026-09-02. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -23,22 +23,22 @@ next_project_number: 139
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-48 [NOT STARTED] — Propagate the scoped-commit fix to the 65 call sites it never rea
+48 [RESEARCHED] — Propagate the scoped-commit fix to the 65 call sites it never rea
   └─ 50 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
 87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+  └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-90 [NOT STARTED] — The largest duplication class in the repo, and it has never been 
+90 [RESEARCHING] — The largest duplication class in the repo, and it has never been 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [BLOCKED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+    └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins (see above)
 125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
@@ -1640,7 +1640,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 ---
 
 ### 90. Adoption lint for shared task lookup helper
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124
@@ -1678,7 +1678,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 88. Mode gate skill orchestrate multi task section
-- **Status**: [NOT STARTED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87, Task 127
@@ -2349,10 +2349,11 @@ ROADMAP RESOLUTION DECIDED: delete specs/ROADMAP.md rather than rewriting it. It
 ---
 
 ### 48. Propagate scoped commit to all call sites
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124
+- **Research**: [048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md]
 
 **Description**: Propagate the scoped-commit fix to the 65 call sites it never reached. This is a correctness/safety task, not a cleanup task.
 
