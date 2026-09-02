@@ -298,17 +298,17 @@ run (an empty scan that exits 0 is the precise defect that made an earlier gate 
 
 ---
 
-### Phase 3: Fixture-driven regression test for the lint [NOT STARTED]
+### Phase 3: Fixture-driven regression test for the lint [COMPLETED]
 
 **Goal**: `scripts/tests/test-lint-branch-gated-sections.sh` pins the lint's behavior against
 synthetic fixtures, never depending on the live tree being clean.
 
 **Tasks**:
-- [ ] Model the file structurally on `scripts/tests/test-lint-task-lookup-adoption.sh`: `set -uo
+- [x] Model the file structurally on `scripts/tests/test-lint-task-lookup-adoption.sh`: `set -uo *(completed)*
   pipefail`, `mktemp -d` workdir with an `EXIT` trap, deploy-tree-first / source-store-fallback
   candidate resolution for locating the lint under test, `pass()`/`fail()`/`info()` counters, and
   the "exit code reports test success, not lint success" header note.
-- [ ] Cases to cover, each with its own synthetic fixture tree:
+- [x] Cases to cover, each with its own synthetic fixture tree: *(completed: all 9 cases, 16 PASS assertions)*
   1. **Acceptance criterion**: a `skills/x/SKILL.md` fixture carrying a marked section above the
      threshold -> lint exits 1 and names that file.
   2. A marked section *below* the threshold -> lint exits 0 (the "don't extract trivia" boundary).
@@ -325,9 +325,9 @@ synthetic fixtures, never depending on the live tree being clean.
      the case that proves the marker design's whole reason for existing.
   9. **Both root-resolution modes** exercised (source-store-shaped fixture root and
      deployed-shaped fixture root), each producing a non-empty scan.
-- [ ] Add `"tests/test-lint-branch-gated-sections.sh"` to `provides.scripts` in
+- [x] Add `"tests/test-lint-branch-gated-sections.sh"` to `provides.scripts` in *(completed)*
   `agent-system/extensions/core/manifest.json`.
-- [ ] Confirm no separate `run-all.sh` registration is needed (it discovers `scripts/tests/test-*.sh`
+- [x] Confirm no separate `run-all.sh` registration is needed (it discovers `scripts/tests/test-*.sh` *(completed: verified via run-all.sh source read)*
   automatically) by inspecting `run-all.sh`'s discovery logic, not by assuming it.
 
 **Timing**: 1.25 hours

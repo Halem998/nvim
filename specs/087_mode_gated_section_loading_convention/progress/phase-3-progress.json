@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture-driven regression test for the lint",
+  "started_at": "2026-09-02T15:08:00Z",
+  "last_updated": "2026-09-02T15:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write test-lint-branch-gated-sections.sh covering all 9 cases",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Register in manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm run-all.sh auto-discovery; run suite (16/16 PASS); deliberate-break check (2 FAIL confirmed then restored); no repo mutation",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Case 6 allowlist mechanism test using a bare sed-patched copy of the lint in $WORKDIR root",
+      "result": "failed",
+      "reason": "lint sources ../lib/common.sh by relative path; copy needs to live under scripts/lint/ with a sibling scripts/lib/ dir"
+    }
+  ],
+  "handoff_count": 0
+}
