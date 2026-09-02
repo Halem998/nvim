@@ -1,9 +1,63 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/109_fix_ingest_online_failure_modes/summaries/01_ingest-online-failure-modes-summary.md",
+      "summary": "Implementation summary covering all three defect fixes, the source-store boundary check, and before/after evidence from the forced-failure harness."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed three failure modes in the online-discovery -> Zotero+PDF -> ingest bridge: (a) arXiv-only records now pass a synthesized 10.48550/arXiv.<id> DOI to bypass zot add --pdf's hard-fail; (b) staging-PDF and sources/<doc_id>/ orphan leaks are cleaned up on all forced-failure paths (including a fifth continue branch added concurrently by an unrelated task, and a pre-existing set-e/pipefail bug that made one branch unreachable, both fixed); (c) ONLINE_INGEST_PIPELINE_FAILED rationales are enriched with a manual-only Class A/Class B diagnostic pointer. zotero-item-creation.md's understatement was corrected. All 7 plan phases completed and verified via a new 10-scenario forced-failure/stub harness; git diff confirmed no .claude/ path was touched."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+    "specs/109_fix_ingest_online_failure_modes/harness/README.md",
+    "specs/109_fix_ingest_online_failure_modes/harness/run-harness.sh",
+    "specs/109_fix_ingest_online_failure_modes/harness/records/arxiv_only.json",
+    "specs/109_fix_ingest_online_failure_modes/harness/records/doi_present.json",
+    "specs/109_fix_ingest_online_failure_modes/harness/records/in_zotero_no_pdf.json",
+    "specs/109_fix_ingest_online_failure_modes/harness/bin/literature-convert.sh",
+    "specs/109_fix_ingest_online_failure_modes/harness/bin/literature-chunk.sh",
+    "specs/109_fix_ingest_online_failure_modes/harness/bin/zotero-read.sh",
+    "specs/109_fix_ingest_online_failure_modes/harness/bin/zotero-resolve-pdf.sh",
+    "specs/109_fix_ingest_online_failure_modes/harness/stub-path/zot",
+    "specs/109_fix_ingest_online_failure_modes/harness/stub-path/curl",
+    "specs/109_fix_ingest_online_failure_modes/harness/.gitignore",
+    "specs/109_fix_ingest_online_failure_modes/summaries/01_ingest-online-failure-modes-summary.md",
+    "specs/109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-1-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-2-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-3-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-4-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-5-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-6-progress.json",
+    "specs/109_fix_ingest_online_failure_modes/progress/phase-7-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When testing a bash pipeline of scripts that resolve sibling tools via $SCRIPT_DIR/<name>.sh (rather than PATH), build a forced-failure harness by symlinking the real scripts under test into a task-local harness/bin/ directory alongside purpose-built stub executables for the siblings you want to control (same directory, so $SCRIPT_DIR-relative resolution picks up the stubs automatically). For network-calling siblings (curl, local HTTP APIs), prefer a stub that intercepts only the specific host/endpoint under test and passes every other call through to the real binary -- this lets real downloads still happen while controlling just the one lookup that needs to be deterministic (e.g. Unpaywall OA-location resolution).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/109_fix_ingest_online_failure_modes/summaries/01_ingest-online-failure-modes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "testing", "harness", "stub", "forced-failure", "SCRIPT_DIR"]
+    },
+    {
+      "content": "Under `set -eo pipefail`, an assignment like `VAR=$(ls pattern 2>/dev/null | head -1 | xargs ...)` crashes the whole script with a bare, unexplained exit when the glob has no matches: the unmatched glob makes `ls` exit non-zero, pipefail propagates that through the rest of the pipeline into the assignment's own exit status, and `set -e` treats the assignment as a failed simple command. This silently makes any downstream `if [ -z \"$VAR\" ]` empty-check branch unreachable -- the intended graceful handling never runs. Guard with `VAR=$(...) || true` whenever a glob inside a piped command substitution might legitimately match nothing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/109_fix_ingest_online_failure_modes/summaries/01_ingest-online-failure-modes-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "set -e", "pipefail", "glob", "command substitution", "errexit"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788329488_6a27b9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
