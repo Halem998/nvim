@@ -11,15 +11,14 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,43,44,45,51,72,74,89,91,113,125,129,134,137,139,144 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,127,136,140,149 | 29,74,91,125,139 | core-agent-system, extensions |
-| 3 | 145 | 149 | core-agent-system |
-| 4 | 146 | 145 | core-agent-system |
-| 5 | 147 | 146 | core-agent-system |
-| 6 | 143 | 147 | core-agent-system |
-| 7 | 148 | 143 | core-agent-system |
-| 8 | 88 | 148 | core-agent-system |
-| 9 | 142,150 | 88 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,43,44,45,51,72,74,89,91,113,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,136,140,145 | 29,74,91,139,149 | core-agent-system, extensions |
+| 3 | 146 | 145 | core-agent-system |
+| 4 | 147 | 146 | core-agent-system |
+| 5 | 143 | 147 | core-agent-system |
+| 6 | 148 | 143 | core-agent-system |
+| 7 | 88 | 148 | core-agent-system |
+| 8 | 142,150 | 88 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -34,23 +33,22 @@ next_project_number: 151
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
-125 [IMPLEMENTING] — Delete the three base lifecycle skills (skill-researcher, skill-p
-  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-  └─ 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
-    └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
-      └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
-        └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
-          └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
-            └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-              └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-                └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-                └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 144 [RESEARCHED] — Narrow the coarse whole-directory file_scope declarations that ma
+149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
+  └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
+    └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+      └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
+        └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+          └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+            └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+              └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+              └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 
 ### Extensions
 
@@ -958,12 +956,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 125. Delete base lifecycle skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 124
 - **Research**: [125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md]
 - **Plan**: [125_delete_base_lifecycle_skills/plans/01_delete-base-lifecycle-skills.md]
+- **Summary**: [125_delete_base_lifecycle_skills/summaries/01_delete-base-lifecycle-skills-summary.md]
 
 **Description**: Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Delete Base Lifecycle Skills
 
 - **Task**: 125 - Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: None outstanding (both preconditions verified landed -- see Overview)
 - **Research Inputs**: specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md
