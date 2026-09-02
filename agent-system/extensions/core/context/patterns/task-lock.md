@@ -3,9 +3,9 @@
 Canonical, single-source definition of the per-task concurrency lock used to prevent two
 Claude Code sessions from silently clobbering the same shared working tree (the 427
 failure: an uncommitted in-progress task wiped by a second session working the same task
-number). Every consumer (gate scripts, `skill-orchestrate`, `implement.md`,
-`skill-implementer`) references this document and `.claude/scripts/task-lock.sh` by path and
-never restates or reimplements the acquire/heartbeat/release/check logic inline.
+number). Every consumer (gate scripts, `skill-orchestrate`,
+`general-implementation-agent`) references this document and `.claude/scripts/task-lock.sh` by
+path and never restates or reimplements the acquire/heartbeat/release/check logic inline.
 
 **Related**: `.claude/scripts/task-lock.sh` (the implementation), `checkpoint-before-overflow.md`
 (git checkpoint procedure this lock composes with), `file-footprint-overlap.md` (a DISTINCT
@@ -637,10 +637,10 @@ grep result, not a permanent fact -- re-run the same searches before trusting th
 
 - Every `specs/state.json` writer in `agent-system/extensions/core/**` now routes through
   `state-write.sh`. The 11 skill files this note previously listed as still carrying hand-rolled
-  write blocks (`skill-implementer`, `skill-planner`, `skill-project-overview`, `skill-researcher`,
+  write blocks (the three base lifecycle skills -- `skill-project-overview`,
   `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-todo`, and core's own three
-  standalone hard-mode research/plan/implement skills -- since deleted outright, not merely
-  fixed) each show zero hand-rolled hits today and the survivors call
+  standalone hard-mode research/plan/implement skills -- all six of these since deleted outright,
+  not merely fixed) each show zero hand-rolled hits today and the survivors call
   `state-write.sh` instead -- that claim was stale; a separate, already-completed effort had
   closed it before this section's own `--state-file`/`--init` work began. `commands/task.md` and
   `commands/todo.md` likewise carry zero hand-rolled `specs/state.json` or
@@ -1124,9 +1124,9 @@ the same conversation) always succeeds. This property has a dedicated functional
    `agents/general-implementation-agent.md`'s Stage 4D, which every implement-dispatch target —
    base or hard-mode, core or extension — follows the same shape of) with `session_id` derived
    from the task's own `.lock/holder.json` — no per-caller wiring or argument threading required.
-   `skill-implementer/SKILL.md` has no phase-transition point of its own and needs none, since it
-   delegates its entire phase loop to `general-implementation-agent`, which already inherits the
-   mechanized refresh (see item 5 below, which states this same fact). Because create-if-missing
+   `skill-orchestrate` dispatches `general-implementation-agent` directly — there is no skill-layer
+   wrapper needing its own phase-transition point — and the agent already inherits the mechanized
+   refresh (see item 5 below, which states this same fact). Because create-if-missing
    lives inside `acquire` itself (see the `acquire` contract above), both of these
    gate-bypassing consumers dispatch tasks whose directory does not exist yet without any change
    of their own — the fix is entirely internal to `cmd_acquire`/`resolve_task_dir`.
@@ -1176,9 +1176,9 @@ the same conversation) always succeeds. This property has a dedicated functional
      the phase-layer refresh MECHANIZED INSIDE `update-phase-status.sh` itself — fired at every
      phase transition of every caller, `agents/general-implementation-agent.md`'s Stage 4D
      included, with `session_id` derived from the task's own `.lock/holder.json` rather than
-     threaded as an argument (`skill-implementer/SKILL.md` has no phase-transition point of its
-     own and needs none, since it delegates the whole phase loop and inherits the mechanized
-     refresh for free).
+     threaded as an argument (`skill-orchestrate` dispatches `general-implementation-agent`
+     directly — there is no skill-layer wrapper needing its own phase-transition point — and the
+     agent inherits the mechanized refresh for free).
    - `session-reap` is explicit-invocation-only, wired into `skill-refresh/SKILL.md` Step 4.6,
      mirroring `reap`'s own wiring shape (item 4 above).
 6. **`session-list` reader call sites** (see the "Session-Registry Reader Contract" section
@@ -1239,7 +1239,7 @@ so the wiring paths cannot drift from each other's semantics.
   `.orchestrator-loop-guard` (both effort modes) and `.orchestrator-churn-state.json`
   (hard mode only) `init-marker` call sites
 - `.claude/commands/implement.md` — multi-task Step 3 wiring
-- `.claude/skills/skill-implementer/SKILL.md` — phase-transition heartbeat
+- `.claude/agents/general-implementation-agent.md` — phase-transition heartbeat (Stage 4D)
 - `checkpoint-before-overflow.md` — the git checkpoint procedure this lock composes with (a
   session holding the lock still checkpoints/commits exactly as before; the lock only adds
   cross-session exclusivity, it does not change checkpoint behavior)

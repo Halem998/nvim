@@ -28,8 +28,8 @@ covering every path beneath it.
 
 ### Directory-vs-file example
 
-`.claude/skills/skill-implementer/` (a directory entry) overlaps with
-`.claude/skills/skill-implementer/SKILL.md` (a file entry) under rule 2: the file path starts
+`.claude/skills/skill-orchestrate/` (a directory entry) overlaps with
+`.claude/skills/skill-orchestrate/SKILL.md` (a file entry) under rule 2: the file path starts
 with the directory path plus `/`. This is the typical case a file-scope entry is meant to catch —
 one task declaring the whole skill directory as its scope, another declaring just the one file
 inside it.

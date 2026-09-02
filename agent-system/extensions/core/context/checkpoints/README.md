@@ -90,7 +90,7 @@ Execute checkpoint-gate-in.md with:
 - target_status: researching
 
 ### STAGE 2: DELEGATE
-Invoke skill-researcher with session context.
+Invoke general-research-agent with session context.
 
 ### CHECKPOINT 2: GATE OUT
 Execute checkpoint-gate-out.md with skill return.

@@ -98,7 +98,7 @@ hard-mode-only applicability from placement alone. `contracts/phase-closure.md` 
 `contracts/pre-edit-gate.md` are the first two contracts to do this: both are referenced from
 `agents/general-implementation-agent.md` (both effort modes — core's own standalone hard-mode
 implementation agent is deleted and merged into `skill-orchestrate`'s H1 branch) and
-`skills/skill-implementer/SKILL.md` at minimum, and
+`skills/skill-orchestrate/SKILL.md` at minimum, and
 the same explicit-reference mechanism has since been extended to the non-core extension
 implementer surface (every extension implementer agent that runs a plan-phase loop, plus any
 extension skill file maintaining its own contract-bullet list) — this list is illustrative of the

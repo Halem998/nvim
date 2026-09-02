@@ -65,14 +65,12 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 5. Agent creates artifacts
 6. Return structured result (JSON or metadata file)
 
-**Language Routing**:
-| Task Type | Research | Planning | Implementation |
-|----------|----------|----------|----------------|
-| general | skill-researcher | skill-planner | skill-implementer |
-| meta | skill-researcher | skill-planner | skill-implementer |
-| _{extension}_ | _Extension-provided_ | skill-planner | _Extension-provided_ |
-
-**Note**: Extensions add task type routing entries. See `.claude/extensions/*/manifest.json`.
+**Language Routing**: `general` and `meta` route directly to agents (`general-research-agent`,
+`planner-agent`, `general-implementation-agent`) via `command-route-agent.sh`, not through a
+research/plan/implement skill layer — see `skill-orchestrate/SKILL.md`'s dispatch stages.
+Extensions provide their own domain research/implementation skills (or agents) via their
+manifest's `routing`/`routing_agents` blocks; planning still routes to `planner-agent` for
+extensions without a dedicated plan skill. See `.claude/extensions/*/manifest.json`.
 
 ---
 

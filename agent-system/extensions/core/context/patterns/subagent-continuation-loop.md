@@ -83,7 +83,7 @@ When spawning a successor, the delegation context includes a `continuation_conte
 {
   "session_id": "sess_20260504_495_impl",
   "delegation_depth": 2,
-  "delegation_path": ["orchestrator", "implement", "skill-implementer", "successor-1"],
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent", "successor-1"],
   "timeout": 7200,
   "task_context": { ... },
   "artifact_number": "01",
@@ -194,8 +194,8 @@ If the agent runs out of context while writing the handoff:
 
 This pattern can be reused by any skill that delegates to long-running subagents:
 
-1. **skill-researcher**: For long research tasks that exhaust context
-2. **skill-planner**: For complex multi-domain planning
+1. **general-research-agent**: For long research tasks that exhaust context
+2. **planner-agent**: For complex multi-domain planning
 3. **Domain-specific implementers**: For large codebases or complex configurations
 
 To adopt this pattern in another skill:

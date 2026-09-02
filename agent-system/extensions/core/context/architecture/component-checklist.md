@@ -200,7 +200,8 @@ When: Adding specialized execution for existing workflow
 **Creates**:
 1. Agent: `.claude/agents/database-implementation-agent.md`
 
-**Uses existing**: `skill-implementer` routes to it
+**Uses existing**: the extension manifest's `routing_agents.implement.{type}` entry routes
+`skill-orchestrate`'s direct agent dispatch to it (via `command-route-agent.sh`)
 
 ### Pattern 4: Utility Skill (Direct Execution)
 

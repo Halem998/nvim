@@ -1,0 +1,55 @@
+{
+  "phase": 5,
+  "phase_name": "Sweep core/context/patterns, architecture, checkpoints",
+  "started_at": "2026-09-02T01:15:00Z",
+  "last_updated": "2026-09-02T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Sweep context/patterns/ (11 files) to zero hits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+        "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-execution.md",
+        "agent-system/extensions/core/context/patterns/subagent-continuation-loop.md",
+        "agent-system/extensions/core/context/patterns/thin-wrapper-skill.md",
+        "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
+        "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+        "agent-system/extensions/core/context/patterns/skill-preflight-flow.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Sweep context/architecture/ (3 files) to zero hits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/architecture/component-checklist.md",
+        "agent-system/extensions/core/context/architecture/system-overview.md",
+        "agent-system/extensions/core/context/architecture/context-layers.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Sweep context/checkpoints/README.md to zero hits",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/checkpoints/README.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Rewrite each hit line using shape (a) enumeration-to-hard-variants, (b) dispatch-mechanism claim, or (c) worked-example retarget",
+      "type": "altered",
+      "reason": "Shape (a) never applied: repo-wide grep confirms zero skill-researcher-hard/skill-planner-hard/skill-implementer-hard references exist anywhere in the source tree (apparently removed by an earlier, unrelated task). A fourth rewrite shape was needed instead in several files -- retargeting a claim about WHICH component now owns a piece of functionality (Stage 5a/5c validation and continuation-loop init, the split inline-commit shape) to its actual current owner, skill-orchestrate, since these responsibilities moved rather than simply having their skill renamed.",
+      "annotation": "*(deviation: altered — ...)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Several files (system-overview.md, skill-lifecycle.md, multi-task-operations.md, task-lock.md, checkpoint-execution.md) required substantive rewrites beyond a mechanical name swap, since whole sections' premises (a /research-/plan-/implement-command-plus-skill-layer architecture) are now stale, not merely the specific skill names. Rewrites preserve each document's teaching content while retargeting claims to the current skill-orchestrate-direct-agent-dispatch architecture. context-protective-lead.md's compliance-audit table used a documented in-file precedent (retaining a retired skill's row, annotated historical) for the skill-orchestrator row; the three deleted skills' rows were collapsed into one non-literal-name row instead of following that precedent verbatim, since the precedent's literal name still matched the task's own zero-hit grep target."
+}

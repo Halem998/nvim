@@ -5,8 +5,9 @@ postflight status update, memory-candidate propagation, artifact linking, TTS no
 cleanup, regardless of which extension owns the importing skill. This file is the SINGLE
 canonical block for these five stages. Before it existed, every lifecycle skill hand-copied its
 own status-update call, its own memory-candidate append (or, in most skills, no append at all —
-`skill-planner` had never had a Stage 7a, silently discarding every `memory_candidates` a
-`planner-agent` emitted), its own two-step artifact-linking jq pair, and one of eleven
+the base lifecycle plan skill, since deleted, had never had a Stage 7a, silently discarding every
+`memory_candidates` a `planner-agent` emitted), its own two-step artifact-linking jq pair, and one
+of eleven
 near-identical inline TTS blocks. Routing every importer through `skill_postflight_update`,
 `skill_propagate_memory_candidates`, `skill_link_artifacts`, `skill_lifecycle_notify`, and
 `skill_cleanup` in `skill-base.sh` makes that drift class structurally impossible: there is
@@ -92,9 +93,9 @@ skill_propagate_memory_candidates "$task_number" "$memory_candidates" "$session_
 ```
 
 Appends (never overwrites) any memory candidates the subagent emitted to the task's `state.json`
-entry. A skill that has never had this stage (the report found `skill-planner` in exactly this
-state) gains real memory-candidate propagation the first time it imports this block — this is a
-deliberate fix carried by this import, not incidental.
+entry. A skill that has never had this stage (the report found the base lifecycle plan skill,
+since deleted, in exactly this state) gains real memory-candidate propagation the first time it
+imports this block — this is a deliberate fix carried by this import, not incidental.
 
 ## Stage 8: Link Artifacts
 
@@ -134,9 +135,9 @@ a hypothetical. `.return-meta.json`'s deletion is now owned by the calling comma
 step that consumes it (see the reader table below); the one exception is `skill-spawn`, which has
 no command-level consumer downstream and so deletes the file inline itself, immediately after
 this same `skill_cleanup` call.
-Note: `skill-implementer` also removes `.continuation-loop-guard` — that file is
-implementer-specific and is removed with a separate `rm -f` immediately after this call, not
-folded into `skill_cleanup` (which stays a 2-arg function shared by every importer).
+Note: `orchestrator-postflight.sh` also removes `.continuation-loop-guard` for implement
+operations — that file is implement-specific and is removed with a separate `rm -f`, not folded
+into `skill_cleanup` (which stays a 2-arg function shared by every importer).
 
 ## Ordering
 

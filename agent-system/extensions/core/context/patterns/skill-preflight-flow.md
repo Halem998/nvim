@@ -25,7 +25,7 @@ re-accumulating and must be deleted, not kept "just in case".
 - `session_id` — the session identifier generated at GATE IN (`sess_{timestamp}_{random}`).
 - `operation` — one of `research` | `plan` | `implement`, matching `update-task-status.sh`'s
   `target_status` vocabulary for this skill's role.
-- `skill_name` — the literal name of the importing skill (e.g. `"skill-researcher"`), used as the
+- `skill_name` — the literal name of the importing skill (e.g. `"skill-reviser"`), used as the
   marker's `skill` field.
 - `skill-base.sh` is already sourced by the importing skill (once, near the top of its first
   bash-bearing stage) — this block assumes `skill_preflight_update` and

@@ -278,23 +278,29 @@ the post-edit count must be zero for both.
 
 ---
 
-### Phase 5: Sweep core/context/patterns, architecture, checkpoints [NOT STARTED]
+### Phase 5: Sweep core/context/patterns, architecture, checkpoints [COMPLETED]
 
 **Goal**: Clear references in the highest-density core context files.
 
 **Tasks**:
-- [ ] Rewrite each hit line by reading its surrounding claim first. Three rewrite shapes recur:
+- [x] Rewrite each hit line by reading its surrounding claim first. Three rewrite shapes recur:
       (a) an enumeration of "the base three and their `-hard` variants" becomes an enumeration of
       the `-hard` variants alone; (b) a claim about `/research`, `/plan`, `/implement` dispatch
       becomes a claim about `skill-orchestrate`'s direct agent dispatch; (c) a worked example
-      using a deleted skill name is retargeted to a surviving skill.
-- [ ] `context/patterns/`: `skill-lifecycle.md` (17 hits), `task-lock.md`, `multi-task-operations.md`,
+      using a deleted skill name is retargeted to a surviving skill. *(deviation: altered — shape
+      (a) does not apply anywhere in this territory; repo-wide grep confirms zero
+      `skill-researcher-hard`/`skill-planner-hard`/`skill-implementer-hard` references exist
+      anywhere in the source tree, so no rewrite ever enumerated "the base three and their
+      `-hard` variants" — every hit used shape (b) or (c) instead, or named a functional owner
+      that had genuinely moved (e.g. Stage 5a/5c ownership, the split-commit shape) which required
+      a fourth shape: retarget the claim to its new true owner, `skill-orchestrate`)*
+- [x] `context/patterns/`: `skill-lifecycle.md` (17 hits), `task-lock.md`, `multi-task-operations.md`,
       `lit-stage4a-flow.md`, `checkpoint-execution.md`, `context-protective-lead.md`,
       `file-footprint-overlap.md`, `skill-postflight-flow.md`, `skill-preflight-flow.md`,
-      `subagent-continuation-loop.md`, `thin-wrapper-skill.md`.
-- [ ] `context/architecture/`: `system-overview.md` (14 hits), `component-checklist.md`,
-      `context-layers.md`.
-- [ ] `context/checkpoints/README.md`.
+      `subagent-continuation-loop.md`, `thin-wrapper-skill.md`. *(completed)*
+- [x] `context/architecture/`: `system-overview.md` (14 hits), `component-checklist.md`,
+      `context-layers.md`. *(completed)*
+- [x] `context/checkpoints/README.md` *(completed)*
 
 **Timing**: 1.5 hours
 

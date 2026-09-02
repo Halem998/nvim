@@ -2,10 +2,13 @@
 
 ## Overview
 
-Every lifecycle skill (`skill-researcher`, `skill-planner`, `skill-implementer`, their `--hard`
-variants, and every extension's `skill-{domain}-research` /
-`skill-{domain}-implementation`) is a self-contained workflow that owns its complete lifecycle in
-one skill invocation:
+Every lifecycle skill (`skill-reviser`, `skill-spawn`, and every extension's
+`skill-{domain}-research` / `skill-{domain}-implementation`) is a self-contained workflow that
+owns its complete lifecycle in one skill invocation. The base lifecycle skills that originally
+motivated this skeleton (and their `--hard` variants) have since been deleted; `skill-orchestrate`
+now dispatches `general`/`meta`/`markdown` research/plan/implement work directly to agents
+instead, following its own distinct multi-stage flow (see the "Not part of the per-skill stage
+list" note below):
 
 - **Preflight**: validate input, update task status, write a premature-termination marker
 - **Delegate**: invoke an agent (via the `Agent` tool) to perform the actual work
@@ -16,9 +19,9 @@ A single skill invocation replaces the older 3-skill gate-in/delegate/gate-out p
 halt risk from 3-4 potential stop points per command down to 1.
 
 ```
-/research N
+/revise N
 ├── VALIDATE: Inline task lookup (command layer)
-├── DELEGATE: Skill(skill-researcher)
+├── DELEGATE: Skill(skill-reviser)
 │   ├── Stage 1-5b: preflight, context prep, subagent invocation (this doc's skeleton)
 │   ├── Stage 6-9: postflight — status, artifacts, notify, cleanup (this doc's skeleton)
 │   └── Return: brief text summary
@@ -36,7 +39,7 @@ function-signature table — see "Division of Labor" below for where that conten
 
 This is the stage list every converted lifecycle skill follows today, in numbered order. Every
 skill uses the *same* stage numbers for the *same* purpose — a reader who knows "Stage 7 is
-status update" in `skill-researcher` can carry that fact to `skill-nix-implementation` unchanged.
+status update" in `skill-reviser` can carry that fact to `skill-nix-implementation` unchanged.
 Not every skill has every stage (see "Optional / skill-specific stages" below), and skills differ
 in how far they split the postflight stages apart (see "Two Postflight Shapes").
 
@@ -50,9 +53,9 @@ in how far they split the postflight stages apart (see "Two Postflight Shapes").
 | 4 | Prepare Delegation Context | Prose: build the JSON delegation context (`session_id`, `delegation_depth`, `delegation_path`, `task_context`, domain-specific fields); `skill_context_injection()` fires the extension `context_injection` hook alongside it | skill body + `scripts/skill-base.sh` |
 | 4b | Read/Inject Format or Plan Context | Prose: `cat` the relevant format spec (`report-format.md`/`plan-format.md`) or read the plan file, for inclusion in the Stage 5 prompt | skill body |
 | 5 | Invoke Subagent | The `Agent` tool with an explicit `subagent_type` — never `Skill(...)` | skill body |
-| 5a | *(implementer only)* Validate Subagent Return Format | Prose: sanity-check the returned metadata shape before Stage 6 | `skill-implementer/SKILL.md` |
+| 5a | *(implement dispatch only, historical)* Validate Subagent Return Format | Prose: sanity-check the returned metadata shape before Stage 6 — folded into `skill-orchestrate`'s own direct-dispatch return handling now that the base lifecycle implement skill is deleted | `skill-orchestrate/SKILL.md` |
 | 5b | Self-Execution Fallback | The `.return-meta.json` write obligation when the skill performed work without spawning a subagent, imported via `@.claude/context/patterns/skill-self-execution-fallback.md` | same shared block |
-| 5c | *(implementer only)* Continuation Loop Init | Prose: multi-turn continuation guard setup | `skill-implementer/SKILL.md` |
+| 5c | *(implement dispatch only, historical)* Continuation Loop Init | Prose: multi-turn continuation guard setup — folded into `skill-orchestrate`'s own `.orchestrator-loop-guard` handling now that the base lifecycle implement skill is deleted | `skill-orchestrate/SKILL.md` |
 | 6 | Parse Subagent Return | Read and `jq`-parse `.return-meta.json`; `skill_read_metadata()` is the available helper | `scripts/skill-base.sh` |
 | 6a | Validate Artifact Content | `skill_validate_artifact()` / `skill_validate_task_artifacts()` — non-blocking `validate-artifact.sh --fix` pass | `scripts/skill-base.sh` |
 | 7 | Update Task Status (Postflight) | `skill_postflight_update()`, imported via `@.claude/context/patterns/skill-postflight-flow.md` | same shared block |
@@ -94,47 +97,42 @@ Every skill shares Stages 6, 6a, 7, 7a, 8, 8a. They diverge on **who commits, an
 numbered stages that takes** — this is a real, intentional difference between skill families, not
 drift to be flattened.
 
-### Collapsed shape (skill-researcher and every domain/extension thin wrapper)
+### Collapsed shape (every surviving domain/extension thin wrapper)
 
-`skill-researcher`, `skill-{domain}-research`, and `skill-{domain}-implementation` skills
-(neovim, nix, latex, typst, z3, python, web, email, epidemiology, founder, present, etc.) fold
-Stages 7/7a/8/8a/9 into a single `@`-import of `skill-postflight-flow.md`, where that block's own
-Stage 9 is **Cleanup** (`skill_cleanup()`) — there is no inline git-commit stage in the skill
-body at all. These skills rely entirely on the **command-level batch commit**
-(`/research`'s and `/implement`'s own CHECKPOINT 3, e.g. `implement.md`'s "Apply the `implement`
-scope... `git add`... `git commit`") to persist their changes. The skill's own numbering ends at
-Stage 9 (cleanup, via the shared block) followed by either an explicit `### Stage 10: Return
-Brief Summary` heading (as in `skill-researcher`) or an unnumbered `## Return Format` section
-(as in most domain thin wrappers) — both are compliant with the skeleton; the final heading
-number is a readability choice, not a validated field.
+`skill-{domain}-research` and `skill-{domain}-implementation` skills (neovim, nix, latex, typst,
+z3, python, web, email, epidemiology, founder, present, etc.), plus `skill-reviser` and
+`skill-spawn`, fold Stages 7/7a/8/8a/9 into a single `@`-import of `skill-postflight-flow.md`,
+where that block's own Stage 9 is **Cleanup** (`skill_cleanup()`) — there is no inline git-commit
+stage in the skill body at all. These skills rely entirely on a batch commit further up the call
+chain to persist their changes. The skill's own numbering ends at Stage 9 (cleanup, via the
+shared block) followed by either an explicit `### Stage 10: Return Brief Summary` heading (as in
+`skill-reviser`) or an unnumbered `## Return Format` section (as in most domain thin wrappers) —
+both are compliant with the skeleton; the final heading number is a readability choice, not a
+validated field.
 
-### Split shape (skill-planner and skill-implementer, core general/meta/markdown tasks)
+### Split shape (historical: the deleted base plan/implement skills, core general/meta/markdown tasks)
 
-`skill-planner` and `skill-implementer` interleave an explicit, inline **Stage 9: Git Commit**
-between the shared block's TTS-notify stage and cleanup — calling
+The base lifecycle plan/implement skills — since deleted, `general`/`meta`/`markdown` now
+dispatch through `skill-orchestrate` directly — used to interleave an explicit, inline **Stage 9:
+Git Commit** between the shared block's TTS-notify stage and cleanup, calling
 `.claude/scripts/git-commit-scoped.sh` directly (the sole sanctioned path-scoped, mutex-serialized
-committer; see `@.claude/context/standards/git-staging-scope.md`) rather than relying solely on
-the command-level batch commit. Because of this, these two skills' own Stage numbering runs one
-stage longer:
+committer; see `@.claude/context/standards/git-staging-scope.md`) rather than relying solely on a
+higher-level batch commit. Their Stage numbering ran one stage longer:
 
 - Stage 9: Git Commit (inline, via `git-commit-scoped.sh`)
 - Stage 10: Cleanup (`skill_cleanup()`, called explicitly rather than through the shared block's
   own Stage 9 slot, since that slot is now occupied by Git Commit)
 - Stage 11: Return Brief Summary
 
-The command layer (`/plan`, `/implement`) still runs its own batch commit afterward as a safety
-net — per `plan.md`'s own comment, "Per-skill postflight may have already committed individual
-task changes; this batch commit captures any remaining unstaged changes and may be empty (which
-fails gracefully)." The two commits are not a bug: the inline commit exists because multi-task
-`/plan N,N,N` and `/implement N,N,N` dispatch several agents concurrently — a genuinely concurrent
-site where each skill instance must commit its own task's changes rather than wait for a shared
-batch step — while the command-level commit is the safety net for whatever the inline commit
-didn't cover (e.g. a self-execution-fallback path).
+The underlying rationale still applies today, just relocated: `skill-orchestrate` itself now calls
+`git-commit-scoped.sh` inline per task during multi-task dispatch (see its own commit-scope
+section) for the same reason the two deleted skills once did — a genuinely concurrent site where
+each in-flight task must commit its own changes rather than wait for a shared batch step.
 
-**Rule of thumb**: if you are writing or converting a **core** general/meta/markdown lifecycle
-skill (planner/implementer family), give it an explicit Stage 9 Git Commit. If you are writing a
-**domain/extension** thin wrapper (research or implementation), do not — follow the collapsed
-shape and let the command-level batch commit own it, exactly as `skill-researcher` and the
+**Rule of thumb**: `skill-orchestrate`'s own multi-task dispatch owns the inline-commit shape for
+`general`/`meta`/`markdown` and extension task types alike now. If you are writing a
+**domain/extension** thin wrapper (research or implementation), follow the collapsed shape above
+and let `skill-orchestrate`'s dispatch loop own the commit, exactly as `skill-reviser` and the
 existing domain skills already do.
 
 ---
@@ -226,12 +224,17 @@ Not every skill needs this lifecycle pattern. Skills matching these patterns are
 ### Workflow Skills (Follow This Pattern)
 
 These skills manage task lifecycle transitions and follow the Stage-N skeleton above:
-- skill-researcher (not_started/researched -> researching -> researched)
-- skill-planner (researched -> planning -> planned)
-- skill-implementer (planned -> implementing -> completed) — core's own standalone hard-mode
-  research/plan/implement skills are deleted; `--hard` on these task types now runs through
-  `skill-orchestrate`'s own hard_mode branch instead of a separate `-hard` skill
+- skill-reviser (researched -> revising -> researched, new plan version)
 - Every extension's `skill-{domain}-research` / `skill-{domain}-implementation` pair
+  (not_started/researched -> researching -> researched, researched -> planning -> planned,
+  planned -> implementing -> completed)
+
+For `general`/`meta`/`markdown` task types the base lifecycle research/plan/implement skills (and
+their standalone hard-mode variants) that used to own these same transitions — not_started/
+researched -> researching -> researched, researched -> planning -> planned, planned ->
+implementing -> completed — are deleted. `skill-orchestrate` now runs these transitions itself
+via its own dispatch stages (both effort modes) rather than delegating to a skill that follows
+this Stage-N skeleton.
 
 ### Non-Workflow Skills (Excluded from Pattern)
 
@@ -245,27 +248,27 @@ These skills manage task lifecycle transitions and follow the Stage-N skeleton a
 
 ## Parallel Invocation
 
-Workflow commands (`/research`, `/plan`, `/implement`) invoke multiple skills in a single message
-for multi-task dispatch:
+`/orchestrate` invokes multiple agents in a single message for multi-task dispatch (its
+Stage MT loop; the former per-command `/research`/`/plan`/`/implement` multi-task dispatch has
+been retired along with those commands):
 
 ```
-/research 7, 22, 24
-  -> Skill(skill-researcher, task {N})   \
-  -> Skill(skill-researcher, task {N})   > all invoked in a single message
-  -> Skill(skill-researcher, task {N})  /
+/orchestrate 7, 22, 24 --research
+  -> Agent(general-research-agent, task {N})   \
+  -> Agent(general-research-agent, task {N})   > all invoked in a single message
+  -> Agent(general-research-agent, task {N})  /
 ```
 
-Each skill instance runs **independently** with its own preflight, delegation, postflight, and
-(for the split-shape skills) its own inline git commit. Multiple parallel instances may write to
-`state.json` concurrently — this is acceptable because every write is scoped to a specific
-`project_number` via `select(.project_number == $num)`, so no instance touches another task's
-fields.
+Each dispatched agent runs **independently** with its own preflight, delegation, postflight, and
+(per the historical split-shape rationale above, now owned by `skill-orchestrate` itself) its own
+inline git commit. Multiple parallel instances may write to `state.json` concurrently — this is
+acceptable because every write is scoped to a specific `project_number` via
+`select(.project_number == $num)`, so no instance touches another task's fields.
 
-**Multi-task vs. team mode** (orthogonal dimensions): multi-task invokes one skill instance per
-task, on `/research`, `/plan`, and `/implement`. Team mode (`--team`) is `skill-orchestrate`'s
-internal Stage 3.6/3.6a fan-out on `/orchestrate` only, spawning multiple agents for a single
-task. `--team` is not accepted by `/research`, `/plan`, or `/implement`, so there is no combined
-multi-task-plus-team mode on those three commands.
+**Multi-task vs. team mode** (orthogonal dimensions): multi-task dispatches one agent instance
+per task, within `/orchestrate`'s own Stage MT loop. Team mode (`--team`) is `skill-orchestrate`'s
+internal Stage 3.6/3.6a fan-out, spawning multiple agents for a single task. The two dimensions
+compose independently within `/orchestrate` itself.
 
 ---
 

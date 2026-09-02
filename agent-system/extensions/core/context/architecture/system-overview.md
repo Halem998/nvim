@@ -11,20 +11,27 @@
 
 The agent system implements a three-layer delegation pattern separating concerns into distinct execution layers.
 
+**Superseded note**: the standalone `/research`, `/plan`, `/implement` commands and the three
+base lifecycle skills that used to occupy Layers 1-2 for the `general`/`meta`/`markdown` task
+types have been deleted. `/orchestrate` is now the sole
+lifecycle entry point for those task types; its `skill-orchestrate` skill dispatches agents
+directly (Layer 2 -> Layer 3), still via the Agent tool. The three-layer shape below still holds
+for extension domain task types that provide their own research/implementation skills.
+
 ```
                          USER INPUT
                               │
                               ▼
                     ┌─────────────────┐
      Layer 1:       │    Commands     │  User-facing entry points
-     (Commands)     │  (/research,    │  Parse $ARGUMENTS
-                    │   /plan, etc.)  │  Route to skills
+     (Commands)     │  (/orchestrate, │  Parse $ARGUMENTS
+                    │   /meta, etc.)  │  Route to skills
                     └────────┬────────┘
                               │
                               ▼
                     ┌─────────────────┐
      Layer 2:       │     Skills      │  Thin wrappers with validation
-     (Skills)       │ (skill-researcher,│  Prepare delegation context
+     (Skills)       │ (skill-orchestrate,│  Prepare delegation context
                     │  etc.)          │  Invoke agents via Agent tool
                     └────────┬────────┘
                               │
@@ -74,13 +81,14 @@ The agent system implements a three-layer delegation pattern separating concerns
 - Command name, description, usage examples
 - No execution logic embedded
 
-**Example routing**:
+**Example routing** (extension domain command; `general`/`meta`/`markdown` route through
+`/orchestrate` -> `skill-orchestrate` -> `command-route-agent.sh` instead of a per-command
+YAML `routing:` block):
 ```yaml
 ---
 routing:
-  general: skill-researcher
-  meta: skill-researcher
-  default: skill-researcher
+  nix: skill-nix-research
+  default: skill-nix-research
 ---
 ```
 
@@ -110,7 +118,7 @@ allowed-tools: Agent, Bash, Edit, Read, Write
 ```
 
 **Note on delegation patterns**: Skills use one of two delegation approaches:
-- **Core skills** (skill-researcher, skill-planner, skill-implementer, etc.): Use Agent tool with explicit `subagent_type` for structured delegation. These do NOT use `context: fork` or `agent:` frontmatter because they inject structured context (session_id, delegation_depth, memory_context) directly.
+- **Core skills** (skill-orchestrate, skill-reviser, skill-spawn, etc.): Use Agent tool with explicit `subagent_type` for structured delegation. These do NOT use `context: fork` or `agent:` frontmatter because they inject structured context (session_id, delegation_depth, memory_context) directly.
 - **Extension skills** (skill-{ext}-research, skill-{ext}-implementation, etc.): May optionally use `context: fork` + `agent:` frontmatter for simpler delegation when structured context injection is not needed. This is the standard thin-wrapper pattern documented in the template.
 - **skill-meta**: Uses `agent:` frontmatter (but not `context: fork`) as a hybrid pattern.
 
@@ -169,7 +177,7 @@ Skills implement three distinct architecture patterns based on their execution n
 
 ### Pattern A: Delegating Skills with Internal Postflight
 
-**Used by**: skill-researcher, skill-planner, skill-implementer, skill-meta (core skills; extensions add more)
+**Used by**: skill-meta, skill-reviser, skill-spawn (core skills; extensions add more)
 
 **Characteristics**:
 - Frontmatter: `allowed-tools: Agent, Bash, Edit, Read, Write`
@@ -261,7 +269,7 @@ Does the skill need to spawn a subagent?
 ### Standard Execution Flow
 
 ```
-User: "/research 259"
+User: "/orchestrate 259 --research"
          │
          ▼
 ┌───────────────────┐
@@ -271,8 +279,8 @@ User: "/research 259"
           │
           ▼
 ┌───────────────────┐
-│ 2. Route to skill │  task_type=general → skill-researcher
-│    by task_type   │
+│ 2. skill-orchestrate│  task_type=general → general-research-agent
+│    resolves agent │  (via command-route-agent.sh)
 └─────────┬─────────┘
           │
           ▼
@@ -381,13 +389,15 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 ## Task-Type-Based Routing
 
-Tasks route to specialized skills/agents based on their `task_type` field:
+Tasks route to specialized agents based on their `task_type` field. For `general`/`meta`/
+`markdown`, `skill-orchestrate` dispatches the agent directly (no per-function skill layer);
+extension task types may still route through their own domain skill:
 
 | Task Type | Research | Planning | Implementation |
 |----------|----------|----------|----------------|
-| `general` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
-| `meta` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
-| _{extension}_ | _Extension-provided skill → extension agent_ | skill-planner → planner-agent | _Extension-provided skill → extension agent_ |
+| `general` | general-research-agent | planner-agent | general-implementation-agent |
+| `meta` | general-research-agent | planner-agent | general-implementation-agent |
+| _{extension}_ | _Extension-provided skill/agent_ | planner-agent | _Extension-provided skill/agent_ |
 
 **Note**: Extensions (e.g., nix, lean4, latex, typst) add task type routing entries. See `.claude/extensions/*/manifest.json`.
 
@@ -399,16 +409,13 @@ Complete mapping of all commands to their skill and agent paths:
 
 | Command | Routing Type | Skill(s) | Agent(s) | Pattern |
 |---------|--------------|----------|----------|---------|
-| `/research` | Task-type-based | Extension or skill-researcher | Extension or general-research-agent | A |
-| `/plan` | Single | skill-planner | planner-agent | A |
-| `/implement` | Task-type-based | Extension or skill-implementer | Extension or general-implementation-agent | A |
-| `/revise` | Single | skill-planner (new version) | planner-agent | A |
+| `/orchestrate` | Autonomous, task-type-based | skill-orchestrate | general-research-agent / planner-agent / general-implementation-agent (or extension-provided) | C |
+| `/revise` | Single | skill-reviser (new version) | reviser-agent | A |
 | `/meta` | Single | skill-meta | meta-builder-agent | A |
 | `/review` | Direct | (direct execution) | (inline execution) | B |
 | `/errors` | Direct | (direct execution) | (inline execution) | B |
 | `/todo` | Direct | skill-todo | (no agent) | B |
 | `/task` | Direct | skill-meta | meta-builder-agent | A |
-| `/orchestrate` | Autonomous | skill-orchestrate | (dispatches multiple) | C |
 | `/refresh` | Direct | skill-refresh | (no agent) | B |
 
 **Note**: Additional commands (/convert) available via extensions in `agent-system/extensions/`.

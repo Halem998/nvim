@@ -172,13 +172,13 @@ Thin wrapper skills use one of two delegation approaches. The choice depends on 
 
 ### Pattern A: Core skill pattern (explicit `subagent_type`, no `context: fork`)
 
-Used by: skill-researcher, skill-planner, skill-implementer, skill-reviser, skill-spawn, and other core workflow skills.
+Used by: skill-reviser, skill-spawn, skill-meta, and other core workflow skills.
 
 ```yaml
 ---
-name: skill-implementer
-description: Execute implementation tasks.
-allowed-tools: Agent, Bash, Edit, Read, Write
+name: skill-reviser
+description: Thin wrapper that delegates plan revision to reviser-agent subagent.
+allowed-tools: Agent, Bash, Edit, Read, Write, Glob, Grep
 ---
 ```
 
@@ -186,7 +186,7 @@ The skill body explicitly calls the Agent tool with `subagent_type`:
 ```
 Tool: Agent
 Parameters:
-  subagent_type: "general-implementation-agent"
+  subagent_type: "reviser-agent"
   prompt: [full structured context JSON: session_id, delegation_depth, memory_context, etc.]
 ```
 

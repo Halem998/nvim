@@ -1,21 +1,22 @@
 # Shared Stage 4a Literature Flow (`--lit`)
 
 **Placed in core context** (not the literature extension) so the `@`-import below resolves for
-all six core skills regardless of whether the literature extension is in the selected extension
-set. If the literature scripts referenced here (`literature-lit-flag-resolve.sh`,
-`literature-briefing-invoke.sh`, `literature-discover.sh`, `literature-ingest-online.sh`,
-`literature-create-setup-task.sh`) are not deployed, the resolver call below will fail with a
-"command not found" error — treat that failure the same as `GLOBAL_MISSING` (emit a visible
-notice, continue with `lit_context=""`) rather than aborting the skill.
+`skill-orchestrate` and every domain research/implementation skill regardless of whether the
+literature extension is in the selected extension set. If the literature scripts referenced here
+(`literature-lit-flag-resolve.sh`, `literature-briefing-invoke.sh`, `literature-discover.sh`,
+`literature-ingest-online.sh`, `literature-create-setup-task.sh`) are not deployed, the resolver
+call below will fail with a "command not found" error — treat that failure the same as
+`GLOBAL_MISSING` (emit a visible notice, continue with `lit_context=""`) rather than aborting the
+skill.
 
-This file is the SINGLE canonical Stage 4a literature block. `skill-researcher`,
-`skill-planner`, `skill-implementer`, and their `-hard` variants all reference this file instead
-of maintaining six near-duplicate copies — this is the fix for the drift class where the six
-skills' Stage 4a blocks diverged (some never called the resolver at all, some still used a raw
-`literature-briefing.sh 2>/dev/null` call site, none offered the online-ingest option). Every
-instruction below is DIRECT and EXECUTABLE — none of it is commented-out pseudocode inside a
-bash fence. `AskUserQuestion` calls are prose instructions to the agent executing the skill, not
-shell code (the tool cannot be invoked from inside a script).
+This file is the SINGLE canonical Stage 4a literature block. `skill-orchestrate` and every domain
+research/implementation skill reference this file instead of maintaining near-duplicate copies —
+this is the fix for the drift class where each skill's own Stage 4a block diverged (some never
+called the resolver at all, some still used a raw `literature-briefing.sh 2>/dev/null` call site,
+none offered the online-ingest option). Every instruction below is DIRECT and EXECUTABLE — none
+of it is commented-out pseudocode inside a bash fence. `AskUserQuestion` calls are prose
+instructions to the agent executing the skill, not shell code (the tool cannot be invoked from
+inside a script).
 
 ## Preconditions (variables the importing skill already has in scope)
 

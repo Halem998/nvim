@@ -283,12 +283,21 @@ subsection for the full comparison against `/orchestrate`'s narrowing.
 
 ## 6. Parallel Skill Dispatch
 
+**Superseded note**: this section describes the original per-command (`/research`/`/plan`/
+`/implement`) dispatch shape from when this pattern was authored. Those commands, and the
+research/plan/implement skill layer they dispatched to, have since been deleted; `/orchestrate`
+is now the sole multi-task-capable entry point, and its own Stage MT loop dispatches agents
+directly via the Agent tool (resolved through `command-route-agent.sh`), not via Skill tool
+calls to a research/plan/implement skill. See `skill-orchestrate/SKILL.md`'s Multi-Task Mode
+section for the current mechanism; the shape below is retained as historical context for the
+pattern's original design intent.
+
 ### Architecture: Orchestrator-Loop Skill Invocation
 
 Multi-task dispatch uses parallel Skill tool calls from the command's orchestrator loop. Each task maps to the appropriate skill for that task type, and all skills are invoked in a single message for parallel execution.
 
 ```
-Command -> [Skill(skill-researcher, task {N}), Skill(skill-planner, task {N}), ...]
+Command -> [Agent(general-research-agent, task {N}), Agent(planner-agent, task {N}), ...]
 ```
 
 This keeps dispatch logic co-located with each command's validation and routing rules, avoiding an extra indirection layer. Each skill runs the full single-task lifecycle (preflight, agent delegation, postflight) independently.
@@ -316,7 +325,7 @@ The orchestrator invokes one skill per validated task using parallel Skill tool 
 For each task_num in validated_tasks:
   Tool: Skill
   Parameters:
-    skill: "{skill_name}"  # e.g., "skill-researcher" (routed per task_type)
+    skill: "{skill_name}"  # e.g., "general-research-agent" (routed per task_type)
     args: "task_number={task_num} session_id={batch_session_id}_{task_num} {remaining_args}"
 ```
 
@@ -549,11 +558,15 @@ Each workflow command is updated to apply this pattern. This section summarizes 
 
 ### Per-Command Specifics
 
+**Historical**: the `/research`, `/plan`, and `/implement` commands named below have since been
+deleted; `/orchestrate` is the sole surviving multi-task-capable entry point. Table retained for
+the pattern's original per-command design intent.
+
 | Command | Status Validation | Skill Invoked | Action Verb |
 |---------|------------------|---------------|-------------|
-| `/research` | not_started, researched | skill-researcher (or extension research skill) | "complete research" |
-| `/plan` | researched | skill-planner (or extension plan skill) | "create implementation plan" |
-| `/implement` | planned, implementing | skill-implementer (or extension implement skill) | "complete implementation" |
+| `/research` | not_started, researched | general-research-agent (or extension research skill) | "complete research" |
+| `/plan` | researched | planner-agent (or extension plan skill) | "create implementation plan" |
+| `/implement` | planned, implementing | general-implementation-agent (or extension implement skill) | "complete implementation" |
 
 ### Batch Dispatch Architecture
 
