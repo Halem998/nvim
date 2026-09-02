@@ -833,36 +833,41 @@ bash .claude/scripts/state-write.sh \
 
 Commit review report, state files, task state, and any roadmap changes:
 
+Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+implementation of path-scoped, mutex-serialized committing — never a separate `git add` followed
+by a bare `git commit`. `--message` carries the body WITHOUT the trailing `Session:` line; the
+script appends that itself:
+
 ```bash
-# Add review artifacts
-git add specs/reviews/review-{DATE}.md specs/reviews/state.json
+# Review artifacts are always staged
+stage_paths=("specs/reviews/review-{DATE}.md" "specs/reviews/state.json")
 
 # Add roadmap if modified
 if git diff --name-only | grep -q "specs/ROADMAP.md"; then
-  git add specs/ROADMAP.md
+  stage_paths+=("specs/ROADMAP.md")
 fi
 
 # Add task state if tasks were created
 if git diff --name-only | grep -q "specs/state.json"; then
-  git add specs/state.json specs/TODO.md
+  stage_paths+=("specs/state.json" "specs/TODO.md")
 fi
 
 # Add TODO.md if Task Order was regenerated (even if no tasks were created)
 if git diff --name-only | grep -q "specs/TODO.md"; then
-  git add specs/TODO.md
+  stage_paths+=("specs/TODO.md")
 fi
 
-git commit -m "$(cat <<'EOF'
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "$(cat <<'EOF'
 review: {scope} code review
 
 Roadmap: {annotations_made} items annotated, {items_skipped} skipped{warning codes, if any}
 Tasks: {tasks_created} created ({grouped_count} grouped, {individual_count} individual)
 Task Order: {regenerated_or_skipped} (regenerated from state.json / skipped)
-
-Session: {session_id}
-
 EOF
-)"
+)" \
+  --session "${session_id}" \
+  -- "${stage_paths[@]}"
 ```
 
 **Roadmap commit-message line**: `{annotations_made}` and `{items_skipped}` come from

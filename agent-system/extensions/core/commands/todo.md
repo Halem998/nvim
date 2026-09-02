@@ -939,30 +939,38 @@ Track vault operations for output:
 
 ### 6. Git Commit
 
+Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+implementation of path-scoped, mutex-serialized committing (never a bare `git add` + bare
+`git commit -m`). This archival operation legitimately spans many tasks' rows in one commit, so
+`--honest-index-rows` (which flags OTHER tasks' rows unexpectedly swept into a single task-scoped
+commit) does not apply here:
+
 ```bash
-git add specs/
-git commit -m "todo: archive {N} completed tasks"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "todo: archive {N} completed tasks" \
+  --session "${session_id}" \
+  -- specs/
 ```
 
 Include roadmap, orphan, and misplaced counts in message as applicable:
 ```bash
 # If roadmap items updated, orphans tracked, and misplaced moved:
-git commit -m "todo: archive {N} tasks, update {R} roadmap items, track {M} orphans, move {P} misplaced"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphans, move {P} misplaced" --session "${session_id}" -- specs/
 
 # If roadmap items updated only:
-git commit -m "todo: archive {N} tasks, update {R} roadmap items"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items" --session "${session_id}" -- specs/
 
 # If roadmap items updated and orphans tracked:
-git commit -m "todo: archive {N} tasks, update {R} roadmap items, track {M} orphaned directories"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphaned directories" --session "${session_id}" -- specs/
 
 # If orphans tracked and misplaced moved (no roadmap):
-git commit -m "todo: archive {N} tasks, track {M} orphans, move {P} misplaced directories"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, track {M} orphans, move {P} misplaced directories" --session "${session_id}" -- specs/
 
 # If only orphans tracked (no roadmap):
-git commit -m "todo: archive {N} tasks and track {M} orphaned directories"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and track {M} orphaned directories" --session "${session_id}" -- specs/
 
 # If only misplaced moved (no roadmap):
-git commit -m "todo: archive {N} tasks and move {P} misplaced directories"
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and move {P} misplaced directories" --session "${session_id}" -- specs/
 ```
 
 Where `{R}` = roadmap_completed_annotated + roadmap_abandoned_annotated (total roadmap items updated).

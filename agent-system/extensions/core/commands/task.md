@@ -271,10 +271,14 @@ When $ARGUMENTS contains a description (no flags).
    {fs_advisory}
    ```
 
-7. **Git commit**:
+7. **Git commit**, via `.claude/scripts/git-commit-scoped.sh` (the single sanctioned
+   implementation of path-scoped, mutex-serialized committing):
    ```
-   git add specs/
-   git commit -m "task {N}: create {title}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N}: create {title}" \
+     --session "${session_id}" \
+     --honest-index-rows {N} \
+     -- specs/
    ```
 
 8. **Output**:
@@ -875,10 +879,13 @@ Created {N} follow-up task(s):
   - Task #{Y}: Complete phase 3 of task {N}: add_error_reporting
 ```
 
-**Git commit** (only if tasks were created):
+**Git commit** (only if tasks were created), via `.claude/scripts/git-commit-scoped.sh`:
 ```
-git add specs/
-git commit -m "task {parent_N}: review - created {N} follow-up tasks"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {parent_N}: review - created {N} follow-up tasks" \
+  --session "${session_id}" \
+  --honest-index-rows {parent_N} \
+  -- specs/
 ```
 
 **If no tasks created**:

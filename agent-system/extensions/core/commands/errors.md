@@ -193,8 +193,11 @@ task_m_name=$(jq -r --argjson num "$M" \
   specs/state.json)
 stage_paths=("specs/errors.json" "specs/TODO.md" "specs/state.json")
 [ -n "$task_m_name" ] && stage_paths+=("specs/${padded_m}_${task_m_name}/")
-git add "${stage_paths[@]}"
-git commit -m "errors: fix {N} errors (task {M})"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "errors: fix {N} errors (task {M})" \
+  --session "${session_id}" \
+  --honest-index-rows "$M" \
+  -- "${stage_paths[@]}"
 ```
 
 ## Standards Reference

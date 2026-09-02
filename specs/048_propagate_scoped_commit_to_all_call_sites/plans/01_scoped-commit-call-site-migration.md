@@ -172,17 +172,17 @@ time by running `grep -c 'git commit -m' <file>` on each of the six before and a
 
 ---
 
-### Phase 2: Migrate the core commands [NOT STARTED]
+### Phase 2: Migrate the core commands [COMPLETED]
 
 **Goal**: Convert the surviving high-traffic core command files.
 
 **Tasks**:
-- [ ] `core/commands/todo.md` (7 occurrences) — the largest single command-file concentration;
+- [x] `core/commands/todo.md` (7 occurrences) — the largest single command-file concentration;
       read the surrounding archival flow before converting, since some of its commits stage
       `specs/TODO.md` and `specs/state.json` and therefore need `--honest-index-rows`.
-- [ ] `core/commands/task.md` (2 occurrences).
-- [ ] `core/commands/errors.md` (1 occurrence).
-- [ ] `core/commands/review.md` (1 occurrence).
+- [x] `core/commands/task.md` (2 occurrences).
+- [x] `core/commands/errors.md` (1 occurrence).
+- [x] `core/commands/review.md` (1 occurrence).
 - [ ] Do NOT look for `commands/research.md`, `commands/plan.md`, or `commands/implement.md` —
       those three files were deleted earlier in this batch and their absence is confirmed.
 
