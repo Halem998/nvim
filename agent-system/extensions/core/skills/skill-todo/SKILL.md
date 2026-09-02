@@ -258,18 +258,12 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
   <stage id="5" name="ScanRoadmap">
     <action>Scan for roadmap references</action>
     <process>
-      0. Ensure specs/ROADMAP.md exists. If the file does not exist, create it with the default template:
-         ```markdown
-         # Project Roadmap
-
-         ## Phase 1: Current Priorities (High Priority)
-
-         - [ ] (No items yet -- add roadmap items here)
-
-         ## Success Metrics
-
-         - (Define success metrics here)
-         ```
+      0. Do NOT auto-create `specs/ROADMAP.md` if it is absent. An absent roadmap is "no roadmap
+         tracked" — a supported state, not a repair trigger; `roadmap-integration.sh` itself
+         treats absence this way (exits 0, emits the `roadmap_absent` warning, does not recreate
+         the file) and step 3 below surfaces that warning. Re-creating the file here, ahead of
+         the script call, would silently defeat that contract and make any deliberate deletion of
+         the roadmap never stick.
       1. Partition `archivable_tasks[]` into roadmap-excluded (meta tasks, and expanded tasks —
          an expanded task has no `completion_summary` of its own by construction, since its
          subtasks carry the deliverables; do not "fix" this by requiring one) and

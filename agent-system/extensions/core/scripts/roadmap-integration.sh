@@ -84,6 +84,11 @@
 #                                           #      "annotation_noop": annotate mode ran,
 #                                           #        high_confidence_matches > 0, and
 #                                           #        annotations_made == 0
+#                                           #      "roadmap_absent": --roadmap path did not
+#                                           #        exist; "no roadmap tracked" -- a supported
+#                                           #        state, not auto-created and not an error.
+#                                           #        Exits 0 with the empty-state payload above
+#                                           #        before any parsing is attempted.
 #   }
 
 set -euo pipefail
@@ -131,22 +136,36 @@ if [[ -z "$STATE_PATH" ]]; then
   exit 1
 fi
 
-# ─── Ensure ROADMAP.md exists ────────────────────────────────────────────────
-
+# ─── Absent ROADMAP.md is a supported state, not a failure ──────────────────
+#
+# An absent roadmap means "no roadmap tracked" -- it is not a signal to auto-create a fresh
+# stub. A repo that has deliberately deleted its roadmap must stay deleted; auto-recreating a
+# stub here would make that deletion never stick, since the next /review or /todo run would
+# regenerate it. Emit the same empty-state
+# payload shape the callers' own fallback branches already construct on a missing/failed script
+# (review.md, todo.md), plus the new roadmap_absent warning code, and exit 0 -- absence is
+# parsed successfully as "nothing to report", never as an error condition.
 if [[ ! -f "$ROADMAP_PATH" ]]; then
-  echo "Note: ROADMAP.md not found at $ROADMAP_PATH, creating default template" >&2
-  mkdir -p "$(dirname "$ROADMAP_PATH")"
-  cat > "$ROADMAP_PATH" << 'TEMPLATE'
-# Project Roadmap
-
-## Phase 1: Current Priorities (High Priority)
-
-- [ ] (No items yet -- add roadmap items here)
-
-## Success Metrics
-
-- (Define success metrics here)
-TEMPLATE
+  echo "Note: ROADMAP.md not found at $ROADMAP_PATH -- treating as 'no roadmap tracked' (absence is a supported state; nothing is auto-created)" >&2
+  jq -n '{
+    "roadmap_state": {"phases": [], "status_tables": []},
+    "roadmap_matches": [],
+    "annotation_summary": {
+      "annotations_made": 0,
+      "items_skipped": 0,
+      "skipped_reasons": [],
+      "high_confidence_matches": 0,
+      "silent_noop": false
+    },
+    "roadmap_structure": {
+      "phases": 0,
+      "checkboxes": 0,
+      "table_rows": 0,
+      "parseable": false
+    },
+    "warnings": ["roadmap_absent"]
+  }'
+  exit 0
 fi
 
 if [[ ! -f "$STATE_PATH" ]]; then

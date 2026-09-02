@@ -213,18 +213,11 @@ iterate `archivable_tasks[]` — the guard-filtered list — never a freshly-rec
 
 ### 3.5. Scan Roadmap for Task References (Structured Matching)
 
-**Ensure specs/ROADMAP.md exists** before scanning. If the file does not exist, create it with the default template:
-```markdown
-# Project Roadmap
-
-## Phase 1: Current Priorities (High Priority)
-
-- [ ] (No items yet -- add roadmap items here)
-
-## Success Metrics
-
-- (Define success metrics here)
-```
+**Do NOT auto-create `specs/ROADMAP.md`** if it is absent before scanning. An absent roadmap is
+"no roadmap tracked" -- a supported state, not a repair trigger; `roadmap-integration.sh` itself
+treats absence this way (exits 0, emits the `roadmap_absent` warning below, and does not
+recreate the file). Re-creating the file here, ahead of the script call, would silently defeat
+that contract and make any deliberate deletion of the roadmap never stick.
 
 **IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching since they
 modify system infrastructure rather than project deliverables. Expanded tasks are excluded for a
@@ -428,11 +421,18 @@ Total misplaced: {N}
 Run without --dry-run to archive.
 ```
 
-**Roadmap section inclusion is a four-way branch, never a bare "found nothing" omission**:
+**Roadmap section inclusion is a five-way branch, never a bare "found nothing" omission**:
 - `roadmap_structure.parseable == true`, `roadmap_eligible_matches[]` is empty, AND
   `roadmap_no_match == false`: omit the "Roadmap updates" section entirely -- legitimately
   nothing to do.
-- `roadmap_structure.parseable == false`: **always** print, regardless of match count:
+- `roadmap_warnings` contains `roadmap_absent` (checked before the generic unparseable case
+  below, since an absent roadmap also carries `parseable == false` but is a distinct, non-error
+  condition): print
+  `Note: no ROADMAP.md tracked (specs/ROADMAP.md is absent) -- roadmap integration skipped; this is a supported state, not an error`
+  (matching `commands/review.md`'s wording verbatim), and skip the generic unparseable message
+  below entirely for this run.
+- `roadmap_structure.parseable == false` (and `roadmap_absent` did NOT fire): **always** print,
+  regardless of match count:
   `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
   (matching `commands/review.md`'s wording verbatim).
 - `roadmap_silent_noop == true` (from Step 3.5's `annotation_summary.silent_noop` -- i.e. high
@@ -749,7 +749,8 @@ roadmap_silent_noop=$(echo "$annotate_summary" | jq '.silent_noop')
 The script has no abandoned-status branch at all (its `COMPLETED_TASKS` query only ever selects
 `status == "completed"`). `/todo` retains this annotation itself, gated on the same
 `roadmap_structure.parseable` flag Step 3.5 captured: when `parseable` is `false`, do not attempt
-the annotation -- emit the unparseable warning (Step 4) instead of silently no-op'ing.
+the annotation -- emit Step 4's `roadmap_absent` note (if the roadmap is absent) or its
+unparseable warning (otherwise) instead of silently no-op'ing.
 
 For each abandoned task in `roadmap_eligible_matches[]` (Step 3.5), skip if the matched line
 already contains `*(Task {N} abandoned:` or `*(Completed:`, else:

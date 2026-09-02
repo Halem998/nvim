@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Make the ROADMAP deletion stick",
+  "started_at": "2026-09-02T02:15:00Z",
+  "last_updated": "2026-09-02T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Locate the auto-create block in roadmap-integration.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace auto-create with early skip emitting empty-state payload + roadmap_absent warning code, exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Insert branch before Build output JSON marker, leave marker byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Update header's warning-code documentation with roadmap_absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Register roadmap_absent in review.md's warning case", "status": "done", "files_touched": ["agent-system/extensions/core/commands/review.md"]},
+    {"id": 6, "description": "Register roadmap_absent in todo.md's warning vocabulary (five-way branch)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 7, "description": "Grep for every reader of specs/ROADMAP.md before deleting", "status": "done", "files_touched": []},
+    {"id": 8, "description": "git rm specs/ROADMAP.md", "status": "done", "files_touched": ["specs/ROADMAP.md"]},
+    {"id": 9, "description": "Verify deletion sticks: parse-only run exits 0, emits roadmap_absent, does not recreate file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra-1",
+      "description": "commands/todo.md Step 3.5 ('Ensure specs/ROADMAP.md exists... create it with the default template') was a second, independent auto-create site not named in the plan's task list, discovered by the plan's own 'grep for every reader' step. It would have silently defeated the deletion by recreating the file before roadmap-integration.sh was ever called.",
+      "type": "altered",
+      "reason": "Removed the auto-create pre-step and replaced with a note directing to roadmap-integration.sh's own roadmap_absent handling, consistent with this phase's stated goal",
+      "annotation": "n/a -- not a plan checklist item; recorded here for traceability"
+    },
+    {
+      "task_id": "4.extra-2",
+      "description": "skills/skill-todo/SKILL.md Stage 5 ('ScanRoadmap') step 0 carried the identical auto-create-on-absence prose, mirroring commands/todo.md's now-fixed Step 3.5",
+      "type": "altered",
+      "reason": "Same fix as 4.extra-1, applied to the executable skill prose (commands/todo.md is more of a spec; skill-todo/SKILL.md is what /todo actually executes)",
+      "annotation": "n/a -- not a plan checklist item; recorded here for traceability"
+    }
+  ]
+}

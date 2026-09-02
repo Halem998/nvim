@@ -344,40 +344,40 @@ if fewer, note which were registered in the interim.
 
 ---
 
-### Phase 4: Make the ROADMAP deletion stick [NOT STARTED]
+### Phase 4: Make the ROADMAP deletion stick [COMPLETED]
 
 **Goal**: Change `roadmap-integration.sh` so an absent roadmap means "no roadmap tracked" rather
 than "roadmap needs a stub", register that outcome in both calling commands' warning-code
 vocabularies, and then delete `specs/ROADMAP.md`.
 
 **Tasks**:
-- [ ] Locate the auto-create block in `agent-system/extensions/core/scripts/roadmap-integration.sh`
+- [x] Locate the auto-create block in `agent-system/extensions/core/scripts/roadmap-integration.sh` *(completed)*
       (the `if [[ ! -f "$ROADMAP_PATH" ]]` branch that emits
       `Note: ROADMAP.md not found …, creating default template` and heredocs a stub).
-- [ ] Replace the auto-create with an early, well-formed skip: emit the same empty-state payload
+- [x] Replace the auto-create with an early, well-formed skip: emit the same empty-state payload *(completed)*
       shape the callers' fallback branches already construct
       (`{"phases":[],"status_tables":[]}`, `[]` matches, `annotations_made: 0`,
       `{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}` structure, `items_skipped: 0`,
       `[]` skipped reasons, `high_confidence_matches: 0`, `silent_noop: false`), plus a new stable
       warning code `roadmap_absent` in the existing `warnings` array. Exit 0 — absence is a
       supported state, not a failure.
-- [ ] Insert the branch **before** the `# ─── Build output JSON ───…` marker line and leave that
+- [x] Insert the branch **before** the `# ─── Build output JSON ───…` marker line and leave that *(completed)*
       line byte-identical: `test-roadmap-argv-ceiling.sh` copies the script and asserts the marker
       is present, failing loudly with "marker not found — roadmap-integration.sh structure changed"
       if it moves or changes.
-- [ ] Update the script's own header comment block, which documents the `warnings` array as
+- [x] Update the script's own header comment block, which documents the `warnings` array as *(completed)*
       "stable string codes", to include `roadmap_absent` alongside `unparseable_roadmap` and
       `annotation_noop`.
-- [ ] Register `roadmap_absent` in the warning-code `case` statement in
+- [x] Register `roadmap_absent` in the warning-code `case` statement in *(completed)*
       `agent-system/extensions/core/commands/review.md` so it prints a specific, informative message
       rather than falling through to the `unrecognized warning code` catch-all.
-- [ ] Do the same in `agent-system/extensions/core/commands/todo.md`, whose parse-only invocation
+- [x] Do the same in `agent-system/extensions/core/commands/todo.md`, whose parse-only invocation *(completed)*
       and completed-task annotation path share the same vocabulary.
-- [ ] Grep for every reader of the `specs/ROADMAP.md` path across `agent-system/extensions/` and
+- [x] Grep for every reader of the `specs/ROADMAP.md` path across `agent-system/extensions/` and *(completed)*
       `specs/` before deleting; confirm each either skips gracefully or is one of the two commands
       updated above.
-- [ ] `git rm specs/ROADMAP.md`.
-- [ ] Verify the deletion sticks: run `roadmap-integration.sh` in parse-only mode against the now-
+- [x] `git rm specs/ROADMAP.md`. *(completed)*
+- [x] Verify the deletion sticks: run `roadmap-integration.sh` in parse-only mode against the now- *(completed)*
       absent path and confirm it exits 0, emits `roadmap_absent`, and **does not recreate the file**
       (`test ! -f specs/ROADMAP.md` after the run).
 

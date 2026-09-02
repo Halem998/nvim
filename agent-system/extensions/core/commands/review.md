@@ -143,6 +143,9 @@ if [[ "$(echo "$roadmap_warnings" | jq 'length')" -gt 0 ]]; then
       annotation_noop)
         echo "Warning: roadmap annotation no-op ($high_confidence_matches high-confidence match(es), 0 applied) -- see skipped_reasons in the payload" >&2
         ;;
+      roadmap_absent)
+        echo "Note: no ROADMAP.md tracked (specs/ROADMAP.md is absent) -- roadmap integration skipped; this is a supported state, not an error" >&2
+        ;;
       *)
         echo "Warning: roadmap-integration.sh reported unrecognized warning code: $code" >&2
         ;;
