@@ -1,29 +1,51 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/112_fix_briefing_fts5_over_constraint/plans/01_fix-briefing-fts5-recall.md",
-      "summary": "Six-phase plan fixing the --global FTS5 over-constraint via sanitize_query() hardening, a single-process multi-query rank-merge search mode, filtered-term briefing rewiring, new global-mode regression coverage, real-corpus verification, and FTS5 semantics documentation."
+      "type": "summary",
+      "path": "specs/112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md",
+      "summary": "All 6 phases completed: sanitize_query() <>/> fix, single-process --multi search mode, filtered-term --global rewiring, new Section I regression coverage, real-corpus verification (with two additional fold-back fixes: matched_terms-primary merge sort and corroborated_count sparse tightening), and FTS5 semantics documentation. lit-stage4a-flow.md callers left unchanged with reasons recorded."
     }
   ],
-  "next_steps": "Run /implement 112 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788329488_6a27b9_112",
-    "agent_type": "planner-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8.25,
-    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
+  "completion_data": {
+    "completion_summary": "Fixed literature-briefing.sh --global's AND-all-terms FTS5 recall defect and unhandled <>/> syntax error via a new single-process multi-query search mode in literature-search.sh, filtered-term rewiring in literature-briefing.sh, and (discovered during real-corpus verification) a matched_terms-primary merge sort and a corroborated_count-based sparse-honesty fix. Re-run of the original failing task description now returns seg_count=150 (was 0), with the top-ranked result a canonical, genuinely on-topic modal-logic source."
   },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-search.sh",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+    "agent-system/extensions/literature/context/project/literature/domain/fts5-query-semantics.md",
+    "agent-system/extensions/literature/index-entries.json"
+  ],
   "memory_candidates": [
     {
-      "content": "When a recall fix requires fanning one query out into N sub-queries, the naive shape (N invocations of the existing search CLI, merged by the caller) directly re-creates the per-invocation process/IO cost that perf work elsewhere is eliminating -- especially when each invocation opens a large DB and reloads an index/metadata map. The decomposition that satisfies both goals is to push the fan-out loop INSIDE the existing single expensive process (one DB open, one metadata load, N cheap MATCH executions) and expose it as an additive CLI mode, while keeping the cheap per-item preprocessing (sanitization) in the outer layer so its existing implementation stays the single source of truth rather than being duplicated into the inner process.",
+      "content": "When merging results from several independent single-term FTS5 (or any BM25-based) sub-queries into one ranked list, do NOT sort by the raw per-query relevance score as the primary key -- those scores are not comparable across independent queries (a generic word that is the entirety of one short document's match can score more extreme than a genuinely on-topic multi-word hit). Sort by cross-query corroboration (how many distinct sub-queries surfaced that result) as the PRIMARY key instead, with the raw score only as a same-tier tiebreak. Verified empirically: for a real ~250-document corpus and a 100-word natural-language query, raw-score-primary sorting returned zero topically relevant items in the top 10 despite non-empty recall; corroboration-primary sorting surfaced the corpus's own canonical textbook at position 1 for the same query.",
       "category": "PATTERN",
-      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/plans/01_fix-briefing-fts5-recall.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["fan-out", "process-spawn-cost", "batch-in-process", "cli-mode", "search-merge"]
+      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bm25", "fts5", "cross-query-ranking", "score-normalization", "corroboration", "merge-by-rank"]
+    },
+    {
+      "content": "A recall-count field alone (e.g. total_matched) is not a reliable sparse-vs-rich signal once a query is decomposed into many independent single-term sub-queries merged by OR: a genuinely off-topic query can still post a large total-match count purely from coincidental single-term hits scattered across unrelated documents in a large corpus. Add a second, stricter count (e.g. corroborated_count: results matched by >=2 distinct sub-queries) and use IT for any sparse/confidence signal once the sub-query count is large, while leaving the raw total-match count and displayed results unchanged. This mirrors an existing >=2-distinct-hits asymmetry pattern for exactly this class of long, generic-word-heavy query.",
+      "category": "PATTERN",
+      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sparse-signal", "false-negative", "corroboration", "fts5", "recall-count", "confidence-threshold"]
+    },
+    {
+      "content": "Bash heredocs opened unquoted (<< PYEOF, not << 'PYEOF') perform command substitution INSIDE the heredoc body, including on backticks in prose/docstrings -- a Python docstring containing `identifier` inside such a heredoc silently triggers bash to try running `identifier` as a shell command (visible only as a stray stderr line like '<name>: command not found'), not a syntax error. When writing Python source inside an unquoted bash heredoc (needed for $variable substitution into the script), use single-quotes for any in-prose emphasis instead of backticks.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash-heredoc", "command-substitution", "backtick", "python-in-bash", "shellcheck-gotcha"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

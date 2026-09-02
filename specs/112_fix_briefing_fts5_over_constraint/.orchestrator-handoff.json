@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "task_number": 112,
+  "session_id": "sess_1788329488_6a27b9",
+  "agent_type": "general-implementation-agent",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/112_fix_briefing_fts5_over_constraint/summaries/01_fix-briefing-fts5-recall-summary.md",
+      "summary": "All 6 phases completed: sanitize_query() <>/> fix, single-process --multi search mode, filtered-term --global rewiring, new Section I regression coverage, real-corpus verification (with two additional fold-back fixes: matched_terms-primary merge sort and corroborated_count sparse tightening), and FTS5 semantics documentation. lit-stage4a-flow.md callers left unchanged with reasons recorded."
+    }
+  ],
+  "summary": "Fixed literature-briefing.sh --global's AND-all-terms FTS5 recall defect (0 segments on any realistic query length) and its unhandled <>/> hard syntax error. Phase 1 stripped <>/> in sanitize_query(). Phase 2 added a --multi search mode to literature-search.sh: N sanitized queries run inside one already-open connection per database (one process per briefing, not N), merged by chunk_id with a matched_terms corroboration count. Phase 3 rewired --global mode to source literature-term-match.sh's filter_terms(), cap the term list (LITERATURE_GLOBAL_MAX_TERMS, longest-first), and call --multi, with an empty-filtered-terms fallback and seg_count pinned to the envelope's total_matched. Phase 4 added a real-FTS5-fixture Section I to test-lit-pipeline.sh (9 new passing cases, each demonstrated to fail against stashed pre-fix scripts). Phase 5 re-ran the actual original failing task description against the real ~250MB global corpus (seg_count 0 -> 150) and discovered two further real-corpus defects beyond the plan's scope: (a) rank-primary merge sorting returned zero topically relevant top-10 results because BM25 scores from independent single-term sub-queries are not comparable -- fixed by promoting matched_terms to the primary sort key; (b) total_matched alone produced a false sparse=false on a genuinely off-topic control query via coincidental single-term hits -- fixed by adding an additive corroborated_count envelope field used for the sparse determination once the filtered term count is large. Both fixes were re-verified against the full Section I suite (still 51/51 passing) and the real corpus. Phase 6 documented all of this in a new fts5-query-semantics.md domain doc, registered in index-entries.json. lit-stage4a-flow.md's two --global call sites were deliberately left unchanged, with reasons recorded in the implementation summary (the script fix alone meets the verification bar; the measured relevance gap is a matter of degree, not a binary failure; the caller change's blast radius -- six verbatim-importing skills -- is disproportionate given this task already expanded twice during Phase 5).",
+  "next_steps": "None required by this task. Two follow-ups are named in the summary: (1) the LITERATURE_GLOBAL_MAX_TERMS longest-first cap is a recorded, imperfect term-selection heuristic -- a properly scoped follow-up could pursue IDF-weighted selection, cross-query score normalization, or the lit-stage4a-flow.md caller change (real headroom demonstrated: a short reformulated query directly surfaced the exact source the downstream research cited); (2) a pre-existing, out-of-scope --read chunk-file path-resolution defect was observed in the real corpus (reproduced against the unmodified pre-fix script) and is worth its own task.",
+  "phase_count": 6,
+  "dependency_waves": [[1], [2], [3], [4, 5], [6]],
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-search.sh",
+    "agent-system/extensions/literature/scripts/literature-briefing.sh",
+    "agent-system/extensions/literature/scripts/test-lit-pipeline.sh",
+    "agent-system/extensions/literature/context/project/literature/domain/fts5-query-semantics.md",
+    "agent-system/extensions/literature/index-entries.json"
+  ]
+}
