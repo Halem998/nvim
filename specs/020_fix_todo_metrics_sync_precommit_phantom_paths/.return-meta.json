@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md",
+      "summary": "Confirms the phantom-path counting defect in assess-repo-health.sh and its pre-commit sequencing in /todo Step 5.6; confirms the Step 5A MAX_ARG_STRLEN defect is already fixed upstream (commit 67876e6b3, verified by live test runs); confirms /todo is the sole caller of the probe."
+    }
+  ],
+  "next_steps": "Run /plan 20 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788382844_27990c_20",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "state-write.sh (agent-system/extensions/core/scripts/state-write.sh) transparently spills any --argjson value over 100,000 bytes to a private mktemp file bound via jq --slurpfile, resolving the caller's $NAME reference unchanged via an EFFECTIVE_FILTER prefix. No existing or future --argjson call site needs to change to benefit from this -- it fixes Linux's 131,072-byte MAX_ARG_STRLEN ceiling transparently at the script level. Landed in commit 67876e6b3 (\"Fix 128KB argv ceiling in roadmap-integration.sh and state-write.sh\"). Before proposing a fix for an 'argument list too long' failure at any state-write.sh call site, check whether this spill mechanism already covers it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["state-write.sh", "MAX_ARG_STRLEN", "argjson spill", "argument list too long", "slurpfile"]
+    },
+    {
+      "content": "Any git-ls-files-based file enumerator in this codebase (e.g. assess-repo-health.sh's enumerate_by_glob) is vulnerable to git-index-vs-worktree divergence: git ls-files reads the index, so an uncommitted mv/rm still lists the old (now nonexistent) path and omits the new one. Downstream consumers that only guard for an empty string (not on-disk existence) will miscount phantom paths as failures. Filter at the enumeration choke point (right after populating the candidate array), not in each downstream loop, so every consumer benefits from one fix.",
+      "category": "PATTERN",
+      "source_artifact": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git ls-files", "phantom paths", "index worktree divergence", "assess-repo-health.sh", "enumeration"]
+    }
+  ]
+}
