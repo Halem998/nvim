@@ -32,6 +32,10 @@
 #                            DISCOVER_DESC_WORD_CAP words are used, as supplementary terms, to
 #                            keep Tiers 1/2's substring matcher from picking up incidental,
 #                            unrelated shared words buried later in a long description.
+#   S2_API_KEY             — Optional Semantic Scholar API key, sent as an `x-api-key` header on
+#                            the Tier 3 Semantic Scholar request when set. Unset (the default)
+#                            means fully anonymous access at the lower public rate limit; behavior
+#                            is otherwise identical.
 #
 # SOURCES.md format (created at specs/literature/SOURCES.md):
 #   Markdown table: Title | Authors | Year | DOI | Status | Notes
@@ -44,6 +48,7 @@ LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
 DISCOVER_LIMIT="${DISCOVER_LIMIT:-10}"
 DISCOVER_DESC_WORD_CAP="${DISCOVER_DESC_WORD_CAP:-30}"
 USER_EMAIL="${USER_EMAIL:-benbrastmckie@gmail.com}"
+S2_API_KEY="${S2_API_KEY:-}"
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -541,10 +546,16 @@ tier3_search() {
   # status code is appended as its own trailing line (-w '\n%{http_code}');
   # splitting it back off leaves `ss_results` byte-identical to the raw JSON
   # body the rest of this function (and downstream jq) already expects.
+  local curl_args=(-s -w '\n%{http_code}' --max-time 15)
+  if [ -n "$S2_API_KEY" ]; then
+    curl_args+=(-H "x-api-key: $S2_API_KEY")
+  fi
+  curl_args+=("$ss_url")
+
   local ss_raw=""
   local curl_exit=0
 
-  ss_raw=$(curl -s -w '\n%{http_code}' --max-time 15 "$ss_url" 2>/dev/null) || curl_exit=$?
+  ss_raw=$(curl "${curl_args[@]}" 2>/dev/null) || curl_exit=$?
 
   if [ "$curl_exit" -ne 0 ]; then
     echo "TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)" >&2

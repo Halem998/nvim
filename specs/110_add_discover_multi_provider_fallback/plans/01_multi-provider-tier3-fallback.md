@@ -165,19 +165,19 @@ capture the pre-refactor Semantic Scholar output that Phase 3's regression check
 
 ---
 
-### Phase 2: Fix 1 — Optional S2_API_KEY Header [NOT STARTED]
+### Phase 2: Fix 1 — Optional S2_API_KEY Header [COMPLETED]
 
 **Goal**: Send `x-api-key: $S2_API_KEY` on the Semantic Scholar request when the variable is set,
 with zero behavior change when it is unset.
 
 **Tasks**:
-- [ ] Add `S2_API_KEY="${S2_API_KEY:-}"` to the existing environment-defaults block alongside
-      `LITERATURE_DIR` / `DISCOVER_LIMIT` / `DISCOVER_DESC_WORD_CAP` / `USER_EMAIL`.
-- [ ] Replace the inline `curl -s -w '\n%{http_code}' --max-time 15 "$ss_url"` call with a
+- [x] Add `S2_API_KEY="${S2_API_KEY:-}"` to the existing environment-defaults block alongside
+      `LITERATURE_DIR` / `DISCOVER_LIMIT` / `DISCOVER_DESC_WORD_CAP` / `USER_EMAIL`. *(completed)*
+- [x] Replace the inline `curl -s -w '\n%{http_code}' --max-time 15 "$ss_url"` call with a
       `curl_args` array built from those same flags, appending
-      `-H "x-api-key: $S2_API_KEY"` only when the variable is non-empty.
-- [ ] Document `S2_API_KEY` in the script header's `ENVIRONMENT` block (optional; unset means
-      anonymous access at the lower public rate limit).
+      `-H "x-api-key: $S2_API_KEY"` only when the variable is non-empty. *(completed)*
+- [x] Document `S2_API_KEY` in the script header's `ENVIRONMENT` block (optional; unset means
+      anonymous access at the lower public rate limit). *(completed)*
 
 **Timing**: 0.5 hours
 
