@@ -1,41 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/112_fix_briefing_fts5_over_constraint/reports/01_fix-briefing-fts5-recall.md",
-      "summary": "Empirically confirms the FTS5 AND-all-terms recall defect and the unsanitized '<'/'>' syntax-error gap in literature-briefing.sh --global, and recommends a per-term/grouped search-and-merge-by-rank fix plus sanitize_query() hardening."
+      "type": "plan",
+      "path": "specs/112_fix_briefing_fts5_over_constraint/plans/01_fix-briefing-fts5-recall.md",
+      "summary": "Six-phase plan fixing the --global FTS5 over-constraint via sanitize_query() hardening, a single-process multi-query rank-merge search mode, filtered-term briefing rewiring, new global-mode regression coverage, real-corpus verification, and FTS5 semantics documentation."
     }
   ],
-  "next_steps": "Run /plan 112 to create implementation plan",
+  "next_steps": "Run /implement 112 to execute the plan",
   "metadata": {
     "session_id": "sess_1788329488_6a27b9_112",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 8.25,
+    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
   },
   "memory_candidates": [
     {
-      "content": "SQLite FTS5 MATCH treats bareword queries as an implicit AND of every term. A free-text query built from a full task description (15-30+ words) will essentially never match any document, since it requires ALL terms present in one row. When building a search feature from long free text, split into short per-term or small-grouped queries and merge results by BM25 rank instead of issuing one long AND-all query. Verified empirically with a live in-memory FTS5 table.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/reports/01_fix-briefing-fts5-recall.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["fts5", "sqlite", "bm25", "match-semantics", "query-construction"]
-    },
-    {
-      "content": "SQLite FTS5's query-string grammar treats '<' and '>' as syntax tokens outside of quoted phrases and throws 'fts5: syntax error near \"<\"' on a bare MATCH query containing them (confirmed live). Any FTS5 query sanitizer that already strips other syntax characters (':', '/', '(', ')', unquoted '*', bare AND/OR/NOT) should also strip or escape '<' and '>' -- easy to miss since they are not part of the commonly-cited FTS5 special-character list.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/reports/01_fix-briefing-fts5-recall.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["fts5", "sqlite", "sanitization", "syntax-error", "query-escaping"]
-    },
-    {
-      "content": "In this repo's literature extension, FTS5 phrase-quote-retry and trigram fallback rungs (literature-search.sh's do_search ladder) are syntax-error-safe but NOT a general recall improvement: wrapping a long multi-word string in one quoted phrase requires the exact word sequence (or trigram substring) to appear contiguously in a document, which is nearly as restrictive as the AND-all-terms primary rung for realistic long queries. Verified empirically: a 6-word phrase query against a document containing all 6 words as separate (non-contiguous) tokens returned zero rows.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/reports/01_fix-briefing-fts5-recall.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["fts5", "fallback-ladder", "phrase-retry", "trigram", "recall"]
+      "content": "When a recall fix requires fanning one query out into N sub-queries, the naive shape (N invocations of the existing search CLI, merged by the caller) directly re-creates the per-invocation process/IO cost that perf work elsewhere is eliminating -- especially when each invocation opens a large DB and reloads an index/metadata map. The decomposition that satisfies both goals is to push the fan-out loop INSIDE the existing single expensive process (one DB open, one metadata load, N cheap MATCH executions) and expose it as an additive CLI mode, while keeping the cheap per-item preprocessing (sanitization) in the outer layer so its existing implementation stays the single source of truth rather than being duplicated into the inner process.",
+      "category": "PATTERN",
+      "source_artifact": "specs/112_fix_briefing_fts5_over_constraint/plans/01_fix-briefing-fts5-recall.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["fan-out", "process-spawn-cost", "batch-in-process", "cli-mode", "search-merge"]
     }
   ]
 }
