@@ -603,6 +603,41 @@ run_ingest_pipeline() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: shared ONLINE_INGEST_PIPELINE_FAILED diagnostic pointer, used verbatim by both
+# directive_stop sites below (resolvable/create-item path and existing_no_pdf/attach path) so
+# the two rationales cannot drift. Message text ONLY -- no automatic retry, tier selection, or
+# classifier: the converter-tier characterization (context/guides/literature-organization.md,
+# "Converter Tier Selection" section) established that Class A and Class B gate-rejection
+# classes respond OPPOSITELY to the fallback converter tier, and that "No automatic tier
+# selection exists or is intended." The remedy stays a manual operator decision.
+#
+# Note on the "preserved rejected markdown" the plan for this fix originally assumed: it is NOT
+# actually preserved through this delegation path -- literature-ingest.sh writes
+# literature-convert.sh's .rejected sibling into its own `mktemp -d` TMP_MD_DIR, then `rm -rf`s
+# that directory on the quality-gate-rejection continue branch before returning. This hint is
+# corrected accordingly: it points at re-running literature-convert.sh manually against the
+# still-durable resolved PDF path, not at a file that no longer exists by the time this rationale
+# is read.
+# ---------------------------------------------------------------------------
+pipeline_failed_diagnostic_hint() {
+  local doc_id="$1" resolved_path="$2"
+  cat << HINT
+Diagnostic pointer for doc_id=$doc_id: literature-ingest.sh's own log output above already
+carries the raw failure reason (e.g. "QUALITY GATE FAILED: ..." for a quality-gate rejection).
+Its .rejected sibling markdown is NOT preserved here -- literature-ingest.sh deletes its
+temporary working directory before returning. To inspect the annotated hit positions yourself,
+manually re-run: literature-convert.sh "$resolved_path" <output-dir>, then inspect the resulting
+<output-dir>/<doc_id>.md.rejected. Apply the manual remedy from
+context/guides/literature-organization.md's "Converter Tier Selection" section: hits positionally
+concentrated near a structural region or footnote/superscript markers (Class A) -- reconvert with
+LITERATURE_CONVERTER=fallback; hits scattered singly at otherwise-clean sentence boundaries
+(Class B) -- re-OCR the source first (e.g. ocrmypdf --force-ocr), then reconvert. This is a
+MANUAL decision only: no automatic tier selection or retry is performed, since Class A and Class
+B respond oppositely to the fallback engine.
+HINT
+}
+
+# ---------------------------------------------------------------------------
 # Helper: year -> jq-safe JSON (null if empty/non-numeric)
 # ---------------------------------------------------------------------------
 year_to_json() {
@@ -733,7 +768,9 @@ if [ "$CLASSIFICATION" = "resolvable" ]; then
 
   if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
     directive_stop "ONLINE_INGEST_PIPELINE_FAILED" 6 \
-      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)"
+      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)
+
+$(pipeline_failed_diagnostic_hint "$DOC_ID" "$RESOLVED_PDF_PATH")"
   fi
   log "literature-ingest.sh reported ingested doc_id=$INGESTED_REAL_DOC_ID"
 
@@ -840,7 +877,9 @@ if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
 
   if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
     directive_stop "ONLINE_INGEST_PIPELINE_FAILED" 6 \
-      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)"
+      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)
+
+$(pipeline_failed_diagnostic_hint "$DOC_ID" "$RESOLVED_PDF_PATH")"
   fi
   log "literature-ingest.sh reported ingested doc_id=$INGESTED_REAL_DOC_ID"
 

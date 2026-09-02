@@ -285,27 +285,41 @@ record the correction.
 
 ---
 
-### Phase 4: Enrich both PIPELINE_FAILED rationales with a diagnostic pointer (defect c) [NOT STARTED]
+### Phase 4: Enrich both PIPELINE_FAILED rationales with a diagnostic pointer (defect c) [COMPLETED]
 
 **Goal**: Give the operator an actionable manual next step on a quality-gate rejection, without
 introducing any automatic retry or tier selection.
 
 **Tasks**:
-- [ ] Extend the `ONLINE_INGEST_PIPELINE_FAILED` rationale at line ~717 (resolvable path) to name
+- [x] Extend the `ONLINE_INGEST_PIPELINE_FAILED` rationale at line ~717 (resolvable path) to name
   the preserved rejected-markdown path that `literature-convert.sh` writes, and to point at the
-  "Converter Tier Selection" section of `context/guides/literature-organization.md`
-- [ ] Apply the same enrichment at line ~821 (existing-no-pdf attach path) — this second site was
-  missed by the research and must not be left inconsistent
-- [ ] Include the Class A / Class B discriminator inline, phrased as a manual procedure: hits
+  "Converter Tier Selection" section of `context/guides/literature-organization.md` *(deviation:
+  altered — see note below; landed at line 770 after Phases 2-3 shifted line numbers)*
+- [x] Apply the same enrichment at line ~821 (existing-no-pdf attach path) — this second site was
+  missed by the research and must not be left inconsistent *(completed: landed at line 879, via
+  the same shared helper)*
+- [x] Include the Class A / Class B discriminator inline, phrased as a manual procedure: hits
   clustered near structure/footnotes -> retry with `LITERATURE_CONVERTER=fallback`; hits scattered
   at otherwise-clean sentence boundaries -> re-OCR the source first (e.g.
-  `ocrmypdf --force-ocr`), then reconvert
-- [ ] State explicitly in the message that the retry is deliberately manual — the two classes
-  respond oppositely to the fallback engine, so no automatic selection is performed
-- [ ] Change no control flow: no retry, no exit-code change, no directive-token change. The
+  `ocrmypdf --force-ocr`), then reconvert *(completed)*
+- [x] State explicitly in the message that the retry is deliberately manual — the two classes
+  respond oppositely to the fallback engine, so no automatic selection is performed *(completed)*
+- [x] Change no control flow: no retry, no exit-code change, no directive-token change. The
   `ONLINE_INGEST_PIPELINE_FAILED` token and exit 6 are part of the file's stable contract
-- [ ] Consider factoring the shared rationale text into one helper or variable so the two sites
-  cannot drift; keep it simple if a local variable suffices
+  *(completed: verified via harness -- stdout is still exactly one token line, exit 6)*
+- [x] Consider factoring the shared rationale text into one helper or variable so the two sites
+  cannot drift; keep it simple if a local variable suffices *(completed: `pipeline_failed_diagnostic_hint()`
+  helper function, called identically from both sites)*
+
+**Deviation note**: the "preserved rejected-markdown path" this task assumed does NOT actually
+survive through this delegation path. `literature-ingest.sh` writes `literature-convert.sh`'s
+`.rejected` sibling into its own `mktemp -d` `TMP_MD_DIR`, then `rm -rf`s that directory on the
+quality-gate-rejection `continue` branch before `run_ingest_pipeline()` ever returns to the
+bridge. The enrichment was corrected to be honest about this: it points the operator at
+re-running `literature-convert.sh` manually against the still-durable `$RESOLVED_PDF_PATH` to
+regenerate and inspect the `.rejected` sibling themselves, rather than naming a path that no
+longer exists by the time the rationale is read. The rest of the task (guide-section pointer,
+Class A/B remedies, manual-only framing, shared helper) is implemented as specified.
 
 **Timing**: 0.75 hours
 

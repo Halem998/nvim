@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Enrich both PIPELINE_FAILED rationales with a diagnostic pointer (defect c)",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add shared pipeline_failed_diagnostic_hint() helper with guide-section pointer and Class A/B remedies", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Wire helper into both ONLINE_INGEST_PIPELINE_FAILED directive_stop sites (resolvable + existing_no_pdf)", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Verify no control-flow/contract change via harness + bash -n + grep -c guide section spelling", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.1", "description": "Point to the preserved rejected-markdown path that literature-convert.sh writes", "type": "altered", "reason": "the .rejected sibling is written into literature-ingest.sh's own mktemp TMP_MD_DIR, which literature-ingest.sh rm -rf's on the quality-gate continue branch before run_ingest_pipeline() returns -- it is not actually preserved through this delegation path. Message corrected to point at manually re-running literature-convert.sh against the durable $RESOLVED_PDF_PATH instead of naming a file that no longer exists.", "annotation": "*(deviation: altered — see Deviation note under Phase 4 tasks)*"}
+  ],
+  "handoff_count": 0
+}
