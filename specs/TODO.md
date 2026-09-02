@@ -1,5 +1,5 @@
 ---
-next_project_number: 145
+next_project_number: 149
 ---
 
 # TODO
@@ -11,9 +11,14 @@ next_project_number: 145
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,125,129,134,137,138,139,141,142,143,144 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,127,136,140 | 29,74,91,125,139 | core-agent-system, extensions |
-| 3 | 88 | 127 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,43,44,45,51,74,89,91,113,125,129,134,137,139,141,144 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,127,136,140,145 | 29,74,91,125,139 | core-agent-system, extensions |
+| 3 | 146 | 145 | core-agent-system |
+| 4 | 147 | 146 | core-agent-system |
+| 5 | 143 | 147 | core-agent-system |
+| 6 | 148 | 143 | core-agent-system |
+| 7 | 72,88 | 148 | core-agent-system |
+| 8 | 142 | 88 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -22,26 +27,27 @@ next_project_number: 145
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
-42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
-72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
-100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
+  └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
+    └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+      └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
+        └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+          └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+            └─ 72 [NOT STARTED] — === ADDENDUM 2026-09-02 (thin-lead path: retarget once more) ===
+            └─ 88 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: engine deletion replaces 
+              └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 141 [NOT STARTED] — Relay the admission verdict's own reason string in orchestrate-dr
-142 [NOT STARTED] — Reduce the orchestrator's own token consumption so that multi-tas
-143 [NOT STARTED] — Port the handoff staleness gate and the dispatch_seq identity gat
 144 [NOT STARTED] — Narrow the coarse whole-directory file_scope declarations that ma
 
 ### Extensions
@@ -67,11 +73,107 @@ next_project_number: 145
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 27 [NOT STARTED] — .opencode/scripts/execute-command.sh is a command router that can
 
-### Uncategorized
-
-138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
-
 ## Tasks
+
+### 148. Port team fan-out, hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 143
+
+**Description**: Port team fan-out, hard-mode counters, loop guard, and the auxiliary dispatches into the multi-task engine as per-dispatch options, so that a single task number runs as a batch of one. Stage A.5 of specs/PATH.md (thin-lead path); the precondition for deleting the single-task engine. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DECIDED DESIGN (do not re-litigate). Single-task mode is deleted by the successor task; /orchestrate N becomes a batch whose wave table has one row. Every capability that exists only in single-task Stages 1-8 today must exist as a per-row option or a script in the batch engine first.
+
+WORK.
+(1) TEAM. Stage 3.6 / 3.6a (19,414 B) becomes scripts/orchestrate-team-fanout.sh: teammate-plan construction, per-teammate dispatch files via orchestrate-build-dispatch.sh, {NN}_{letter}-findings.md naming, territory contracts, and the synthesis dispatch (synthesis-agent unchanged). A cycle-plan row with team=true is dispatched through it; the graceful degradation when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is unset lives in the script. `--team` in multi-task mode applies per row (remove the accepted-and-ignored notice); the planner of this task decides and records any cap on total concurrent teammates across a wave.
+(2) HARD. The Stage 2 loop-guard/churn-state initialization, Stage 5b churn detection and three-strikes, and the Stage 3c burnout circuit-breaker move into scripts/orchestrate-churn.sh, called from the cycle-postflight script when hard_mode; the H1 single-blocking-phase-per-cycle limiter moves into orchestrate-cycle-plan.sh. Contract injection is already script-side (build-dispatch) and needs no change.
+(3) LOOP GUARD. Single-task Stage 2/7's budget and orchestrate-loop-guard-init.sh reconcile with MAX_CYCLES_MT into ONE counter in the multi-state file, --continue-budget honored in one place.
+(4) AUXILIARY DISPATCHES. Stage 5a drift inspection and Stage 6 blocker escalation become rows the cycle-plan script emits on the next cycle when a postflight verdict is `blocked` or a drift signal fires; they keep their frontmatter models and never call build-dispatch's memory/lit path (as today).
+(5) Route a single task number through the batch path behind a feature flag (or an environment variable) and run the retargeted hard-mode/team test set against it. Leave Stages 1-8 on disk, unreachable, for the successor deletion task.
+
+MUST NOT: drop any row of specs/PATH.md's capability table; change any decision the existing scripts make; touch user-prompting (the orchestrator never asks on its own).
+
+ACCEPTANCE: each of the five items demonstrated on a live invocation carrying ONE task number routed through the batch engine (a --team run, a --hard run with the churn script firing on a fixture, a budget-exhaustion stop, a blocker-escalation row); hard-mode and team tests green; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "One engine, batch of one".
+
+---
+
+### 147. Build orchestrate-cycle-plan.sh: one script returns the cycle dispatch plan
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 146
+
+**Description**: Build orchestrate-cycle-plan.sh: one script that returns the cycle's whole dispatch plan, replacing the lead's inline pre-dispatch work. Stage A.3 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+TODAY. skill-orchestrate/SKILL.md Stage MT-3 steps 1-4.5 (34,976 B, ~3% bash) and Stage MT-4's per-task pre-dispatch work are executed by the lead from inline jq and prose: status refresh, heartbeat, all-terminal check, eligibility filter, the orchestrate-batch-admit.sh call and its verdict branching, orchestrate-triage-classify.sh, lock acquire with stale-reclaim, dispatch_seq mint and dispatch_start_ts stamp, preflight status write, cycle and infra-failure counters, and the inter-cycle redeploy checkpoint. Every one of these is deterministic and none needs the lead's judgment.
+
+WORK. Script scripts/orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N] [--force-phases "..."] [--clean] [--lit] [--hard] [--fast] [--team] [--team-size N] [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget] that performs, in order: (a) status refresh and session heartbeat; (b) all-terminal check; (c) eligibility per the dependency-gating model (not status-gated; failed predecessor -> blocked); (d) admission via orchestrate-batch-admit.sh with --invocation-count and --phase-map, relaying each verdict's own reason string verbatim (never reconstructed); (e) classification via orchestrate-triage-classify.sh; (f) per-task force_phases consumption -- forced phases honored per task with canonical ordering and stop-after-last-named semantics, closing the multi-task phase-forcing gap; (g) task directory creation when state.json has path:null or the directory is absent (mkdir -p, closing the multi-task missing-directory gap); (h) lock acquire with stale-reclaim; a fresh foreign lock removes the task from this cycle's batch, never excludes it; (i) dispatch_seq mint and dispatch_start_ts in one atomic multi-state write; (j) preflight status write via update-task-status.sh; (k) MAX_CYCLES_MT and MAX_INFRA_FAILURES accounting, --continue-budget honored, and the inter-cycle redeploy-checkpoint decision; (l) a call to orchestrate-build-dispatch.sh for every admitted row. It prints ONE JSON object: {cycle, dispatch: [{task, phase, agent, model, dispatch_file, team}], deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}. Stage MT-3 and the pre-dispatch half of MT-4 in SKILL.md collapse to one call plus a loop of at most ten lines; the relocated prose goes to docs/architecture/orchestrate-state-machine.md, which the lead never loads.
+
+DESIGN CONSTRAINTS. The orchestrator never asks the user here: admission deferrals, budget exhaustion and blockers stay autonomous (defer in sequence, stop with an honest message, escalate via the existing blocker dispatch), and the opt-in flags remain the way to pre-answer them. The four admission gates and their defer-not-fail semantics, the designated-candidate tie-breaker, lock semantics, and the redeploy checkpoint are load-bearing and must survive unchanged in behavior. Build on orchestrate-stage5-gates.sh / orchestrate-stage5-postflight.sh's compact-JSON pattern; reuse manifest-routing-lib.sh and command-route-agent.sh for agent resolution.
+
+ACCEPTANCE: fixture tests for eligibility, per-task forced phases, verdict relay, and lock refusal removing a task from the batch; a live 3-task --dry-run-style plan whose dispatch rows match the decisions the pre-change engine makes for the same state; bytes removed from SKILL.md reported; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "The four moves per cycle".
+
+---
+
+### 146. Build orchestrate-build-dispatch.sh: per-dispatch context files, pointer prompts, and the user-decision contract
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 145
+
+**Description**: Build orchestrate-build-dispatch.sh: per-dispatch context files, fixed pointer prompts, and the agent-side user-decision contract. Stage A.2 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT, MEASURED. The orchestrator lead authors every dispatch prompt itself. skill-orchestrate/SKILL.md's three MT-4 loops (near "For each task in research_tasks / plan_tasks / implement_tasks") and five single-task Stage 4 sites each interpolate the full task description (open-task average 4,612 B, max 11,598 B), the memory-context block, the literature briefing, the hard-contract block, the effort note, the plan path and the handoff path into the Agent tool's prompt. A five-task wave therefore costs the lead 25-60 KB of self-authored prompt text per cycle, all retained in context. This, not handoff reads, is why a 5-task batch exhausts most of its context before the second dispatch. The Context Flatness section's "~450 tokens per cycle" claim does not account for it.
+
+WORK.
+(1) New script scripts/orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."] that performs Stage 3.5 (Dispatch Prep) in full -- memory-retrieve.sh gated by clean_flag, the lit-stage4a-flow.md resolution, the hard_contracts block via routing_lookup_flat, the effort note, model resolution -- and additionally gathers: the task description and task_type; the artifact round number the agent must write into (`MM_`, from next_artifact_number / "prev" semantics -- this closes the multi-task artifact_number threading gap); for plan, the latest report path; for implement, the latest plan path and the continuation pointer (both accepted handoff forms, normalized); the handoff path, dispatch_seq and dispatch_start_ts; territory when set; and the user-decision contract text (below). It writes specs/{NNN}_{slug}/.dispatch/{seq}.md and prints a one-line JSON {dispatch_file, model}.
+(2) Replace every dispatch site's prompt construction in SKILL.md (the three MT-4 loops and the five Stage 4 sites; enumerate by grep for `subagent_type`) with one call to the script and a FIXED pointer prompt of the shape: "You are dispatched by /orchestrate for task {N}, phase {phase}. Read {dispatch_file} first and execute it exactly; it names every input, output path and contract." No description, briefing, memory or contract text ever appears in the lead's prompt again. The Stage 3.5 prose in SKILL.md is deleted in favor of a pointer to the script.
+(3) Agent contracts gain a short "Dispatch file" section (general-research-agent, planner-agent, general-implementation-agent, and every extension agent that skill-orchestrate can dispatch -- sweep agent-system/extensions/*/agents/*.md and report negatives): read the dispatch file first; treat it as the authoritative dispatch context.
+(4) USER-DECISION CONTRACT (binding design from specs/PATH.md "Where the user is asked"). The orchestrator never asks the user on its own. Agents decide, and record each decision with its reasoning in their artifact. Only when a choice genuinely requires the user's judgment -- a preference the artifacts cannot infer, an external cost or risk the user must accept, an ambiguity research cannot resolve -- does an agent set `user_decision: {question, options: [..], recommended, blocking: true|false}` in .return-meta.json (and in .orchestrator-handoff.json when it writes one). A non-blocking decision proceeds on `recommended` and is surfaced for review; a blocking one stops cleanly at a resumable point. Write this contract once in context/standards/ (or an existing contract file) and reference it from the dispatch file and the agent contracts; do not restate it per agent. Add the field to context/formats/return-metadata-file.md and docs/architecture/handoff-schema.md.
+(5) Register .dispatch/ in context/standards/orchestrator-runtime-files.md's class table, .gitignore, git-staging-scope.md's ephemeral set, and the reaper.
+
+MUST NOT: change what an agent receives semantically -- a generated dispatch file must carry every input the current inline recipe would have interpolated (verify by generating one for a real task and diffing field-by-field against the recipe); drop any Stage 3.5 input; make the lead read the dispatch file.
+
+ACCEPTANCE: the lead's authored prompt text for a real 3-task multi-task cycle measured before and after (expect >= 90% reduction; report the numbers); a dispatch-file parity test; the agent-contract sweep reported with explicit negatives; a research dispatch that sets user_decision is shown reaching .return-meta.json intact; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "Target design: the thin lead".
+
+---
+
+### 145. Slim commands/orchestrate.md to flags and dispatch; delete the illustrative multi-task block
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 125
+
+**Description**: Slim commands/orchestrate.md to the flag table and the dispatch, deleting the multi-task block its own text labels illustrative. Stage A.1 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md (never .claude/**).
+
+MEASURED (2026-09-02). The file is 46,874 B (~12k tokens), loaded on every /orchestrate. Its `### MULTI-TASK DISPATCH` section is 28,393 B (60% of the file) and states at its own "Runtime wave-split check" paragraph that it is "illustrative of the CONTRACT skill-orchestrate fulfills, not code this file itself runs" -- the real loop is skill-orchestrate/SKILL.md Stage MT-3. The STAGE 0 section (4,923 B) narrates flag threading that the Options table already states. The consolidated-output template in Step 5 is likewise never executed by this file.
+
+WORK.
+(1) Delete `### MULTI-TASK DISPATCH` (Steps 1-5) in full. Where it carries contract text not stated elsewhere (the BATCHING RULE, the wave-split defense-in-depth note, the commit-reconciliation rule), move that text to docs/architecture/orchestrate-state-machine.md, which is documentation the lead never loads -- do not relocate it into SKILL.md.
+(2) Reduce STAGE 0 to: source parse-command-args.sh, the dry-run short-circuit, the single-vs-multi branch, and the Skill delegation context block. The per-flag threading prose collapses into the Options table.
+(3) Add `--hard` to the Options table. It is parsed and stripped by scripts/parse-command-args.sh (grep `--hard`) and consumed by the engine (`hard_mode`, 63 references in SKILL.md) but is absent from the table today -- undocumented, not removed. Document cost and composability in one row.
+(4) Keep unchanged: Arguments, Constraints (update the two "single-task only" lines to say "per-task in the batch engine once the feature-port task lands"), Anti-Bypass Constraint, CHECKPOINT 1-3, Output, Error Handling.
+(5) grep SKILL.md, docs/, context/ for references to the deleted section's step numbers ("Step 4.5", "MT-3 step 4.5 mirror", "commands/orchestrate.md's MT-3") and repoint each to the state-machine doc or delete the reference.
+Target: <= 8,000 B.
+
+MUST NOT: change any flag's semantics, the delegation-context keys the skill reads, the checkpoint order, or the dry-run prohibition block.
+
+ACCEPTANCE: before/after byte counts recorded in the summary; every flag parse-command-args.sh exports is documented in the Options table; a single-number and a two-number /orchestrate --dry-run each still produce the report; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "Stage A -- Thin lead" and "Where things stand".
+
+---
 
 ### 144. Narrow coarse file scope declarations
 - **Status**: [NOT STARTED]
@@ -95,16 +197,39 @@ CONSTRAINT -- PRECISION, NOT TRIMMING. Narrowing must not introduce false NEGATI
 OUT OF SCOPE. The advisory is WARN-only by design and must stay non-blocking; do not convert Check 8 into a gate as part of this work. Do not change the overlap predicate itself in file-footprint-overlap.md.
 
 ACCEPTANCE. Check 8 reports clean, or each surviving coarse declaration carries an explicit recorded justification; no task's narrowed file_scope omits a path that task actually modifies; validate-state.sh green on the duplicate check; full gate run green.
+=== ADDENDUM 2026-09-02 (thin-lead path) ===
+Also repair the file_scope entries that point at files deleted by the hard-mode collapse: projects 76, 136 and 139 each declared agent-system/extensions/core/agents/general-implementation-hard-agent.md, which no longer exists (the lean extension's own lean-implementation-hard-agent.md still exists and stays); those entries have been removed at the state level already -- verify no others remain. Do NOT narrow project 88's core/context/patterns/ entry here: that project is being rewritten and its scope changes with it. For the "footprint unknown before research" convention, the recommended default to evaluate first: declare the narrowest known files at creation, and have the research phase end with a proposed file_scope that the postflight script writes back to state.json -- decide and document.
 
 ---
 
-### 143. Mt handoff staleness and dispatch seq gates
+### 143. Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 147
 
-**Description**: Port the handoff staleness gate and the dispatch_seq identity gate to the multi-task postflight path in skill-orchestrate/SKILL.md. Both gates exist in single-task Stage 5 and neither exists in Stage MT-4; the multi-task path therefore trusts any handoff file that happens to sit at the expected path.
+**Description**: === REVISED 2026-09-02 (thin-lead path: widened into the per-task postflight script) ===
+SUPERSEDING SCOPE. The two gates below are the seed of scripts/orchestrate-cycle-postflight.sh, Stage A.4 of specs/PATH.md: ONE script that performs everything the lead does after an agent returns, for both engines, returning one JSON line. This absorbs three sibling tasks whose work is the same script (each abandoned with a pointer here): the expected-handoff-absence recording-order defect, the multi-task artifact-round advance, and the aggregator file_scope excursion advisory.
+
+WORK. Script scripts/orchestrate-cycle-postflight.sh <task_number> --session SID --state-file F performing, in order:
+(a) Handoff read guarded by the mtime staleness gate (fail-closed 9999999999 default) and the dispatch_seq identity gate -- the original defect below, now on both paths by construction.
+(b) Return-meta recovery via orchestrate-recover-outcome.sh, which must gain the same dispatch_seq identity check it lacks today (its fallback is mtime-windowed only; the git-restored-predecessor incident recorded under the absorbed recording-order task shows mtime alone is inert against that shape).
+(c) Phase-count corroboration via skill_corroborate_phase_counts (count-only greps, unchanged bounds).
+(d) Writer-contract-aware recording: BEFORE recording HANDOFF_STALE_OR_ABSENT, consult whether the dispatched writer is a contractual non-writer for this phase, keyed on dispatch identity (dispatch_seq) and not on phase alone. A contractual non-writer leaving no fresh handoff records no defect; a seq-mismatched late write from a live or resurrected predecessor still does. Both live incidents recorded under the absorbed task (evt_1787614360544_SgKpRP, evt_1788246742189_Fodegl) become fixtures.
+(e) user_decision relay: when .return-meta.json or the handoff carries `user_decision`, emit verdict `ask_user` with the payload and leave status exactly as the agent left it; the lead asks, writes the answer to specs/{NNN}_{slug}/.decisions.json, and the next dispatch file carries it. The script never asks and never decides.
+(f) Status transition via update-task-status.sh with the monotonic-max clamp for forced phases.
+(g) Artifact link (same-type supersession, append-only otherwise) and the artifact-round advance on research and on a forced plan/implement -- closing the multi-task advance gap (verify the call graph: the single-task advance lives in orchestrate-stage5-postflight.sh, not orchestrator-postflight.sh, which /orchestrate never calls).
+(h) modified_files vs file_scope excursion advisory: compare the agent's reported modified_files against the task's declared file_scope and log any path outside it (detection only; no gate change).
+(i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
+(j) Multi-state update and task-lock release.
+Output: ONE JSON line {task, phase, status, phases_completed, phases_total, verdict: ok|defer|blocked|failed|ask_user, user_decision?, note}. Both engines call it (single-task Stage 5/8 and MT-4/MT-5) until the single-task engine is deleted; the relocated prose goes to docs/architecture/, which the lead never loads.
+
+MUST NOT: read report, plan, summary or handoff prose; batch commits; weaken either gate; ask the user; move state.json except through update-task-status.sh / state-write.sh.
+
+ACCEPTANCE: fixture regression tests proving (1) a handoff with mtime predating the dispatch window and (2) a dispatch_seq mismatch each route to recovery rather than being trusted; (3) git-restored predecessor files are rejected by recovery too; (4) a contractual non-writer with no handoff records no defect while a genuine late write still does; (5) a user_decision payload is relayed intact; a live multi-task cycle run through the script; bytes removed from SKILL.md reported; full gate run green.
+
+REFERENCE: specs/PATH.md, "The four moves per cycle".
+=== ORIGINAL DESCRIPTION FOLLOWS ===Port the handoff staleness gate and the dispatch_seq identity gate to the multi-task postflight path in skill-orchestrate/SKILL.md. Both gates exist in single-task Stage 5 and neither exists in Stage MT-4; the multi-task path therefore trusts any handoff file that happens to sit at the expected path.
 
 DEFECT. Single-task Stage 5 applies two checks before trusting .orchestrator-handoff.json: (a) an mtime staleness gate comparing the handoff's mtime against this dispatch's own dispatch_start_ts, fail-closed via a 9999999999 default so a dispatch site that forgot to set its window marks the handoff stale rather than trusting it; and (b) a dispatch_seq identity gate comparing the handoff's echoed dispatch_seq against the value the orchestrator minted for this cycle, which is the only check that can discriminate a woken predecessor's late write (such a write always carries a NEWER mtime and so passes the mtime check looking exactly like an on-time report). Either failing sets handoff_stale=true, routes to .return-meta.json recovery, and records a HANDOFF_STALE_OR_ABSENT system defect. Stage MT-4 step 1 has neither gate: it reads the handoff whenever the file exists and only attempts recovery when the file is absent.
 
@@ -120,13 +245,29 @@ ACCEPTANCE. A fixture-driven regression test proving that (1) a handoff with mti
 
 ---
 
-### 142. Reduce orchestrator token consumption
+### 142. Orchestrator context budget: measure and lock
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 88
 
-**Description**: Reduce the orchestrator's own token consumption so that multi-task /orchestrate runs can proceed much further before exhausting context. Review-and-optimize task: identify every optimization available WITHOUT damaging functionality, quantify each, and land the safe ones.
+**Description**: === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-lock; absorbs the context-budget gate) ===
+SUPERSEDING SCOPE. The sweep described below is now the Stage A chain in specs/PATH.md (slim command, dispatch builder, cycle-plan, cycle-postflight, feature port, engine deletion). This task is the measurement and the lock, and it absorbs the warning-first context-budget gate from the abandoned verify-deploy context-gates task (its broken-@-ref half already holds and needs no work).
+
+BASELINE (measured 2026-09-02; record in this task's report before anything else): skills/skill-orchestrate/SKILL.md 293,977 B; commands/orchestrate.md 46,874 B; eager session load 63,973 B / ~16k tokens (measure-eager-context.sh); eager load before the first /orchestrate dispatch ~405 KB / ~100k tokens; lead-authored prompt text per 5-task cycle 25-60 KB (task descriptions average 4,612 B, max 11,598 B, interpolated inline).
+
+WORK.
+(1) Re-measure the four figures after each Stage A task lands; final before/after table in the summary.
+(2) Extend verify-deploy.sh with a warning-first context-budget gate: the eager-load ceiling from measure-eager-context.sh (fail above the recorded baseline, print the number on every run so drift direction is visible), plus per-file ceilings for skills/skill-orchestrate/SKILL.md (20,000 B) and commands/orchestrate.md (8,000 B) read from a small config file in the source store. Warn tier first; promote to hard failure once the warning has been stable across a stated number of deploys. Volatile files in the eager set remain an unconditional failure.
+(3) A per-cycle growth probe: a test or a documented procedure that measures the lead's context growth on a 3-task batch (bytes of cycle-plan JSON + pointer prompts + postflight JSON) and records it, so the "~1 KB per task per cycle" target is a number, not a claim.
+(4) Correct the Context Flatness prose wherever it survives (state-machine doc) to state the measured figure.
+
+MUST NOT DAMAGE (unchanged from the original): the four admission gates and their defer-not-fail semantics; the handoff staleness and dispatch_seq identity gates; per-task scoped commits; the inter-cycle redeploy checkpoint; task-lock acquire/heartbeat/release.
+
+ACCEPTANCE: the before/after table; both gates wired, exercised on a fixture that exceeds each ceiling, and green on the real tree; Gate 19 green; full gate run green.
+
+REFERENCE: specs/PATH.md, "Budgets".
+=== ORIGINAL DESCRIPTION FOLLOWS ===Reduce the orchestrator's own token consumption so that multi-task /orchestrate runs can proceed much further before exhausting context. Review-and-optimize task: identify every optimization available WITHOUT damaging functionality, quantify each, and land the safe ones.
 
 PROBLEM. The orchestrator lead is the context bottleneck in multi-task runs. Its eager load is dominated by two runtime-loaded .md files read IN FULL on every invocation: commands/orchestrate.md and skills/skill-orchestrate/SKILL.md (the latter alone is ~190k characters as deployed). The lead then accumulates further context per cycle from admission verdicts, classifier NDJSON, handoff/return-meta reads, and its own warning text. Observed in practice: a 5-task batch consumed a large fraction of available context before the second dispatch completed.
 
@@ -262,7 +403,7 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 ---
 
 ### 138. Multi-task consumption of force_phases, MT artifact-number advance, and MT artifact_number dispatch-context threading
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Dependencies**: None
 
@@ -1735,7 +1876,7 @@ WHY THIS IS FOUNDATIONAL: the glue-check task's routes (a) re-OCR and (c) distin
 ---
 
 ### 100. Close aggregator file scope blind spot
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1894,13 +2035,30 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ---
 
-### 88. Mode gate skill orchestrate multi task section
+### 88. Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 87, Task 127
+- **Dependencies**: Task 148
 
-**Description**: Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.
+**Description**: === REVISED 2026-09-02 (thin-lead path: engine deletion replaces mode-gating) ===
+SUPERSEDING SCOPE. The premise below -- that single-task /orchestrate is the hot path and should stop loading the multi-task section -- is the inverse of how the system is used: the default is many tasks at once, and "batch of one" is the decided design (specs/PATH.md). Mode-gating would keep both engines on disk and the parity-drift defect class alive. This task instead deletes the single-task engine and rewrites the skill as the four-move loop. Stage A.6 of specs/PATH.md. The file has grown to 293,977 B since the figures below were taken.
+
+WORK.
+(1) Delete single-task Stages 1-8 (~183,000 B) outright; the feature-port predecessor has already made them unreachable.
+(2) Rewrite skills/skill-orchestrate/SKILL.md as the loop: call orchestrate-cycle-plan.sh -> issue every dispatch row as a pointer-prompt Agent call in ONE message (team rows via orchestrate-team-fanout.sh) -> call orchestrate-cycle-postflight.sh per returned task -> branch: continue; on any `ask_user` verdict, AskUserQuestion once per question, batched at the end of the cycle after every other task's postflight has run, writing answers to specs/{NNN}_{slug}/.decisions.json for the next dispatch file; on `stop`, print the consolidated output and exit. Nothing else. The orchestrator never asks except to relay an agent-surfaced decision, and never reads a description, report, plan, summary, handoff prose, or context file during the loop.
+(3) Move narration, incident history, and exception taxonomies to docs/architecture/orchestrate-state-machine.md and handoff-schema.md. The `## MUST NOT` sections become a list of at most ~1,500 B.
+(4) Target: SKILL.md <= 20,000 B. Its Context References cite only the three cycle scripts, the fan-out script, and the state-machine doc.
+(5) Update context/reference/orchestrator-critical-paths.json labels, docs/architecture/orchestrate-state-machine.md, and every test that greps SKILL.md structure (enumerate by grep for skill-orchestrate/SKILL.md under scripts/tests and scripts/lint).
+(6) Retire the accepted-and-ignored notices for `--team` and phase-forcing flags in multi-task mode; both are per-row now.
+
+MUST NOT: change any decision the scripts make; reintroduce any inline jq beyond the loop; keep a second engine.
+
+ACCEPTANCE: measured SKILL.md bytes before/after; a live 5-task batch completes end to end with the lead's per-cycle context growth measured (cycle-plan JSON + pointer prompts + postflight JSON; target on the order of 1 KB per task per cycle); a single-task-number invocation completes through the same path; an agent-surfaced user_decision is shown reaching AskUserQuestion and its answer reaching the next dispatch file; all orchestrate tests green; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "Target design: the thin lead".
+=== ORIGINAL DESCRIPTION FOLLOWS ===Apply the mode-gated section convention to the largest single instance in the system. skill-orchestrate/SKILL.md is 188,284 B; its `## Multi-Task Mode` section measures 103,462 B -- 55% of the file -- and is entered ONLY when multi_task_mode=true. Stage 0 states it explicitly: 'If multi_task_mode is true: skip Stages 1-8 entirely and proceed to Stage MT-1.' Every single-task /orchestrate N therefore loads ~26k tokens of text it will never execute, on the command intended for the longest, most context-hungry runs.
 
 Section breakdown of the file: ## Multi-Task Mode 103,462 (only ~11% bash) | ## Execution Flow 71,570 | ## MUST NOT (Context Flatness) 8,932 | remainder ~2,500.
 
@@ -2237,9 +2395,11 @@ in isolation.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 122
+- **Dependencies**: Task 148
 
-**Description**: === REVISED 2026-09-01 (backlog streamline: combined with the SubagentStop-correlation task) ===
+**Description**: === ADDENDUM 2026-09-02 (thin-lead path: retarget once more) ===
+The Stage 3.6 fan-out is being moved out of skill-orchestrate/SKILL.md into scripts/orchestrate-team-fanout.sh, and per-teammate dispatch context comes from scripts/orchestrate-build-dispatch.sh (see specs/PATH.md Stage A). Fix ownership and correlation against those two scripts and hooks/subagent-postflight.sh, not against SKILL.md prose. The dependency now points at the feature-port successor that creates the fan-out script.
+=== REVISED 2026-09-01 (backlog streamline: combined with the SubagentStop-correlation task) ===
 COMBINED SCOPE. This task now absorbs the sibling SubagentStop marker-correlation task (that entry is abandoned with a pointer here): both defects are teammate-lifecycle metadata problems that must be fixed against the SAME new surface -- the shared Stage 3.6 Team Fan-Out stage in skill-orchestrate/SKILL.md (landed) -- and their file scopes fully overlap, which is why the originals instructed sequencing rather than parallel dispatch. Fixed together they settle one coherent design: who owns which metadata file during a fan-out, and how a stopping subagent is correlated to the marker/session it belongs to.
 
 PART A (this task's original defect, full text below): teammate agents write the skill-level .return-meta.json, clobbering the record the fan-out stage owns.
@@ -2396,7 +2556,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 53. Suppress expected handoff absence defect
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2649,7 +2809,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ### 42. Add verify-deploy gates: broken-@-ref lint and warning-first context-budget gate
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
