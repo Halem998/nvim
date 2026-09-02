@@ -453,8 +453,7 @@ Plan created successfully: {plan_path}
 Task status updated to [PLANNED]
 
 Manual commit required:
-  git add {files}
-  git commit -m "task {number}: plan created"
+  bash .claude/scripts/git-commit-scoped.sh --message "task {number}: plan created" --session "${session_id}" -- {files}
 
 Error: {git_error}
 ```

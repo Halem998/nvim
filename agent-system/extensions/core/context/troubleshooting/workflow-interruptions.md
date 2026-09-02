@@ -212,14 +212,14 @@ git diff --stat
 ```
 
 **Fix**:
-1. Manually commit if needed — review what changed first (`git status --short`), then stage only
-   the task-scoped paths per `.claude/context/standards/git-staging-scope.md` (never a repo-wide
-   add):
+1. Manually commit if needed — review what changed first (`git status --short`), then stage and
+   commit together via `.claude/scripts/git-commit-scoped.sh` (never a repo-wide add):
 ```bash
-git add "specs/{padded}_{slug}/" "specs/TODO.md" "specs/state.json"
-git commit -m "task {N}: {action}
-
-Session: {session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: {action}" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- "specs/{padded}_{slug}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ---

@@ -122,10 +122,13 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
       - Create phase artifacts
    d. Validate phase completion against success criteria
    e. Update phase status: [IN PROGRESS] → [COMPLETED]
-   f. Create git commit for phase:
+   f. Create git commit for phase via `.claude/scripts/git-commit-scoped.sh`, the single
+      sanctioned implementation of path-scoped, mutex-serialized committing:
       ```bash
-      git add {phase_artifacts}
-      git commit -m "task {number} phase {N}: {phase_name}"
+      bash .claude/scripts/git-commit-scoped.sh \
+        --message "task {number} phase {N}: {phase_name}" \
+        --session "${session_id}" \
+        -- {phase_artifacts}
       ```
    g. If timeout occurs:
       - Save current progress
@@ -158,10 +161,12 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Update configurations
 4. Create all artifacts (see Artifact Creation section)
 5. Validate against acceptance criteria
-6. Create single git commit:
+6. Create single git commit via `.claude/scripts/git-commit-scoped.sh`:
    ```bash
-   git add {all_artifacts}
-   git commit -m "task {number}: {description}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {number}: {description}" \
+     --session "${session_id}" \
+     -- {all_artifacts}
    ```
 
 **Checkpoint**: Implementation executed
@@ -482,8 +487,7 @@ Implementation completed successfully
 Task status updated to [COMPLETED]
 
 Manual commit required:
-  git add {files}
-  git commit -m "task {number}: {description}"
+  bash .claude/scripts/git-commit-scoped.sh --message "task {number}: {description}" --session "${session_id}" -- {files}
 
 Error: {git_error}
 ```

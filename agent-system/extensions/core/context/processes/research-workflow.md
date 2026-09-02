@@ -459,8 +459,7 @@ Research completed successfully: {report_path}
 Task status updated to [RESEARCHED]
 
 Manual commit required:
-  git add {files}
-  git commit -m "task {number}: research completed"
+  bash .claude/scripts/git-commit-scoped.sh --message "task {number}: research completed" --session "${session_id}" -- {files}
 
 Error: {git_error}
 ```

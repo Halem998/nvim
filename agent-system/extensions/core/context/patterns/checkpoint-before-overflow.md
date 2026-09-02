@@ -70,10 +70,11 @@ git status --porcelain
   while IFS= read -r f; do
     [ -n "$f" ] && stage_paths+=("$f")
   done < <(jq -r '.modified_files[]? // empty' "specs/${padded_num}_${project_name}/.return-meta.json" 2>/dev/null)
-  git add "${stage_paths[@]}"
-  git commit -m "task {N}: checkpoint before context-pressure handoff
-
-  Session: {session_id}"
+  bash .claude/scripts/git-commit-scoped.sh \
+    --message "task {N}: checkpoint before context-pressure handoff" \
+    --session "{session_id}" \
+    --honest-index-rows {N} \
+    -- "${stage_paths[@]}"
   ```
   Record the resulting commit SHA for the handoff's Current State.
 

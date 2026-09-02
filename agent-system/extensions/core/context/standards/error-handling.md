@@ -91,8 +91,7 @@ Warning: Operation succeeded but git commit failed
 Changes were successfully applied but could not be committed to git.
 
 Manual commit required:
-  git add src/modules/new-module.ext
-  git commit -m "feat: Add new module"
+  bash .claude/scripts/git-commit-scoped.sh --message "feat: Add new module" --session "${session_id}" -- src/modules/new-module.ext
 
 Error: fatal: not a git repository
 ```
@@ -391,8 +390,7 @@ Changes made:
 - {change_2}
 
 Manual commit required:
-  git add {files}
-  git commit -m "{operation}: {description}"
+  bash .claude/scripts/git-commit-scoped.sh --message "{operation}: {description}" --session "${session_id}" -- {files}
 
 Error: {git_error}
 ```

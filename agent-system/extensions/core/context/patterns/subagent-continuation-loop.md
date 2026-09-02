@@ -130,11 +130,11 @@ stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.modified_files[]? // empty' "specs/${padded_num}_${project_name}/.return-meta.json" 2>/dev/null)
-git add "${stage_paths[@]}"
-git commit -m "task ${task_number} phase ${phases_completed}: implementation progress
-
-Session: ${session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number} phase ${phases_completed}: implementation progress" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "${stage_paths[@]}"
 ```
 
 This ensures:
@@ -144,10 +144,11 @@ This ensures:
 
 After the loop exits, a final commit (Stage 9) captures completion (same scope as above):
 ```bash
-git commit -m "task ${task_number}: complete implementation
-
-Session: ${session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete implementation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "${stage_paths[@]}"
 ```
 
 ---

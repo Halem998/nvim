@@ -284,12 +284,13 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
         fi
 
         # Git commit — targeted staging per .claude/context/standards/git-staging-scope.md,
-        # never a repo-wide add
-        git add "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
-        git commit -m "task ${task_number}: complete ${status}
-
-Session: ${session_id}
-
+        # never a repo-wide add — via git-commit-scoped.sh, the single sanctioned implementation
+        # of path-scoped, mutex-serialized committing
+        bash .claude/scripts/git-commit-scoped.sh \
+          --message "task ${task_number}: complete ${status}" \
+          --session "${session_id}" \
+          --honest-index-rows "${task_number}" \
+          -- "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
 
         # Cleanup
         rm -f "$metadata_file"

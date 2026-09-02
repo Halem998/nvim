@@ -251,33 +251,35 @@ before editing.
 
 ---
 
-### Phase 4: Migrate the core process and pattern docs, including the manual-recovery blocks [NOT STARTED]
+### Phase 4: Migrate the core process and pattern docs, including the manual-recovery blocks [COMPLETED]
 
 **Goal**: Convert the automated call sites embedded in workflow/pattern/troubleshooting docs, and
 make the deliberate call on the "Manual commit required" human-recovery blocks.
 
 **Tasks**:
-- [ ] `core/context/processes/implementation-workflow.md` (3 occurrences) — real automated call
+- [x] `core/context/processes/implementation-workflow.md` (3 occurrences) — real automated call
       sites in the phase-commit and final-commit XML stages; these quote `git-safety.md` (Phase 1)
       near-verbatim, so reconcile the two texts.
-- [ ] `core/context/patterns/subagent-continuation-loop.md` (2 occurrences) — real automated sites
+- [x] `core/context/patterns/subagent-continuation-loop.md` (2 occurrences) — real automated sites
       (mid-loop and final commit).
-- [ ] `core/context/patterns/file-metadata-exchange.md` (1 occurrence) — real call site whose own
+- [x] `core/context/patterns/file-metadata-exchange.md` (1 occurrence) — real call site whose own
       comment already cites `git-staging-scope.md` yet ends in a bare commit.
-- [ ] `core/context/patterns/checkpoint-before-overflow.md` (1 occurrence) — checkpoint-before-handoff commit.
-- [ ] `core/context/troubleshooting/workflow-interruptions.md` (1 occurrence) — real automated site.
-- [ ] **Deliberate judgment call, adopted from the research recommendation**: migrate the
+- [x] `core/context/patterns/checkpoint-before-overflow.md` (1 occurrence) — checkpoint-before-handoff commit.
+- [x] `core/context/troubleshooting/workflow-interruptions.md` (1 occurrence) — real automated site.
+- [x] **Deliberate judgment call, adopted from the research recommendation**: migrate the
       "Manual commit required" human-recovery blocks too, in
       `core/context/processes/research-workflow.md` (1), `core/context/processes/planning-workflow.md` (1),
       and the manual-fallback occurrence in `core/context/standards/error-handling.md`. Nothing
       executes these unattended, but a hand-typed recovery commit is exactly the moment scope gets
       fat-fingered, and the scoped form is no harder to paste. Record this as a decision in the
-      task summary, not a silent mechanical rewrite.
-- [ ] `core/context/standards/error-handling.md`'s second occurrence
+      task summary, not a silent mechanical rewrite. *(completed: all three manual-recovery blocks
+      migrated to git-commit-scoped.sh)*
+- [x] `core/context/standards/error-handling.md`'s second occurrence
       (`git commit -m "feat: Add new module"`) is a generic illustrative example unrelated to the
       dispatch pipeline. Read it in place and decide: either recast it so it no longer models the
       raw form, or record it as a sixth exemption with a stated reason. Do not leave it
-      undecided.
+      undecided. *(completed: recast to the scoped-commit form rather than exempted — trivial to
+      keep consistent with the rest of the guide)*
 
 **Timing**: 1 hour
 
