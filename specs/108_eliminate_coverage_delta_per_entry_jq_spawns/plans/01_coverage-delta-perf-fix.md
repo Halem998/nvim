@@ -350,33 +350,42 @@ character (Greek Π) whose fold actually diverges between the two methods)*
 
 ---
 
-### Phase 5: End-to-end regression, timing record, and caveat documentation [NOT STARTED]
+### Phase 5: End-to-end regression, timing record, and caveat documentation [COMPLETED]
 
 **Goal**: Confirm the guard still behaves correctly end-to-end through its real callers, record the
 measured speedup, and leave the known caveats and the file-overlap resolution on the record.
 
 **Tasks**:
-- [ ] Run `test-lit-pipeline.sh --runtime` and confirm Section H (the coverage-delta guard
+- [x] Run `test-lit-pipeline.sh --runtime` and confirm Section H (the coverage-delta guard
       regression suite: fire H1, silent-on-non-match H2, chunk-inflation H3, not-computed H4,
       fail-open H5, `>=` boundary H6) passes. Confirm the rest of the suite is no worse than its
-      pre-change state.
-- [ ] Spot-check `literature-discover.sh` Tier 1 keyword search before/after the shared-helper
+      pre-change state. *(completed: full suite 44/44 passed, 0 failed, 0 warnings, including all
+      6 Section H cases)*
+- [x] Spot-check `literature-discover.sh` Tier 1 keyword search before/after the shared-helper
       change (same query, same global index, same results) as the second-consumer regression the
-      research report calls for.
-- [ ] Record before/after wall-clock timing against the live global index in the implementation
+      research report calls for. *(completed: `harness/discover-spotcheck/`; query "ehrenfeucht
+      fraisse games composition finite model theory" against the live global index; tier1-only
+      results byte-identical before/after — 4 doc_ids: hodkinson_2006, blackburn_2002_book,
+      libkin_2004_ch3_ch7, thomas_1997)*
+- [x] Record before/after wall-clock timing against the live global index in the implementation
       summary, using the numbers measured in Phases 1 and 4 (not the research report's numbers
-      restated).
-- [ ] Document the `@tsv` display-fidelity caveat as a comment near the new jq pass: for a title or
+      restated). *(completed — see implementation summary)*
+- [x] Document the `@tsv` display-fidelity caveat as a comment near the new jq pass: for a title or
       keyword containing a literal tab, newline, or backslash, `candidate_titles` shows the
       jq-escaped form; matching is unaffected. Record the optional follow-up (re-fetch raw titles
       only for the bounded top-n output rows) as a named future refinement, not implemented now.
-- [ ] State explicitly in the implementation summary that `literature-term-match.sh` WAS modified,
+      *(completed: comment added directly above the `while IFS=$'\t' read` loop)*
+- [x] State explicitly in the implementation summary that `literature-term-match.sh` WAS modified,
       so the serialized FTS5 briefing task stays blocked — the file overlap is real, not avoided.
-      This is a required, load-bearing statement, not a nicety.
-- [ ] State explicitly whether `literature-lit-flag-resolve.sh` was touched (expected: not touched)
-      so the declared `file_scope` and the actual edit set are reconcilable.
-- [ ] Confirm no file under `.claude/**` was written, and note that a `.claude/` redeploy is a
-      separate user-triggered step for the change to take effect in deployed copies.
+      This is a required, load-bearing statement, not a nicety. *(completed — see implementation
+      summary's File-Overlap Resolution section)*
+- [x] State explicitly whether `literature-lit-flag-resolve.sh` was touched (expected: not touched)
+      so the declared `file_scope` and the actual edit set are reconcilable. *(confirmed: NOT
+      touched — `git status --porcelain` on this file is empty)*
+- [x] Confirm no file under `.claude/**` was written, and note that a `.claude/` redeploy is a
+      separate user-triggered step for the change to take effect in deployed copies. *(confirmed:
+      `git status --porcelain .claude/` is empty; a `.claude/` redeploy is a separate,
+      user-triggered step for these edits to reach the deployed copies)*
 
 **Timing**: 0.75 hours
 

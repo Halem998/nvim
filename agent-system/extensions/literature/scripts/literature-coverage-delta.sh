@@ -163,6 +163,14 @@ candidate_ids=()
 candidate_titles=()
 delta_candidates=0
 
+# Caveat (display-fidelity only, matching does not change): jq's @tsv escapes a literal tab,
+# backslash, or newline *within* a field as \t / \\ / \n so `IFS=$'\t' read` below always splits
+# correctly, but this means `title` (and therefore a stdout `candidate_titles` entry) shows the
+# jq-escaped form rather than the raw character for such a title -- cosmetic only, since
+# term_matches() does substring comparison on this same string either way, so selection cannot be
+# affected. Zero top-level titles/keywords in the live corpus contain such a character today.
+# Optional future refinement (not implemented here): re-fetch raw titles only for the bounded
+# top-n output rows via a second, cheap per-row jq call, rather than for the full unbounded pass.
 while IFS=$'\t' read -r doc_id title keywords; do
   # A blank line (all three fields empty -- the only way an all-empty record can surface from the
   # @tsv feeder below) falls through to the existing empty-doc_id skip immediately below; no

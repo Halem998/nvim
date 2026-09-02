@@ -1,0 +1,46 @@
+[
+  {
+    "title": "Modal Logic (2002 Cambridge edition)",
+    "authors": [
+      "Patrick Blackburn, Maarten de Rijke, Yde Venema"
+    ],
+    "year": 2002,
+    "doc_id": "blackburn_2002_book",
+    "status": "available",
+    "tier": 1,
+    "path": "/home/benjamin/Projects/Literature/sources/blackburn_2002/"
+  },
+  {
+    "title": "Temporal Logic (Handbook of Modal Logic, Chapter 11)",
+    "authors": [
+      "Ian Hodkinson, Mark Reynolds"
+    ],
+    "year": 2006,
+    "doc_id": "hodkinson_2006",
+    "status": "available",
+    "tier": 1,
+    "path": "/home/benjamin/Projects/Literature/sources/hodkinson_2006/Hodkinson_Reynolds_2006_Temporal_Logic_Handbook_Ch11.md"
+  },
+  {
+    "title": "Elements of Finite Model Theory — Chapters 3 and 7: EF Games and MSO Composition",
+    "authors": [
+      "Leonid Libkin"
+    ],
+    "year": 2004,
+    "doc_id": "libkin_2004_ch3_ch7",
+    "status": "available",
+    "tier": 1,
+    "path": "/home/benjamin/Projects/Literature/sources/libkin_2004_ch3_ch7/Libkin_2004_Elements_Finite_Model_Theory_ch3_ch7.md"
+  },
+  {
+    "title": "Ehrenfeucht-Fraïssé Games, the Composition Method, and the Monadic Theory of Ordinal Words",
+    "authors": [
+      "Wolfgang Thomas"
+    ],
+    "year": 1997,
+    "doc_id": "thomas_1997",
+    "status": "available",
+    "tier": 1,
+    "path": "/home/benjamin/Projects/Literature/sources/thomas_1997/Thomas_1997_EF_Games_Composition_Monadic.md"
+  }
+]

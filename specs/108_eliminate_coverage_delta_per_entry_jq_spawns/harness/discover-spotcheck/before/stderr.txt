@@ -1,0 +1,1 @@
+TIER3_STATUS: FAILED reason=http http_code=429 (Semantic Scholar rate-limited or unreachable)
