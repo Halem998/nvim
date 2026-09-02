@@ -1,5 +1,5 @@
 ---
-next_project_number: 141
+next_project_number: 142
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 141
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,113,121,125,129,134,137,138,139 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,113,121,125,129,134,137,138,139,141 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,75,76,89,127,136,140 | 29,74,87,91,121,139 | core-agent-system, extensions |
 | 3 | 88 | 87,127 | core-agent-system |
 
@@ -42,6 +42,7 @@ next_project_number: 141
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
+141 [NOT STARTED] — Relay the admission verdict's own reason string in orchestrate-dr
 
 ### Extensions
 
@@ -71,6 +72,36 @@ next_project_number: 141
 138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
 
 ## Tasks
+
+### 141. Relay admission verdict reason in dry run report
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Relay the admission verdict's own reason string in orchestrate-dry-run-report.sh instead of reconstructing stale pre-tie-breaker text. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+THE DEFECT, OBSERVED DIRECTLY. The dry-run report tells an operator that orchestrator-critical work "runs solo only, never alongside sibling tasks" and must be "re-run it alone". That is the PRE-TIE-BREAKER behavior and is no longer what a live run does. orchestrate-batch-admit.sh's designated-candidate tie-breaker admits the lowest-numbered self-modifying candidate every cycle and defers the others IN SEQUENCE within the same invocation; its own verdict reason says so verbatim: "this is an ORDERING CONSTRAINT, not an exclusion: candidate #N resolves in a later cycle, in sequence, once #M clears". The guardrails doc records the old exclusion behavior as "the fixed defect" -- the predicate was fixed, the report was not.
+
+MEASURED, NOT INFERRED. Same candidate set (121, 125, 87, 127, 88), same invocation count of 5:
+  - orchestrate-batch-admit.sh (raw): #87 decision=admit self_modifying=true; #121 and #88 defer with defer_reason=self_modifying and the ORDERING CONSTRAINT reason naming #87 as the designated candidate.
+  - orchestrate-dry-run-report.sh (same inputs): reports #121 and #88 as "deferred out of this invocation -- re-run it alone (orchestrator-critical work runs solo only, never alongside sibling tasks)".
+An operator reading the report splits the batch into five solo invocations that the predicate never required. This was observed live: it caused exactly that mis-split recommendation before the raw verdict was consulted.
+
+TWO SITES, BOTH RECONSTRUCTING RATHER THAN RELAYING:
+  1. The defer_reason == "self_modifying" branch (line 361 at time of filing): builds `reason=` from .critical_path/.critical_label plus the hardcoded stale clause, discarding the verdict's own .reason field entirely.
+  2. The decision == "admit" AND self_modifying == true note (line 352 at time of filing): asserts "It is admitted only because this invocation carries a single candidate (solo run); alongside any sibling it would instead be excluded and deferred to a solo re-run." Also false -- in the measurement above #87 was admitted at invocation-count 5 precisely BECAUSE it was the designated candidate, not because it was solo. Fix both; fixing only the defer branch leaves the admit note contradicting the corrected verdict line.
+The header comment (line 50 at time of filing) carries the same stale wording and must be corrected with them. Locate all three by anchor text, not line number.
+
+THE FIX IS RELAY, NOT REWORD. Do not hand-write a new sentence that happens to match today's tie-breaker -- that reproduces the same drift one release later. Relay the verdict's own .reason. Two in-repo precedents: (a) this same file already threads the classifier's richer .reason through (lines ~494-500) for a blocked candidate; (b) commands/orchestrate.md's MT-3 step 4.5 self_modifying branch codifies the rule outright -- "Log the verdict's own `reason` string directly (do not reconstruct or paraphrase it)". The report is the one consumer violating a rule the command file already states.
+
+WHY THIS MATTERS MORE THAN ITS SIZE. orchestrate-dry-run-report.sh is row 9 of the orchestrator critical-path registry, admitted on the decision-relevance test with this exact justification: "A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition." This defect is that predicted failure, realized. --dry-run is the surface an operator uses to decide batch composition before committing to a run; when it over-reports exclusion the cost is silent and paid as needless serialization.
+
+SCOPE DISCIPLINE. Do NOT change orchestrate-batch-admit.sh -- its behavior is correct and is the reference the report must match. Do NOT change docs/architecture/batch-admit-schema.md -- it already documents the tie-breaker and --phase-map correctly (verified at filing time). This task changes the REPORT's rendering only. Check the remaining defer_reason branches (file_scope_collision in_batch/cross_batch, session_active) and the idle_overlap_advisory rendering for the same reconstruct-instead-of-relay pattern while in the file, and fix any found -- but a branch whose reconstructed text still matches the verdict is a report finding, not a mandate to rewrite it.
+
+VERIFICATION BAR. Re-run the exact measurement above: orchestrate-dry-run-report.sh 121 125 87 127 88 must, for #121 and #88, render the ORDERING CONSTRAINT text naming designated candidate #87 -- and the strings "runs solo only" and "re-run it alone" must not appear anywhere in the file. Cross-check the rendered reason against the raw orchestrate-batch-admit.sh --invocation-count 5 verdict for the same candidates and assert they agree. Add a regression test that fails against the current (pre-fix) script. NOTE: those five task numbers may reach terminal status before this is implemented; if so, substitute any candidate set containing at least two self-modifying tasks and record the substitution.
+
+---
 
 ### 140. Add a concurrency-gated history-rewrite predicate to guard-destructive-git.sh
 - **Status**: [NOT STARTED]
