@@ -283,31 +283,34 @@ if a third consumer surfaces, widen it in this phase and note it in the phase re
 
 ---
 
-### Phase 4: Update governing prose and document the enum [NOT STARTED]
+### Phase 4: Update governing prose and document the enum [COMPLETED]
 
 **Goal**: A future reader cannot re-derive the blanket chunk exclusion, and the seven-value enum has
 a single documented source of truth outside the script header.
 
 **Tasks**:
-- [ ] Rewrite `chunk-file-conventions.md`'s "Do not double-count chunks in whole-document
+- [x] Rewrite `chunk-file-conventions.md`'s "Do not double-count chunks in whole-document
       computations" section (line 8 onward) to state the **conditional** rule: exclude `chunk_*.md`
       when a non-chunk `.md` exists in the directory; count them when they are the directory's only
       markdown. Explicitly correct the now-stale premise that chunk files always accompany a
-      canonical `.md` — the ingest pipeline does not guarantee this.
-- [ ] Update the same file's consumer list (~line 36) where it describes the audit script as
+      canonical `.md` — the ingest pipeline does not guarantee this. *(completed)*
+- [x] Update the same file's consumer list (~line 36) where it describes the audit script as
       "excludes `chunk_*.md` from its `mds` glob" — that description is no longer accurate.
-- [ ] Create `agent-system/extensions/literature/context/project/literature/patterns/provenance-fidelity.md`
+      *(completed)*
+- [x] Create `agent-system/extensions/literature/context/project/literature/patterns/provenance-fidelity.md`
       documenting: the seven-value enum with the precise meaning of each value; the three ratio
       signals plus the scan-source gate and the additive combining-mark signal; the
       aggregate-at-document-level-never-single-file constraint; the conditional chunk-counting rule;
       the fail-open invariant and the list of places that must be widened together whenever a value
       is added. This was recommended by the original fidelity-audit report and never done.
-- [ ] Add a pointer to the new patterns file from
+      *(completed)*
+- [x] Add a pointer to the new patterns file from
       `context/project/literature/domain/literature-index.md` at its existing `provenance_fidelity`
-      mention (~line 140), so the domain doc's passing reference leads somewhere.
-- [ ] Add the new patterns file to the literature extension's manifest if the manifest enumerates
+      mention (~line 140), so the domain doc's passing reference leads somewhere. *(completed)*
+- [x] Add the new patterns file to the literature extension's manifest if the manifest enumerates
       context files (check `agent-system/extensions/literature/manifest.json` before assuming it does
-      or does not).
+      or does not). *(completed: manifest's provides.context is directory-pointer-scoped
+      (["project/literature", "guides"]), not per-file -- no manifest edit needed)*
 
 **Timing**: 1 hour
 

@@ -140,7 +140,9 @@ as `.path` bridges it.
 `provenance_fidelity`. `literature-ingest.sh` places every new document under
 `$LITERATURE_DIR/sources/<id>/` for exactly this reason — it is what makes a freshly ingested
 document eligible for fidelity stamping (and hence default-ranked search) with zero further code
-change, on top of keeping it inside the path-derived bridge's coverage.
+change, on top of keeping it inside the path-derived bridge's coverage. See
+`context/project/literature/patterns/provenance-fidelity.md` for the full `provenance_fidelity`
+enum, its detector signals, and the fail-open invariant both retrieval consumers depend on.
 
 **1:1 chunk-granularity rule for script-written entries.** A script-written parent entry
 (`literature-ingest.sh`'s Step 4) carries `parent_doc: null` and `chunk_count` equal to the

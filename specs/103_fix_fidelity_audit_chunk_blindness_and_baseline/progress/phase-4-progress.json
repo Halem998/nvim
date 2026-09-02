@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Update governing prose and document the enum",
+  "started_at": "2026-09-02T06:05:00Z",
+  "last_updated": "2026-09-02T06:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite chunk-file-conventions.md double-count section with conditional rule", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md"]},
+    {"id": 2, "description": "Update chunk-file-conventions.md consumer list", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md"]},
+    {"id": 3, "description": "Create provenance-fidelity.md documenting the 7-value enum", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/patterns/provenance-fidelity.md"]},
+    {"id": 4, "description": "Add pointer from literature-index.md's provenance_fidelity mention", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/literature-index.md"]},
+    {"id": 5, "description": "Check manifest.json for context file enumeration (conditional)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Manifest.json's provides.context array is ['project/literature', 'guides'] -- directory pointers, not individual file enumeration -- so no manifest edit was needed (condition false). Diff read-through: only prose files touched, no code surface. Grep confirms zero task-number references in all three edited/created files (also opportunistically cleaned two pre-existing 'task #839'-style references encountered while rewriting the touched sections, replacing them with durable descriptions per the no-task-references rule). New provenance-fidelity.md documents all seven enum values, the four detector signals in order, the scan-source gate's placement decision, the additive combining-mark contrast, aggregate-at-document-level, the conditional chunk rule, why no_source_pdf isn't quarantined, and the fail-open invariant with the full list of places to widen together for any future enum addition."
+}
