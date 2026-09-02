@@ -10,7 +10,8 @@
 #   Searches for academic sources across three tiers:
 #     Tier 1 (offline, fast)  — Global LITERATURE_DIR/index.json by title/keyword
 #     Tier 2 (local, fast)    — Zotero library via zotero-search.sh
-#     Tier 3 (online, slower) — Semantic Scholar + Unpaywall/arXiv fallback
+#     Tier 3 (online, slower) — Semantic Scholar -> OpenAlex -> Crossref (ordered fallback
+#                               chain), plus Unpaywall/arXiv PDF resolution
 #
 # OUTPUT:
 #   JSON array to stdout. Each element has:
@@ -73,7 +74,7 @@ DESCRIPTION:
   Searches for academic sources via three-tier pipeline:
     Tier 1: LITERATURE_DIR/index.json (offline, instant)
     Tier 2: Zotero library via zotero-search.sh (local, fast)
-    Tier 3: Semantic Scholar + Unpaywall/arXiv (online, network required)
+    Tier 3: Semantic Scholar -> OpenAlex -> Crossref fallback chain (online, network required)
 
 EXIT CODES:
   0  Sources found (JSON array on stdout)
@@ -507,16 +508,24 @@ print(json.dumps(parts))
 }
 
 # ---------------------------------------------------------------------------
-# TIER 3: Search Semantic Scholar + Unpaywall/arXiv (online, slower)
+# TIER 3: Search Semantic Scholar -> OpenAlex -> Crossref (ordered fallback
+# chain), online, slower. See tier3_emit_record()'s header above for the
+# closed four-branch doc_id contract and the status/pdf_url derivation order
+# every provider shares, and
+# context/project/literature/domain/tier3-provider-fallback.md for the full
+# provider-chain writeup (order rationale, per-provider mapping, the
+# advance-only-on-genuine-failure rule).
 #
-# TIER3_STATUS stderr contract: on any non-success outcome (curl failure,
-# non-200 HTTP response, or a JSON `.error` body), this function writes
-# exactly one line to its own stderr of the shape
-# `TIER3_STATUS: FAILED reason=<curl_exit|http|api_error> http_code=<code|n/a> (<human text>)`
-# before returning 0 (Tier 3 stays non-fatal). Nothing is written on a
-# genuine 200 with zero matches — absence of the line means "Tier 3 ran and
-# found nothing", not "Tier 3 could not run". This mirrors the
-# directive/rationale idiom `zotero-export-status.sh` uses for its own
+# TIER3_STATUS stderr contract: `tier3_search()` tries each provider in order
+# and advances only on genuine provider failure (curl failure, non-200 HTTP
+# response, empty body, or a JSON `.error` body) — never on a legitimate
+# zero-result 200. When and only when every attempted provider fails, it
+# writes exactly one aggregated line to its own stderr of the shape
+# `TIER3_STATUS: FAILED reason=all_providers_exhausted http_code=<last|n/a> (tried: ...; <fail_notes>)`
+# before returning 0 (Tier 3 stays non-fatal). Nothing is written when any
+# provider answers, including with zero matches — absence of the line means
+# "Tier 3 ran and found nothing", not "Tier 3 could not run". This mirrors
+# the directive/rationale idiom `zotero-export-status.sh` uses for its own
 # stderr rationale, minus the stdout directive token (Tier 3 has no separate
 # classifier call site). The consumer is `commands/literature.md`'s discover
 # step 1, which captures this script's stderr (no longer `2>/dev/null`) and

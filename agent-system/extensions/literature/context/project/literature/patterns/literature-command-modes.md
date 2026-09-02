@@ -16,7 +16,9 @@ Runs a three-tier discovery pipeline via `literature-discover.sh`:
 
 1. **Tier 1 (offline)**: search `$LITERATURE_DIR/index.json`
 2. **Tier 2 (local)**: search the Zotero library (`zotero-library.json`)
-3. **Tier 3 (online)**: Semantic Scholar API, Unpaywall DOI lookup, arXiv
+3. **Tier 3 (online)**: ordered provider fallback chain — Semantic Scholar API -> OpenAlex ->
+   Crossref, advancing only on genuine provider failure — plus Unpaywall DOI lookup and arXiv
+   direct PDF resolution
 
 Results are shown interactively. For each selected `open_access` / `paywall` /
 `in_zotero_no_pdf` entry, the user is offered:

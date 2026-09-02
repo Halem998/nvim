@@ -111,7 +111,8 @@ point, repeat this same live-call procedure and update this section.
 
 ## 3. The mandatory `%PDF` magic-byte gate runs before ANY Zotero write
 
-`pdf_url` values sourced from Semantic Scholar / Unpaywall / arXiv can resolve to a cookie-wall or
+`pdf_url` values sourced from Semantic Scholar / OpenAlex / Crossref (via Unpaywall) / Unpaywall /
+arXiv can resolve to a cookie-wall or
 landing-page HTML document served with a 200 status rather than actual PDF bytes. Silently
 creating a Zotero item and attachment from such a file would fabricate a download the honest-
 surfacing invariant explicitly prohibits.
