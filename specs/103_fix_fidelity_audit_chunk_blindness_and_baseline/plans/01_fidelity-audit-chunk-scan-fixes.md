@@ -1,7 +1,7 @@
 # Implementation Plan: Task #103
 
 - **Task**: 103 - Fix fidelity audit chunk-only blindness, the absent-baseline majority, and the self-referential scan-source ratio
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None blocking. Non-blocking coordination: Task 102 (converter-tier characterization, orthogonal), Task 107 (OCR-misrecognition detector, [NOT STARTED] — do not duplicate).
 - **Research Inputs**: `specs/103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md`
@@ -113,25 +113,26 @@ list-membership checks. The one hard ordering constraint is that **Phase 5 must 
 
 ---
 
-### Phase 1: Conditional chunk-counting fix and docstring reconciliation [NOT STARTED]
+### Phase 1: Conditional chunk-counting fix and docstring reconciliation [COMPLETED]
 
 **Goal**: `has_md`/`md_words` account for `chunk_NNNN.md` files when they are a directory's only
 markdown, while directories carrying both a canonical `.md` and its chunk re-split behave exactly
 as they do today.
 
 **Tasks**:
-- [ ] In `classify_dir()` (around lines 342-346), split the current single `mds` comprehension into
+- [x] In `classify_dir()` (around lines 342-346), split the current single `mds` comprehension into
       `non_chunk_mds` (existing predicate) and `chunk_mds` (files matching `^chunk_\d+\.md$`,
-      case-insensitive), then set `mds = non_chunk_mds if non_chunk_mds else chunk_mds`.
-- [ ] Add an inline comment at the assignment recording *why* it is conditional: the fallback fixes
+      case-insensitive), then set `mds = non_chunk_mds if non_chunk_mds else chunk_mds`. *(completed)*
+- [x] Add an inline comment at the assignment recording *why* it is conditional: the fallback fixes
       chunk-only-directory blindness; the `non_chunk_mds`-first preference is what keeps the prior
-      double-count fix intact.
-- [ ] Update the line-33 docstring block to state the distinction explicitly — chunk-ness is never a
+      double-count fix intact. *(completed)*
+- [x] Update the line-33 docstring block to state the distinction explicitly — chunk-ness is never a
       *verdict* signal (unchanged, per the original detector design), but chunk files *are* counted
       as content when they are the only content. Do not delete the existing "do not add them back
-      without re-reading the Detector Design section" warning; qualify it.
-- [ ] Run `--dry-run` and capture the full TSV output plus the stderr population summary to a
-      scratch file for the diff below.
+      without re-reading the Detector Design section" warning; qualify it. *(completed)*
+- [x] Run `--dry-run` and capture the full TSV output plus the stderr population summary to a
+      scratch file for the diff below. *(completed: diffed against the unmodified script's own
+      --dry-run on the same live corpus; 158 transitions, all attributable — see summary)*
 
 **Timing**: 1 hour
 

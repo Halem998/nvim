@@ -31,9 +31,15 @@
 #        fraction of adequate numbered statements is below 0.6 -> unverified_summary.
 #
 #   `chunk_*.md` filename presence/absence and a standalone leading "## Overview"
-#   heading are deliberately NOT used as signals (both are false discriminators in
-#   this corpus — see report). This is intentional; do not add them back without
-#   re-reading the report's "Detector Design" section.
+#   heading are deliberately NOT used as VERDICT signals (both are false
+#   discriminators for classification outcome in this corpus — see report). This is
+#   intentional; do not add them back as a verdict signal without re-reading the
+#   report's "Detector Design" section. This is a narrower claim than "chunk files are
+#   never counted": chunk_NNNN.md files DO count toward has_md/md_words when they are
+#   a directory's only markdown (the ingest pipeline can produce chunk-only
+#   directories with no canonical .md at all) — see classify_dir()'s conditional
+#   mds computation below. When a non-chunk .md is also present, chunks are excluded
+#   from the count exactly as before, to avoid double-counting the same content twice.
 #
 # Six-value enum: verified_conversion, unverified_summary, no_source_pdf,
 # not_yet_converted, unverified_no_baseline, unadjudicated.
@@ -339,11 +345,23 @@ def classify_dir(dirname, idx):
         os.path.join(dirpath, e) for e in entries_on_disk
         if e.lower().endswith((".pdf", ".djvu"))
     )
-    mds = sorted(
+    non_chunk_mds = sorted(
         os.path.join(dirpath, e) for e in entries_on_disk
         if e.lower().endswith(".md")
         and not re.match(r"^chunk_\d+\.md$", e, re.IGNORECASE)
     )
+    chunk_mds = sorted(
+        os.path.join(dirpath, e) for e in entries_on_disk
+        if re.match(r"^chunk_\d+\.md$", e, re.IGNORECASE)
+    )
+    # Conditional fallback: count chunk_NNNN.md toward has_md/md_words only when no
+    # non-chunk .md exists in the directory (the pipeline-ingest-only shape). This is
+    # what keeps the prior double-count fix intact for directories that carry BOTH a
+    # canonical .md and its own chunk re-split (non_chunk_mds wins, chunks stay
+    # excluded, current behavior unchanged) while fixing chunk-only-directory
+    # blindness (no non-chunk .md at all -> fall back to counting the chunks so
+    # has_md/md_words are no longer permanently false/zero for those directories).
+    mds = non_chunk_mds if non_chunk_mds else chunk_mds
 
     has_pdf = len(pdfs) > 0
     has_md = len(mds) > 0

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Conditional chunk-counting fix and docstring reconciliation",
+  "started_at": "2026-09-02T05:05:00Z",
+  "last_updated": "2026-09-02T05:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Split mds into non_chunk_mds/chunk_mds with conditional fallback", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 2, "description": "Add inline comment explaining the conditional rationale", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Update line-33 docstring block", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Run --dry-run, capture TSV/stderr, verify burgess_1982_i=1.0982, goldblatt_1989=1.0162", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Diffed post-fix --dry-run against the unmodified script's --dry-run on the same live corpus (isolating the fix's true effect from unrelated stamp staleness). Zero ratio-column changes for any directory that had one computed (proves exact no-op for canonical-.md directories). Exactly 158 transitions, all explained: 157x unverified_no_baseline->no_source_pdf (chunk-only blindness fixed) + 1x not_yet_converted->verified_conversion. Population 65/0/225/2/2/2 matches research hypothesis exactly. burgess_1982_i=1.0982 (anti-regression gate PASSED, not 2.2476). goldblatt_1989=1.0162. index.json mtime unchanged (dry-run never writes)."
+}
