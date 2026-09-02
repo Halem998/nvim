@@ -1,32 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1788329488_6a27b9_109",
-  "task_number": 109,
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
-      "summary": "Root-causes all three online-ingest bridge failure modes: (a) zot add --pdf hard-fails exit 3 'No DOI found in PDF' when its internal PDF-text DOI regex finds nothing and no --doi override is passed (confirmed against zotero-cli-cc v0.10.0's own Python source), fixed by deriving 10.48550/arXiv.<id> for arxiv-only records; (b) corrects the task's assumed orphan location -- the real observed sources/<doc_id>/ orphan is a pre-existing literature-ingest.sh bug (mkdir'd DOC_DIR never rm -rf'd on three conversion/chunk failure continue branches), separate from a narrower literature-ingest-online.sh staging-file leak on CREATE_FAILED/ATTACH_FAILED; (c) confirms task 102's Class A/B converter-tier characterization forecloses any automatic fallback retry, recommending a message-only diagnostic-pointer fix instead."
+      "type": "plan",
+      "path": "specs/109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md",
+      "summary": "7-phase, 5-wave plan fixing all three online-ingest bridge failure modes in the literature source store: arXiv DataCite --doi derivation, staging-file and doc-directory orphan cleanup, and a message-only converter-tier diagnostic pointer, preceded by a stub/forced-failure harness since --dry-run cannot reach any of these paths."
     }
   ],
+  "next_steps": "Run /implement 109 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9_109",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 4,
+    "dependency_waves": [[1], [2, 5], [3, 6], [4], [7]]
+  },
   "memory_candidates": [
     {
-      "content": "zotero-cli-cc's `zot add --pdf PATH` (no --doi) is NOT a graceful degrade to a bare item on missing metadata -- read commands/add.py::_add_from_pdf directly: it calls extract_doi(pdf_path) (regex 10\\.\\d{4,9}/\\S+ over the first 2 PDF pages only) and if that finds nothing, calls emit_error('validation_error', 'No DOI found in PDF') which exits 3 with NO Zotero item created at all. Any caller wrapping `zot add --pdf` for a document whose PDF has no printed DOI (e.g. an arXiv preprint predating arXiv's ~2022 retroactive DataCite DOI minting, which is metadata-only and never printed on the PDF text) must pass an explicit --doi to avoid this hard failure -- `zot add --dry-run` cannot be used to detect or reproduce this, since add.py's dry-run branch returns before ever calling _add_from_pdf.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["zotero-cli-cc", "zot add", "doi-extraction", "arxiv", "literature", "pdf-hard-fail"]
-    },
-    {
-      "content": "literature-ingest.sh's per-file loop mkdir -p's DOC_DIR ($LITERATURE_DIR/sources/<doc_id>/) before running literature-convert.sh, but on quality-gate rejection (CONVERT_EXIT==3), hard conversion failure (CONVERT_EXIT!=0), or chunking failure (CHUNK_COUNT==0), the continue branch cleans up its own TMP_MD_DIR/CONVERT_STDERR_FILE but never rm -rf's DOC_DIR -- leaving an empty orphaned sources/<doc_id>/ directory with no index.json entry. This is safe to fix with an unconditional rm -rf DOC_DIR on those three branches without extra 'did we create it' bookkeeping, because the loop's pre-existing re-ingestion check (EXISTING==yes -> rm -rf DOC_DIR before recreating) already guarantees DOC_DIR is fresh-this-iteration by the time conversion runs. The bug is reachable from ANY caller of literature-ingest.sh (local-file, --zotero, or the online-ingest bridge), not bridge-specific.",
-      "category": "PATTERN",
-      "source_artifact": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
+      "content": "A research report's enumerated call-site counts ('three continue branches', 'the directive_stop at line 736-738') are hypotheses to re-grep at plan time, not facts to phase against. Verifying task 109's report against live source found two undercounts: literature-ingest.sh has FOUR no-cleanup continue branches (the 'conversion reported success but no .md file found' branch was missed), and literature-ingest-online.sh has TWO ONLINE_INGEST_PIPELINE_FAILED directive_stop sites (resolvable path and existing-no-pdf attach path), not one. A plan phased against an undercount silently descopes the missed sites -- the implementer edits exactly what the plan enumerates and reports success. Cheap mitigation: before writing phases, run one grep per asserted count against the current file, and attach a Scope Hypothesis line naming the confirming command to every phase that carries a count. Line numbers cited in a research report are especially untrustworthy since they drift; anchor on function names and guard conditions instead.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md",
       "confidence": 0.8,
-      "suggested_keywords": ["literature-ingest", "orphan-directory", "cleanup", "quality-gate", "chunking-failure"]
+      "suggested_keywords": ["planning", "scope-hypothesis", "research-verification", "call-site-enumeration", "undercount", "grep-before-phasing"]
     }
-  ],
-  "next_steps": "Run /plan 109 to create implementation plan"
+  ]
 }
