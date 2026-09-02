@@ -1,20 +1,39 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 1,
-  "summary": "Created an 8-phase plan (11.25h, 5 waves) to delete the four core -hard skills and three -hard agent files. The research report's blocking verdict is superseded: its decisive objection (live /research, /plan, /implement commands) was resolved when task 124 landed, but its lint-retargeting finding holds and is wider than reported, so the plan retargets nine executable gates before deleting anything.",
+  "status": "implemented",
+  "summary": "Deleted the four superseded -hard skills and three -hard agent files from agent-system/extensions/core/, retargeted every lint/test/doc reference onto skill-orchestrate/SKILL.md's single-engine hard mode, and drove the repo-wide reference count for the seven deleted names to zero (excluding specs/). Cslib's and lean's own live -hard assets are unaffected and confirmed still routed. Full gate set (run-all.sh 62/62, all lints, check-extension-docs.sh, verify-deploy.sh) shows no regression versus the Phase 1 baseline; three pre-existing, unrelated failures are documented and traced to predate this task.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md",
-      "summary": "8-phase deletion plan with pre-deletion gate retargeting, atomic-batch deletion plus manifest surgery, and a repo-wide zero-hit sweep over 359 references in 60 files."
+      "type": "summary",
+      "path": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+      "summary": "Full implementation summary: 7 files deleted, 3 manifests edited, ~50 downstream files retargeted, zero-hit census confirmed, full gate run recorded."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8,
   "blockers": [],
-  "plan_markers_verified": true,
-  "next_action_hint": "Run /implement 121. Phase 1 re-verifies the precondition and stops the task if /research, /plan, or /implement have reappeared in agent-system/extensions/core/commands/.",
   "continuation_path": null,
-  "sorry_inventory": []
+  "plan_markers_verified": true,
+  "next_action_hint": "Task complete. No further dispatch needed.",
+  "files_modified": [
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/cslib/manifest.json",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/cslib/index-entries.json",
+    "agent-system/extensions/lean/index-entries.json"
+  ],
+  "decisions_made": [
+    "Narrowed the charter's literal 'remove routing_hard/routing_agents_hard from core, cslib, and lean' to entry-level surgery: core's blocks removed wholesale, cslib's 8 dead entries removed while its 4 live -hard entries are retained, lean left fully untouched (recorded as the plan's Scoping Deviation).",
+    "lint-task-lookup-adoption.sh's EXCLUDED_FILES removal deferred from Phase 2 into Phase 4's atomic-batch commit to avoid a transient un-exempted violation.",
+    "skill-base.sh's [hard-orchestrate] case arm removed rather than retargeted after confirming it was genuinely unreachable."
+  ],
+  "dead_ends": [],
+  "sorry_inventory": [],
+  "dispatch_seq": 1
 }

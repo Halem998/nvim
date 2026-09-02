@@ -1,9 +1,110 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+      "summary": "Deleted the four superseded -hard skills and three -hard agent files, retargeted lint/test/doc references onto skill-orchestrate/SKILL.md's single-engine hard mode, and confirmed zero repo-wide references to the seven deleted names outside specs/."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted skill-orchestrate-hard and the three -hard lifecycle skills/agents from agent-system/extensions/core/, removed their manifest routing entries (core wholesale, cslib's 8 dead entries, lean untouched by design), and retargeted roughly 50 lint/test/doc files off the deleted paths. Repo-wide grep for the seven deleted names returns zero hits outside specs/, and the full gate set (run-all.sh, 9 lints, check-extension-docs.sh, verify-deploy.sh) shows no new regression versus the Phase 1 baseline."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "agent-system/extensions/core/context/contracts/anti-analysis.md",
+    "agent-system/extensions/core/context/contracts/no-task-references-bullet.md",
+    "agent-system/extensions/core/context/contracts/orchestrator-discipline.md",
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+    "agent-system/extensions/core/context/contracts/recovery.md",
+    "agent-system/extensions/core/context/contracts/territory.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+    "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+    "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/command-route-agent.sh",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+    "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+    "agent-system/extensions/cslib/context/contracts/adversarial-verification.md",
+    "agent-system/extensions/cslib/index-entries.json",
+    "agent-system/extensions/cslib/manifest.json",
+    "agent-system/extensions/cslib/README.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md",
+    "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "specs/121_delete_hard_mode_lifecycle_files/.gate-baseline-after.txt",
+    "specs/121_delete_hard_mode_lifecycle_files/.gate-baseline-before.txt",
+    "specs/121_delete_hard_mode_lifecycle_files/.reference-census-after.txt",
+    "specs/121_delete_hard_mode_lifecycle_files/.reference-census-before.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When deleting files hard-referenced by shell lint/test scripts, retarget the lints/tests off the deletion targets in a dedicated phase BEFORE deleting, not after. Deleting first turns the whole suite red and makes it impossible to distinguish pre-existing failures from deletion-caused ones. Capture a full gate baseline (pass/fail counts, not just exit codes) before any deletion work starts, and diff the post-deletion gate run against it at closeout.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deletion", "lint-retargeting", "gate-baseline", "pre-deletion-check", "test-suite-safety"]
+    },
+    {
+      "content": "Before declaring a gate failure as a regression caused by the current task, use `git log --oneline -- <file>` to confirm the last commit touching the failing file/script predates the task's own commits. This distinguishes pre-existing, unrelated failures from ones actually introduced by the current work and prevents wrongly widening task scope to 'fix' something out of charter.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate-failure-triage", "pre-existing-vs-regression", "git-log-attribution", "scope-discipline"]
+    },
+    {
+      "content": "When a charter directs removing a routing block wholesale from N manifests but some of those manifests mix dead entries (naming deleted assets) with live ones (still routed, still on disk), narrow the literal instruction to entry-level surgery rather than executing it literally. Record the narrowing explicitly as a 'Scoping Deviation' in the plan with per-manifest reasoning, since a literal wholesale removal would silently break live routing that has nothing to do with the deletion.",
+      "category": "PATTERN",
+      "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scoping-deviation", "manifest-routing", "entry-level-surgery", "charter-narrowing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788376077_104552",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
