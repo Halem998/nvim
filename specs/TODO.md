@@ -12,7 +12,7 @@ next_project_number: 145
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141,142,143,144 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,127,136,140 | 29,74,91,121,139 | core-agent-system, extensions |
+| 2 | 30,75,76,127,136,140 | 29,74,91,121,125,139 | core-agent-system, extensions |
 | 3 | 88 | 127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -35,6 +35,7 @@ next_project_number: 145
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
 125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -712,7 +713,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 124, Task 121
+- **Dependencies**: Task 121, Task 124, Task 125
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===
 ADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block ("present:grant" -> "skill-grant:assemble" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.
