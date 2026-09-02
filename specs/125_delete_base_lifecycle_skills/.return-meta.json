@@ -1,0 +1,40 @@
+{
+  "task_number": 125,
+  "task_type": "meta",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788304786_edca9f_125",
+  "status": "blocked",
+  "dispatch_seq": 13,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md",
+      "summary": "Precondition (command deletion + skill-orchestrate dispatch-bypass/rehome) verified true, but a genuine blocker was found: agent-system/extensions/core/scripts/validate-wiring.sh hard-requires skill-researcher/skill-planner/skill-implementer directories to exist (currently passing live, would fail on deletion). Also documents a much larger reference footprint (72-74 files per skill under agent-system/) than the delegation's scoped work list."
+    }
+  ],
+  "blocker": {
+    "type": "hard_require",
+    "file": "agent-system/extensions/core/scripts/validate-wiring.sh",
+    "line": 176,
+    "description": "validate_core_system() loops `for skill in skill-researcher skill-implementer skill-planner skill-meta` and asserts each has a directory under skills/, logging [FAIL] Skill missing: <name> otherwise. Registered as a deployed script (manifest.json:226). Confirmed live-passing today against the deployed .claude/ tree; would flip to failing immediately upon deletion of the three target skill directories with no companion fix."
+  },
+  "next_steps": "Do not delete yet. A follow-up dispatch must (1) update validate-wiring.sh's validate_core_system() skill-existence loop to drop skill-researcher/skill-planner/skill-implementer (or make an explicit decision about what it should assert instead), and (2) re-plan the reference-cleanup scope against the full 72-74-file-per-skill inventory in the report (not just the 3 SKILL.md files + Skill-to-Agent Mapping table rows named in the delegation), before re-attempting this deletion.",
+  "memory_candidates": [
+    {
+      "content": "When deleting a core skill/agent from this repo, agent-system/extensions/core/scripts/validate-wiring.sh's validate_core_system() hard-requires skill-researcher, skill-implementer, skill-planner, and skill-meta directories to exist via a `[[ -d ... ]]` loop (line ~176). lint-routing-wiring.sh does NOT check this (it only validates routing_agents/routing_agents_hard values against agent files, never routing/routing_hard skill-name values against skill files), so a skill deletion can pass lint-routing-wiring.sh cleanly while still breaking validate-wiring.sh. Always grep validate-wiring.sh's skill/agent/rule existence loops before deleting any core-tier skill, agent, or rule file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-wiring.sh", "skill deletion", "hard-require", "core skills", "manifest routing"]
+    },
+    {
+      "content": "The plain (non-_hard, non-_agents) `routing` key in extension manifest.json files (e.g. nvim, email, formal, lean, present routing.plan.<type> = \"skill-planner\") is consumed only by command-route-skill.sh, which as of this check is sourced live in exactly one place repo-wide outside docs/templates: epidemiology/commands/epi.md's research stage (as a fallback default that its own domain routing always pre-empts). skill-orchestrate bypasses the skill-name router entirely, using command-route-agent.sh with routing_agents/routing_agents_hard instead. This makes most extensions' plain `routing` blocks effectively dead code post-command-deletion, but confirm per-repo before assuming it's safe to strip.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["manifest routing", "command-route-skill.sh", "dead code", "skill-orchestrate", "dispatch bypass"]
+    }
+  ]
+}

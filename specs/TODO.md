@@ -30,14 +30,14 @@ next_project_number: 139
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-90 [PLANNED] — The largest duplication class in the repo, and it has never been 
+90 [IMPLEMENTING] — The largest duplication class in the repo, and it has never been 
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 121 [BLOCKED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [BLOCKED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [BLOCKED] — Apply the mode-gated section convention to the largest single ins (see above)
-125 [NOT STARTED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+125 [BLOCKED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -575,10 +575,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 125. Delete base lifecycle skills
-- **Status**: [NOT STARTED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 124
+- **Research**: [125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md]
 
 **Description**: Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).
 
@@ -1638,7 +1639,7 @@ PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 202
 ---
 
 ### 90. Adoption lint for shared task lookup helper
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 124

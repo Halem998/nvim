@@ -731,7 +731,7 @@
     {
       "project_number": 90,
       "project_name": "adoption_lint_for_shared_task_lookup_helper",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -744,7 +744,7 @@
         "agent-system/extensions/core/scripts/skill-base.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-02T00:09:54Z",
+      "last_updated": "2026-09-02T02:43:02Z",
       "session_id": "sess_1788304786_edca9f_90",
       "artifacts": [
         {
@@ -1435,12 +1435,12 @@
     {
       "project_number": 125,
       "project_name": "delete_base_lifecycle_skills",
-      "status": "not_started",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).\n\nPRECONDITION (verify before starting). Both the dispatch-prep rehome and the command deletions must already be landed -- once /research, /plan, /implement are deleted, nothing calls these three skills any longer (skill-orchestrate already bypasses them entirely by dispatching agents directly, per the design report's re-verified dispatch-bypass finding), so this task is pure deletion, not rewiring.\n\nWORK. Delete skills/skill-researcher/SKILL.md (424 lines), skills/skill-planner/SKILL.md (508 lines), skills/skill-implementer/SKILL.md (725 lines), each in full (directory removal). Confirm a repo-wide grep for each skill's name (excluding this task's own specs/ artifacts, and excluding the now-historical CLAUDE.md Skill-to-Agent Mapping table row removal, which this task also performs) returns zero hits. Update the Skill-to-Agent Mapping table in CLAUDE.md / merge-sources/claudemd.md to remove the three rows.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-researcher/, .../skill-planner/, .../skill-implementer/, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 migration note, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-08-31T18:11:33Z",
+      "last_updated": "2026-09-02T02:49:59Z",
       "dependencies": [
         117,
         124
@@ -1451,7 +1451,14 @@
         "agent-system/extensions/core/skills/skill-implementer/",
         "agent-system/extensions/core/merge-sources/claudemd.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md",
+          "type": "report",
+          "summary": "Verifies both precondition halves hold, but finds validate-wiring.sh hard-requires the three skill dirs and the reference footprint is 72-74 files, not 3."
+        }
+      ],
+      "session_id": "sess_1788304786_edca9f_125"
     },
     {
       "project_number": 126,
