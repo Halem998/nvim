@@ -29,22 +29,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/summaries/01_phantom-path-existence-safety-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "subshell", "pipe-scoping", "nameref", "process-substitution", "counter-accumulation"]
+      "suggested_keywords": [
+        "bash",
+        "subshell",
+        "pipe-scoping",
+        "nameref",
+        "process-substitution",
+        "counter-accumulation"
+      ]
     },
     {
       "content": "When writing a regression fixture for a probe that has a documented degenerate/zero-candidate branch (e.g. build_errors: null when total_candidates == 0), a fixture that isolates the single behavior under test (e.g. \"one file becomes phantom\") by using ONLY that one file will often accidentally trigger the degenerate branch instead of the intended non-degenerate assertion, because removing the only candidate makes total_candidates hit zero. Always add an untouched, valid companion candidate to such a fixture so the candidate total stays nonzero and the fixture actually exercises the intended branch -- verify by checking the fixture's actual output against expectations, not just that the code compiles or the fixture 'looks right' on paper. This applies to both regression-suite fixtures and ad hoc before/after acceptance-evidence fixtures.",
       "category": "PATTERN",
       "source_artifact": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/summaries/01_phantom-path-existence-safety-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-fixtures", "degenerate-case", "regression-testing", "zero-candidate-branch", "companion-file"]
+      "suggested_keywords": [
+        "test-fixtures",
+        "degenerate-case",
+        "regression-testing",
+        "zero-candidate-branch",
+        "companion-file"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788390027_14a27d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
