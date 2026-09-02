@@ -1,37 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md",
-      "summary": "Six-phase plan implementing the provenance-only fallback (shared scan_pipeline_provenance function, deduplicated fidelity-audit consumer, non-blocking converter advisory) after research measured the content-based OCR-misrecognition detector as non-viable."
-    }
-  ],
-  "next_steps": "Run /implement 107 to execute the plan",
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1788329488_6a27b9_107",
-    "agent_type": "planner-agent",
-    "task_number": 107,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]],
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task's primary output is a measured negative result (a proposed detector/heuristic that provably does not work), the plan must include an explicit phase that writes the negative finding plus its decisive measurements into durable repository documentation, not only into the specs/ report. Two forces make this non-optional: (1) deliverable files outside specs/** cannot cite a specs/ artifact path, because that path embeds an ephemeral task number, so the record must be self-contained with the numbers and the failure classes inline; (2) without it the next contributor re-derives the same dead end. Practical shape: name the signal families tried, the decisive cross-over numbers (a genuine positive scoring below a negative control is the strongest single datum), the false-positive class that defeated each refinement round, and the one untried avenue with its cost.",
-      "category": "PATTERN",
-      "source_artifact": "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["negative-result", "plan-decomposition", "documentation-phase", "task-reference-constraint", "detector-infeasibility"]
-    }
-  ],
-  "modified_files": [
-    "specs/107_add_ocr_misrecognition_detector_to_quality_gate/plans/01_ocr-misrecognition-detector.md"
-  ],
-  "errors": []
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

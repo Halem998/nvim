@@ -23,6 +23,22 @@ NOT zero-tolerance the way NUL is, despite the plan text this module was
 originally scoped against literally proposing that shape. That deviation, and
 the corpus measurements behind it, are recorded in this task's
 calibration-notes.md artifact rather than only here.
+
+`scan_pipeline_provenance` is the first non-content check in this module: it
+takes plain metadata strings (Creator/Producer), not a `fitz.Document`, so it
+still needs no PDF access and still fits this module's shared invariant. It
+belongs here rather than as a private helper in either of its two consumers
+(`literature-convert.sh`'s conversion-time advisory and
+`literature-fidelity-audit.sh`'s scan-source gate) because both need
+byte-identical behavior and neither should hand-maintain its own copy of the
+regex. A content-based OCR-misrecognition detector was evaluated separately
+across four measurement rounds against 11 known scan-pipeline corpus
+documents and 6 born-digital dense-math controls and did not separate the
+two groups at any threshold (see `scan_pipeline_provenance`'s own docstring
+and `context/guides/literature-organization.md`'s "Converter Tier Selection"
+section for the full measured record); this metadata-only signal is the
+provenance-only fallback that measurement left standing, and it is advisory
+only -- never a gate rejection, never a converter-tier selector.
 """
 
 import re
@@ -357,3 +373,59 @@ def printable_ratio(text):
         and unicodedata.category(c) in _NONPRINTABLE_CATEGORIES
     )
     return 1 - (nonprintable / remaining_total), nonprintable
+
+
+# Known scan/OCR-pipeline Creator/Producer signature, matched case-insensitively
+# against the combined Creator+Producer metadata strings. Byte-identical to the
+# regex `literature-fidelity-audit.sh` carried inline before this promotion
+# (`SCAN_SOURCE_SIGNATURE_RE`) -- widening it (e.g. adding bare `scan` or
+# `abbyy` alternatives) is a separate, unvalidated change and is explicitly
+# out of scope for the promotion itself.
+_SCAN_PIPELINE_SIGNATURE_RE = re.compile(
+    r"capture|finereader|image conversion",
+    re.IGNORECASE,
+)
+
+
+def scan_pipeline_provenance(creator, producer):
+    """Returns True if `creator` or `producer` (PDF Creator/Producer metadata,
+    as plain strings) matches a known scan/OCR-pipeline tool signature
+    (ABBYY FineReader, Acrobat Capture/Import Plug-in, Image Conversion
+    Plug-in). `None` is coerced to `""` for either argument, so a caller
+    passing a missing metadata key cannot raise.
+
+    Provenance-only, by design: this takes extracted metadata strings, not a
+    `fitz.Document`, preserving this module's "every check needs no PDF
+    access at all" invariant, and it is deliberately a bounded known-signature
+    allowlist -- it is EXPECTED to miss a scan pipeline whose tool string is
+    not in the list (an accepted gap, not a defect to widen away without new
+    evidence).
+
+    A content-based OCR-misrecognition detector -- one that reads the
+    extracted TEXT rather than metadata, and so could in principle catch a
+    scan pipeline outside this allowlist -- was evaluated separately across
+    four progressively refined signal families (whole-document out-of-
+    vocabulary rate, whole-document mixed-alnum-symbol density, prose-line-
+    restricted anomaly rate, embedded-corruption-token rate) against 11 known
+    scan-pipeline corpus documents and 6 born-digital dense-math negative
+    controls. None separated the two groups at any threshold: a genuine
+    Acrobat Image Conversion scan (blackburn_2002) scored 15.69 hits/10k
+    words while born-digital controls scored 153.95 (venema_2007) and 306.22
+    (ahrens_north) hits/10k; at the narrowest refinement the same scan still
+    scored 2.70/10k against a born-digital 84.55/10k. See
+    `context/guides/literature-organization.md`'s "Converter Tier Selection"
+    section for the full measured record, including the false-positive class
+    that defeated each refinement round. This metadata-only check is very
+    likely the ceiling on this corpus, not a placeholder for a future
+    content-based detector.
+
+    A `True` result is ADVISORY ONLY. It must never drive a quality-gate
+    rejection, a withheld certification beyond what already exists, or a
+    converter-tier selection -- scan provenance does not predict which
+    remedy, or whether any remedy, a document needs. Prior converter-tier
+    characterization work established this with counter-examples: two
+    scanned corpus documents whose fallback-tier reconversion moved in
+    opposite directions (one improved, one did not)."""
+    creator = creator or ""
+    producer = producer or ""
+    return bool(_SCAN_PIPELINE_SIGNATURE_RE.search(f"{creator}|{producer}"))

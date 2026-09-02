@@ -1,7 +1,7 @@
 # Implementation Plan: Task #107
 
 - **Task**: 107 - Add an OCR-misrecognition detector to the literature quality gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 102 (converter-tier characterization, COMPLETED), Task 104 (glue-check false-positive class, COMPLETED), Task 105 (OCR tier, COMPLETED)
 - **Research Inputs**: specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md
@@ -133,29 +133,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Promote the provenance regex into the shared gate module [NOT STARTED]
+### Phase 1: Promote the provenance regex into the shared gate module [COMPLETED]
 
 **Goal**: `literature_quality_gate.py` exposes an importable `scan_pipeline_provenance(creator,
 producer)` with behavior byte-identical to `literature-fidelity-audit.sh`'s existing inline check.
 
 **Tasks**:
-- [ ] Add a module-level compiled constant next to the module's other regex constants:
+- [x] Add a module-level compiled constant next to the module's other regex constants:
       `re.compile(r"capture|finereader|image conversion", re.IGNORECASE)`. Do not widen the
-      pattern; do not add `scan` or `abbyy` as bare alternatives.
-- [ ] Add `scan_pipeline_provenance(creator, producer) -> bool`, applying that regex to
+      pattern; do not add `scan` or `abbyy` as bare alternatives. *(completed)*
+- [x] Add `scan_pipeline_provenance(creator, producer) -> bool`, applying that regex to
       `f"{creator}|{producer}"`. Coerce `None` to `""` for both arguments so a caller passing a
-      missing metadata key cannot raise.
-- [ ] Write the function docstring to record three things: (a) it is provenance-only and takes
+      missing metadata key cannot raise. *(completed)*
+- [x] Write the function docstring to record three things: (a) it is provenance-only and takes
       metadata strings rather than a `fitz.Document`, preserving this module's stated
       "every check needs no PDF access at all" invariant; (b) it is a bounded known-signature
       allowlist and is expected to miss a scan pipeline whose tool string is not in the list
       (accepted gap); (c) a `True` result is advisory — it must never drive a gate rejection, a
-      withheld certification beyond what already exists, or a converter-tier selection.
-- [ ] Append a short paragraph to the module docstring noting this is the first non-content check
+      withheld certification beyond what already exists, or a converter-tier selection. *(completed)*
+- [x] Append a short paragraph to the module docstring noting this is the first non-content check
       in the module and why it still belongs here (both `literature-convert.sh` and
-      `literature-fidelity-audit.sh` need it, and it still needs no PDF access).
-- [ ] Confirm `sentence_boundary_glue_count()`'s docstring is byte-identical to before the edit
-      (`git diff` on that hunk must be empty).
+      `literature-fidelity-audit.sh` need it, and it still needs no PDF access). *(completed)*
+- [x] Confirm `sentence_boundary_glue_count()`'s docstring is byte-identical to before the edit
+      (`git diff` on that hunk must be empty). *(completed)*
 
 **Timing**: 0.75 hours
 
