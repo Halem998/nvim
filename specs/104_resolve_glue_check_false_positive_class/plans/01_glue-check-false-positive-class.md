@@ -1,7 +1,7 @@
 # Implementation Plan: Task #104
 
 - **Task**: 104 - Resolve glue-check false-positive class on math-heavy OCR'd scans
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 102 (completed)
 - **Research Inputs**: specs/104_resolve_glue_check_false_positive_class/reports/01_glue-check-false-positive-class.md
@@ -147,31 +147,43 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline capture and defect localization [NOT STARTED]
+### Phase 1: Baseline capture and defect localization [BLOCKED]
 
 **Goal**: Reproduce today's 4-hit gate rejection from the current source PDF, and identify which
 actual PDF pages carry the 2 genuine defects — replacing the unverified "pages 119 and 217" claim
 with a measured mapping.
 
 **Tasks**:
-- [ ] Confirm the source PDF path and page count:
+- [x] Confirm the source PDF path and page count:
       `/home/benjamin/Projects/Logos/Theory/specs/literature/joyce_1999_foundations-causal-decision-theory.pdf`
-      (`pdfinfo` reported 284 pages at plan time; re-confirm).
-- [ ] Convert into a scratch directory (never over the live corpus) with
+      (`pdfinfo` reported 284 pages at plan time; re-confirm). *(completed: pdfinfo re-confirms 284 pages)*
+- [x] Convert into a scratch directory (never over the live corpus) with
       `agent-system/extensions/literature/scripts/literature-convert.sh <pdf> <scratch_dir>` and
       capture the gate output verbatim, including the reported hit count.
-- [ ] Enumerate all `[a-z]\.[A-Z]` hits the gate counts, with ~80 characters of surrounding
+      *(completed: gate reports "Quality gate: PASSED" — see baseline-measurement.md)*
+- [x] Enumerate all `[a-z]\.[A-Z]` hits the gate counts, with ~80 characters of surrounding
       context each, by calling `sentence_boundary_glue_count()` directly on the joined markdown
       (join chunks with `"\n\n"`, never raw concatenation — raw concatenation manufactures or
       suppresses boundary matches, as `test-quality-gate-notation.sh`'s header documents).
-- [ ] Classify each hit as genuine missing-space vs. math notation. The expected notation pair is
+      *(completed: 2 hits total, both raw and exempted-count identical — see
+      baseline-measurement.md)*
+- [x] Classify each hit as genuine missing-space vs. math notation. The expected notation pair is
       `"^s.P(S\A)u(0[A S])"` (Stalnaker's Equation fragment) and `"f.I+i p*( YHr"` (garbled
-      matrix-predicate fragment).
+      matrix-predicate fragment). *(completed: both of the 2 measured hits ARE exactly this
+      notation pair; zero genuine hits found)*
 - [ ] For each **genuine** hit, locate its text on the actual PDF page (e.g. `pdftotext -f N -l N`
       sweeping candidate pages, or matching against the converted markdown's page structure) and
-      record the confirmed **PDF page index**.
-- [ ] Record the baseline in the task directory: total count, the full classified hit list with
+      record the confirmed **PDF page index**. *(deviation: skipped — no genuine hit exists to
+      locate; measured genuine-defect count is 0, not 2)*
+- [x] Record the baseline in the task directory: total count, the full classified hit list with
       context, and the confirmed PDF page indices of the genuine defects.
+      *(completed: see baseline-measurement.md; no genuine-defect page indices to record since
+      none exist)*
+
+**STOPPED per Scope Hypothesis below — see `baseline-measurement.md` for the full measurement and
+implication analysis.** Measured total is 2 (not 4); measured genuine-defect count is 0 (not 2).
+Phases 2-7 are held pending planner/requester guidance rather than continued under a falsified
+premise.
 
 **Timing**: 0.75 hours
 

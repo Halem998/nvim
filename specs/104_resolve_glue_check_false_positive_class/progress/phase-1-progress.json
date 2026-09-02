@@ -1,0 +1,44 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline capture and defect localization",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm source PDF path and page count", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Convert into scratch directory, capture gate output/hit count", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Enumerate all glue hits with context", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Classify each hit as genuine vs notation", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Locate genuine hits on actual PDF pages", "status": "blocked", "note": "No genuine hits exist to locate; measured genuine-defect count is 0, not the expected 2.", "files_touched": []},
+    {"id": 6, "description": "Record baseline in task directory", "status": "done", "files_touched": ["specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Fresh reconversion of current source PDF via literature-convert.sh into a scratch dir, then sentence_boundary_glue_count() over the output",
+      "result": "measured",
+      "reason": "Gate reports PASSED at 2 hits (both known math-notation strings), not the expected 4-hit rejection"
+    },
+    {
+      "approach": "Cross-check against the existing ungated 396-chunk corpus copy at ~/Projects/Literature/sources/joyce_1999_foundations-causal-decision-theory/",
+      "result": "measured",
+      "reason": "Also 2 hits, byte-identical context to the fresh reconversion -- corroborates rather than contradicts"
+    },
+    {
+      "approach": "Raw unexempted [a-z]\\.[A-Z] scan (no Ph.D./binder/hat stripping) to rule out a masked genuine hit",
+      "result": "measured",
+      "reason": "Also exactly 2 -- no exemption is hiding a genuine defect"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "For each genuine hit, locate its text on the actual PDF page and record the confirmed PDF page index",
+      "type": "skipped",
+      "reason": "No genuine hit exists in the current document state to locate -- the Phase 1 Scope Hypothesis (total=4, genuine=2) is falsified by direct measurement (total=2, genuine=0). Per the plan's own Rollback/Contingency section, execution stops here rather than fabricating page indices for defects that do not exist.",
+      "annotation": "*(deviation: skipped — no genuine hit exists to locate; measured genuine-defect count is 0, not 2)*"
+    }
+  ],
+  "handoff_count": 0,
+  "stopped": true,
+  "stop_reason": "Phase 1 Scope Hypothesis falsified: measured total is 2 (not 4), measured genuine-defect count is 0 (not 2). Document already passes the gate today with no re-OCR performed by this task. See baseline-measurement.md for full analysis and recommendation."
+}

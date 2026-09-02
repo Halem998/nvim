@@ -1,34 +1,38 @@
 {
-  "status": "planned",
+  "status": "partial",
+  "partial_progress": {
+    "stage": "phase_1_scope_hypothesis_falsified",
+    "details": "Phase 1's Scope Hypothesis required stopping if the measured total was not 4 or the measured genuine-defect count was not 2. Measurement (fresh reconversion of the source PDF plus cross-check against the existing ungated 396-chunk corpus copy, plus a raw unexempted scan) found the document ALREADY passes the quality gate today at 2 hits -- both the known math-notation false positives -- with zero genuine text-layer defects present. Per the plan's own Rollback/Contingency section, execution stopped here rather than fabricating a re-OCR fix for defects that do not exist, or writing docstring text (Phase 4/5) asserting a causal narrative this task did not perform. See baseline-measurement.md and the phase-1 handoff for full detail and recommended next steps.",
+    "handoff_path": "specs/104_resolve_glue_check_false_positive_class/handoffs/phase-1-handoff-20260902T063833Z.md",
+    "phases_completed": 0,
+    "phases_total": 7
+  },
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/104_resolve_glue_check_false_positive_class/plans/01_glue-check-false-positive-class.md",
-      "summary": "7-phase plan executing route (a): targeted 2-page re-OCR of joyce_1999's source PDF, additive docstring/guide reconciliation, tripwire regression gates, and a bounded corpus re-gate."
+      "type": "handoff",
+      "path": "specs/104_resolve_glue_check_false_positive_class/handoffs/phase-1-handoff-20260902T063833Z.md",
+      "summary": "Phase 1 stopped: baseline measurement falsifies the plan's Scope Hypothesis (document already passes the gate at 2 hits with no genuine defect present)"
     }
   ],
-  "next_steps": "Run /implement 104 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788329488_6a27b9_104",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 104,
-    "phase_count": 7,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2], [3], [4, 5], [6], [7]]
+  "completion_data": {
+    "completion_summary": "Phase 1 baseline measurement falsified the plan's core premise: the joyce_1999 source PDF already converts and passes the quality gate at 2 hits (both known math-notation false positives), with zero genuine text-layer defects present -- confirmed independently via a fresh reconversion, the existing 396-chunk corpus copy, and a raw unexempted regex scan. Per the plan's own stop condition, no re-OCR (Phase 2) was performed and no docstring/guide changes (Phases 4-5) were written, since both would misrepresent what actually happened. Recommend the task return to the requester/planner for a decision: close as already-resolved with reworded docstring text, or supply a different PDF revision that actually carries the described defects."
   },
+  "modified_files": [],
   "memory_candidates": [
     {
-      "content": "When a quality gate rejects an artifact on a count threshold, decompose the count into genuine defects vs. false positives before reaching for a gate/exemption/threshold change. If fixing only the genuine defects drops the total below the threshold, the false positives never need to be exempted at all - the fix moves entirely to the input layer and the gate stays untouched. This 'threshold arithmetic' check is cheap and should precede any exemption-widening design work, especially where the module's own history records that widening attempts raised false-positive counts via substitution self-interference.",
-      "category": "PATTERN",
-      "source_artifact": "specs/104_resolve_glue_check_false_positive_class/plans/01_glue-check-false-positive-class.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["quality-gate", "threshold-arithmetic", "false-positive", "exemption-widening", "input-layer-fix"]
+      "content": "When a plan's Phase 1 is a measurement/baseline-reproduction step gated by an explicit Scope Hypothesis with a stated stop condition, run the measurement literally before touching any destructive step (re-OCR, file edits) -- even when the plan's arithmetic looks internally consistent and well-cited. In this case, both an independent reconversion AND the existing corpus copy agreed the asserted 4-hit baseline no longer reproduces (measured 2, both known false positives, zero genuine defects) -- the source PDF outside the repo had apparently already been fixed during the task's own 'supplied evidence' gathering, without that being recorded anywhere the implementer could see (no git history for a non-tracked sibling-project file, no backup marker). Cross-checking a live reconversion against a separately-ingested corpus copy of the same document is a cheap, high-value corroboration when the primary source is unversioned.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/104_resolve_glue_check_false_positive_class/baseline-measurement.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-hypothesis", "baseline-measurement", "stop-and-report", "unversioned-source-file", "literature-quality-gate"]
     }
   ],
-  "modified_files": [
-    "specs/104_resolve_glue_check_false_positive_class/plans/01_glue-check-false-positive-class.md",
-    "specs/104_resolve_glue_check_false_positive_class/.return-meta.json"
-  ]
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }
