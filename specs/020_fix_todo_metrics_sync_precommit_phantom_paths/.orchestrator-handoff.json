@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 3,
+  "status": "planned",
+  "summary": "Created a 4-phase implementation plan: (1) existence-safe enumeration in assess-repo-health.sh plus a new phantom_paths field, schema, and schema doc as one atomic batch; (2) three git-fixture regression cases locking both directions; (3) re-sequencing /todo's metrics sync to after its commit with its own state-scoped commit and three cross-reference updates; (4) measured before/after acceptance evidence and full-gate verification. The task description's second defect (Step 5A MAX_ARG_STRLEN) is recorded as already closed upstream and explicitly out of scope.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md",
+      "summary": "4-phase plan for phantom-path existence safety and /todo metrics-sync re-sequencing."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": []
+}
