@@ -11,8 +11,8 @@ next_project_number: 145
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141,142,143,144 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,127,136,140 | 29,74,91,121,125,139 | core-agent-system, extensions |
+| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,125,129,134,137,138,139,141,142,143,144 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,127,136,140 | 29,74,91,125,139 | core-agent-system, extensions |
 | 3 | 88 | 127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -31,11 +31,9 @@ next_project_number: 145
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-121 [IMPLEMENTING] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
-  └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r (see above)
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -846,12 +844,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 121. Delete hard mode lifecycle files
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 120, Task 128
 - **Research**: [121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md]
 - **Plan**: [121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md]
+- **Summary**: [121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md]
 
 **Description**: Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.
 

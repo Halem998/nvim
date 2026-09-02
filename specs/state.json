@@ -1522,12 +1522,12 @@
     {
       "project_number": 121,
       "project_name": "delete_hard_mode_lifecycle_files",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-02T16:09:30Z",
+      "last_updated": "2026-09-02T19:34:34Z",
       "dependencies": [
         118,
         119,
@@ -1556,9 +1556,15 @@
           "path": "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md",
           "type": "plan",
           "summary": "8-phase deletion plan with pre-deletion gate retargeting, atomic-batch deletion plus manifest surgery, and a repo-wide zero-hit sweep over 359 references in 60 files."
+        },
+        {
+          "path": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: 7 files deleted, 3 manifests edited, ~50 downstream files retargeted, zero-hit census confirmed, full gate run recorded."
         }
       ],
-      "session_id": "sess_1788364293_dfc521_121"
+      "session_id": "sess_1788376077_104552",
+      "completion_summary": "Deleted skill-orchestrate-hard and the three -hard lifecycle skills/agents from agent-system/extensions/core/, removed their manifest routing entries (core wholesale, cslib's 8 dead entries, lean untouched by design), and retargeted roughly 50 lint/test/doc files off the deleted paths. Repo-wide grep for the seven deleted names returns zero hits outside specs/, and the full gate set (run-all.sh, 9 lints, check-extension-docs.sh, verify-deploy.sh) shows no new regression versus the Phase 1 baseline."
     },
     {
       "project_number": 122,

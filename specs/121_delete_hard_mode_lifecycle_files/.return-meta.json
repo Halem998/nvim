@@ -82,29 +82,55 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deletion", "lint-retargeting", "gate-baseline", "pre-deletion-check", "test-suite-safety"]
+      "suggested_keywords": [
+        "deletion",
+        "lint-retargeting",
+        "gate-baseline",
+        "pre-deletion-check",
+        "test-suite-safety"
+      ]
     },
     {
       "content": "Before declaring a gate failure as a regression caused by the current task, use `git log --oneline -- <file>` to confirm the last commit touching the failing file/script predates the task's own commits. This distinguishes pre-existing, unrelated failures from ones actually introduced by the current work and prevents wrongly widening task scope to 'fix' something out of charter.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["gate-failure-triage", "pre-existing-vs-regression", "git-log-attribution", "scope-discipline"]
+      "suggested_keywords": [
+        "gate-failure-triage",
+        "pre-existing-vs-regression",
+        "git-log-attribution",
+        "scope-discipline"
+      ]
     },
     {
       "content": "When a charter directs removing a routing block wholesale from N manifests but some of those manifests mix dead entries (naming deleted assets) with live ones (still routed, still on disk), narrow the literal instruction to entry-level surgery rather than executing it literally. Record the narrowing explicitly as a 'Scoping Deviation' in the plan with per-manifest reasoning, since a literal wholesale removal would silently break live routing that has nothing to do with the deletion.",
       "category": "PATTERN",
       "source_artifact": "specs/121_delete_hard_mode_lifecycle_files/summaries/01_delete-hard-mode-lifecycle-files-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["scoping-deviation", "manifest-routing", "entry-level-surgery", "charter-narrowing"]
+      "suggested_keywords": [
+        "scoping-deviation",
+        "manifest-routing",
+        "entry-level-surgery",
+        "charter-narrowing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788376077_104552",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "orchestrate",
+      "skill-orchestrate",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
-    "phases_total": 8
-  }
+    "phases_total": 8,
+    "cycles_used": 1,
+    "final_state": "completed",
+    "detected_defects": []
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
