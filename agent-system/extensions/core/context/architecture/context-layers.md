@@ -96,8 +96,9 @@ provided it is explicitly referenced from both agents' (and both skills') Contex
 sections, and its own header should say so plainly so a future reader does not assume
 hard-mode-only applicability from placement alone. `contracts/phase-closure.md` and
 `contracts/pre-edit-gate.md` are the first two contracts to do this: both are referenced from
-`agents/general-implementation-agent.md`, `agents/general-implementation-hard-agent.md`,
-`skills/skill-implementer/SKILL.md`, and `skills/skill-implementer-hard/SKILL.md` at minimum, and
+`agents/general-implementation-agent.md` (both effort modes — core's own standalone hard-mode
+implementation agent is deleted and merged into `skill-orchestrate`'s H1 branch) and
+`skills/skill-implementer/SKILL.md` at minimum, and
 the same explicit-reference mechanism has since been extended to the non-core extension
 implementer surface (every extension implementer agent that runs a plan-phase loop, plus any
 extension skill file maintaining its own contract-bullet list) — this list is illustrative of the

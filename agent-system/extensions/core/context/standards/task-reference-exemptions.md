@@ -88,7 +88,7 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
   at subagent spawn) and states the exact in-scope/out-of-scope classification rule: an agent must
   carry the bullet if and only if it authors deliverable files outside `specs/**`. This covers
   every dispatchable implementation agent (core and extensions alike), the planning agents
-  (`planner-agent`, `planner-hard-agent`, `reviser-agent`), and `meta-builder-agent`; research
+  (`planner-agent`, `reviser-agent`), and `meta-builder-agent`; research
   agents whose only output is a `specs/**` report are out of scope by that same rule, not by
   oversight.
 - **Coverage lint**: `lint-agent-contracts.sh` (Check C) enforces bullet presence across the full

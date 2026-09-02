@@ -32,10 +32,15 @@ Plans may include a `plan_metadata` object in state.json with fields: `phases` (
 `false`) — `true` when this plan's critical path ends in one or more planned strategic-sorry
 division points instead of covering full scope with more/larger phases; `follow_up_tasks` (array
 of int, default `[]`) — the real, allocated (plain-integer, never dotted) task numbers of the
-follow-up tasks created to discharge those division points. Both fields are populated by
-`skill-planner-hard` postflight after `{{FOLLOWUP:i}}` placeholder-token substitution (see
-`planner-hard-agent.md` Stage 4a); the field name `skeleton` reuses `wrap-up.md`'s implement-time
-`skeleton` boolean verbatim so plan-time intent and implement-time outcome are diffable.
+follow-up tasks created to discharge those division points. The field name `skeleton` reuses
+`wrap-up.md`'s implement-time `skeleton` boolean verbatim so plan-time intent and implement-time
+outcome are diffable. **No live planning skill or agent currently populates these fields or the
+`{{FOLLOWUP:i}}` placeholder-token substitution that used to feed them**: core's own standalone
+hard-mode planner (which owned this substitution) is deleted, `--hard` planning for core task
+types now resolves to the same `planner-agent` standard mode uses (which never implemented this
+mechanism), and no cslib or lean planning agent has ever implemented it either. This schema
+section is retained as the field's documented shape for the day a hard-mode planning path is
+reintroduced, not as a description of live behavior.
 
 ```json
 {
@@ -135,13 +140,14 @@ and take a named INCONCLUSIVE branch on a hit; checking conformance only on the 
 it is what "closed contract, not an aspiration" above requires end-to-end — but it is worth
 stating explicitly because the failure mode is silent: the resume-scan sites now run
 `has_nonconforming_phase_headings` before selection, closing the gap. Sites that stop hard on an
-inconclusive scan (`skill-implementer-hard`'s and `skill-lean-implementation-hard`'s resume-point
-scans, both single-shot leaf workers whose check runs strictly before any subagent is dispatched,
-so no handoff write is owed yet) are deliberately postured differently from the long-running
-orchestration loop (`skill-orchestrate-hard`), which instead routes an inconclusive scan to its
-own established `EXIT (partial, ...)` terminal-condition convention rather than a raw process
-exit — the difference is leaf-worker precondition vs. orchestration-loop terminal state, not an
-inconsistency.
+inconclusive scan (`skill-lean-implementation-hard`'s resume-point scan — a single-shot leaf
+worker whose check runs strictly before any subagent is dispatched, so no handoff write is owed
+yet; core's own standalone hard-mode implementer skill once had an equivalent scan, before it was
+merged into `skill-orchestrate` and deleted) are deliberately postured differently from the
+long-running orchestration loop (`skill-orchestrate`'s H1 per-phase dispatch branch), which
+instead routes an inconclusive scan to its own established `EXIT (partial, ...)` terminal-condition
+convention rather than a raw process exit — the difference is leaf-worker precondition vs.
+orchestration-loop terminal state, not an inconsistency.
 
 **`[DESCOPED]` is not a recognized phase-heading status marker and must not be used.** Whole-phase
 descoping uses `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record (below)
@@ -168,11 +174,12 @@ hand-maintained prose list here that was already demonstrably incomplete. As of 
 introduction this includes `update-task-status.sh`'s `count_plan_phases()` (TOTAL/DONE
 phase-accounting regexes), `scripts/validate-artifact.sh` (phase-presence check, phase-line
 enumeration, phase-number extraction, and marker-enum validation), `update-phase-status.sh`
-(the one deliberately parameter-driven site), both implementation agents' Stage 5a marker-repair
-block (`general-implementation-agent.md`, `general-implementation-hard-agent.md`),
-`commands/task.md`'s `/task --review` Step 3 phase enumeration, `skill-implementer-hard`'s and
-`skill-lean-implementation-hard`'s resume-point scans, and `skill-orchestrate`'s (and
-`skill-orchestrate-hard`'s) recovery-count and `next_phase` greps. Reference sites by
+(the one deliberately parameter-driven site), `general-implementation-agent.md`'s Stage 5a
+marker-repair block (both effort modes — core's own standalone hard-mode implementation agent is
+deleted and merged into this one),
+`commands/task.md`'s `/task --review` Step 3 phase enumeration, `skill-lean-implementation-hard`'s
+resume-point scan, and `skill-orchestrate`'s recovery-count and `next_phase` greps (both effort
+modes, one engine). Reference sites by
 script/skill and function/stage name, never by line number — line numbers drift on every edit and
 are not a stable anchor.
 
@@ -278,9 +285,10 @@ a planned strategic-sorry division point (`strategic: true` is implicit for the 
 - **Assumption**: maps to `sorry_inventory.assumption` — fixed at plan time.
 - **Why Deferred**: maps to `sorry_inventory.why_deferred` — fixed at plan time.
 - **Follow-Up Task**: maps to `sorry_inventory.follow_up_task` — a plain-integer task-number
-  string once resolved (never dotted, e.g. never `"774.2"`); written as the literal placeholder
-  token `{{FOLLOWUP:i}}` by the planning agent and substituted by `skill-planner-hard` postflight
-  with the real allocated task number.
+  string once resolved (never dotted, e.g. never `"774.2"`); documented as written by a planning
+  agent as the literal placeholder token `{{FOLLOWUP:i}}` and substituted with the real allocated
+  task number at postflight — see the "Hard-mode skeleton fields" section above for why no live
+  planning path currently performs this substitution.
 
 **Deviation flag**: An implementer-placed strategic sorry that does NOT correspond to a row on
 this table is a plan-unanticipated deviation. It is evaluated under a weaker claim on the
