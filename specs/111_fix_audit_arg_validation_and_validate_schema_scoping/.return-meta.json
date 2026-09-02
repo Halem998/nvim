@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md",
+      "summary": "Confirms both defects still present in the source store with exact line numbers, and identifies the two in-repo conventions (literature-ingest-online.sh's usage/exit-64 pattern; literature-coverage-delta.sh's parent_doc top-level-document predicate) each fix should reuse."
+    }
+  ],
+  "next_steps": "Run /plan 111 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9_111",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 950,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 2
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's literature extension, when a fix needs a 'is this a top-level document entry vs. a section/chunk entry' predicate over specs/literature-index.json or the global index, reuse literature-coverage-delta.sh's `select(.parent_doc == null or .parent_doc == \"\")` rather than inventing a path-suffix ('/') check — the two are not equivalent and parent_doc is the canonical distinction other scripts already standardize on.",
+      "category": "PATTERN",
+      "source_artifact": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature", "index-schema", "parent_doc", "validate", "top-level-document"]
+    },
+    {
+      "content": "This repo's literature extension has a shared arg-parsing usage/error convention for standalone scripts: a show_usage() heredoc to stderr, an explicit -h|--help arm that calls it and exits 0, and an unknown-argument default arm that prints 'scriptname: unknown argument: $1' plus usage to stderr and exits 64. literature-ingest-online.sh implements this fully; other literature scripts with looser arg parsing (e.g. a bare catch-all that silently discards unrecognized flags) should be brought in line with it rather than left inconsistent.",
+      "category": "CONFIG",
+      "source_artifact": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["literature", "arg-parsing", "usage", "exit-64", "bash-convention"]
+    }
+  ]
+}
