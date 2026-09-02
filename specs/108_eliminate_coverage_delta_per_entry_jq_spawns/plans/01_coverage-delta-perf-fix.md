@@ -231,27 +231,30 @@ source `literature-term-match.sh` — separation holds)*
 
 ---
 
-### Phase 3: Single-pass @tsv extraction in literature-coverage-delta.sh [IN PROGRESS]
+### Phase 3: Single-pass @tsv extraction in literature-coverage-delta.sh [COMPLETED]
 
 **Goal**: Eliminate the three per-entry `echo | jq` spawns by having the loop feeder emit
 already-extracted fields, without touching the match rule or the output contract.
 
 **Tasks**:
-- [ ] Replace the loop feeder with a single jq pass emitting
+- [x] Replace the loop feeder with a single jq pass emitting
       `[(.id // .doc_id // ""), (.title // ""), ((.keywords // []) | join(" "))] | @tsv` over
       entries already filtered by the existing `select(.parent_doc == null or .parent_doc == "")`
-      predicate.
-- [ ] Change the loop header to `while IFS=$'\t' read -r doc_id title keywords`, deleting the three
-      `echo "$entry" | jq -r ...` assignments.
-- [ ] Preserve the `.id // .doc_id` tolerance exactly (it is load-bearing) and preserve the
-      empty-`doc_id` `continue` skip exactly.
-- [ ] Preserve the sub-index exclusion (`SUB_KEYS`) check, the match-rule block, the
+      predicate. *(completed)*
+- [x] Change the loop header to `while IFS=$'\t' read -r doc_id title keywords`, deleting the three
+      `echo "$entry" | jq -r ...` assignments. *(completed)*
+- [x] Preserve the `.id // .doc_id` tolerance exactly (it is load-bearing) and preserve the
+      empty-`doc_id` `continue` skip exactly. *(preserved: `.id // .doc_id // ""` is the
+      3-way-chained jq equivalent of the old `(.id // .doc_id) // ""`, semantically identical)*
+- [x] Preserve the sub-index exclusion (`SUB_KEYS`) check, the match-rule block, the
       `delta_candidates` increment, and the bounded `top_n` `candidate_ids`/`candidate_titles`
-      accumulation verbatim — none of these change.
-- [ ] Confirm the now-unreachable `[ "$entry" = "null" ]` guard is either removed or correctly
+      accumulation verbatim — none of these change. *(preserved verbatim, untouched)*
+- [x] Confirm the now-unreachable `[ "$entry" = "null" ]` guard is either removed or correctly
       re-expressed for the new record shape (a blank line from an all-empty record must not be
-      treated as a valid entry).
-- [ ] Leave the stdout line and the stderr rationale line byte-identical in shape.
+      treated as a valid entry). *(removed; the existing empty-doc_id skip already covers an
+      all-empty @tsv line, documented inline)*
+- [x] Leave the stdout line and the stderr rationale line byte-identical in shape. *(unchanged —
+      neither line was touched)*
 
 **Timing**: 0.75 hours
 
@@ -265,7 +268,8 @@ already-extracted fields, without touching the match rule or the output contract
 (research cited `literature-coverage-delta.sh:166-212`, pre-edit). Confirm the actual current line
 span at implementation time by locating the `while IFS= read -r entry` header and its
 `done < <(jq -c ...)` feeder rather than trusting the cited numbers; report the real span in the
-summary.
+summary. *(confirmed: pre-edit span was lines 166-212, matching the cited numbers exactly; the
+loop header (166) through the `done < <(...)` feeder (212) is the entirety of the edit)*
 
 **Files to modify**:
 - `agent-system/extensions/literature/scripts/literature-coverage-delta.sh` - keyword-pass loop
