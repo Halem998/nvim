@@ -26,17 +26,17 @@ next_project_number: 142
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
-87 [NOT STARTED] — Establish the convention that fixes the single largest token leve
+87 [RESEARCHED] — Establish the convention that fixes the single largest token leve
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
   └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
-121 [RESEARCHED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
+121 [PLANNED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
     └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
-125 [RESEARCHED] — Delete the three base lifecycle skills (skill-researcher, skill-p
+125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
@@ -680,11 +680,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 125. Delete base lifecycle skills
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 117, Task 124
 - **Research**: [125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md]
+- **Plan**: [125_delete_base_lifecycle_skills/plans/01_delete-base-lifecycle-skills.md]
 
 **Description**: Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).
 
@@ -769,11 +770,12 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 121. Delete hard mode lifecycle files
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 118, Task 119, Task 120, Task 128
 - **Research**: [121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md]
+- **Plan**: [121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md]
 
 **Description**: Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.
 
@@ -1838,10 +1840,11 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 ---
 
 ### 87. Mode gated section loading convention
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md]
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
 

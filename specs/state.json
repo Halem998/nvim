@@ -690,7 +690,7 @@
     {
       "project_number": 87,
       "project_name": "mode_gated_section_loading_convention",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -702,7 +702,15 @@
         "agent-system/extensions/core/scripts/measure-eager-context.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-08-31T00:00:00Z"
+      "last_updated": "2026-09-02T14:08:04Z",
+      "session_id": "sess_1788357501_0d2431_87",
+      "artifacts": [
+        {
+          "path": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
+          "type": "report",
+          "summary": "Formalizes the existing context/patterns pointer precedent into a documented convention with a paired branch-gated marker, an allowlist lint wired as verify-deploy Gate 19, and an independent pilot recommendation."
+        }
+      ]
     },
     {
       "project_number": 88,
@@ -1473,12 +1481,12 @@
     {
       "project_number": 121,
       "project_name": "delete_hard_mode_lifecycle_files",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete skill-orchestrate-hard and the three -hard lifecycle skills and agent files.\n\nPRECONDITION (verify before starting, do not proceed otherwise). The hard-mode contract-injection mechanism, the state-machine residue migration, and the test/lint retargeting must all already be landed and verified working inside skill-orchestrate/SKILL.md -- this task is pure deletion with zero rewiring of its own.\n\nWORK. Delete: skills/skill-orchestrate-hard/SKILL.md (1,784 lines), skills/skill-researcher-hard/SKILL.md (275 lines), skills/skill-planner-hard/SKILL.md (462 lines), skills/skill-implementer-hard/SKILL.md (507 lines), agents/general-research-hard-agent.md (332 lines), agents/planner-hard-agent.md (334 lines), agents/general-implementation-hard-agent.md (538 lines). Remove the routing_hard/routing_agents_hard blocks from the three manifests that still declare them (core, cslib, lean -- verified as the complete set of 19 manifests carrying these keys). Confirm no remaining reference to any deleted path anywhere in agent-system/ (a repo-wide grep for each deleted file's basename, excluding this task's own summary/report artifacts under specs/, must return zero hits before this task is considered complete).\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (skills/agents/manifest.json), agent-system/extensions/cslib/manifest.json, agent-system/extensions/lean/manifest.json (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A7 deletion ledger).\n",
       "created": "2026-08-31T18:11:23Z",
-      "last_updated": "2026-09-01T23:27:10Z",
+      "last_updated": "2026-09-02T14:07:59Z",
       "dependencies": [
         118,
         119,
@@ -1502,9 +1510,14 @@
           "path": "specs/121_delete_hard_mode_lifecycle_files/reports/01_precondition-verification.md",
           "type": "report",
           "summary": "Verifies the stated precondition against the live source store; finds test/lint retargeting incomplete and the live --hard command surface still dependent on the files this task would delete."
+        },
+        {
+          "path": "specs/121_delete_hard_mode_lifecycle_files/plans/01_delete-hard-mode-lifecycle-files.md",
+          "type": "plan",
+          "summary": "8-phase deletion plan with pre-deletion gate retargeting, atomic-batch deletion plus manifest surgery, and a repo-wide zero-hit sweep over 359 references in 60 files."
         }
       ],
-      "session_id": "sess_1788304786_edca9f_121"
+      "session_id": "sess_1788357501_0d2431_121"
     },
     {
       "project_number": 122,
@@ -1644,12 +1657,12 @@
     {
       "project_number": 125,
       "project_name": "delete_base_lifecycle_skills",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete the three base lifecycle skills (skill-researcher, skill-planner, skill-implementer).\n\nPRECONDITION (verify before starting). Both the dispatch-prep rehome and the command deletions must already be landed -- once /research, /plan, /implement are deleted, nothing calls these three skills any longer (skill-orchestrate already bypasses them entirely by dispatching agents directly, per the design report's re-verified dispatch-bypass finding), so this task is pure deletion, not rewiring.\n\nWORK. Delete skills/skill-researcher/SKILL.md (424 lines), skills/skill-planner/SKILL.md (508 lines), skills/skill-implementer/SKILL.md (725 lines), each in full (directory removal). Confirm a repo-wide grep for each skill's name (excluding this task's own specs/ artifacts, and excluding the now-historical CLAUDE.md Skill-to-Agent Mapping table row removal, which this task also performs) returns zero hits. Update the Skill-to-Agent Mapping table in CLAUDE.md / merge-sources/claudemd.md to remove the three rows.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-researcher/, .../skill-planner/, .../skill-implementer/, agent-system/extensions/core/merge-sources/claudemd.md (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A1 migration note, A7 ledger).\n",
       "created": "2026-08-31T18:11:33Z",
-      "last_updated": "2026-09-02T02:49:59Z",
+      "last_updated": "2026-09-02T14:08:02Z",
       "dependencies": [
         117,
         124
@@ -1665,9 +1678,14 @@
           "path": "specs/125_delete_base_lifecycle_skills/reports/01_delete-base-lifecycle-skills.md",
           "type": "report",
           "summary": "Verifies both precondition halves hold, but finds validate-wiring.sh hard-requires the three skill dirs and the reference footprint is 72-74 files, not 3."
+        },
+        {
+          "path": "specs/125_delete_base_lifecycle_skills/plans/01_delete-base-lifecycle-skills.md",
+          "type": "plan",
+          "summary": "10-phase plan with 4 dependency waves deleting the three base lifecycle skill directories, landing two blocking wiring fixes, and sweeping a 129-file reference footprint to zero."
         }
       ],
-      "session_id": "sess_1788304786_edca9f_125"
+      "session_id": "sess_1788357501_0d2431_125"
     },
     {
       "project_number": 126,
