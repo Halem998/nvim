@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Scan-source gate and the seventh enum value",
+  "started_at": "2026-09-02T05:30:00Z",
+  "last_updated": "2026-09-02T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add module-level scan-pipeline signature constant", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 2, "description": "Add pdfinfo Creator/Producer helper with error discipline", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Gate ahead of verified_conversion ratio branch in classify_dir()", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Update enum comment and main() summary key list", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 5, "description": "Extend docstring signal list with scan-source signal", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"]},
+    {"id": 6, "description": "Re-run --dry-run and verify all scan-source dirs de-certified", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Live pdfinfo Creator/Producer survey found 11 directories (not 10 -- the research report's own table enumerates 11 including goldblatt_1989, its prose count of '10' undercounted by one). Post-fix --dry-run: verified_conversion dropped exactly 65->54 (-11); all 11 scan-flagged directories (blackburn_2002, burgess_1982, burgess_1982_i, burgess_1982_ii, burgess_1982b, doets_1989, gabbay_1993, goldblatt_1989, wijesekera_1990_constructivemodallogicsi, xu_1988, zielonka_1998) now read unverified_scan_source; NONE remains verified_conversion (explicit acceptance criterion). Diff against Phase 1's dry-run TSV shows exactly these 11 rows moved and zero other rows changed. unverified_scan_source appears in stderr population summary (count 11, non-zero). index.json mtime unchanged (dry-run only)."
+}

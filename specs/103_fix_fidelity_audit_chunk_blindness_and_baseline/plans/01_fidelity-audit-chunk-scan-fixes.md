@@ -169,38 +169,43 @@ individual directory's classification is explicable.
 
 ---
 
-### Phase 2: Scan-source gate and the seventh enum value [NOT STARTED]
+### Phase 2: Scan-source gate and the seventh enum value [COMPLETED]
 
 **Goal**: A PDF produced by a known scan/OCR pipeline can no longer reach `verified_conversion` via
 a self-referential word ratio; it resolves to a new, distinct `unverified_scan_source` value.
 
 **Tasks**:
-- [ ] Add a module-level constant holding the scan-pipeline signature pattern (case-insensitive
+- [x] Add a module-level constant holding the scan-pipeline signature pattern (case-insensitive
       `capture|finereader|image conversion`), commented as the single extension point that Task
-      107's broader detector can widen or replace without another `classify_dir()` rewrite.
-- [ ] Add a helper that runs `pdfinfo` on a PDF path and returns whether its Creator or Producer
+      107's broader detector can widen or replace without another `classify_dir()` rewrite. *(completed)*
+- [x] Add a helper that runs `pdfinfo` on a PDF path and returns whether its Creator or Producer
       field matches the signature pattern. Follow `pdf_word_count()`'s existing error discipline:
       wrap in try/except, warn to stderr, and return a safe default on failure. Decide and comment
       the failure default — a `pdfinfo` failure must not silently certify, so default to "not
       detected" only because the ratio branch downstream is itself the thing being gated; record the
-      reasoning inline.
-- [ ] In `classify_dir()`, evaluate the scan check across the directory's PDFs and place the gate
+      reasoning inline. *(completed: scan_source_check())*
+- [x] In `classify_dir()`, evaluate the scan check across the directory's PDFs and place the gate
       **ahead of** the `ratio >= RATIO_THRESHOLD` -> `verified_conversion` branch, so a
       scan-sourced directory whose ratio would otherwise pass routes to `unverified_scan_source`
       instead. Preserve the existing `pdf_words_total == 0` -> `unverified_no_baseline` branch
       ordering; `unverified_scan_source` names a different failure mode ("the ratio was computed but
-      is not trustworthy") and must not collapse into it.
-- [ ] Decide and comment whether the gate also applies on the low-ratio disclosure/proof paths, or
+      is not trustworthy") and must not collapse into it. *(completed)*
+- [x] Decide and comment whether the gate also applies on the low-ratio disclosure/proof paths, or
       only to the high-ratio certification path. Recommended: gate only the paths that would
       otherwise *certify* (`verified_conversion`), leaving `unverified_summary`/`unadjudicated`
       outcomes untouched — a document already withheld from certification does not need a second
-      reason.
-- [ ] Update the "Six-value enum" comment at ~line 38 to seven values, and add
+      reason. *(completed: gate applied only ahead of the ratio>=threshold branch, per the
+      recommendation)*
+- [x] Update the "Six-value enum" comment at ~line 38 to seven values, and add
       `unverified_scan_source` to `main()`'s population-summary key list (~line 480) so the new value
-      appears in the counts rather than being silently dropped from the report.
-- [ ] Extend the line-33 docstring's signal list with the scan-source signal and its
-      metadata-only-by-design boundary.
-- [ ] Re-run `--dry-run` and capture output.
+      appears in the counts rather than being silently dropped from the report. *(completed)*
+- [x] Extend the line-33 docstring's signal list with the scan-source signal and its
+      metadata-only-by-design boundary. *(completed)*
+- [x] Re-run `--dry-run` and capture output. *(completed: 11 scan-flagged directories found by a
+      live pdfinfo survey, not 10 -- the research report's own table lists 11 including
+      goldblatt_1989, its prose count undercounted by one; all 11 now read
+      unverified_scan_source, none remains verified_conversion, exactly matching the acceptance
+      criterion)*
 
 **Timing**: 1.5 hours
 

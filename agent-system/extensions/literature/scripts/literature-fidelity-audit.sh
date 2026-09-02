@@ -13,16 +13,29 @@
 #                                               # (see "Target entry resolution" below).
 #
 # What this computes (see report 01_provenance-fidelity-audit.md for full rationale):
-#   For each sources/<dir>/ directory, classify into one of five provenance_fidelity
-#   values using a conservative three-signal detector:
+#   For each sources/<dir>/ directory, classify into one of seven provenance_fidelity
+#   values using a conservative four-signal detector:
 #     1. Whole-DOCUMENT word-ratio (md_words summed over ALL .md in the dir, divided by
 #        pdf_words summed over ALL *.pdf/*.djvu in the dir via `pdftotext -layout`).
 #        NEVER sampled from a single file — single-file sampling is a known false-
 #        discriminator (see report "Correction to Pre-Verified Evidence").
-#     2. Disclosure check (only when ratio < 0.75): does the .md content or the
+#     2. Scan-source gate (evaluated ahead of the ratio>=threshold certification branch
+#        only): does any PDF in the directory carry a known scan/OCR-pipeline Creator or
+#        Producer signature (ABBYY FineReader, Acrobat Capture/Import Plug-in, Image
+#        Conversion Plug-in — see SCAN_SOURCE_SIGNATURE_RE)? If so, the ratio is
+#        self-referential by construction (comparing a pdftotext extraction to
+#        pdftotext's own extraction of the same scanned source, ~1.0 regardless of true
+#        page-content fidelity) and cannot certify -> unverified_scan_source instead of
+#        verified_conversion. Deliberately metadata-only (Creator/Producer strings via
+#        `pdfinfo`), not a general OCR-misrecognition text detector — that broader,
+#        content-based detection is a separate, not-yet-built detector's scope; this
+#        signal is a bounded, known-signature allowlist and is expected to miss a scan
+#        pipeline whose tool string isn't in the list (accepted gap, see the module-level
+#        constant's comment for the extension point).
+#     3. Disclosure check (only when ratio < 0.75): does the .md content or the
 #        matching index.json summary text admit to being a selective/partial
 #        conversion? If so -> verified_conversion (disclosed partial).
-#     3. Proof/body-completeness check (only when ratio < 0.75 and undisclosed): for
+#     4. Proof/body-completeness check (only when ratio < 0.75 and undisclosed): for
 #        headings matching Definition/Lemma/Theorem/Proposition/Corollary N[.N...],
 #        Lemma/Theorem/Proposition/Corollary headings are adequate only if an explicit
 #        "Proof" marker follows in their body (a claim without a proof is not proved,
@@ -41,8 +54,8 @@
 #   mds computation below. When a non-chunk .md is also present, chunks are excluded
 #   from the count exactly as before, to avoid double-counting the same content twice.
 #
-# Six-value enum: verified_conversion, unverified_summary, no_source_pdf,
-# not_yet_converted, unverified_no_baseline, unadjudicated.
+# Seven-value enum: verified_conversion, unverified_summary, no_source_pdf,
+# not_yet_converted, unverified_no_baseline, unadjudicated, unverified_scan_source.
 #
 # Target entry resolution (which index.json entries get stamped):
 #   A directory's entries are all index.json entries whose `.path` starts with
@@ -227,6 +240,17 @@ def combining_mark_check(dirpath, dirname):
 RATIO_THRESHOLD = 0.75
 PROOF_ADEQUACY_THRESHOLD = 0.6
 
+# Known scan/OCR-pipeline Creator/Producer signature, matched case-insensitively
+# against pdfinfo's Creator+Producer fields. This is the single extension point for
+# widening or replacing the scan-source signal (e.g. if a future general
+# OCR-misrecognition text detector supersedes this metadata-only check) without
+# another classify_dir() rewrite -- see scan_source_check() below and the "Scan-source
+# gate" signal in the module docstring.
+SCAN_SOURCE_SIGNATURE_RE = re.compile(
+    r"capture|finereader|image conversion",
+    re.IGNORECASE,
+)
+
 DISCLOSURE_RE = re.compile(
     r"selective conversion|extracted:?\s*chapter|truncated|excerpt|chapters?\s+\d+\s+and\s+\d+",
     re.IGNORECASE,
@@ -257,6 +281,38 @@ def pdf_word_count(pdf_path):
     except Exception as e:
         print(f"[warn] pdftotext failed for {pdf_path}: {e}", file=sys.stderr)
         return 0
+
+
+def scan_source_check(pdf_path):
+    """Returns True if pdf_path's Creator or Producer metadata (via `pdfinfo`)
+    matches a known scan/OCR-pipeline signature. Follows pdf_word_count()'s error
+    discipline: wrap in try/except, warn to stderr, return a safe default on failure.
+
+    Failure default is False ("not detected"), NOT because a pdfinfo failure should
+    read as a clean bill of health, but because this check is only ever a GATE ahead
+    of the pre-existing ratio>=RATIO_THRESHOLD -> verified_conversion branch: if the
+    gate cannot evaluate, classification simply falls through to that ratio branch
+    unchanged, which is exactly today's (pre-this-signal) behavior for every PDF, and
+    is therefore neutral rather than a new certification path. A pdfinfo failure must
+    never silently certify BEYOND what the ratio itself would already have certified.
+    """
+    try:
+        out = subprocess.run(
+            ["pdfinfo", pdf_path],
+            capture_output=True, text=True, timeout=30,
+        )
+        creator = ""
+        producer = ""
+        for line in out.stdout.splitlines():
+            if line.startswith("Creator:"):
+                creator = line[len("Creator:"):].strip()
+            elif line.startswith("Producer:"):
+                producer = line[len("Producer:"):].strip()
+        combined = f"{creator}|{producer}"
+        return bool(SCAN_SOURCE_SIGNATURE_RE.search(combined))
+    except Exception as e:
+        print(f"[warn] pdfinfo failed for {pdf_path}: {e}", file=sys.stderr)
+        return False
 
 
 def disclosure_check(md_texts, index_summaries):
@@ -423,6 +479,18 @@ def classify_dir(dirname, idx):
     result["word_ratio"] = round(ratio, 4)
 
     if ratio >= RATIO_THRESHOLD:
+        # Scan-source gate: evaluated ONLY here, ahead of the high-ratio
+        # certification branch -- a self-referential ratio (pdftotext extraction
+        # compared against pdftotext's own extraction of the same scanned-image
+        # source) is exactly the case this ratio>=threshold branch would otherwise
+        # wrongly certify. Deliberately NOT applied to the low-ratio
+        # disclosure/proof-completeness paths below: a document already withheld
+        # from high-ratio certification (undisclosed, low-ratio) does not need a
+        # second reason to be withheld, and disclosure/proof-completeness reason
+        # about *content*, not the ratio's self-referential-construction problem.
+        if any(scan_source_check(p) for p in pdfs):
+            result["provenance_fidelity"] = "unverified_scan_source"
+            return result
         result["provenance_fidelity"] = "verified_conversion"
         return result
 
@@ -496,7 +564,8 @@ def main():
 
     print("\n--- Population summary ---", file=sys.stderr)
     for k in ("verified_conversion", "unverified_summary", "no_source_pdf",
-              "not_yet_converted", "unverified_no_baseline", "unadjudicated"):
+              "not_yet_converted", "unverified_no_baseline", "unadjudicated",
+              "unverified_scan_source"):
         print(f"{k}: {counts.get(k, 0)}", file=sys.stderr)
     print(f"Total directories: {len(results)}", file=sys.stderr)
 
