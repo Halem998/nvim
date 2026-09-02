@@ -176,6 +176,38 @@ t_header_check() {
 }
 
 # ---------------------------------------------------------------------------
+# _run_provider_direct FN QUERY REMAINING -- invokes a single tier3_try_*
+# provider function directly (not through tier3_search()'s chain), so Phase 4
+# can verify each provider function in isolation before Phase 5 wires them
+# into the ordered chain. Extracts the function definitions (urlencode()
+# through the end of tier3_try_crossref(), stopping just before
+# tier3_search()) into a scratch script and runs it with the stub on PATH.
+# Sets globals: PROVIDER_OUT (the resulting $RESULTS JSON array), PROVIDER_RC.
+# ---------------------------------------------------------------------------
+_run_provider_direct() {
+  local fn="$1" query="$2" remaining="$3"
+  local script_file
+  script_file="$(mktemp)"
+  {
+    echo 'set -uo pipefail'
+    echo 'SEARCH_TERMS="$1"'
+    sed -n '/^urlencode() {/,/^tier3_search() {/p' "$DISCOVER_SH" | sed '$d'
+    echo "$fn \"\$1\" \"\$2\""
+    echo '_direct_rc=$?'
+    echo 'echo "$RESULTS"'
+    echo 'exit $_direct_rc'
+  } > "$script_file"
+
+  PROVIDER_OUT=$(PATH="$STUB_PATH_DIR:$PATH" \
+    SCRIPT_DIR="$SCRIPT_DIR" \
+    USER_EMAIL="${USER_EMAIL:-benbrastmckie@gmail.com}" \
+    OPENALEX_API_KEY="${OPENALEX_API_KEY:-}" S2_API_KEY="${S2_API_KEY:-}" \
+    bash "$script_file" "$query" "$remaining" 2>/dev/null)
+  PROVIDER_RC=$?
+  rm -f "$script_file"
+}
+
+# ---------------------------------------------------------------------------
 # schema assertion shared helper
 # ---------------------------------------------------------------------------
 _assert_schema() {
@@ -196,17 +228,23 @@ _assert_schema() {
 }
 
 # ---------------------------------------------------------------------------
-# schema-openalex
+# schema-openalex -- drives tier3_try_openalex() directly (Phase 4 verifies
+# each provider function in isolation; Phase 5 wires the chain that lets a
+# real S2-fails run reach OpenAlex through tier3_search() itself, exercised
+# separately by the s2-fail-openalex scenario).
 # ---------------------------------------------------------------------------
 t_schema_openalex() {
-  CURL_STUB_SS_CODE=curl_fail CURL_STUB_OPENALEX_CODE=200 \
-    CURL_STUB_OPENALEX_BODY="$FIXTURES_DIR/tier3-openalex-200.json" \
-    run_discover "openalex schema query"
+  CURL_STUB_OPENALEX_CODE=200 CURL_STUB_OPENALEX_BODY="$FIXTURES_DIR/tier3-openalex-200.json" \
+    _run_provider_direct tier3_try_openalex "openalex schema query" 10
+  if [ "$PROVIDER_RC" -ne 0 ]; then
+    t_fail "schema-openalex: tier3_try_openalex returned non-zero on a stubbed 200: $PROVIDER_OUT"
+    return
+  fi
 
   local rec
-  rec=$(echo "$OUT" | jq -c '.[] | select(.tier == 3)' 2>/dev/null | head -n1)
-  if [ -z "$rec" ]; then
-    t_fail "schema-openalex: no tier==3 record produced"
+  rec=$(echo "$PROVIDER_OUT" | jq -c '.[0]' 2>/dev/null)
+  if [ -z "$rec" ] || [ "$rec" = "null" ]; then
+    t_fail "schema-openalex: no record produced: $PROVIDER_OUT"
     return
   fi
   _assert_schema "$rec" "schema-openalex"
@@ -221,26 +259,50 @@ t_schema_openalex() {
       t_pass "schema-openalex: doc_id is bare-DOI-derived: $doc_id"
       ;;
   esac
+
+  # 200-with-zero-results returns 0; a stubbed 429 returns non-zero.
+  CURL_STUB_OPENALEX_CODE=200 CURL_STUB_OPENALEX_BODY="$FIXTURES_DIR/tier3-semanticscholar-empty-200.json" \
+    _run_provider_direct tier3_try_openalex "openalex zero result query" 10
+  if [ "$PROVIDER_RC" -eq 0 ]; then
+    t_pass "schema-openalex: returns 0 on a stubbed 200-with-zero-results"
+  else
+    t_fail "schema-openalex: returned non-zero on a stubbed 200-with-zero-results"
+  fi
+
+  CURL_STUB_OPENALEX_CODE=429 _run_provider_direct tier3_try_openalex "openalex 429 query" 10
+  if [ "$PROVIDER_RC" -ne 0 ]; then
+    t_pass "schema-openalex: returns non-zero on a stubbed 429"
+  else
+    t_fail "schema-openalex: returned 0 on a stubbed 429"
+  fi
 }
 
 # ---------------------------------------------------------------------------
-# schema-crossref
+# schema-crossref -- drives tier3_try_crossref() directly, same rationale.
 # ---------------------------------------------------------------------------
 t_schema_crossref() {
-  CURL_STUB_SS_CODE=curl_fail CURL_STUB_OPENALEX_CODE=curl_fail \
-    CURL_STUB_CROSSREF_CODE=200 \
-    CURL_STUB_CROSSREF_BODY="$FIXTURES_DIR/tier3-crossref-200.json" \
-    CURL_STUB_UNPAYWALL_CODE=200 \
-    CURL_STUB_UNPAYWALL_BODY="$FIXTURES_DIR/tier3-unpaywall-200.json" \
-    run_discover "crossref schema query"
+  CURL_STUB_CROSSREF_CODE=200 CURL_STUB_CROSSREF_BODY="$FIXTURES_DIR/tier3-crossref-200.json" \
+    CURL_STUB_UNPAYWALL_CODE=200 CURL_STUB_UNPAYWALL_BODY="$FIXTURES_DIR/tier3-unpaywall-200.json" \
+    _run_provider_direct tier3_try_crossref "crossref schema query" 10
+  if [ "$PROVIDER_RC" -ne 0 ]; then
+    t_fail "schema-crossref: tier3_try_crossref returned non-zero on a stubbed 200: $PROVIDER_OUT"
+    return
+  fi
 
   local rec
-  rec=$(echo "$OUT" | jq -c '.[] | select(.tier == 3)' 2>/dev/null | head -n1)
-  if [ -z "$rec" ]; then
-    t_fail "schema-crossref: no tier==3 record produced"
+  rec=$(echo "$PROVIDER_OUT" | jq -c '.[0]' 2>/dev/null)
+  if [ -z "$rec" ] || [ "$rec" = "null" ]; then
+    t_fail "schema-crossref: no record produced: $PROVIDER_OUT"
     return
   fi
   _assert_schema "$rec" "schema-crossref"
+
+  CURL_STUB_CROSSREF_CODE=429 _run_provider_direct tier3_try_crossref "crossref 429 query" 10
+  if [ "$PROVIDER_RC" -ne 0 ]; then
+    t_pass "schema-crossref: returns non-zero on a stubbed 429"
+  else
+    t_fail "schema-crossref: returned 0 on a stubbed 429"
+  fi
 }
 
 # ---------------------------------------------------------------------------

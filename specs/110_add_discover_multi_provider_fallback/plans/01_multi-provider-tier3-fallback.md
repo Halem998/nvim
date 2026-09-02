@@ -247,34 +247,34 @@ implementation summary rather than forcing the estimate.
 
 ---
 
-### Phase 4: Add OpenAlex and Crossref Provider Functions [NOT STARTED]
+### Phase 4: Add OpenAlex and Crossref Provider Functions [COMPLETED]
 
 **Goal**: Add two provider functions that fetch, validate, and map their own JSON shape onto
 `tier3_emit_record()` — introducing no dedup, doc_id, or status logic of their own.
 
 **Tasks**:
-- [ ] Add `OPENALEX_API_KEY="${OPENALEX_API_KEY:-}"` to the environment-defaults block (optional,
-      additive, mirroring `S2_API_KEY`).
-- [ ] Implement `tier3_try_openalex(query_string, remaining)`: build
+- [x] Add `OPENALEX_API_KEY="${OPENALEX_API_KEY:-}"` to the environment-defaults block (optional,
+      additive, mirroring `S2_API_KEY`). *(completed)*
+- [x] Implement `tier3_try_openalex(query_string, remaining)`: build
       `https://api.openalex.org/works?search=<urlencoded>&per-page=10`, append
       `&mailto=${USER_EMAIL}`, and append `&api_key=...` only when `OPENALEX_API_KEY` is set.
       Map `results[]` -> `.title`, `.publication_year`, `.doi` (**strip any `https://doi.org/`
       prefix to bare DOI before passing it on**), `.authorships[].author.display_name` joined
       into a JSON array, and an OA URL preferring `.primary_location.pdf_url` then
-      `.open_access.oa_url`. Pass `arxiv_id=""` and `paper_id=""`.
-- [ ] Implement `tier3_try_crossref(query_string, remaining)`: build
+      `.open_access.oa_url`. Pass `arxiv_id=""` and `paper_id=""`. *(completed)*
+- [x] Implement `tier3_try_crossref(query_string, remaining)`: build
       `https://api.crossref.org/works?query=<urlencoded>&rows=10&mailto=${USER_EMAIL}`. Map
       `message.items[]` -> `.title[0]`, `.issued.date-parts[0][0]`, `.DOI` (already bare),
       authors from `.author[].given`/`.family`. Pass empty OA URL, `arxiv_id`, and `paper_id` —
       Crossref hits therefore reuse the existing Unpaywall-by-DOI path inside
-      `tier3_emit_record()` with no new status logic.
-- [ ] Give both functions the same failure contract as the existing Semantic Scholar branch:
+      `tier3_emit_record()` with no new status logic. *(completed)*
+- [x] Give both functions the same failure contract as the existing Semantic Scholar branch:
       return non-zero on curl failure, non-200, empty body, or unparseable/error body; return
-      zero the moment a real parseable 200 arrives, **even with zero matches**.
-- [ ] Have each function record its own `reason` and `http_code` into caller-visible variables for
-      the Phase 5 aggregated failure line, and write no `TIER3_STATUS` line itself.
-- [ ] Refactor the existing Semantic Scholar branch into `tier3_try_semantic_scholar()` with the
-      identical signature and failure contract.
+      zero the moment a real parseable 200 arrives, **even with zero matches**. *(completed)*
+- [x] Have each function record its own `reason` and `http_code` into caller-visible variables for
+      the Phase 5 aggregated failure line, and write no `TIER3_STATUS` line itself. *(completed: PROVIDER_FAIL_REASON/PROVIDER_FAIL_HTTP_CODE)*
+- [x] Refactor the existing Semantic Scholar branch into `tier3_try_semantic_scholar()` with the
+      identical signature and failure contract. *(completed)*
 
 **Timing**: 1.5 hours
 

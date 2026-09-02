@@ -36,6 +36,10 @@
 #                            the Tier 3 Semantic Scholar request when set. Unset (the default)
 #                            means fully anonymous access at the lower public rate limit; behavior
 #                            is otherwise identical.
+#   OPENALEX_API_KEY       — Optional OpenAlex API key, appended as `&api_key=...` on the Tier 3
+#                            OpenAlex fallback request when set. Unset (the default) means
+#                            anonymous, politeness-pool access via the `mailto=` param already
+#                            sent on every OpenAlex request; behavior is otherwise identical.
 #
 # SOURCES.md format (created at specs/literature/SOURCES.md):
 #   Markdown table: Title | Authors | Year | DOI | Status | Notes
@@ -49,6 +53,7 @@ DISCOVER_LIMIT="${DISCOVER_LIMIT:-10}"
 DISCOVER_DESC_WORD_CAP="${DISCOVER_DESC_WORD_CAP:-30}"
 USER_EMAIL="${USER_EMAIL:-benbrastmckie@gmail.com}"
 S2_API_KEY="${S2_API_KEY:-}"
+OPENALEX_API_KEY="${OPENALEX_API_KEY:-}"
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -631,27 +636,26 @@ tier3_emit_record() {
   return 0
 }
 
-tier3_search() {
-  # Tier 3's budget is TIER3_QUOTA -- its own reserved share of DISCOVER_LIMIT
-  # plus any unused share rolled forward from Tiers 1/2 (see the tier-dispatch
-  # block below for the quota computation and rollover). A quota of 0 is a
-  # genuine "no budget left" skip, not a failure: it MUST NOT emit a
-  # TIER3_STATUS line -- a skipped Tier 3 is not a failed Tier 3.
-  if [ "$TIER3_QUOTA" -le 0 ]; then
-    return 0
-  fi
+# ---------------------------------------------------------------------------
+# Tier 3 provider functions
+#
+# All three share one contract: `provider_fn query_string remaining -> 0|1`.
+# Return 0 the moment a real, parseable 200 arrives -- even with zero matches;
+# return 1 on curl failure, non-200, empty body, or an unparseable/error body.
+# On failure, set the caller-visible (non-local) PROVIDER_FAIL_REASON /
+# PROVIDER_FAIL_HTTP_CODE so the ordered-chain caller can build its own
+# per-provider fail note and the aggregated TIER3_STATUS line. On success,
+# each function maps its own response shape onto tier3_emit_record() and
+# introduces no dedup, doc_id, or status logic of its own -- that all lives
+# exactly once, inside tier3_emit_record().
+# ---------------------------------------------------------------------------
 
-  local remaining="$TIER3_QUOTA"
+tier3_try_semantic_scholar() {
+  local query_string="$1"
+  local remaining="$2"
 
-  # Build query string (join filtered terms with spaces). Deliberately loose/
-  # wide, unlike tier1_search()'s multi-term match-strength threshold above:
-  # Semantic Scholar is a genuine full-text search API with its own
-  # relevance ranking and tolerates a longer free-text query, so all of
-  # FILTERED_TERMS is sent as-is with no extra threshold applied here.
-  local query_string="${FILTERED_TERMS[*]}"
   local encoded_query
   encoded_query=$(urlencode "$query_string")
-
   local ss_url="https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded_query}&fields=title,authors,year,openAccessPdf,externalIds&limit=10"
 
   # Capture the HTTP status alongside the body so a rate-limited/failed
@@ -671,8 +675,9 @@ tier3_search() {
   ss_raw=$(curl "${curl_args[@]}" 2>/dev/null) || curl_exit=$?
 
   if [ "$curl_exit" -ne 0 ]; then
-    echo "TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)" >&2
-    return 0
+    PROVIDER_FAIL_REASON="curl_exit"
+    PROVIDER_FAIL_HTTP_CODE="n/a"
+    return 1
   fi
 
   local http_code ss_results
@@ -680,16 +685,18 @@ tier3_search() {
   ss_results=$(echo "$ss_raw" | sed '$d')
 
   if [ "$http_code" != "200" ] || [ -z "$ss_results" ]; then
-    echo "TIER3_STATUS: FAILED reason=http http_code=${http_code:-n/a} (Semantic Scholar rate-limited or unreachable)" >&2
-    return 0
+    PROVIDER_FAIL_REASON="http"
+    PROVIDER_FAIL_HTTP_CODE="${http_code:-n/a}"
+    return 1
   fi
 
   # Check for API error
   local error_msg
   error_msg=$(echo "$ss_results" | jq -r '.error // ""' 2>/dev/null)
   if [ -n "$error_msg" ] && [ "$error_msg" != "null" ]; then
-    echo "TIER3_STATUS: FAILED reason=api_error http_code=${http_code} (${error_msg})" >&2
-    return 0
+    PROVIDER_FAIL_REASON="api_error"
+    PROVIDER_FAIL_HTTP_CODE="$http_code"
+    return 1
   fi
 
   local count=0
@@ -722,6 +729,197 @@ tier3_search() {
       fi
     fi
   done < <(echo "$ss_results" | jq -c '.data[]? // empty' 2>/dev/null)
+
+  return 0
+}
+
+tier3_try_openalex() {
+  local query_string="$1"
+  local remaining="$2"
+
+  local encoded_query
+  encoded_query=$(urlencode "$query_string")
+  local oa_url="https://api.openalex.org/works?search=${encoded_query}&per-page=10&mailto=${USER_EMAIL}"
+  if [ -n "$OPENALEX_API_KEY" ]; then
+    oa_url="${oa_url}&api_key=${OPENALEX_API_KEY}"
+  fi
+
+  local oa_raw=""
+  local curl_exit=0
+  oa_raw=$(curl -s -w '\n%{http_code}' --max-time 15 "$oa_url" 2>/dev/null) || curl_exit=$?
+
+  if [ "$curl_exit" -ne 0 ]; then
+    PROVIDER_FAIL_REASON="curl_exit"
+    PROVIDER_FAIL_HTTP_CODE="n/a"
+    return 1
+  fi
+
+  local http_code oa_results
+  http_code=$(echo "$oa_raw" | tail -n1)
+  oa_results=$(echo "$oa_raw" | sed '$d')
+
+  if [ "$http_code" != "200" ] || [ -z "$oa_results" ]; then
+    PROVIDER_FAIL_REASON="http"
+    PROVIDER_FAIL_HTTP_CODE="${http_code:-n/a}"
+    return 1
+  fi
+
+  local error_msg
+  error_msg=$(echo "$oa_results" | jq -r '.error // ""' 2>/dev/null)
+  if [ -n "$error_msg" ] && [ "$error_msg" != "null" ]; then
+    PROVIDER_FAIL_REASON="api_error"
+    PROVIDER_FAIL_HTTP_CODE="$http_code"
+    return 1
+  fi
+
+  local count=0
+
+  while IFS= read -r work; do
+    if [ -z "$work" ] || [ "$work" = "null" ]; then
+      continue
+    fi
+
+    local title authors_arr year doi_raw doi pdf_url
+
+    title=$(echo "$work" | jq -r '.title // ""' 2>/dev/null)
+    year=$(echo "$work" | jq -r '.publication_year // null' 2>/dev/null)
+    doi_raw=$(echo "$work" | jq -r '.doi // ""' 2>/dev/null)
+    # OpenAlex returns a **prefixed** DOI (`https://doi.org/10.x/...`), unlike
+    # Semantic Scholar / Crossref which are already bare. Strip the prefix
+    # here, before this value ever reaches tier3_emit_record()'s doc_id
+    # slugging or Unpaywall-by-DOI path.
+    doi="${doi_raw#https://doi.org/}"
+    pdf_url=$(echo "$work" | jq -r '
+      (.primary_location.pdf_url // "") as $p |
+      if $p != "" and $p != "null" then $p else (.open_access.oa_url // "") end
+    ' 2>/dev/null)
+
+    authors_arr=$(echo "$work" | jq -r '
+      .authorships // [] |
+      map(.author.display_name // "") |
+      map(select(. != "")) |
+      @json
+    ' 2>/dev/null || echo '[]')
+
+    # OpenAlex passes empty arxiv_id and paper_id -- it lands only on the
+    # doi-slug (common case) or unknown_<slug> branch, never ss_<paperId>,
+    # and derives no arxiv_id of its own (no heuristic arXiv-ID extraction).
+    if tier3_emit_record "$title" "$authors_arr" "$year" "$doi" "" "$pdf_url" ""; then
+      count=$(( count + 1 ))
+      if [ "$count" -ge "$remaining" ]; then
+        break
+      fi
+    fi
+  done < <(echo "$oa_results" | jq -c '.results[]? // empty' 2>/dev/null)
+
+  return 0
+}
+
+tier3_try_crossref() {
+  local query_string="$1"
+  local remaining="$2"
+
+  local encoded_query
+  encoded_query=$(urlencode "$query_string")
+  local cr_url="https://api.crossref.org/works?query=${encoded_query}&rows=10&mailto=${USER_EMAIL}"
+
+  local cr_raw=""
+  local curl_exit=0
+  cr_raw=$(curl -s -w '\n%{http_code}' --max-time 15 "$cr_url" 2>/dev/null) || curl_exit=$?
+
+  if [ "$curl_exit" -ne 0 ]; then
+    PROVIDER_FAIL_REASON="curl_exit"
+    PROVIDER_FAIL_HTTP_CODE="n/a"
+    return 1
+  fi
+
+  local http_code cr_results
+  http_code=$(echo "$cr_raw" | tail -n1)
+  cr_results=$(echo "$cr_raw" | sed '$d')
+
+  if [ "$http_code" != "200" ] || [ -z "$cr_results" ]; then
+    PROVIDER_FAIL_REASON="http"
+    PROVIDER_FAIL_HTTP_CODE="${http_code:-n/a}"
+    return 1
+  fi
+
+  local error_msg
+  error_msg=$(echo "$cr_results" | jq -r '.message.error // .error // ""' 2>/dev/null)
+  if [ -n "$error_msg" ] && [ "$error_msg" != "null" ]; then
+    PROVIDER_FAIL_REASON="api_error"
+    PROVIDER_FAIL_HTTP_CODE="$http_code"
+    return 1
+  fi
+
+  local count=0
+
+  while IFS= read -r item; do
+    if [ -z "$item" ] || [ "$item" = "null" ]; then
+      continue
+    fi
+
+    local title authors_arr year doi
+
+    title=$(echo "$item" | jq -r '.title[0] // ""' 2>/dev/null)
+    year=$(echo "$item" | jq -r '.issued["date-parts"][0][0] // null' 2>/dev/null)
+    doi=$(echo "$item" | jq -r '.DOI // ""' 2>/dev/null)
+
+    authors_arr=$(echo "$item" | jq -r '
+      .author // [] |
+      map([.given // "", .family // ""] | map(select(. != "")) | join(" ")) |
+      map(select(. != "")) |
+      @json
+    ' 2>/dev/null || echo '[]')
+
+    # Crossref carries no OA/PDF field at all -- empty OA URL reuses the
+    # existing Unpaywall-by-DOI path inside tier3_emit_record() unchanged.
+    if tier3_emit_record "$title" "$authors_arr" "$year" "$doi" "" "" ""; then
+      count=$(( count + 1 ))
+      if [ "$count" -ge "$remaining" ]; then
+        break
+      fi
+    fi
+  done < <(echo "$cr_results" | jq -c '.message.items[]? // empty' 2>/dev/null)
+
+  return 0
+}
+
+tier3_search() {
+  # Tier 3's budget is TIER3_QUOTA -- its own reserved share of DISCOVER_LIMIT
+  # plus any unused share rolled forward from Tiers 1/2 (see the tier-dispatch
+  # block below for the quota computation and rollover). A quota of 0 is a
+  # genuine "no budget left" skip, not a failure: it MUST NOT emit a
+  # TIER3_STATUS line -- a skipped Tier 3 is not a failed Tier 3.
+  if [ "$TIER3_QUOTA" -le 0 ]; then
+    return 0
+  fi
+
+  local remaining="$TIER3_QUOTA"
+
+  # Build query string (join filtered terms with spaces). Deliberately loose/
+  # wide, unlike tier1_search()'s multi-term match-strength threshold above:
+  # these are genuine full-text search APIs with their own relevance ranking
+  # and tolerate a longer free-text query, so all of FILTERED_TERMS is sent
+  # as-is with no extra threshold applied here.
+  local query_string="${FILTERED_TERMS[*]}"
+
+  # NOTE: single-provider call site, kept behavior-identical to the
+  # pre-extraction script. Phase 5 replaces this body with the ordered
+  # provider chain (Semantic Scholar -> OpenAlex -> Crossref) and the
+  # aggregated TIER3_STATUS line.
+  if ! tier3_try_semantic_scholar "$query_string" "$remaining"; then
+    case "$PROVIDER_FAIL_REASON" in
+      curl_exit)
+        echo "TIER3_STATUS: FAILED reason=curl_exit http_code=n/a (Semantic Scholar unreachable or timed out)" >&2
+        ;;
+      http)
+        echo "TIER3_STATUS: FAILED reason=http http_code=${PROVIDER_FAIL_HTTP_CODE} (Semantic Scholar rate-limited or unreachable)" >&2
+        ;;
+      api_error)
+        echo "TIER3_STATUS: FAILED reason=api_error http_code=${PROVIDER_FAIL_HTTP_CODE} (Semantic Scholar API error)" >&2
+        ;;
+    esac
+  fi
 }
 
 # ---------------------------------------------------------------------------
