@@ -11,9 +11,9 @@ next_project_number: 142
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,45,51,53,72,74,87,91,100,113,121,125,129,134,137,138,139,141 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,75,76,89,127,136,140 | 29,74,87,91,121,139 | core-agent-system, extensions |
-| 3 | 88 | 87,127 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,127,136,140 | 29,74,91,121,139 | core-agent-system, extensions |
+| 3 | 88 | 127 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,19 +23,17 @@ next_project_number: 142
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 42 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 53 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: co-maintenance clause
 72 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: combined with the Sub
-87 [PLANNED] — Establish the convention that fixes the single largest token leve
-  └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-  └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
-  └─ 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 100 [NOT STARTED] — Close the file_scope blind spot for AGGREGATOR/REGISTRATION files
 121 [PLANNED] — Delete skill-orchestrate-hard and the three -hard lifecycle skill
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins (see above)
+    └─ 88 [NOT STARTED] — Apply the mode-gated section convention to the largest single ins
 125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
@@ -1840,12 +1838,13 @@ ACCEPTANCE: single-task /orchestrate no longer loads the multi-task section; mul
 ---
 
 ### 87. Mode gated section loading convention
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md]
 - **Plan**: [087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md]
+- **Summary**: [087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md]
 
 **Description**: Establish the convention that fixes the single largest token lever in the system: MUTUALLY-EXCLUSIVE BRANCH SECTIONS LOADED UNCONDITIONALLY. A skill's SKILL.md body is loaded IN FULL on every invocation -- there is no include, partial, fragment or compose mechanism in install-extension.sh, and deploy is a byte-for-byte copy. Four files carry large sections entered on exactly one branch and skipped on every other invocation:
 

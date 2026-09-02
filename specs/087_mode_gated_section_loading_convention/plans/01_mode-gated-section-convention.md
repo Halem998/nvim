@@ -1,7 +1,7 @@
 # Implementation Plan: Mode-Gated Section Loading Convention
 
 - **Task**: 87 - Mode gated section loading convention
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md

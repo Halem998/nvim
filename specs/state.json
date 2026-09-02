@@ -690,7 +690,7 @@
     {
       "project_number": 87,
       "project_name": "mode_gated_section_loading_convention",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -702,8 +702,8 @@
         "agent-system/extensions/core/scripts/measure-eager-context.sh"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-02T14:15:50Z",
-      "session_id": "sess_1788357501_0d2431_87",
+      "last_updated": "2026-09-02T16:08:47Z",
+      "session_id": "sess_1788364293_dfc521_87",
       "artifacts": [
         {
           "path": "specs/087_mode_gated_section_loading_convention/reports/01_mode-gated-section-convention.md",
@@ -714,8 +714,14 @@
           "path": "specs/087_mode_gated_section_loading_convention/plans/01_mode-gated-section-convention.md",
           "type": "plan",
           "summary": "6-phase plan: convention doc, branch-gated marker lint with 8,000 B threshold, nine-case fixture test, verify-deploy Gate 19, and an email-cleanup pilot extraction."
+        },
+        {
+          "path": "specs/087_mode_gated_section_loading_convention/summaries/01_mode-gated-section-convention-summary.md",
+          "type": "summary",
+          "summary": "Full gate run, deploy verification, and measurement write-up for the mode-gated section loading convention."
         }
-      ]
+      ],
+      "completion_summary": "Completed Phase 6 (final phase) of the mode-gated section loading convention: full test suite and verify-deploy.sh Gate 19 confirmed green, all four new/changed artifacts confirmed deployed correctly, context-budget and task-reference lints confirmed clean, and the task summary with the full measurement table (SKILL.md 47,832 B -> 30,656 B, -35.9%) was written. All 6 plan phases are now [COMPLETED]."
     },
     {
       "project_number": 88,
