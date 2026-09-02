@@ -30,7 +30,7 @@ next_project_number: 151
 20 [RESEARCHED] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-72 [RESEARCHING] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
+72 [RESEARCHED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
@@ -2457,10 +2457,11 @@ in isolation.
 
 ### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md]
 
 **Description**: === REVISED 2026-09-02 (team mode deleted; narrowed to the marker-correlation defect) ===
 SUPERSEDING SCOPE. Team mode is being removed from the system (specs/PATH.md, Decisions), so Part A below (teammate .return-meta.json ownership) is moot: there are no teammates. Part B survives on its own merits and is now this task's whole scope, because the defect is not team-specific: hooks/subagent-postflight.sh's find_marker() picks the FIRST .postflight-pending marker under specs/ (`head -1`) with no correlation to the stopping subagent's session, so with several concurrent single-task sessions the hook can act on, burn the continuation budget of, or on cap DELETE a marker belonging to a different session. The marker JSON already carries session_id (written by skill_create_postflight_marker in skill-base.sh); the hook never reads it.
