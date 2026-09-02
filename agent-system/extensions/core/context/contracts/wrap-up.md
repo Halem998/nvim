@@ -135,11 +135,14 @@ a single end-of-dispatch commit.
 - A test passes that previously failed
 - Any other "green checkpoint"
 
-**Commit format**:
+**Commit format** — via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+implementation of path-scoped, mutex-serialized committing (never a bare `git add` + bare
+`git commit -m`):
 ```bash
-git commit -m "task {N} phase {P}: {step description}
-
-Session: {session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: {step description}" \
+  --session "${session_id}" \
+  -- {stage_paths}
 ```
 
 **Before each commit**:

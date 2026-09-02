@@ -119,7 +119,10 @@ Route by task_type:
 2. Invoke skill-status-sync: postflight_update(N, "researched", artifacts)
 
 ### CHECKPOINT 3: COMMIT
-git commit -m "task N: complete research"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task N: complete research" \
+  --session "${session_id}" \
+  -- "specs/{NNN}_{SLUG}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ---

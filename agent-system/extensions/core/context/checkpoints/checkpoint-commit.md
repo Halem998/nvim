@@ -4,7 +4,7 @@ The COMMIT checkpoint creates a git commit and completes the operation.
 
 ## Execution Steps
 
-### 1. Stage Targeted Changes
+### 1. Determine Targeted Scope
 
 Apply the operation's scope from `.claude/context/standards/git-staging-scope.md` — under-stage,
 never over-stage, and never `git add -A` / `git add .`:
@@ -24,56 +24,51 @@ if [ "$operation" = "implement" ]; then
     [ -n "$f" ] && stage_paths+=("$f")
   done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
 fi
-
-git add "${stage_paths[@]}"
 ```
 
-### 2. Compose Commit Message
+Staging itself happens as part of Step 3's scoped-commit call — do not run a separate `git add`.
 
-Format depends on operation:
+### 2. Compose Commit Message Body
+
+Format depends on operation. `git-commit-scoped.sh` appends the trailing `Session: {session_id}`
+line itself, so the body passed to `--message` omits it:
 
 **Research:**
 ```
 task {N}: complete research
-
-Session: {session_id}
 ```
 
 **Plan:**
 ```
 task {N}: create implementation plan
-
-Session: {session_id}
 ```
 
 **Implementation (complete):**
 ```
 task {N}: complete implementation
-
-Session: {session_id}
 ```
 
 **Implementation (partial):**
 ```
 task {N}: partial implementation (phases 1-{M} of {total})
-
-Session: {session_id}
 ```
 
 **Implementation (phase):**
 ```
 task {N} phase {P}: {phase_name}
-
-Session: {session_id}
 ```
 
 ### 3. Create Commit
 
+Stage and commit together via the scoped-commit script, the single sanctioned implementation of
+path-scoped, mutex-serialized committing:
+
 ```bash
-git commit -m "$(cat <<'EOF'
-{commit_message}
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "{commit_message}" \
+  --session "${session_id}" \
+  --honest-index-rows "$task_number" \
+  -- "${stage_paths[@]}"
 ```
 
 ### 4. Verify Commit

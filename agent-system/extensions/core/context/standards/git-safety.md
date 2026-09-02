@@ -11,6 +11,12 @@ This agent system uses **git as the primary safety mechanism** for all risky ope
 
 **Core Principle**: Never create `.bak` files. Use git commits for safety.
 
+**Sanctioned commit path**: every commit shown in this guide — safety commit and final commit
+alike — goes through `.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation
+of the scoped-commit contract (path-scoped staging plus mutex-serialized commit; see
+`context/standards/git-staging-scope.md`). Never a bare `git add` followed by a bare
+`git commit -m`.
+
 ---
 
 ## When to Use Git Safety
@@ -38,19 +44,18 @@ Create safety commits before:
 <stage id="N" name="CreateSafetyCommit">
   <action>Create git safety commit before risky operation</action>
   <process>
-    1. Stage files that will be modified:
+    1. Create safety commit via the scoped-commit script (stages and commits in one call):
        ```bash
-       git add {file1} {file2} {file3}
+       bash .claude/scripts/git-commit-scoped.sh \
+         --message "safety: pre-{operation} snapshot" \
+         --session "${session_id}" \
+         -- {file1} {file2} {file3}
        ```
-    2. Create safety commit:
-       ```bash
-       git commit -m "safety: pre-{operation} snapshot"
-       ```
-    3. Store commit SHA for rollback:
+    2. Store commit SHA for rollback:
        ```bash
        safety_commit=$(git rev-parse HEAD)
        ```
-    4. Verify commit created:
+    3. Verify commit created:
        ```bash
        git log -1 --oneline
        ```
@@ -74,15 +79,14 @@ Create safety commits before:
 <stage id="N+2" name="CreateFinalCommit">
   <action>Create final commit with actual changes</action>
   <process>
-    1. Stage all changes:
+    1. Create final commit via the scoped-commit script:
        ```bash
-       git add {modified_files}
+       bash .claude/scripts/git-commit-scoped.sh \
+         --message "{operation}: {description}" \
+         --session "${session_id}" \
+         -- {modified_files}
        ```
-    2. Create final commit:
-       ```bash
-       git commit -m "{operation}: {description}"
-       ```
-    3. Verify commit created
+    2. Verify commit created
   </process>
   <checkpoint>Final commit created</checkpoint>
 </stage>
@@ -180,17 +184,19 @@ Create safety commits before:
 ### Scoping Best Practices
 - Stage only files relevant to the current task/feature
 - **Avoid repo-wide adds**: Do not use `git add -A` or `git commit -am`
-- Use targeted staging: `git add <file1> <file2>`
+- Use targeted pathspecs, passed straight to `git-commit-scoped.sh`'s trailing `-- <pathspec>...`
 - Split unrelated changes into separate commits
 - Prefer smaller, cohesive commits
 - Exclude build artifacts, lockfiles, or generated files unless intentionally changed
 
 ### Recommended Commit Flow
 1. Review changes: `git status --short`, `git diff --stat` (and `git diff` for details)
-2. Stage target files only: `git add path/to/file1 path/to/file2`
-3. Re-check scope: `git status --short` to confirm only intended files are staged
-4. Run relevant checks (as needed): `lake build`, `lake exe test`, formatters/linters
-5. Commit with a focused message: `git commit -m "<area>: <summary> (task {N})"`
+2. Identify target files only: `path/to/file1 path/to/file2`
+3. Run relevant checks (as needed): `lake build`, `lake exe test`, formatters/linters
+4. Commit with a focused message via the scoped-commit script:
+   `bash .claude/scripts/git-commit-scoped.sh --message "<area>: <summary> (task {N})" --session "${session_id}" -- path/to/file1 path/to/file2`
+5. Re-check scope with `git status --short` after the commit to confirm no unrelated file was
+   swept in
 6. Leave unstaged any out-of-scope changes for follow-up commits
 
 ### Safety Checks Before Commit
@@ -232,17 +238,14 @@ Create safety commits before:
 <stage id="5" name="CreateSafetyCommit">
   <action>Create git safety commit</action>
   <process>
-    1. Stage files that will be modified:
+    1. Create safety commit via the scoped-commit script:
        ```bash
-       git add specs/TODO.md
-       git add specs/state.json
-       git add specs/archive/state.json
+       bash .claude/scripts/git-commit-scoped.sh \
+         --message "safety: pre-todo archival snapshot" \
+         --session "${session_id}" \
+         -- specs/TODO.md specs/state.json specs/archive/state.json
        ```
-    2. Create safety commit:
-       ```bash
-       git commit -m "safety: pre-todo archival snapshot"
-       ```
-    3. Store commit SHA:
+    2. Store commit SHA:
        ```bash
        safety_commit=$(git rev-parse HEAD)
        ```
@@ -280,17 +283,14 @@ Create safety commits before:
 <stage id="7" name="CreateFinalCommit">
   <action>Create final commit</action>
   <process>
-    1. Stage all changes:
+    1. Create final commit via the scoped-commit script:
        ```bash
-       git add specs/TODO.md
-       git add specs/state.json
-       git add specs/archive/
+       bash .claude/scripts/git-commit-scoped.sh \
+         --message "todo: archive {N} completed/abandoned tasks" \
+         --session "${session_id}" \
+         -- specs/TODO.md specs/state.json specs/archive/
        ```
-    2. Create final commit:
-       ```bash
-       git commit -m "todo: archive {N} completed/abandoned tasks"
-       ```
-    3. If commit fails:
+    2. If commit fails:
        - Log error (non-critical, changes already made)
        - Continue (archival complete)
   </process>
@@ -365,8 +365,10 @@ Before implementing git safety in a command:
 
 ```bash
 # Create safety commit
-git add file1 file2
-git commit -m "safety: pre-test snapshot"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "safety: pre-test snapshot" \
+  --session "${session_id}" \
+  -- file1 file2
 safety_commit=$(git rev-parse HEAD)
 
 # Make changes
@@ -393,16 +395,14 @@ cat file1   # Should show original content
   <action>Update file with git safety</action>
   <process>
     1. Create safety commit:
-       git add {file}
-       git commit -m "safety: pre-{operation} snapshot"
+       bash .claude/scripts/git-commit-scoped.sh --message "safety: pre-{operation} snapshot" --session "${session_id}" -- {file}
        safety_commit=$(git rev-parse HEAD)
     2. Update file
     3. If update fails:
        git reset --hard $safety_commit
        Return error
     4. Create final commit:
-       git add {file}
-       git commit -m "{operation}: {description}"
+       bash .claude/scripts/git-commit-scoped.sh --message "{operation}: {description}" --session "${session_id}" -- {file}
   </process>
 </stage>
 ```
@@ -414,8 +414,7 @@ cat file1   # Should show original content
   <action>Atomically update multiple files with git safety</action>
   <process>
     1. Create safety commit:
-       git add {file1} {file2} {file3}
-       git commit -m "safety: pre-{operation} snapshot"
+       bash .claude/scripts/git-commit-scoped.sh --message "safety: pre-{operation} snapshot" --session "${session_id}" -- {file1} {file2} {file3}
        safety_commit=$(git rev-parse HEAD)
     2. Update all files
     3. If any update fails:
@@ -423,8 +422,7 @@ cat file1   # Should show original content
        git clean -fd
        Return error
     4. Create final commit:
-       git add {file1} {file2} {file3}
-       git commit -m "{operation}: {description}"
+       bash .claude/scripts/git-commit-scoped.sh --message "{operation}: {description}" --session "${session_id}" -- {file1} {file2} {file3}
   </process>
 </stage>
 ```
@@ -436,8 +434,7 @@ cat file1   # Should show original content
   <action>Move/delete directories with git safety</action>
   <process>
     1. Create safety commit:
-       git add {directory}
-       git commit -m "safety: pre-{operation} snapshot"
+       bash .claude/scripts/git-commit-scoped.sh --message "safety: pre-{operation} snapshot" --session "${session_id}" -- {directory}
        safety_commit=$(git rev-parse HEAD)
     2. Execute directory operation (move, delete, etc.)
     3. If operation fails:
@@ -445,8 +442,7 @@ cat file1   # Should show original content
        git clean -fd
        Return error
     4. Create final commit:
-       git add {affected_paths}
-       git commit -m "{operation}: {description}"
+       bash .claude/scripts/git-commit-scoped.sh --message "{operation}: {description}" --session "${session_id}" -- {affected_paths}
   </process>
 </stage>
 ```
@@ -500,8 +496,7 @@ cat file1   # Should show original content
       - {change_2}
       
       Manual commit required:
-        git add {files}
-        git commit -m "{operation}: {description}"
+        bash .claude/scripts/git-commit-scoped.sh --message "{operation}: {description}" --session "${session_id}" -- {files}
       
       Error: {git_error}
     </recovery>

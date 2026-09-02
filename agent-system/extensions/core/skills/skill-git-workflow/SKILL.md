@@ -73,13 +73,12 @@ This skill activates when:
    - scope (files to include)
    - message_template
 
-2. Stage appropriate files:
-   - git add {scope}
+2. Determine appropriate files:
+   - {scope}
 
-3. Create commit:
+3. Stage and commit together via `git-commit-scoped.sh`:
    - Format message
-   - Add co-author
-   - Execute commit
+   - Execute `bash .claude/scripts/git-commit-scoped.sh --message "..." --session "${session_id}" -- {scope}`
 
 4. Verify success:
    - Check exit code
@@ -192,22 +191,24 @@ CI runs regardless of marker on:
 
 ## Execution Commands
 
+Both forms below go through `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+implementation of path-scoped, mutex-serialized committing — never a bare `git add` followed by a
+bare `git commit -m`.
+
 ### Standard Commit
 ```bash
-git add {files}
-git commit -m "$(cat <<'EOF'
-{message}
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "{message}" \
+  --session "${session_id}" \
+  -- {files}
 ```
 
 ### Task Commit
 ```bash
-git add specs/
-git commit -m "$(cat <<'EOF'
-task {N}: {action}
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: {action}" \
+  --session "${session_id}" \
+  -- specs/
 ```
 
 ## Return Format
