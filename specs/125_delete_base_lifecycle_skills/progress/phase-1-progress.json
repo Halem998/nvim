@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Make the Wiring Tolerate the Absence",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Drop the three names from validate-wiring.sh core-skills loop",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-wiring.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Remove the three provides.skills entries from manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm manifest.json still parses",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -172,8 +172,8 @@ validate_core_system() {
     validate_agent_exists "$system_dir/$agents_subdir" "meta-builder-agent"
 
     # Check core skills exist
-    log_info "Checking core skills..."
-    for skill in skill-researcher skill-implementer skill-planner skill-meta; do
+    log_info "Checking core skill..."
+    for skill in skill-meta; do
         if [[ -d "$system_dir/skills/$skill" ]]; then
             log_pass "Skill exists: $skill"
         else
