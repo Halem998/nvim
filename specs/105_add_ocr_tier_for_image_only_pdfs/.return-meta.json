@@ -1,41 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md",
-      "summary": "Research confirming the OCR-tier gap, ocrmypdf/tesseract availability, and live corpus evidence for both the text-layer-absence and poor-vintage-OCR failure classes."
-    },
-    {
-      "type": "plan",
-      "path": "specs/105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md",
-      "summary": "Five-phase plan landing actionable OCR-naming failure messaging and a distinct needs-OCR ingest bucket first, then an explicit non-auto LITERATURE_CONVERTER=ocr mode, regression tests, and documentation."
-    }
-  ],
-  "next_steps": "Run /implement 105 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2, 3], [4, 5]],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788329488_6a27b9_105",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1788329488_6a27b9_105",
-  "task_number": 105,
-  "modified_files": [
-    "specs/105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/literature/scripts/literature-convert.sh, exit code 2 is an OVERLOADED failure code with at least two distinct producers: the pre-gate 'all engine tiers produced empty output' path (a genuinely image-only PDF) and the 'LITERATURE_CONVERTER=pymupdf4llm requested but primary tier unavailable/failed' path. Any consumer that needs to distinguish them (e.g. literature-ingest.sh's per-file bucketing) MUST key off a distinctive stderr marker string, never off the bare exit code -- this is the same mechanism the script's exit-3 handling already uses (grep -m1 'QUALITY GATE FAILED'). Applies generally: in this pipeline, exit codes classify severity, stderr markers classify cause.",
-      "category": "PATTERN",
-      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["literature", "literature-convert", "exit-codes", "stderr-marker", "literature-ingest", "error-bucketing"]
-    }
-  ]
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

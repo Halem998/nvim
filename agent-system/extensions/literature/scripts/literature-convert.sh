@@ -48,7 +48,15 @@
 # Exit codes:
 #   0 — success, quality gate passed
 #   1 — input file missing or unsupported type
-#   2 — all converters failed (no engine produced usable output)
+#   2 — OVERLOADED: at least two distinct producers share this code — (a) no
+#       engine tier produced usable output at all (e.g. a genuinely image-only,
+#       no-text-layer PDF), and (b) an explicitly-requested engine tier
+#       (LITERATURE_CONVERTER=pymupdf4llm) is unavailable and refuses to
+#       silently substitute a different one. The two are distinguished by a
+#       stderr marker, NEVER by the bare exit code: producer (a) prints a
+#       `NO TEXT LAYER` marker naming the `LITERATURE_CONVERTER=ocr` remedy;
+#       producer (b) does not. A consumer must grep for the marker, exactly as
+#       exit 3 below is already distinguished via `QUALITY GATE FAILED`.
 #   3 — conversion succeeded but the quality gate FAILED (column-interleaving,
 #       page-coverage shortfall, unresolved ligatures, or unresolved
 #       hyphen-linebreaks). Output is written to a `.rejected` sibling, NOT to
@@ -865,6 +873,25 @@ def run_quality_gate(content, doc):
 
 
 # ============================================================
+# SHARED REMEDY-HINT EMITTER
+#
+# ONE definition, used by BOTH text-layer failure paths below (the exit-2
+# no-text-layer path and the exit-3 quality-gate-rejection path) — so the
+# actual remedy command has exactly one place to update. As of this phase
+# `LITERATURE_CONVERTER=ocr` does not exist yet, so this names the manual
+# `ocrmypdf` invocation directly; a later phase updates ONLY this function's
+# body to name `LITERATURE_CONVERTER=ocr` (and, for the force=True case,
+# `LITERATURE_OCR_FORCE=1`) once that mode lands, without touching either
+# call site below.
+# ============================================================
+
+def ocr_remedy_command(input_path, force=False):
+    if force:
+        return f"ocrmypdf --force-ocr {input_path} {input_path}.ocr.pdf"
+    return f"ocrmypdf --skip-text {input_path} {input_path}.ocr.pdf"
+
+
+# ============================================================
 # MAIN
 # ============================================================
 
@@ -885,7 +912,13 @@ if content is None:
     content, engine_used = try_pymupdf_fallback()
 
 if not content or not content.strip():
-    print("[convert] All engine tiers produced empty output", file=sys.stderr)
+    print(
+        "[convert] NO TEXT LAYER: all engine tiers produced empty output — this PDF "
+        "appears to have no extractable text layer at all (likely a scanned, "
+        "image-only document). Remedy: OCR it first, then reconvert the OCR'd "
+        f"output, e.g.: {ocr_remedy_command(pdf_path)}",
+        file=sys.stderr,
+    )
     sys.exit(2)
 
 print(f"[convert] Engine used: {engine_used}", file=sys.stderr)
@@ -901,6 +934,16 @@ if gate_reasons:
         f.write(content)
     print(f"[convert] QUALITY GATE FAILED ({engine_used}): " + "; ".join(gate_reasons), file=sys.stderr)
     print(f"[convert] Rejected output written to: {rejected_path} (final .md NOT written)", file=sys.stderr)
+    print(
+        "[convert] Remedy: if this is a structuring artifact introduced by the "
+        "pymupdf4llm engine (Class A), try LITERATURE_CONVERTER=fallback and "
+        "reconvert. If it is a degraded/poor-vintage text layer already present "
+        f"in the source (Class B), re-OCR first, then reconvert: "
+        f"{ocr_remedy_command(pdf_path, force=True)}. See "
+        "context/guides/literature-organization.md's \"Converter Tier Selection\" "
+        "section to tell the two apart.",
+        file=sys.stderr,
+    )
     sys.exit(3)
 
 with open(out_path, "w", encoding="utf-8") as f:
@@ -1001,7 +1044,7 @@ if [ "$GATE_FAILED" -eq 1 ]; then
 fi
 
 if [ "$CONVERTED" -eq 0 ]; then
-  log "All converters failed for: $INPUT"
+  log "All converters failed for: $INPUT — see the per-tier error(s) logged above for the specific cause and its remedy (e.g. a missing DJVU tool, or a NO TEXT LAYER marker naming an OCR remedy for a scanned, image-only PDF)."
   exit 2
 fi
 

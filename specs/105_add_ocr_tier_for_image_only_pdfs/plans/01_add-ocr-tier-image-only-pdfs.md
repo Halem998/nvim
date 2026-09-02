@@ -1,7 +1,7 @@
 # Implementation Plan: Task #105
 
 - **Task**: 105 - Add an OCR tier for image-only and poor-vintage-OCR PDFs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: Task 102 (converter-tier characterization; COMPLETED)
 - **Research Inputs**: specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md
@@ -122,33 +122,33 @@ owns `literature-ingest.sh`, Phase 3 owns `literature-convert.sh`, Phase 4 owns
 
 ---
 
-### Phase 1: Actionable OCR-naming failure messages in literature-convert.sh [NOT STARTED]
+### Phase 1: Actionable OCR-naming failure messages in literature-convert.sh [COMPLETED]
 
 **Goal**: Both text-layer failure paths in `literature-convert.sh` print a distinctive,
 greppable marker and name a concrete remedy command, instead of today's generic messages.
 
 **Tasks**:
-- [ ] Add a single shared remedy-hint emitter (one function or one constant string) used by both
+- [x] Add a single shared remedy-hint emitter (one function or one constant string) used by both
       failure paths, so the remedy text has exactly one definition to update in Phase 3.
-- [ ] Rewrite the exit-2 empty-output message in `run_unified_engine()`'s embedded Python `MAIN`
+- [x] Rewrite the exit-2 empty-output message in `run_unified_engine()`'s embedded Python `MAIN`
       block (currently `"[convert] All engine tiers produced empty output"`). It must carry a
       distinctive marker token (e.g. `NO TEXT LAYER`) that no other exit-2 producer emits, state
       that the PDF appears to have no extractable text layer, and name the `ocrmypdf` remedy
       command with the actual input path substituted in.
-- [ ] Extend the exit-3 gate-rejection stderr (currently the `QUALITY GATE FAILED (...)` line
+- [x] Extend the exit-3 gate-rejection stderr (currently the `QUALITY GATE FAILED (...)` line
       plus the `Rejected output written to:` line) with an additional remedy line. Preserve the
       existing `QUALITY GATE FAILED` prefix verbatim and byte-for-byte — `literature-ingest.sh`
       greps for it and Phase 2 must not have to touch that code path.
-- [ ] Make the exit-3 remedy line distinguish the two Class B/Class A responses in one sentence:
+- [x] Make the exit-3 remedy line distinguish the two Class B/Class A responses in one sentence:
       try `LITERATURE_CONVERTER=fallback` for a structuring artifact, or re-OCR with
       `ocrmypdf --force-ocr` for a degraded text layer, and point at the
       `context/guides/literature-organization.md` "Converter Tier Selection" section by name.
-- [ ] Update the bash-level `log "All converters failed for: $INPUT"` message before the outer
+- [x] Update the bash-level `log "All converters failed for: $INPUT"` message before the outer
       `exit 2` so the DJVU and pdftotext paths that reach it are not left with a bare generic line.
-- [ ] Update the `Exit codes:` block in the script header comment to state that exit 2 covers both
+- [x] Update the `Exit codes:` block in the script header comment to state that exit 2 covers both
       "no engine produced usable output" and "no text layer present", and that the two are
       distinguished by the stderr marker, not by the code.
-- [ ] Verify no task-number references appear in any new comment or message string; cite the guide
+- [x] Verify no task-number references appear in any new comment or message string; cite the guide
       section by heading name only (`.claude/rules/no-task-references-in-deliverables.md`).
 
 **Timing**: 1 hour
