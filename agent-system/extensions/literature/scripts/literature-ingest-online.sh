@@ -692,6 +692,20 @@ if [ "$CLASSIFICATION" = "resolvable" ]; then
   ZW_CMD=("$SCRIPT_DIR/zotero-write.sh" item-add --pdf "$STAGING_PATH")
   if [ -n "$DOI_RAW" ]; then
     ZW_CMD+=(--doi "$DOI_RAW")
+  elif [ -n "$ARXIV_ID_RAW" ]; then
+    # `zot add --pdf`'s _add_from_pdf hard-fails (exit 3, "No DOI found in PDF") when it cannot
+    # regex a DOI out of the PDF's own first two pages -- see zotero-item-creation.md Sec 1. For
+    # an arXiv-only record (no real doi, but an arxiv_id) we bypass that regex entirely by
+    # passing arXiv's own mechanical DataCite DOI as --doi. This is NOT a resolved,
+    # Crossref-registered published-venue DOI -- it is a fallback identifier that exists solely
+    # to satisfy zot's DOI requirement so the item gets created at all. Crossref will not
+    # resolve it, so the created item is metadata-bare on the Zotero side (accepted tradeoff,
+    # documented in zotero-item-creation.md Sec 1/6); the corpus-side index.json metadata is
+    # unaffected since DOI_JSON below still reflects the real (null) doi, never this synthesized
+    # one.
+    SYNTH_DOI="10.48550/arXiv.$ARXIV_ID_RAW"
+    log "doc_id=$DOC_ID has no real DOI but arxiv_id=$ARXIV_ID_RAW; using synthesized arXiv DOI $SYNTH_DOI as a --doi fallback to bypass zot add --pdf's PDF-text DOI regex (never treated as a resolved published-venue DOI)."
+    ZW_CMD+=(--doi "$SYNTH_DOI")
   fi
   ZW_CMD+=(--idempotency-key "${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}")
 

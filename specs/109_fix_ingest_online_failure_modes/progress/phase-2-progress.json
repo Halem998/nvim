@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Derive an arXiv DOI for arXiv-only records (defect a)",
+  "started_at": "2026-09-01T23:45:00Z",
+  "last_updated": "2026-09-01T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add elif ARXIV_ID_RAW arm to ZW_CMD construction with SYNTH_DOI derivation, code comment, and log line", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Confirm DOI_JSON/ARXIV_JSON untouched (no leak into corpus index)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

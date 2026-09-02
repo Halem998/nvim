@@ -198,23 +198,26 @@ Final stub count: 6 (`zot`, `curl`, `literature-convert.sh`, `literature-chunk.s
 
 ---
 
-### Phase 2: Derive an arXiv DOI for arXiv-only records (defect a) [NOT STARTED]
+### Phase 2: Derive an arXiv DOI for arXiv-only records (defect a) [COMPLETED]
 
 **Goal**: Make `zot add --pdf` succeed for records with an `arxiv_id` and no `doi`, by
 short-circuiting `_add_from_pdf`'s `doi_override` path.
 
 **Tasks**:
-- [ ] In `literature-ingest-online.sh`, at the `ZW_CMD` construction in the resolvable path (line
+- [x] In `literature-ingest-online.sh`, at the `ZW_CMD` construction in the resolvable path (line
   ~692-696 as of this plan; anchor on `ZW_CMD=("$SCRIPT_DIR/zotero-write.sh" item-add --pdf`),
   extend the existing `if [ -n "$DOI_RAW" ]` branch with an `elif [ -n "$ARXIV_ID_RAW" ]` arm that
-  sets `SYNTH_DOI="10.48550/arXiv.$ARXIV_ID_RAW"` and appends `--doi "$SYNTH_DOI"`
-- [ ] Add a code comment stating that this is arXiv's own mechanical DataCite DOI, used as a
+  sets `SYNTH_DOI="10.48550/arXiv.$ARXIV_ID_RAW"` and appends `--doi "$SYNTH_DOI"` *(completed)*
+- [x] Add a code comment stating that this is arXiv's own mechanical DataCite DOI, used as a
   fallback identifier to bypass `zot add`'s PDF-text DOI regex — explicitly **not** a resolved
-  published-venue DOI
-- [ ] Add a `log` line recording that a synthesized arXiv DOI was used, so the choice is visible in
-  the run log rather than silent
-- [ ] Confirm `DOI_JSON`/`ARXIV_JSON` (lines ~627-628), which feed `patch_global_index`, are left
+  published-venue DOI *(completed)*
+- [x] Add a `log` line recording that a synthesized arXiv DOI was used, so the choice is visible in
+  the run log rather than silent *(completed)*
+- [x] Confirm `DOI_JSON`/`ARXIV_JSON` (lines ~627-628), which feed `patch_global_index`, are left
   untouched — the synthesized DOI must not leak into the corpus index as a real `doi` field
+  *(completed: DOI_JSON is computed at line 627 from the original $DOI_RAW, before the ZW_CMD
+  block at line ~692 ever sets SYNTH_DOI; harness run confirms index.json's doi field stays null
+  for the arxiv-only record)*
 
 **Timing**: 0.5 hours
 
