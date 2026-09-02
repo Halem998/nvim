@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Delete the seven files and perform manifest routing surgery",
+  "started_at": "2026-09-02T18:00:00Z",
+  "last_updated": "2026-09-02T18:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete four -hard skill dirs and three -hard agent files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+      "agent-system/extensions/core/agents/general-research-hard-agent.md",
+      "agent-system/extensions/core/agents/planner-hard-agent.md",
+      "agent-system/extensions/core/agents/general-implementation-hard-agent.md"
+    ]},
+    {"id": 2, "description": "core/manifest.json: drop routing_hard/routing_agents_hard blocks and 7 provides entries", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "cslib/manifest.json: remove dead hard routing entries in matched pairs", "status": "done", "files_touched": ["agent-system/extensions/cslib/manifest.json"]},
+    {"id": 4, "description": "lean/manifest.json: verify unchanged", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Validate JSON, run lint-routing-wiring.sh + check-extension-docs.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Deviation carried in from Phase 2: lint-task-lookup-adoption.sh EXCLUDED_FILES prune, atomic with deletion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "cslib/manifest.json entry count",
+      "type": "altered",
+      "reason": "Plan's summary line said 'six entries' but its own itemized list names 4 op.subkey pairs (research.pr, plan.cslib, plan.pr, implement.pr) doubled across routing_hard and routing_agents_hard = 8 raw key removals. On-disk verification confirmed 8, not 6. Followed the itemized list (more specific, verified against disk) over the summary count.",
+      "annotation": "*(completed: 8 raw key removals, not 6 -- see inline note)*"
+    }
+  ],
+  "notes": [
+    "Repo-wide census after Phase 4: 201 occurrences across 41 files remaining (down from 359/60), matching the plan's expected post-Phase-4 remaining scope exactly.",
+    "check-extension-docs.sh shows 7 new 'deployed script content drift' FAILs for the Phase 2/3-edited lint/test scripts -- expected, self-resolving at Phase 8's deploy regeneration, not a routing_hard regression. Zero unresolvable/undeployed routing_hard target FAILs."
+  ]
+}

@@ -303,13 +303,9 @@ EXCLUDED_FILES=(
 
     # --- skills/ offenders: pending lifecycle SKILL.md migration, deferred pending the
     # core-collapse sequencing decision (see context/patterns/adoption-lint-conventions.md) ----
-    "core/skills/skill-implementer-hard/SKILL.md"
     "core/skills/skill-implementer/SKILL.md"
-    "core/skills/skill-orchestrate-hard/SKILL.md"
     "core/skills/skill-orchestrate/SKILL.md"
-    "core/skills/skill-planner-hard/SKILL.md"
     "core/skills/skill-planner/SKILL.md"
-    "core/skills/skill-researcher-hard/SKILL.md"
     "core/skills/skill-researcher/SKILL.md"
     "core/skills/skill-reviser/SKILL.md"
     "core/skills/skill-status-sync/SKILL.md"

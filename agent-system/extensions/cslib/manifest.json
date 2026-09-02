@@ -58,16 +58,10 @@
   },
   "routing_hard": {
     "research": {
-      "cslib": "skill-cslib-research-hard",
-      "pr": "skill-researcher-hard"
-    },
-    "plan": {
-      "cslib": "skill-planner-hard",
-      "pr": "skill-planner-hard"
+      "cslib": "skill-cslib-research-hard"
     },
     "implement": {
-      "cslib": "skill-cslib-implementation-hard",
-      "pr": "skill-implementer-hard"
+      "cslib": "skill-cslib-implementation-hard"
     }
   },
   "routing_agents": {
@@ -86,16 +80,10 @@
   },
   "routing_agents_hard": {
     "research": {
-      "cslib": "cslib-research-hard-agent",
-      "pr": "general-research-hard-agent"
-    },
-    "plan": {
-      "cslib": "planner-hard-agent",
-      "pr": "planner-hard-agent"
+      "cslib": "cslib-research-hard-agent"
     },
     "implement": {
-      "cslib": "cslib-implementation-hard-agent",
-      "pr": "general-implementation-hard-agent"
+      "cslib": "cslib-implementation-hard-agent"
     }
   },
   "keyword_overrides": {

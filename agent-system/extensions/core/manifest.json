@@ -29,10 +29,7 @@
       "planner-agent.md",
       "reviser-agent.md",
       "spawn-agent.md",
-      "synthesis-agent.md",
-      "general-research-hard-agent.md",
-      "general-implementation-hard-agent.md",
-      "planner-hard-agent.md"
+      "synthesis-agent.md"
     ],
     "commands": [
       "errors.md",
@@ -78,11 +75,7 @@
       "skill-tag",
       "skill-todo",
       "skill-zulip",
-      "skill-project-overview",
-      "skill-researcher-hard",
-      "skill-planner-hard",
-      "skill-implementer-hard",
-      "skill-orchestrate-hard"
+      "skill-project-overview"
     ],
     "scripts": [
       "assess-repo-health.sh",
@@ -298,23 +291,6 @@
       ".gitignore"
     ]
   },
-  "routing_hard": {
-    "research": {
-      "general": "skill-researcher-hard",
-      "meta": "skill-researcher-hard",
-      "markdown": "skill-researcher-hard"
-    },
-    "plan": {
-      "general": "skill-planner-hard",
-      "meta": "skill-planner-hard",
-      "markdown": "skill-planner-hard"
-    },
-    "implement": {
-      "general": "skill-implementer-hard",
-      "meta": "skill-implementer-hard",
-      "markdown": "skill-implementer-hard"
-    }
-  },
   "routing_agents": {
     "research": {
       "general": "general-research-agent",
@@ -330,23 +306,6 @@
       "general": "general-implementation-agent",
       "meta": "general-implementation-agent",
       "markdown": "general-implementation-agent"
-    }
-  },
-  "routing_agents_hard": {
-    "research": {
-      "general": "general-research-hard-agent",
-      "meta": "general-research-hard-agent",
-      "markdown": "general-research-hard-agent"
-    },
-    "plan": {
-      "general": "planner-hard-agent",
-      "meta": "planner-hard-agent",
-      "markdown": "planner-hard-agent"
-    },
-    "implement": {
-      "general": "general-implementation-hard-agent",
-      "meta": "general-implementation-hard-agent",
-      "markdown": "general-implementation-hard-agent"
     }
   }
 }

@@ -345,7 +345,7 @@ on hard-mode routing that Phase 4 removes.
 
 ---
 
-### Phase 4: Delete the seven files and perform manifest routing surgery [NOT STARTED]
+### Phase 4: Delete the seven files and perform manifest routing surgery [COMPLETED]
 
 **Goal**: The deletion itself, together with the manifest edits it forces. These are one atomic
 unit: `lint-routing-wiring.sh` Check B fails if the agents are deleted while
@@ -353,34 +353,46 @@ unit: `lint-routing-wiring.sh` Check B fails if the agents are deleted while
 directories are deleted while `routing_hard` still targets them. Neither half is green alone.
 
 **Tasks**:
-- [ ] Delete `agent-system/extensions/core/skills/skill-orchestrate-hard/` (SKILL.md and any
-      sibling files in the directory).
-- [ ] Delete `agent-system/extensions/core/skills/skill-researcher-hard/`,
-      `skill-planner-hard/`, `skill-implementer-hard/`.
-- [ ] Delete `agent-system/extensions/core/agents/general-research-hard-agent.md`,
-      `planner-hard-agent.md`, `general-implementation-hard-agent.md`.
-- [ ] `agent-system/extensions/core/manifest.json` — remove the `routing_hard` and
+- [x] Delete `agent-system/extensions/core/skills/skill-orchestrate-hard/` (SKILL.md and any
+      sibling files in the directory). *(completed: directory contained only SKILL.md, no
+      siblings)*
+- [x] Delete `agent-system/extensions/core/skills/skill-researcher-hard/`,
+      `skill-planner-hard/`, `skill-implementer-hard/`. *(completed)*
+- [x] Delete `agent-system/extensions/core/agents/general-research-hard-agent.md`,
+      `planner-hard-agent.md`, `general-implementation-hard-agent.md`. *(completed)*
+- [x] `agent-system/extensions/core/manifest.json` — remove the `routing_hard` and
       `routing_agents_hard` top-level keys entirely (every entry names a deleted asset).
-- [ ] `agent-system/extensions/core/manifest.json` — remove the three deleted agent filenames from
-      `provides.agents` and the four deleted skill names from `provides.skills`.
-- [ ] `agent-system/extensions/cslib/manifest.json` — remove exactly six entries in matched pairs:
+      *(completed)*
+- [x] `agent-system/extensions/core/manifest.json` — remove the three deleted agent filenames from
+      `provides.agents` and the four deleted skill names from `provides.skills`. *(completed)*
+- [x] `agent-system/extensions/cslib/manifest.json` — remove exactly six entries in matched pairs:
       `routing_hard.research.pr`, `routing_hard.plan.cslib`, `routing_hard.plan.pr`,
       `routing_hard.implement.pr`, and their `routing_agents_hard` counterparts
       (`research.pr`, `plan.cslib`, `plan.pr`, `implement.pr`). Retain
       `routing_hard.research.cslib`, `routing_hard.implement.cslib`, and their agent counterparts.
       If `routing_hard.plan` and `routing_agents_hard.plan` become empty objects, remove both `plan`
-      keys symmetrically.
-- [ ] `agent-system/extensions/lean/manifest.json` — **no change**. Verify it contains none of the
-      seven names and leave it untouched (see Scoping Deviation).
-- [ ] Validate all three manifests parse as JSON.
-- [ ] Run `scripts/lint/lint-routing-wiring.sh` and `scripts/check-extension-docs.sh` and confirm
-      no new failures versus baseline.
-- [ ] *(deviation carried in from Phase 2)* `scripts/lint/lint-task-lookup-adoption.sh` — remove
+      keys symmetrically. *(completed: on-disk verification found 4 entries removed from each of
+      the two blocks — 8 raw key removals total — not 6 as this bullet's own summary line states;
+      the itemized list of 4 op.subkey pairs above, doubled across routing_hard and
+      routing_agents_hard, is what actually matched disk state and is what was removed. Both
+      `plan` keys were empty after removal and were dropped symmetrically, exactly as specified)*
+- [x] `agent-system/extensions/lean/manifest.json` — **no change**. Verify it contains none of the
+      seven names and leave it untouched (see Scoping Deviation). *(completed: `git diff` on
+      lean/manifest.json is empty)*
+- [x] Validate all three manifests parse as JSON. *(completed)*
+- [x] Run `scripts/lint/lint-routing-wiring.sh` and `scripts/check-extension-docs.sh` and confirm
+      no new failures versus baseline. *(completed: lint-routing-wiring.sh exits 0 (297 passed).
+      check-extension-docs.sh reports zero unresolvable/undeployed `routing_hard` target FAILs —
+      its only new FAILs are "deployed script content drift" for the 4 lint/test scripts edited in
+      Phases 2-3, an expected, self-resolving consequence of source-store edits made ahead of
+      Phase 8's deploy regeneration, not a routing regression)*
+- [x] *(deviation carried in from Phase 2)* `scripts/lint/lint-task-lookup-adoption.sh` — remove
       the four `"core/skills/skill-{implementer,orchestrate,planner,researcher}-hard/SKILL.md"`
       entries from `EXCLUDED_FILES`, in the same commit as the file deletion above (removing the
       exemption while the file still exists un-exempts one genuine hand-rolled violation per
       file — see Phase 2's Deviation note). Re-run the lint and its meta-test
-      (`scripts/tests/test-lint-task-lookup-adoption.sh`) after both land together.
+      (`scripts/tests/test-lint-task-lookup-adoption.sh`) after both land together. *(completed:
+      both exit 0, landing atomically with the deletion as intended)*
 
 **Timing**: 1.0 hours
 
