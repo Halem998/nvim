@@ -1,5 +1,5 @@
 ---
-next_project_number: 149
+next_project_number: 151
 ---
 
 # TODO
@@ -11,14 +11,15 @@ next_project_number: 149
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,43,44,45,51,74,89,91,113,125,129,134,137,139,141,144 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,127,136,140,145 | 29,74,91,125,139 | core-agent-system, extensions |
-| 3 | 146 | 145 | core-agent-system |
-| 4 | 147 | 146 | core-agent-system |
-| 5 | 143 | 147 | core-agent-system |
-| 6 | 148 | 143 | core-agent-system |
-| 7 | 72,88 | 148 | core-agent-system |
-| 8 | 142 | 88 | core-agent-system |
+| 1 | 13,14,20,22,27,29,39,43,44,45,51,72,74,89,91,113,125,129,134,137,139,144 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,75,76,127,136,140,149 | 29,74,91,125,139 | core-agent-system, extensions |
+| 3 | 145 | 149 | core-agent-system |
+| 4 | 146 | 145 | core-agent-system |
+| 5 | 147 | 146 | core-agent-system |
+| 6 | 143 | 147 | core-agent-system |
+| 7 | 148 | 143 | core-agent-system |
+| 8 | 88 | 148 | core-agent-system |
+| 9 | 142,150 | 88 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -29,25 +30,26 @@ next_project_number: 149
 20 [NOT STARTED] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+72 [NOT STARTED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 125 [PLANNED] — Delete the three base lifecycle skills (skill-researcher, skill-p
   └─ 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-  └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
-    └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
-      └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
-        └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
-          └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-            └─ 72 [NOT STARTED] — === ADDENDUM 2026-09-02 (thin-lead path: retarget once more) ===
-            └─ 88 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: engine deletion replaces 
-              └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+  └─ 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
+    └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
+      └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+        └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
+          └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+            └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+              └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+                └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+                └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-141 [NOT STARTED] — Relay the admission verdict's own reason string in orchestrate-dr
 144 [NOT STARTED] — Narrow the coarse whole-directory file_scope declarations that ma
 
 ### Extensions
@@ -75,7 +77,60 @@ next_project_number: 149
 
 ## Tasks
 
-### 148. Port team fan-out, hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
+### 150. Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 88
+
+**Description**: Research on demand: let the planner decide whether a research phase is needed, and run one only when it asks for it or when --research forces it. Decided 2026-09-02 (specs/PATH.md, Decisions). Stage A.8 of specs/PATH.md. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+WHY. Every task runs research -> plan -> implement today, yet most filings in this system are already specifications: they carry the defect, the measured evidence, the work list and the acceptance bar. A research dispatch on such a task re-derives what the description states and costs a full agent run plus a cycle. The decision whether research is needed belongs to an agent, not to the orchestrator and not to a keyword heuristic.
+
+DESIGN (binding; the planner of this task refines mechanics, not the shape).
+(a) Default lifecycle becomes plan -> implement. A task at [NOT STARTED] with no report is dispatched to the PLANNER first. The planner's contract gains an opening step: assess whether the description plus what it can read in the codebase suffices to write a plan that meets plan-format.md. If yes, plan as today; status advances to [PLANNED] (the [RESEARCHED] state is simply not visited). If no, it writes no plan and returns verdict `needs_research` in its return metadata with a focused list of the questions research must answer; it does not attempt partial planning.
+(b) orchestrate-cycle-plan.sh / orchestrate-triage-classify.sh: a `needs_research` verdict recorded by the postflight script routes the task to the research phase on the next cycle, with the planner's questions carried into the dispatch file as the research focus; after research, the task returns to plan as today. `--research` (the phase-forcing flag) forces the research phase first exactly as it does now and bypasses the planner's assessment. A task that already has a report is never asked again.
+(c) orchestrate-cycle-postflight.sh: relay `needs_research` as a verdict (no status regression; the task stays [NOT STARTED] or [RESEARCHING]-equivalent by the existing vocabulary -- decide and record which); record nothing as a defect.
+(d) Contracts and docs: planner-agent.md (and extension planner agents, swept with negatives) gain the assessment step and the bar for asking -- research is requested only when the plan would otherwise rest on guesses about facts an agent can establish (external APIs, unfamiliar code paths, literature), never as a default; the research-agent contract is unchanged except that the dispatch file may now carry the planner's question list; status-markers.md and the state-machine doc describe the two-phase default with research on demand; the return-metadata format gains the verdict field.
+(e) Memory retrieval and --lit still run at every dispatch through the dispatch builder, so a planner dispatched first receives the same context a research dispatch would.
+
+MUST NOT: skip research when `--research` is passed; let the orchestrator decide (the classifier only routes on the recorded verdict); weaken plan-format.md's requirements to make planning-without-research easier.
+
+ACCEPTANCE: a specification-shaped task goes [NOT STARTED] -> [PLANNED] -> [COMPLETED] in two dispatches with a plan that passes validate-artifact.sh; a task whose planner returns `needs_research` is shown routing to research with the question list in its dispatch file and then back to plan; `--research` on a fresh task runs research first; fixture tests for both routes; full gate run green.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "Decisions".
+
+---
+
+### 149. Delete team mode: fan-out stages, --team flags, synthesis wiring, docs and tests
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 125
+
+**Description**: Delete team mode from the agent system. Decided 2026-09-02 (specs/PATH.md, Decisions): team mode costs ~5x per dispatch, its teammate metadata-ownership defect was never fixed, and it has been used rarely; under the thin-lead design it would have cost a dedicated fan-out script to keep. It is removed outright rather than ported. Stage A.0b of specs/PATH.md. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+WORK (enumerate every site by grep before editing; the list below is the known set, not a whitelist).
+(1) skills/skill-orchestrate/SKILL.md: delete Stage 3.6 (Team Fan-Out) and Stage 3.6a (Teammate-Plan Builder), together ~19,400 B, and every `team_mode` / `team_size` / `team_size_explicit` / `teammate` reference in Stage 1, Stage MT-1 (the accepted-and-ignored notice), Stage 4 dispatch sites, and the Context References.
+(2) commands/orchestrate.md: remove the `--team` and `--team-size` Options rows, the team lines in Constraints, and the delegation-context keys `team_mode`, `team_size`, `team_size_explicit`.
+(3) scripts/parse-command-args.sh: remove `--team` / `--team-size` parsing and the TEAM_MODE / TEAM_SIZE / TEAM_SIZE_EXPLICIT exports; keep every other export byte-identical (this script is shared by every command -- run its tests).
+(4) agents/synthesis-agent.md: determine its remaining callers by grep. If team mode was its only caller, delete it and its manifest/index-entries registrations; if the reviser path or anything else still dispatches it, keep it and record why.
+(5) merge-sources/claudemd.md: remove the "Team Mode" paragraph, the `--team` rows in the cost table and composability bullets, and the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` note; regenerate and confirm CLAUDE.md no longer mentions team mode.
+(6) context/ and docs/: rules/artifact-formats.md's "Team Mode" naming subsection and example, context/standards/git-staging-scope.md's team staging template, context/patterns/* and docs/architecture/* team references, the team-mode contract tests under scripts/tests (delete, do not skip), and index-entries.json entries for any deleted file.
+(7) The `{NN}_{letter}-findings.md` artifact convention becomes historical: leave existing artifacts on disk; remove the convention from the format docs.
+(8) hooks/subagent-postflight.sh is NOT deleted: its marker-correlation defect is independent of team mode and remains its own task.
+
+MUST NOT: remove `synthesis-agent` while a live caller exists; change any non-team export of parse-command-args.sh; touch the extension agents beyond removing team-mode carve-outs that reference the deleted stages.
+
+ACCEPTANCE: a repo-wide grep (excluding specs/**) for `team_mode|team_size|--team|teammate|skill-team|Stage 3.6` returns zero hits, or each survivor is individually justified; parse-command-args.sh tests green; a two-task /orchestrate runs end to end; full gate run green; byte count removed from SKILL.md and orchestrate.md reported.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+REFERENCE: specs/PATH.md, "One engine, batch of one" and "Decisions".
+
+---
+
+### 148. Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -98,6 +153,8 @@ ACCEPTANCE: each of the five items demonstrated on a live invocation carrying ON
 
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 REFERENCE: specs/PATH.md, "One engine, batch of one".
+=== ADDENDUM 2026-09-02 (team mode deleted; hard mode kept in full) ===
+Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so there is no fan-out to port and no orchestrate-team-fanout.sh to build; the `team` field on cycle-plan rows is dropped. Item (2) HARD stands as written and in full -- the decision is to KEEP the stateful half (churn / three-strikes counters and the burnout breaker) alongside contract injection, so orchestrate-churn.sh is built as specified. Items (3), (4) and (5) stand. The --team acceptance case is withdrawn; the remaining acceptance cases stand.
 
 ---
 
@@ -119,6 +176,9 @@ ACCEPTANCE: fixture tests for eligibility, per-task forced phases, verdict relay
 
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 REFERENCE: specs/PATH.md, "The four moves per cycle".
+=== ADDENDUM 2026-09-02 (absorbs the dry-run report; team flags withdrawn) ===
+DRY-RUN. Decided: the standalone orchestrate-dry-run-report.sh is retired, so there is one rendering of every admission verdict instead of two that drift apart. This script gains `--dry-run`: it runs the identical read-only analysis (admission, classification, forced phases, lock probe) and prints the same JSON plan it would dispatch, plus a compact human table derived from that JSON object and nothing else. Every deferral row carries the verdict's OWN reason string, relayed verbatim -- the verification bar from the absorbed report task applies here: for a candidate set containing at least two self-modifying tasks, the deferred rows must render the admission script's ORDERING CONSTRAINT text naming the designated candidate, and the strings "runs solo only" and "re-run it alone" must not appear anywhere in this script. Retire orchestrate-dry-run-report.sh (delete, remove from the manifest, remove from context/reference/orchestrator-critical-paths.json and its tests; add this script to the critical-path registry in its place), and repoint commands/orchestrate.md's dry-run short-circuit at `orchestrate-cycle-plan.sh --dry-run`. Its dry-run prohibition block is unchanged: a dry run dispatches nothing, mutates nothing, acquires no lock.
+TEAM. The `team` field on dispatch rows and the --team/--team-size inputs are withdrawn: team mode is deleted.
 
 ---
 
@@ -152,7 +212,7 @@ REFERENCE: specs/PATH.md, "Target design: the thin lead".
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 125
+- **Dependencies**: Task 149
 
 **Description**: Slim commands/orchestrate.md to the flag table and the dispatch, deleting the multi-task block its own text labels illustrative. Stage A.1 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md (never .claude/**).
 
@@ -172,6 +232,8 @@ ACCEPTANCE: before/after byte counts recorded in the summary; every flag parse-c
 
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 REFERENCE: specs/PATH.md, "Stage A -- Thin lead" and "Where things stand".
+=== ADDENDUM 2026-09-02 ===
+Team mode is deleted by this task's predecessor, so the `--team`/`--team-size` rows are already gone when this task runs; do not re-add them. The dry-run short-circuit stays pointed at orchestrate-dry-run-report.sh for now -- the cycle-plan task repoints it when it retires that script.
 
 ---
 
@@ -289,7 +351,7 @@ ACCEPTANCE. Measured before/after numbers for the orchestrator's eager load, the
 ---
 
 ### 141. Relay admission verdict reason in dry run report
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2041,7 +2103,9 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 - **Topic**: core-agent-system
 - **Dependencies**: Task 148
 
-**Description**: === REVISED 2026-09-02 (thin-lead path: engine deletion replaces mode-gating) ===
+**Description**: === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retired) ===
+Team rows no longer exist (team mode is deleted by an earlier Stage A task); item (6)'s `--team` notice removal is already done by that deletion. The loop's dry-run path is `orchestrate-cycle-plan.sh --dry-run` (the standalone report is retired by the cycle-plan task). Research on demand (a later task) changes only the phase the planner is dispatched in; this rewrite must not hardcode research-first anywhere -- the loop dispatches whatever phase the cycle plan names.
+=== REVISED 2026-09-02 (thin-lead path: engine deletion replaces mode-gating) ===
 SUPERSEDING SCOPE. The premise below -- that single-task /orchestrate is the hot path and should stop loading the multi-task section -- is the inverse of how the system is used: the default is many tasks at once, and "batch of one" is the decided design (specs/PATH.md). Mode-gating would keep both engines on disk and the parity-drift defect class alive. This task instead deletes the single-task engine and rewrites the skill as the four-move loop. Stage A.6 of specs/PATH.md. The file has grown to 293,977 B since the figures below were taken.
 
 WORK.
@@ -2390,14 +2454,22 @@ in isolation.
 
 ---
 
-### 72. Fix fan-out teammate metadata ownership and SubagentStop session correlation
+### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 148
+- **Dependencies**: None
 
-**Description**: === ADDENDUM 2026-09-02 (thin-lead path: retarget once more) ===
+**Description**: === REVISED 2026-09-02 (team mode deleted; narrowed to the marker-correlation defect) ===
+SUPERSEDING SCOPE. Team mode is being removed from the system (specs/PATH.md, Decisions), so Part A below (teammate .return-meta.json ownership) is moot: there are no teammates. Part B survives on its own merits and is now this task's whole scope, because the defect is not team-specific: hooks/subagent-postflight.sh's find_marker() picks the FIRST .postflight-pending marker under specs/ (`head -1`) with no correlation to the stopping subagent's session, so with several concurrent single-task sessions the hook can act on, burn the continuation budget of, or on cap DELETE a marker belonging to a different session. The marker JSON already carries session_id (written by skill_create_postflight_marker in skill-base.sh); the hook never reads it.
+
+WORK. Correlate the hook's marker selection to the stopping subagent's own session: read session_id from each marker and match it against the stopping session's identity (the hook's input carries cc_session_id; the markers carry the agent-system session_id -- establish the mapping, adding a field to the marker schema via skill-base.sh's writer if needed). Act only on the correlated marker; never on an arbitrary one. Show the fix corrects EVENT ATTRIBUTION in specs/events.jsonl: live events carried subagent_stop events attributed to a session_id whose cc_session_id belonged to a different Claude session. Distinguish a genuine cap-reached deletion from a normal skill_cleanup removal in the log line.
+
+ACCEPTANCE: with markers from at least two unrelated concurrent tasks present, the hook acts only on the marker correlated to the stopping session (fixture test); a foreign subagent's stop is no longer attributed to another session's session_id in events.jsonl; a cap-reached deletion is distinguishable from cleanup; no marker can be deleted by a session that does not own it.
+
+SOURCE-STORE RULE (binding): agent-system/extensions/core/hooks/subagent-postflight.sh and scripts/skill-base.sh; never .claude/**.
+=== ORIGINAL DESCRIPTION FOLLOWS (Part A moot, retained for the record) ====== ADDENDUM 2026-09-02 (thin-lead path: retarget once more) ===
 The Stage 3.6 fan-out is being moved out of skill-orchestrate/SKILL.md into scripts/orchestrate-team-fanout.sh, and per-teammate dispatch context comes from scripts/orchestrate-build-dispatch.sh (see specs/PATH.md Stage A). Fix ownership and correlation against those two scripts and hooks/subagent-postflight.sh, not against SKILL.md prose. The dependency now points at the feature-port successor that creates the fan-out script.
 === REVISED 2026-09-01 (backlog streamline: combined with the SubagentStop-correlation task) ===
 COMBINED SCOPE. This task now absorbs the sibling SubagentStop marker-correlation task (that entry is abandoned with a pointer here): both defects are teammate-lifecycle metadata problems that must be fixed against the SAME new surface -- the shared Stage 3.6 Team Fan-Out stage in skill-orchestrate/SKILL.md (landed) -- and their file scopes fully overlap, which is why the originals instructed sequencing rather than parallel dispatch. Fixed together they settle one coherent design: who owns which metadata file during a fan-out, and how a stopping subagent is correlated to the marker/session it belongs to.
