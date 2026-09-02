@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "LITERATURE_CONVERTER=ocr explicit, non-auto mode",
+  "started_at": "2026-09-01T00:35:00Z",
+  "last_updated": "2026-09-01T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "ocr case arm in CONVERTER dispatch", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 2, "description": "try_ocr_explicit() with command -v guard, LITERATURE_OCR_FORCE opt-in, run_unified_engine fallback_only feed", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 3, "description": "ocr_explicit main-dispatch branch (0/3/else, not the pdftotext && form)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 4, "description": "Update shared remedy-hint function to name LITERATURE_CONVERTER=ocr/LITERATURE_OCR_FORCE=1", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]},
+    {"id": 5, "description": "Header comment updates (LITERATURE_CONVERTER doc, LITERATURE_OCR_FORCE env var, tier-ladder escape-hatch note)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Verify OCR fixtures with a plain filled-rectangle image (no rendered text)", "result": "failed", "reason": "no OCR-recognizable content at all -- tesseract correctly found no text, so exit stayed 2 even after ocrmypdf ran; replaced with a fixture built by rendering real fitz text to a pixmap and inserting it as an image, per the plan's fallback fixture technique"},
+    {"approach": "Mask ocrmypdf off PATH via a plain PATH= override excluding its directory", "result": "failed", "reason": "on this NixOS profile bash/python3/every other tool also lives in the same /run/current-system/sw/bin directory, so excluding it broke bash's own shebang resolution; replaced with a scratch bin dir of symlinks to every real PATH entry except ocrmypdf/tesseract"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "findings": [
+    "IMPORTANT for Phase 4: pymupdf4llm.to_markdown()'s force_text=True default (unrelated to this task, pre-existing) makes the PRIMARY tier silently invoke Tesseract directly via PyMuPDF's own textpage-OCR API whenever a page has no extractable text and tesseract is on PATH -- observed recovering full correct text from the render-to-pixmap fixture under LITERATURE_CONVERTER=auto with the venv provisioned, producing exit 0 instead of the expected exit 2. This is a DIFFERENT code path than the ocrmypdf CLI this phase adds (the 'never invokes ocrmypdf' guarantee holds regardless), but it means an unforced `auto` run is not a reliable exit-2 trigger on a machine with both the primary-tier venv and tesseract present. Phase 4's auto-exits-2 regression test should force the primary tier unavailable (e.g. LITERATURE_PYENV_DIR pointed at a scratch/nonexistent directory) to get a deterministic exit-2 assertion, mirroring how auto degrades to the mandatory fallback tier (which has no such internal OCR trigger) on any machine without a provisioned venv."
+  ]
+}

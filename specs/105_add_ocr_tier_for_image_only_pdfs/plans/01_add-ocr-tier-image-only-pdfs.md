@@ -231,37 +231,37 @@ actually running the primary-tier-unavailable case (`LITERATURE_CONVERTER=pymupd
 
 ---
 
-### Phase 3: LITERATURE_CONVERTER=ocr explicit, non-auto mode [NOT STARTED]
+### Phase 3: LITERATURE_CONVERTER=ocr explicit, non-auto mode [COMPLETED]
 
 **Goal**: An operator can run one command to OCR a scanned PDF and convert it, and that mode is
 structurally incapable of being reached by `auto`.
 
 **Tasks**:
-- [ ] Add `ocr) ENGINE_MODE="ocr_explicit" ;;` to the `LITERATURE_CONVERTER` case statement.
-- [ ] Implement `try_ocr_explicit()` immediately after `try_pdftotext_explicit()`, carrying the
+- [x] Add `ocr) ENGINE_MODE="ocr_explicit" ;;` to the `LITERATURE_CONVERTER` case statement.
+- [x] Implement `try_ocr_explicit()` immediately after `try_pdftotext_explicit()`, carrying the
       same "explicit, NOT part of 'auto'" prohibition comment in its own words.
-- [ ] Guard on `command -v ocrmypdf` (and report `tesseract` absence too if `ocrmypdf` surfaces
+- [x] Guard on `command -v ocrmypdf` (and report `tesseract` absence too if `ocrmypdf` surfaces
       it): log a clear message naming the missing binary and return non-zero. Never fall through
       to another engine, never crash the caller — the `literature-pyenv-provision.sh`
       graceful-detection contract.
-- [ ] Log a start notice before invoking `ocrmypdf` that names the input and warns the run is
+- [x] Log a start notice before invoking `ocrmypdf` that names the input and warns the run is
       minutes-scale on large documents.
-- [ ] Run `ocrmypdf` into a `mktemp --suffix=.pdf` temp file using its default (skip-text)
+- [x] Run `ocrmypdf` into a `mktemp --suffix=.pdf` temp file using its default (skip-text)
       behavior, which OCRs only pages with no existing text layer and is non-destructive. Remove
       the temp file on every exit path.
-- [ ] Add `LITERATURE_OCR_FORCE=1` as the explicit, documented opt-in that adds `--force-ocr` for
+- [x] Add `LITERATURE_OCR_FORCE=1` as the explicit, documented opt-in that adds `--force-ocr` for
       the poor-vintage (Class B) case. Comment at the flag site that `--force-ocr` rasterizes every
       page and discards any existing text layer, so it must never become a default.
-- [ ] Feed the OCR'd temp PDF through `run_unified_engine "$tmp_pdf" "$output" "fallback_only"`,
+- [x] Feed the OCR'd temp PDF through `run_unified_engine "$tmp_pdf" "$output" "fallback_only"`,
       so normalization and the quality gate run unchanged. Comment the deliberate choice of the
       always-available column-clustering fallback tier (no venv dependency) over the primary tier.
-- [ ] Add the `ocr_explicit` branch to the main conversion dispatch, handling `run_unified_engine`
+- [x] Add the `ocr_explicit` branch to the main conversion dispatch, handling `run_unified_engine`
       exit codes explicitly: 0 sets `CONVERTED=1`, 3 sets `GATE_FAILED=1`, anything else leaves
       `CONVERTED=0`. Do not copy the `pdftotext` branch's `&& CONVERTED=1` form, which discards
       the exit-3 distinction.
-- [ ] Update the shared remedy-hint string from Phase 1 to name `LITERATURE_CONVERTER=ocr` (and
+- [x] Update the shared remedy-hint string from Phase 1 to name `LITERATURE_CONVERTER=ocr` (and
       `LITERATURE_OCR_FORCE=1` on the exit-3 path) now that the mode exists.
-- [ ] Update the script header comment: add `ocr` to the `LITERATURE_CONVERTER` environment
+- [x] Update the script header comment: add `ocr` to the `LITERATURE_CONVERTER` environment
       documentation with its non-auto prohibition, add `LITERATURE_OCR_FORCE` to the
       `Environment:` block, and add `ocr` to the engine-tier ladder comment as an explicit
       escape hatch (not a numbered auto tier).

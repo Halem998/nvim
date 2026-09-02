@@ -21,6 +21,12 @@
 #                of this whole pipeline). Used automatically whenever the primary
 #                tier is unavailable or fails, WITH A LOGGED NOTICE naming which
 #                tier ran and why.
+#   Two further tiers exist ONLY as explicit, operator-invoked escape hatches —
+#   neither is a numbered step in the ladder above, and NEITHER IS EVER REACHED
+#   BY 'auto': 'pdftotext' (plain best-effort text dump, see Environment below)
+#   and 'ocr' (OCRs a scanned/no-text-layer PDF via ocrmypdf first; a
+#   document-scale OCR pass is minutes-long, which is exactly why it must never
+#   be folded into auto's batch-loop-reachable chain — see try_ocr_explicit()).
 #   pdftotext's layout-preserving flag and PyMuPDF's row-major whole-page-sort
 #   text-extraction option are NEVER used anywhere in this script — both were
 #   verified via research to glue side-by-side multi-column text onto
@@ -41,7 +47,19 @@
 #                          forced-fallback test), 'pdftotext' (explicit,
 #                          best-effort last resort: plain pdftotext with NO
 #                          layout-preserving flag, no heading detection —
-#                          manual escape hatch only, not used by 'auto').
+#                          manual escape hatch only, not used by 'auto'), 'ocr'
+#                          (EXPLICIT, OPERATOR-INVOKED ONLY, NEVER used by
+#                          'auto': OCRs the input via ocrmypdf first — default
+#                          --skip-text, non-destructive — then feeds the
+#                          result through the mandatory fallback tier. Requires
+#                          ocrmypdf/tesseract on PATH; gracefully degrades with
+#                          a clear message if absent. See LITERATURE_OCR_FORCE
+#                          below for the destructive poor-vintage-OCR remedy).
+#   LITERATURE_OCR_FORCE — '1' opts into `ocrmypdf --force-ocr` under
+#                          LITERATURE_CONVERTER=ocr (rasterizes EVERY page and
+#                          DISCARDS any existing text layer — destructive; the
+#                          remedy for a confirmed degraded/poor-vintage text
+#                          layer, never a default). Ignored otherwise.
 #   LITERATURE_PYENV_DIR — override the pymupdf4llm venv location (see
 #                          literature-pyenv-provision.sh).
 #
@@ -54,8 +72,10 @@
 #       (LITERATURE_CONVERTER=pymupdf4llm) is unavailable and refuses to
 #       silently substitute a different one. The two are distinguished by a
 #       stderr marker, NEVER by the bare exit code: producer (a) prints a
-#       `NO TEXT LAYER` marker naming the `LITERATURE_CONVERTER=ocr` remedy;
-#       producer (b) does not. A consumer must grep for the marker, exactly as
+#       `NO TEXT LAYER:` marker (colon required — a generic bash-level failure
+#       line elsewhere also mentions the bare phrase in prose) naming the
+#       `LITERATURE_CONVERTER=ocr` remedy; producer (b) does not. A consumer
+#       must grep for the marker, exactly as
 #       exit 3 below is already distinguished via `QUALITY GATE FAILED`.
 #   3 — conversion succeeded but the quality gate FAILED (column-interleaving,
 #       page-coverage shortfall, unresolved ligatures, or unresolved
@@ -348,6 +368,7 @@ case "$CONVERTER" in
   pymupdf4llm)   ENGINE_MODE="primary_only" ;;
   pymupdf|fallback) ENGINE_MODE="fallback_only" ;;
   pdftotext)     ENGINE_MODE="pdftotext_explicit" ;;
+  ocr)           ENGINE_MODE="ocr_explicit" ;;
   *)
     log "Unknown LITERATURE_CONVERTER='$CONVERTER'; using 'auto' (primary tier with automatic fallback)"
     ENGINE_MODE="auto"
@@ -886,9 +907,12 @@ def run_quality_gate(content, doc):
 # ============================================================
 
 def ocr_remedy_command(input_path, force=False):
-    if force:
-        return f"ocrmypdf --force-ocr {input_path} {input_path}.ocr.pdf"
-    return f"ocrmypdf --skip-text {input_path} {input_path}.ocr.pdf"
+    # Phase 3 update: LITERATURE_CONVERTER=ocr now exists (and
+    # LITERATURE_OCR_FORCE=1 for the force=True/Class B case) -- this is the
+    # ONE place that changed; both call sites below are untouched.
+    env = "LITERATURE_OCR_FORCE=1 LITERATURE_CONVERTER=ocr" if force else "LITERATURE_CONVERTER=ocr"
+    output_dir = os.path.dirname(out_path) or "."
+    return f"{env} literature-convert.sh {input_path} {output_dir}"
 
 
 # ============================================================
@@ -984,6 +1008,63 @@ try_pdftotext_explicit() {
   return 1
 }
 
+# Explicit, operator-invoked, NEVER part of 'auto': OCRs a scanned/image-only
+# (or poor-vintage-OCR) PDF via ocrmypdf, then feeds the OCR'd result through
+# the unified engine's mandatory fallback tier (no venv dependency needed --
+# see the run_unified_engine call below) for normalization and the quality
+# gate, unchanged. A document-scale OCR pass is minutes-long; running it
+# automatically inside literature-ingest.sh's batch loop would silently
+# balloon wall-clock time on a large scanned document, so this mode is
+# reachable ONLY via an explicit LITERATURE_CONVERTER=ocr -- do not widen
+# this into 'auto's automatic engine-availability chain.
+#
+# ocrmypdf/tesseract are an external, ungoverned dependency this repo does
+# not provision or version-pin (unlike the primary tier's pinned uv venv --
+# see literature-pyenv-provision.sh): detection is graceful `command -v`
+# only, and absence degrades to a clear stderr message and a non-zero
+# return, never a crash and never a silent fallthrough to a different engine.
+try_ocr_explicit() {
+  local input="$1" output="$2"
+
+  if ! command -v ocrmypdf >/dev/null 2>&1; then
+    log "ocrmypdf: not available -- LITERATURE_CONVERTER=ocr requires it (and tesseract) to be installed and on PATH. Not provisioned by this repo; install via your system package manager."
+    return 1
+  fi
+
+  # LITERATURE_OCR_FORCE=1 is the explicit, documented opt-in for the
+  # poor-vintage (Class B) case: an existing, already-present but degraded
+  # text layer. --force-ocr RASTERIZES EVERY PAGE and DISCARDS any existing
+  # text layer -- destructive, and must never become a default anywhere. The
+  # default (unset/0) uses --skip-text: OCR only pages with no existing text
+  # layer at all, which is correct and non-destructive for the absence
+  # (Class C / no-text-layer) case this mode primarily targets.
+  local mode_flag="--skip-text"
+  local mode_note="skip-text (default: OCR only pages with no existing text layer; non-destructive)"
+  if [ "${LITERATURE_OCR_FORCE:-0}" = "1" ]; then
+    mode_flag="--force-ocr"
+    mode_note="force-ocr (LITERATURE_OCR_FORCE=1: rasterizes EVERY page and discards any existing text layer -- destructive; use only for a confirmed degraded/poor-vintage text layer)"
+  fi
+
+  local page_count
+  page_count=$(python3 -c "import fitz, sys; print(len(fitz.open(sys.argv[1])))" "$input" 2>/dev/null || echo "unknown")
+  log "Starting ocrmypdf ($mode_note) on $input ($page_count page(s)) -- this can take several minutes on a large scanned document..."
+
+  local tmp_pdf
+  tmp_pdf=$(mktemp --suffix=.pdf)
+
+  if ! ocrmypdf "$mode_flag" "$input" "$tmp_pdf" 2>&1 | sed 's/^/[convert]   ocrmypdf: /' >&2; then
+    log "ocrmypdf failed for: $input"
+    rm -f "$tmp_pdf"
+    return 1
+  fi
+
+  log "ocrmypdf: success -- feeding the OCR'd output through the mandatory PyMuPDF column-clustering fallback tier (no venv dependency) for normalization and the quality gate"
+  run_unified_engine "$tmp_pdf" "$output" "fallback_only"
+  local engine_exit=$?
+  rm -f "$tmp_pdf"
+  return $engine_exit
+}
+
 # DJVU conversion via djvutxt, or djvups | ps2pdf chain into the unified engine
 try_djvu() {
   local input="$1" output="$2"
@@ -1026,6 +1107,19 @@ if [ "$FILE_TYPE" == "djvu" ]; then
 else
   if [ "$ENGINE_MODE" == "pdftotext_explicit" ]; then
     try_pdftotext_explicit "$INPUT" "$OUTPUT_MD" && CONVERTED=1 || true
+  elif [ "$ENGINE_MODE" == "ocr_explicit" ]; then
+    # Do NOT copy the pdftotext branch's `&& CONVERTED=1` form above — this
+    # branch runs through run_unified_engine (via try_ocr_explicit) and can
+    # legitimately return 3 (quality-gate rejection); the `&&` form would
+    # silently discard that distinction and treat a gate-rejected post-OCR
+    # document as a generic hard failure instead.
+    try_ocr_explicit "$INPUT" "$OUTPUT_MD"
+    OCR_EXIT=$?
+    case "$OCR_EXIT" in
+      0) CONVERTED=1 ;;
+      3) GATE_FAILED=1 ;;
+      *) : ;;  # ocrmypdf missing/failed, or the fallback tier still produced empty output — CONVERTED stays 0
+    esac
   else
     run_unified_engine "$INPUT" "$OUTPUT_MD" "$ENGINE_MODE"
     ENGINE_EXIT=$?
