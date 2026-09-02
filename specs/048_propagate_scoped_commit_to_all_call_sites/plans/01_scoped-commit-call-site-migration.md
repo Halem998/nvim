@@ -1,7 +1,7 @@
 # Implementation Plan: Propagate scoped commit to all call sites
 
 - **Task**: 48 - Propagate scoped commit to all call sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11.25 hours
 - **Dependencies**: Task 124
 - **Research Inputs**: specs/048_propagate_scoped_commit_to_all_call_sites/reports/01_scoped-commit-propagation-inventory.md

@@ -1,19 +1,24 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Created an 11-phase implementation plan (11.25h) migrating 98 raw `git commit -m` call sites in agent-system/extensions/ to git-commit-scoped.sh. Phase 1 fixes the copy-paste root cause (2 scaffold templates + 4 core reference docs) and blocks a wave of 8 territory-disjoint parallel migration phases; Phase 10 runs a real end-to-end commit plus the acceptance grep and writes the exemption record; Phase 11 adds lint-scoped-commit-boundary.sh, its test, manifest registration, and a new verify-deploy gate. Excludes the three deleted lifecycle command files and all task-lookup duplication sites.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 8,
+  "summary": "Migrated all 98 genuine raw `git commit -m` call sites in agent-system/extensions/ to git-commit-scoped.sh across all 11 plan phases. Phase 1 fixed the copy-paste root cause (2 scaffold templates + 4 core reference docs); Phases 2-9 migrated core commands/skills/docs and all 15 non-core extensions (105 files total); Phase 10 ran a real end-to-end commit exercise, fixed 14 stale index-entries.json line_count entries this migration introduced, and reconciled the acceptance grep to exactly 9 reasoned exemptions (5 baseline + 4 decided during migration); Phase 11 added lint-scoped-commit-boundary.sh (verify-deploy.sh gate 17) with an 8-assertion test suite. 6 phases closed [COMPLETED] cleanly, 5 closed [COMPLETED WITH EXCLUSIONS] with full Reasoned Exclusions records. verify-deploy.sh: 25 of 28 checks pass (gate 17 itself passes); 3 pre-existing, unrelated failures remain (doc-lint manifest-registration gap for 3 test scripts, validate-state.sh schema drift on other tasks' rows, state-writer-boundary lint findings in test-force-phases.sh) -- none touches a file this task modified.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/048_propagate_scoped_commit_to_all_call_sites/summaries/01_scoped-commit-call-site-migration-summary.md",
+      "summary": "Full implementation summary: what changed per phase, decisions, plan deviations, verification results, and follow-ups."
+    },
     {
       "type": "plan",
       "path": "specs/048_propagate_scoped_commit_to_all_call_sites/plans/01_scoped-commit-call-site-migration.md",
-      "summary": "11-phase scoped-commit call-site migration plan with dependency waves, per-phase verification tiers, and a post-migration lint gate."
+      "summary": "11-phase plan, all phases closed (6 COMPLETED, 5 COMPLETED WITH EXCLUSIONS with Reasoned Exclusions tables)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 11,
   "phases_total": 11,
   "blockers": [],
   "continuation_path": null,
   "plan_markers_verified": true,
-  "next_action_hint": "Dispatch /implement 48 against plans/01_scoped-commit-call-site-migration.md; Phase 1 must land before the Wave 2 fan-out."
+  "next_action_hint": "Task complete. Optional follow-ups (out of this task's scope, not blocking): 3 pre-existing unrelated verify-deploy.sh failures documented in the plan's Phase 10/11 Reasoned Exclusions each warrant their own task (doc-lint manifest gap, state.json schema drift, test-force-phases.sh state-writer lint findings)."
 }
