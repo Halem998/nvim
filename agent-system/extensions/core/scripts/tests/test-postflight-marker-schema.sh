@@ -93,11 +93,11 @@ else
   fail "marker file is not valid JSON"
 fi
 
-EXPECTED_KEYS="created operation reason session_id skill stop_hook_active task_number"
+EXPECTED_KEYS="cc_session_id created operation reason session_id skill stop_hook_active task_number"
 ACTUAL_KEYS="$(jq -r 'keys | sort | join(" ")' "$MARKER_FILE" 2>/dev/null)"
 
 if [[ "$ACTUAL_KEYS" == "$EXPECTED_KEYS" ]]; then
-  pass "marker key set is exactly the seven Shape A keys: $ACTUAL_KEYS"
+  pass "marker key set is exactly the eight Shape A keys: $ACTUAL_KEYS"
 else
   fail "marker key set mismatch -- expected [$EXPECTED_KEYS], got [$ACTUAL_KEYS]"
 fi
@@ -149,6 +149,33 @@ if [[ "$(jq -r '.stop_hook_active' "$MARKER_FILE")" == "false" ]]; then
   pass "stop_hook_active defaults to false"
 else
   fail "stop_hook_active expected 'false', got '$(jq -r '.stop_hook_active' "$MARKER_FILE")'"
+fi
+
+# =====================================================================
+# Case 3b: cc_session_id round-trips CLAUDE_CODE_SESSION_ID when set, and is present-but-empty
+# when unset (key presence, not key absence, is the fail-safe contract both hooks rely on).
+# =====================================================================
+info "=== cc_session_id set/unset round-trip ==="
+
+CLAUDE_CODE_SESSION_ID="cc-fixture-session-uuid" skill_create_postflight_marker \
+  "043" "fixture_task_cc_set" "sess_1700000002_ghi789" "skill-reviser" "research"
+MARKER_FILE_CC_SET="specs/043_fixture_task_cc_set/.postflight-pending"
+if [[ "$(jq -r '.cc_session_id' "$MARKER_FILE_CC_SET" 2>/dev/null)" == "cc-fixture-session-uuid" ]]; then
+  pass "cc_session_id round-trips CLAUDE_CODE_SESSION_ID when set"
+else
+  fail "cc_session_id did not round-trip CLAUDE_CODE_SESSION_ID -- got '$(jq -r '.cc_session_id' "$MARKER_FILE_CC_SET" 2>/dev/null)'"
+fi
+
+env -u CLAUDE_CODE_SESSION_ID bash -c "
+  . '$SKILL_BASE'
+  skill_create_postflight_marker '044' 'fixture_task_cc_unset' 'sess_1700000003_jkl012' 'skill-reviser' 'research'
+"
+MARKER_FILE_CC_UNSET="specs/044_fixture_task_cc_unset/.postflight-pending"
+if [[ -f "$MARKER_FILE_CC_UNSET" ]] && jq -e 'has("cc_session_id")' "$MARKER_FILE_CC_UNSET" >/dev/null 2>&1 \
+  && [[ "$(jq -r '.cc_session_id' "$MARKER_FILE_CC_UNSET")" == "" ]]; then
+  pass "cc_session_id key is present and empty when CLAUDE_CODE_SESSION_ID is unset"
+else
+  fail "cc_session_id key presence/emptiness contract violated when CLAUDE_CODE_SESSION_ID is unset"
 fi
 
 # =====================================================================

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Add cc_session_id to the marker writer and its schema test",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend skill_create_postflight_marker heredoc with cc_session_id", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "Update SHAPE A schema comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Add cc_session_id to EXPECTED_KEYS in schema test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh"]},
+    {"id": 4, "description": "Add set/unset round-trip cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

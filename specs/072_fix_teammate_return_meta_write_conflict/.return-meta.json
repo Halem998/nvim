@@ -1,26 +1,15 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 72,
-  "session_id": "sess_1788390027_14a27d_72",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/072_fix_teammate_return_meta_write_conflict/plans/01_correlate-marker-to-session.md",
-      "summary": "Six-phase plan correlating both uncorrelated .postflight-pending marker selection sites to the stopping session via a new cc_session_id marker field, with deletion-provenance logging, cross-session fixture tests, and a doc sync."
-    }
-  ],
-  "summary": "Planned the marker/session correlation fix: skill-base.sh's marker writer gains cc_session_id from $CLAUDE_CODE_SESSION_ID; subagent-postflight.sh and events-log-lifecycle.sh each enumerate all markers and act only on the correlated one (fail-safe: no match means no action, including for the global fallback and legacy markers); cap-reached deletion gets a distinct log label; test-subagent-postflight-marker.sh gains cross-session, cap-deletion, legacy-marker, and events-hook cases; postflight-control.md is synced. Resolved the research's open question in favor of mirrored per-hook logic over a shared helper, and flagged one edit target (postflight-control.md) beyond the task's binding five-file list, isolated in its own droppable final phase.",
-  "next_steps": "Run /implement 72 to execute the plan",
+  "session_id": "sess_1788390027_14a27d",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [],
   "blockers": [],
   "memory_candidates": [],
+  "modified_files": [],
   "metadata": {
-    "phase_count": 6,
-    "estimated_hours": 4.25,
-    "dependency_waves": [[1], [2, 3], [4], [5, 6]],
-    "complexity": "medium",
-    "research_integrated": true,
-    "plan_version": 1
+    "phases_completed": 0,
+    "phases_total": 6
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Correlate subagent-postflight marker selection to the stopping session
 
 - **Task**: 72 - Correlate subagent-postflight marker selection to the stopping session
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/072_fix_teammate_return_meta_write_conflict/reports/01_marker-session-correlation.md
@@ -130,26 +130,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add cc_session_id to the marker writer and its schema test [NOT STARTED]
+### Phase 1: Add cc_session_id to the marker writer and its schema test [COMPLETED]
 
 **Goal**: The single production writer of `.postflight-pending` emits a `cc_session_id` field
 carrying Claude Code's native session UUID, and the exact-key-set schema test admits it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/skill-base.sh`, extend
+- [x] In `agent-system/extensions/core/scripts/skill-base.sh`, extend
       `skill_create_postflight_marker`'s heredoc with `"cc_session_id": "${CLAUDE_CODE_SESSION_ID:-}"`.
       Keep the 5-arg signature unchanged — read the env var directly, exactly as
       `update-task-status.sh` does for its `workflow-active-<key>` marker. Use `:-` (empty
-      string), never a placeholder sentinel.
-- [ ] Update the SHAPE A schema comment above the function to name the new field and state that
+      string), never a placeholder sentinel. *(completed)*
+- [x] Update the SHAPE A schema comment above the function to name the new field and state that
       it is the correlation key read by both hooks, distinct from the agent-system `session_id`
-      already present.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh`, add
+      already present. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh`, add
       `cc_session_id` to `EXPECTED_KEYS` (sorted position: first) and update the pass-message
-      wording that says "the seven Shape A keys".
-- [ ] Add a schema-test case asserting `cc_session_id` round-trips the value of
+      wording that says "the seven Shape A keys". *(completed)*
+- [x] Add a schema-test case asserting `cc_session_id` round-trips the value of
       `CLAUDE_CODE_SESSION_ID` set in the test's environment, and a second asserting it is the
-      empty string (key present, not absent) when the env var is unset.
+      empty string (key present, not absent) when the env var is unset. *(completed)*
 
 **Timing**: 0.5 hours
 

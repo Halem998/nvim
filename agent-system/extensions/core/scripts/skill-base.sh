@@ -237,13 +237,18 @@ skill_preflight_update() {
 # Usage: skill_create_postflight_marker "$padded_num" "$project_name" "$session_id" "$skill_name" "$operation"
 #
 # SHAPE A (the settled, canonical marker schema -- the single production writer of
-# .postflight-pending): session_id, skill, task_number, operation, reason, created,
-# stop_hook_active. This is the fullest shape observed across the pre-unification corpus (six
-# mutually incompatible shapes), so unifying onto it loses no field. `task_number` is derived
-# from the already-passed `padded_num` (stripped of leading zeros) rather than added as a new
-# 6th parameter -- the function signature stays 5-arg so the 9 existing `source`-sites are
+# .postflight-pending): cc_session_id, session_id, skill, task_number, operation, reason,
+# created, stop_hook_active. This is the fullest shape observed across the pre-unification corpus
+# (six mutually incompatible shapes), so unifying onto it loses no field. `task_number` is
+# derived from the already-passed `padded_num` (stripped of leading zeros) rather than added as a
+# new 6th parameter -- the function signature stays 5-arg so the 9 existing `source`-sites are
 # unaffected. `stop_hook_active` is retained as `false` because it is a behavioral field the
-# hard-mode variants had dropped by drift, not by deliberate design.
+# hard-mode variants had dropped by drift, not by deliberate design. `cc_session_id` is Claude
+# Code's native session UUID ($CLAUDE_CODE_SESSION_ID, the same id space as hook stdin's
+# top-level `.session_id` -- see update-task-status.sh's `workflow-active-<key>` marker for
+# in-repo precedent), distinct from the agent-system `session_id` field above; it is the
+# correlation key both subagent-postflight.sh and events-log-lifecycle.sh read to select only the
+# marker owned by the stopping session.
 skill_create_postflight_marker() {
   local padded_num="$1"
   local project_name="$2"
@@ -256,6 +261,7 @@ skill_create_postflight_marker() {
   mkdir -p "$task_dir"
   cat > "${task_dir}/.postflight-pending" << EOF
 {
+  "cc_session_id": "${CLAUDE_CODE_SESSION_ID:-}",
   "session_id": "${session_id}",
   "skill": "${skill_name}",
   "task_number": ${task_number},
