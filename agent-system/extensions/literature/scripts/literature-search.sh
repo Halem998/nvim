@@ -50,7 +50,7 @@ INCLUDE_UNVERIFIED="false"
 # field is computed and stamped. "unadjudicated" covers low-ratio,
 # undisclosed docs where the proof-completeness signal could not fire at all --
 # fail closed, quarantine it like the other unverified values.
-QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudicated"
+QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudicated unverified_scan_source"
 
 # --- Build allowed doc_id set from index.json for a project ---
 # Returns newline-separated doc_ids, or empty string if no index or no matches

@@ -239,21 +239,24 @@ reconcile before proceeding — the acceptance criterion is "no scan-sourced dir
 
 ---
 
-### Phase 3: Widen both consumers with the new enum value [NOT STARTED]
+### Phase 3: Widen both consumers with the new enum value [COMPLETED]
 
 **Goal**: `unverified_scan_source` is quarantined by search and marked by briefing, so the value is
 never silently authoritative — following the precedent set when `unadjudicated` was added.
 
 **Tasks**:
-- [ ] Add `unverified_scan_source` to `QUARANTINED_FIDELITY_VALUES` at
+- [x] Add `unverified_scan_source` to `QUARANTINED_FIDELITY_VALUES` at
       `literature-search.sh:53` (the space-separated string consumed by both embedded Python blocks
       at ~line 242 and ~line 545 — verify both read the same variable and need no separate edit).
-- [ ] Add `unverified_scan_source` to the `case` list in `needs_fidelity_marker()` at
-      `literature-briefing.sh:179`.
-- [ ] Grep the full `agent-system/extensions/literature/` tree for any other consumer that
+      *(completed: confirmed single variable, both blocks covered by one edit)*
+- [x] Add `unverified_scan_source` to the `case` list in `needs_fidelity_marker()` at
+      `literature-briefing.sh:179`. *(completed)*
+- [x] Grep the full `agent-system/extensions/literature/` tree for any other consumer that
       enumerates fidelity values (allowlist-style membership tests, case statements, docs tables) and
       widen anything found. The research report names two consumers; treat that as a hypothesis, not
-      an exhaustive list.
+      an exhaustive list. *(completed: no third consumer found; literature-search.sh:882's
+      `!= 'verified_conversion'` read is a fail-open single-value comparison that already covers
+      the new value with no edit needed)*
 
 **Timing**: 0.5 hours
 

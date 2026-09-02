@@ -167,16 +167,18 @@ get_doc_fidelity() {
   echo "${val:-unverified_summary}"
 }
 
-# Only unverified_summary/unverified_no_baseline/unadjudicated/absent get the loud
-# marker -- no_source_pdf (nothing to compare against) and not_yet_converted (nothing
-# converted yet, already self-evident from a 0-token entry) are not fidelity
+# Only unverified_summary/unverified_no_baseline/unadjudicated/unverified_scan_source/absent
+# get the loud marker -- no_source_pdf (nothing to compare against) and not_yet_converted
+# (nothing converted yet, already self-evident from a 0-token entry) are not fidelity
 # failures in the same sense and are left unmarked here. "unadjudicated"
 # is a fidelity failure (the proof-completeness signal could not fire on a low-ratio,
 # undisclosed doc) and must be marked -- omitting it here would silently repeat the
-# same fail-open bug #839 fixes, one script downstream.
+# same fail-open bug a prior fix closed, one script downstream. "unverified_scan_source"
+# is a fidelity failure too (a scan/OCR-pipeline PDF whose word ratio is self-referential
+# by construction and cannot certify) and must be marked for the same reason.
 needs_fidelity_marker() {
   case "$1" in
-    unverified_summary | unverified_no_baseline | unadjudicated) return 0 ;;
+    unverified_summary | unverified_no_baseline | unadjudicated | unverified_scan_source) return 0 ;;
     *) return 1 ;;
   esac
 }

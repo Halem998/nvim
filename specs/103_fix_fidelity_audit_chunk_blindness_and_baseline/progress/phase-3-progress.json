@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Widen both consumers with the new enum value",
+  "started_at": "2026-09-02T05:50:00Z",
+  "last_updated": "2026-09-02T06:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add value to QUARANTINED_FIDELITY_VALUES in literature-search.sh:53", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Add value to needs_fidelity_marker() case in literature-briefing.sh:179", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Grep tree-wide for any other consumer enumerating fidelity values", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "bash -n clean on both scripts. Confirmed single-variable QUARANTINED_FIDELITY_VALUES consumed by both embedded Python blocks (lines 242 and 545) -- one edit widens both. Tree-wide grep for provenance_fidelity/QUARANTINED_FIDELITY/each enum string found no third allowlist-style consumer: literature-search.sh:882's `!= 'verified_conversion'` check is a fail-open single-value comparison (automatically covers the new value, no edit needed); test-lit-pipeline.sh only uses verified_conversion in test fixtures, not an allowlist. Exactly the two consumers the research report predicted. Live literature-search.sh 'deliberative stit' still returns results without --include-unverified (index.json not yet rewritten, Phase 5 pending)."
+}
