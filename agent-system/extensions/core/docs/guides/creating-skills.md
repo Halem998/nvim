@@ -405,9 +405,14 @@ skill_postflight_update "$task_number" "<operation>" "$session_id" "$SUBAGENT_ST
 skill_link_artifacts "$task_number" "$ARTIFACT_PATH" "$ARTIFACT_TYPE" "$ARTIFACT_SUMMARY" '**Type**' '**Next**'
 
 ### Stage 8: Git Commit
-# Apply targeted staging per .claude/context/standards/git-staging-scope.md — never a repo-wide add
-git add "specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json"
-git commit -m "task ${task_number}: ..."
+# Apply targeted staging per .claude/context/standards/git-staging-scope.md — never a repo-wide
+# add — via git-commit-scoped.sh, the single sanctioned implementation of path-scoped,
+# mutex-serialized committing
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: ..." \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json"
 
 ### Stage 9: Cleanup
 skill_cleanup "$PADDED_NUM" "$PROJECT_NAME"

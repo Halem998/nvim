@@ -312,19 +312,22 @@ cannot be derived from a grep count.
 
 ---
 
-### Phase 5: Migrate the core doc guides and worked examples [NOT STARTED]
+### Phase 5: Migrate the core doc guides and worked examples [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Convert the remaining core documentation that teaches or demonstrates the commit shape.
 
 **Tasks**:
-- [ ] `core/docs/guides/creating-commands.md` (1 occurrence).
-- [ ] `core/docs/guides/creating-skills.md` (1 occurrence).
-- [ ] `core/docs/guides/permission-configuration.md` (2 occurrences) — check whether either
+- [x] `core/docs/guides/creating-commands.md` (1 occurrence).
+- [x] `core/docs/guides/creating-skills.md` (1 occurrence).
+- [x] `core/docs/guides/permission-configuration.md` (2 occurrences) — check whether either
       occurrence is a permission-rule pattern string rather than an invocation; if it is a
       permission matcher, record it as an exemption with a reason instead of rewriting it.
-- [ ] `core/docs/guides/user-installation.md` (1 occurrence).
-- [ ] `core/docs/examples/research-flow-example.md` (1 occurrence).
-- [ ] `core/docs/examples/fix-it-flow-example.md` (1 occurrence).
+- [x] `core/docs/guides/user-installation.md` (1 occurrence). *(deviation: exempted — this is
+      a one-time human bootstrap step run before the agent system exists in the project, so
+      git-commit-scoped.sh is not yet available; outside the scoped-commit contract's scope.
+      Annotated inline in the file.)*
+- [x] `core/docs/examples/research-flow-example.md` (1 occurrence).
+- [x] `core/docs/examples/fix-it-flow-example.md` (1 occurrence).
 
 **Timing**: 0.5 hours
 
@@ -352,6 +355,12 @@ cannot be derived from a grep count.
   of a documentation file — no executable surface is touched by this phase.
 - `grep -rc 'git commit -m' agent-system/extensions/core/docs/` returns no nonzero counts apart
   from any explicitly recorded exemption.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `core/docs/guides/user-installation.md` (`git commit -m "Initial commit"`) | One-time human bootstrap step (`git init && git add . && git commit -m "Initial commit"`) run by the user in their terminal before the agent system is installed in the project — `.claude/scripts/git-commit-scoped.sh` does not exist yet at this point in the walkthrough, so migrating it would reference a script the reader cannot yet call. Outside the scoped-commit contract's scope, which governs agent-driven task commits after installation. | `agent-system/extensions/core/docs/guides/user-installation.md` Step 2, annotated inline with this reasoning. |
 
 ---
 

@@ -238,9 +238,12 @@ bash .claude/scripts/command-gate-out.sh 427 "research" "$SESSION_ID"
 Targeted staging per `.claude/context/standards/git-staging-scope.md` — never a repo-wide add:
 
 ```bash
-git add "specs/427_document.../reports/" "specs/427_document.../.return-meta.json" \
-  "specs/TODO.md" "specs/state.json"
-git commit -m "task {N}: complete research\n\nSession: sess_..."
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: complete research" \
+  --session "sess_..." \
+  --honest-index-rows {N} \
+  -- "specs/427_document.../reports/" "specs/427_document.../.return-meta.json" \
+     "specs/TODO.md" "specs/state.json"
 ```
 
 **User Sees:**

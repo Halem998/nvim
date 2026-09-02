@@ -762,9 +762,8 @@ When expanding permissions, ensure git safety commits:
 <stage name="CreateSafetyCommit">
   <action>Create git safety commit before risky operation</action>
   <process>
-    1. git add {files_to_modify}
-    2. git commit -m "safety: pre-{operation} snapshot"
-    3. safety_commit=$(git rev-parse HEAD)
+    1. bash .claude/scripts/git-commit-scoped.sh --message "safety: pre-{operation} snapshot" --session "${session_id}" -- {files_to_modify}
+    2. safety_commit=$(git rev-parse HEAD)
   </process>
 </stage>
 ```
@@ -805,8 +804,7 @@ Verify git safety provides adequate protection:
 
 ```bash
 # Create safety commit
-git add {files}
-git commit -m "safety: test"
+bash .claude/scripts/git-commit-scoped.sh --message "safety: test" --session "${session_id}" -- {files}
 safety_commit=$(git rev-parse HEAD)
 
 # Make changes

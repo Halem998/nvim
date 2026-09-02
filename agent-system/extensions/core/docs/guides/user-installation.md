@@ -77,6 +77,11 @@ cd /path/to/your/project
 
 ### Step 2: Initialize Git (if not already done)
 
+Run manually by the user in their terminal, before the agent system (and therefore
+`.claude/scripts/git-commit-scoped.sh`) exists in this project — outside the scope of the
+scoped-commit contract in `.claude/context/standards/git-staging-scope.md`, which governs
+agent-driven task commits after installation, not this one-time human bootstrap step:
+
 ```bash
 git init
 git add .

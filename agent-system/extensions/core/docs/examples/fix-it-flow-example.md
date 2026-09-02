@@ -364,10 +364,10 @@ When user selects "Keep as separate tasks":
 ### Step 7: Postflight Git Commit
 
 ```bash
-git add specs/TODO.md specs/state.json
-git commit -m "fix-it: create 2 tasks from 4 tags
-
-Session: sess_1768940708_a1b2c3
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "fix-it: create 2 tasks from 4 tags" \
+  --session "sess_1768940708_a1b2c3" \
+  -- specs/TODO.md specs/state.json
 ```
 
 ### Step 8: User Sees Results
