@@ -162,40 +162,40 @@ and carry it forward rather than the report's.
 
 ---
 
-### Phase 2: Lint core — root resolution, scan scope, narrow-pattern detection [NOT STARTED]
+### Phase 2: Lint core — root resolution, scan scope, narrow-pattern detection [COMPLETED]
 
 **Goal**: Create `lint-task-lookup-adoption.sh` with correct dual-mode root resolution, correct
 executable-surface file scope, and a Layer 1 structural classifier that matches the narrow
 full-record lookup shape and exempts the four legitimate jq shapes by construction.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh`, executable,
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh`, executable,
       `set -euo pipefail`, following `lint-state-writer-boundary.sh`'s file layout: header block
       stating purpose, a KNOWN LIMITATION section written plainly (regex-only, line-oriented;
       cannot see variable-indirected or multi-line-assembled lookups), a DETECTION MODEL section
       naming the two layers, a Usage block, and documented exit codes 0/1/2.
-- [ ] Implement root resolution by reusing the dual-mode probe: resolve via `common_repo_root` and
+- [x] Implement root resolution by reusing the dual-mode probe: resolve via `common_repo_root` and
       fall back to walking up for a directory containing `agent-system/extensions`, exactly as
       `lint-state-writer-boundary.sh`'s `resolve_project_root()` does; additionally probe for
       `core/manifest.json` one level under the candidate root to distinguish source-store from
       deployed layout, as `collect_session_id_offenders()` does.
-- [ ] Implement the scan-scope function: `*.sh` across each extension's `scripts/` tree, plus
+- [x] Implement the scan-scope function: `*.sh` across each extension's `scripts/` tree, plus
       `*.md` scoped **only** to `commands/`, `skills/`, `agents/` subdirectories (source-store:
       per extension; deployed: directly under the deploy root). `docs/`, `context/`, `rules/` are
       out of scope by construction, never by an exclusion list.
-- [ ] Exclude `scripts/tests/*.sh` (fixture builders that legitimately mutate rather than look up)
+- [x] Exclude `scripts/tests/*.sh` (fixture builders that legitimately mutate rather than look up)
       and `scripts/deprecated/*.sh` (dead code) by directory.
-- [ ] Implement Layer 1: broad candidate match on `.active_projects[] | select(.project_number`,
+- [x] Implement Layer 1: broad candidate match on `.active_projects[] | select(.project_number`,
       then classify each candidate line. Emit `VIOLATION` only for the narrow full-record shape
       (the filter terminates after the `select(...)` with nothing piped after it). Emit
       `EXEMPT: <reason>` for each legitimate shape, with a distinct reason string per shape:
       in-place mutation (`|= . + {...}`), deletion (`del(...)`), existence/length check
       (`[...] | length`), and single-field read (`... | .field`).
-- [ ] Implement `--verbose` / `--quiet` / positional `path...` argument handling with the same
+- [x] Implement `--verbose` / `--quiet` / positional `path...` argument handling with the same
       semantics as `lint-state-writer-boundary.sh` (`--verbose` reports exempt candidates tagged
       with their reason; `--quiet` suppresses the header and all-clear summary but never the
       violations or the failing summary).
-- [ ] Print the summary counters (candidates scanned, exempted, violations) in the same shape as
+- [x] Print the summary counters (candidates scanned, exempted, violations) in the same shape as
       the sibling lint.
 
 **Timing**: 1.75 hours
@@ -218,31 +218,31 @@ full-record lookup shape and exempts the four legitimate jq shapes by constructi
 
 ---
 
-### Phase 3: Layer 2 reasoned allowlist and self-exemption of the canonical implementations [NOT STARTED]
+### Phase 3: Layer 2 reasoned allowlist and self-exemption of the canonical implementations [COMPLETED]
 
 **Goal**: Land the lint green on the current tree by adding a file-level allowlist whose every
 entry carries an inline reason, with the two canonical implementations exempted by definition.
 
 **Tasks**:
-- [ ] Add the Layer 2 file-level allowlist to `lint-task-lookup-adoption.sh`, modelled on
+- [x] Add the Layer 2 file-level allowlist to `lint-task-lookup-adoption.sh`, modelled on
       `lint-state-writer-boundary.sh`'s: an array of paths where **no entry is bare** — each
       carries its reason as an inline comment.
-- [ ] Exempt by definition, with that reason stated: `scripts/skill-base.sh` (defines
+- [x] Exempt by definition, with that reason stated: `scripts/skill-base.sh` (defines
       `skill_validate_input()`; its own body IS the pattern) and `scripts/command-gate-in.sh`
       (defines `gate_in()`; contains the pattern legitimately as that function's body, plus a
       second lookup flagged in research as needing inspection rather than automatic migration).
-- [ ] Exempt `scripts/deprecated/**` by directory with the reason "dead legacy code, excluded from
+- [x] Exempt `scripts/deprecated/**` by directory with the reason "dead legacy code, excluded from
       the live system" (if not already excluded structurally in Phase 2, prefer the structural
       exclusion and do not duplicate it here).
-- [ ] Add the remaining current offenders from Phase 1's list as allowlist entries, grouped by
+- [x] Add the remaining current offenders from Phase 1's list as allowlist entries, grouped by
       category with a shared reason per group: pending-migration lifecycle `SKILL.md` sites
       (deferred pending core-collapse sequencing), and `commands/*.md` sites carrying additional
       distinct lookups for multi-task/recover/sync/expand paths that intentionally do not source
       `command-gate-in.sh` (per-site disposition deferred to the migration pass).
-- [ ] Add a header note stating the allowlist is expected to **shrink**, that a new entry requires
+- [x] Add a header note stating the allowlist is expected to **shrink**, that a new entry requires
       a stated reason, and that adding one is a deliberate act rather than the default response to
       a failing run.
-- [ ] Run the lint against the full source store and confirm exit 0.
+- [x] Run the lint against the full source store and confirm exit 0.
 
 **Timing**: 1.25 hours
 
