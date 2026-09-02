@@ -1,0 +1,60 @@
+{
+  "phase": 7,
+  "phase_name": "De-reference contracts, patterns, standards, and script comments",
+  "started_at": "2026-09-02T20:05:00Z",
+  "last_updated": "2026-09-02T21:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-base.sh case arm + 4 comments", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "6 other scripts comment-only references", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/command-route-agent.sh",
+      "agent-system/extensions/core/scripts/validate-handoff.sh",
+      "agent-system/extensions/core/scripts/update-task-status.sh",
+      "agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh",
+      "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+      "agent-system/extensions/core/scripts/check-extension-docs.sh"
+    ]},
+    {"id": 3, "description": "8 context/contracts/*.md consumer lists", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/contracts/anti-analysis.md",
+      "agent-system/extensions/core/context/contracts/orchestrator-discipline.md",
+      "agent-system/extensions/core/context/contracts/recovery.md",
+      "agent-system/extensions/core/context/contracts/territory.md",
+      "agent-system/extensions/core/context/contracts/wrap-up.md",
+      "agent-system/extensions/core/context/contracts/phase-closure.md",
+      "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+      "agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
+    ]},
+    {"id": 4, "description": "7 context/patterns/*.md", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+      "agent-system/extensions/core/context/patterns/task-lock.md",
+      "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+      "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+      "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+      "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md"
+    ]},
+    {"id": 5, "description": "4 standards/architecture/format docs", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+      "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+      "agent-system/extensions/core/context/architecture/context-layers.md",
+      "agent-system/extensions/core/context/formats/plan-format.md"
+    ]},
+    {"id": 6, "description": "5 extension-side citations (cslib, lean)", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/README.md",
+      "agent-system/extensions/cslib/context/contracts/adversarial-verification.md",
+      "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+      "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md"
+    ]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Final repo-wide census: ZERO occurrences of the seven deleted names remain anywhere in agent-system/ -- the task's core completion criterion is satisfied ahead of Phase 8's formal confirmation.",
+    "Full test suite (scripts/tests/run-all.sh) passes 62/62 after this phase's edits.",
+    "Two genuine (not merely stale-citation) behavioral corrections found and fixed: cslib's `pr` task type has zero hard-mode routing now (its two routing_hard entries were the exact dead entries Phase 4 removed) -- README.md corrected from a wrong claim to the true fallback behavior. lean4's `/plan --hard` now falls back to standard skill-planner, not the deleted skill-planner-hard -- hard-mode.md corrected the same way.",
+    "Surfaced that the plan-format.md skeleton/follow_up_tasks fields and {{FOLLOWUP:i}} substitution mechanism are now fully orphaned -- no live planning skill or agent anywhere (core, cslib, or lean) implements it. Documented explicitly as a retained-schema-not-live-behavior note rather than silently left inaccurate.",
+    "skill-base.sh's [hard-orchestrate] case arm confirmed genuinely unreachable (skill-orchestrate's sole call site always passes literal \"[orchestrate]\") and removed rather than retargeted."
+  ]
+}

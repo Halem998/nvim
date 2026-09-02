@@ -22,7 +22,9 @@ standard lean4 implementation.
 This skill activates when:
 - Task type is "lean4" or "lean" (either accepted)
 - `/implement N --hard` is invoked for a lean4 task
-- Dispatched from `skill-orchestrate-hard` via per-phase dispatch mode
+- Dispatched from `skill-orchestrate`'s hard-mode per-phase dispatch (H1) branch — the
+  formerly-separate standalone hard-mode engine that used to own this dispatch is deleted and
+  merged into `skill-orchestrate` itself
 - Routed by `command-route-skill.sh` via `routing_hard.implement.lean4`
 
 ---
@@ -109,9 +111,10 @@ fi
 # (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline -- this also gains
 # decimal sub-phase support (e.g. "Phase 3.1"), which the prior digits-only pattern never had.
 #
-# Leaf-worker posture (same as skill-implementer-hard's Stage 3b): this check runs strictly
-# before any Agent tool dispatch, so no handoff write is owed here, and adopts this file's own
-# `return error` convention rather than a raw `exit`.
+# Leaf-worker posture (the same posture core's own standalone hard-mode implementer skill once
+# had in its Stage 3b, before it was merged into skill-orchestrate and deleted): this check runs
+# strictly before any Agent tool dispatch, so no handoff write is owed here, and adopts this
+# file's own `return error` convention rather than a raw `exit`.
 . .claude/scripts/lib/phase-heading-patterns.sh
 phase_number=""
 phase_scan_inconclusive=false

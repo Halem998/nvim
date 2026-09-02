@@ -8,7 +8,10 @@ mirror-entry precedent this file follows: `@.claude/extensions/lean/context/cont
 Unlike the lean4 parity copy, this file does **not** specialize into a single domain. The
 deployed path `.claude/context/contracts/adversarial-verification.md` is shared: under the
 extension loader's upsert-by-path merge (last extension processed for a given load/sync run
-wins the whole entry, content included), `general-research-hard-agent` may transparently end
+wins the whole entry, content included), any agent still auto-loading this path — today,
+`cslib-research-hard-agent`; core's own standalone hard-mode research agent that originally
+motivated this mirror is deleted, and core's own index entry for this path is now on-demand
+only, so this collision concern no longer applies to a core agent — may transparently end
 up reading *this* file instead of core's whenever `cslib` is loaded alongside (or in place
 of) `core`. Content below the title is therefore kept identical to the canonical core file —
 `@.claude/context/contracts/adversarial-verification.md` — rather than rewritten into a

@@ -578,39 +578,59 @@ here.
 
 ---
 
-### Phase 7: De-reference contracts, patterns, standards, and script comments [NOT STARTED]
+### Phase 7: De-reference contracts, patterns, standards, and script comments [COMPLETED]
 
 **Goal**: Sweep the long tail — contract files, pattern docs, standards, format docs, and inline
 script comments — plus the one surviving *live* code reference outside the manifests.
 
 **Tasks**:
-- [ ] `scripts/skill-base.sh` — line ~889 is a live `case` arm mapping `[hard-orchestrate]` to
+- [x] `scripts/skill-base.sh` — line ~889 is a live `case` arm mapping `[hard-orchestrate]` to
       `skills/skill-orchestrate-hard/SKILL.md` as `gate_attributed_path`. This is executable, not a
       comment: decide whether the `[hard-orchestrate]` label is still reachable and either
       retarget the path to `skill-orchestrate/SKILL.md` or remove the arm. Handle the file's four
-      comment references separately.
-- [ ] `scripts/command-route-agent.sh`, `scripts/validate-handoff.sh`,
+      comment references separately. *(completed: confirmed `[hard-orchestrate]` is genuinely
+      unreachable — skill-orchestrate/SKILL.md's sole call site always passes `"[orchestrate]"`
+      regardless of effort mode — so the arm was removed rather than retargeted; all 4 comment
+      references also rewritten)*
+- [x] `scripts/command-route-agent.sh`, `scripts/validate-handoff.sh`,
       `scripts/update-task-status.sh`, `scripts/orchestrate-stage5-gates.sh`,
       `scripts/orchestrate-stage5-postflight.sh`, `scripts/check-extension-docs.sh` — comment-only
-      references; retarget to the surviving engine.
-- [ ] `context/contracts/` — `anti-analysis.md`, `orchestrator-discipline.md`, `recovery.md`,
+      references; retarget to the surviving engine. *(completed: also corrected two stale
+      behavioral claims found while retargeting — command-route-agent.sh's caller-default doc no
+      longer describes a "-hard"-suffixed default since none is ever passed in practice, and
+      orchestrate-stage5-postflight.sh's tier_c_detecting_site doc no longer describes a
+      base/hard split since there is one call site today)*
+- [x] `context/contracts/` — `anti-analysis.md`, `orchestrator-discipline.md`, `recovery.md`,
       `territory.md`, `wrap-up.md`, `phase-closure.md`, `pre-edit-gate.md`,
       `no-task-references-bullet.md`. These name the deleted skills/agents as their consumers;
-      rewrite the consumer lists to name the engine and the surviving agents.
-- [ ] `context/patterns/` — `skill-lifecycle.md` (its Autonomous Loop table and the three
+      rewrite the consumer lists to name the engine and the surviving agents. *(completed: all 8)*
+- [x] `context/patterns/` — `skill-lifecycle.md` (its Autonomous Loop table and the three
       skill-pair lines), `task-lock.md`, `checkpoint-before-overflow.md`,
       `batch-orchestration-guardrails.md`, `system-defect-discrimination.md`,
-      `infra-failure-discrimination.md`, `dispatch-report-not-termination.md`.
-- [ ] `context/standards/orchestrator-runtime-files.md`, `context/standards/task-reference-exemptions.md`,
+      `infra-failure-discrimination.md`, `dispatch-report-not-termination.md`. *(completed: all
+      7. batch-orchestration-guardrails.md's 10-row critical-paths table renumbered to 9 rows
+      after folding the deleted hard-mode engine's row into skill-orchestrate's own, with
+      downstream cross-references ("row 7", "seven of the ten") updated to match;
+      system-defect-discrimination.md's 5-consumer-site list reduced to 4 with a similar
+      downstream count fix)*
+- [x] `context/standards/orchestrator-runtime-files.md`, `context/standards/task-reference-exemptions.md`,
       `context/architecture/context-layers.md`, `context/formats/plan-format.md` (its
       `{{FOLLOWUP:i}}` substitution owner and resume-scan citations name `skill-planner-hard` and
-      `skill-implementer-hard` — retarget to whichever component now owns each).
-- [ ] `agent-system/extensions/cslib/README.md`,
+      `skill-implementer-hard` — retarget to whichever component now owns each). *(completed: all
+      4. plan-format.md's skeleton/follow_up_tasks section surfaces and documents a real finding —
+      no live planning skill or agent anywhere in the repo currently populates these fields or the
+      `{{FOLLOWUP:i}}` substitution; core's own standalone hard-mode planner owned it and is
+      deleted, and neither cslib nor lean has ever had a hard-mode planner of their own)*
+- [x] `agent-system/extensions/cslib/README.md`,
       `cslib/context/contracts/adversarial-verification.md`,
       `cslib/skills/skill-cslib-implementation-hard/SKILL.md`,
       `lean/skills/skill-lean-implementation-hard/SKILL.md`,
       `lean/context/project/lean4/domain/hard-mode.md` — extension-side citations of the deleted
-      core assets.
+      core assets. *(completed: all 5. cslib/README.md's routing table and prose corrected —
+      `pr`'s hard-mode routing row named the two exact dead entries this task's Phase 4 removed,
+      so `pr` now genuinely has no hard-mode routing and falls back to standard skills, not merely
+      a stale citation; lean/hard-mode.md's Plan column corrected the same way — lean4's
+      `/plan --hard` now falls back to standard `skill-planner`, not the deleted `skill-planner-hard`)*
 
 **Timing**: 2.0 hours
 

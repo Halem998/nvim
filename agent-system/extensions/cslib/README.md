@@ -11,7 +11,7 @@ CSLib Lean 4 computer science library formalization support. Provides research a
 | Task Type | Research | Plan | Implementation | Hard-mode routing |
 |-----------|----------|------|----------------|-------------------|
 | `cslib` | skill-cslib-research | skill-planner | skill-cslib-implementation | skill-cslib-research-hard / skill-cslib-implementation-hard |
-| `pr` | skill-pr-review-research | skill-planner | skill-pr-review-implementation | skill-researcher-hard / skill-implementer-hard |
+| `pr` | skill-pr-review-research | skill-planner | skill-pr-review-implementation | none — falls back to standard skills under `--hard` |
 
 The extension routes `cslib` task types through dedicated agents that enforce CSLib coding conventions, use the CI verification pipeline, and follow the project's reuse-first and proof-readability principles from CONTRIBUTING.md. The `pr` task type handles both PR submission preparation and PR review response workflows.
 
@@ -113,8 +113,7 @@ Use `/research N --hard`, `/plan N --hard`, or `/implement N --hard` when one or
 **Hard-mode routing entries** (from manifest.json `routing_hard`):
 - `cslib` research: skill-cslib-research-hard
 - `cslib` implement: skill-cslib-implementation-hard
-- `pr` research: skill-researcher-hard
-- `pr` implement: skill-implementer-hard
+- `pr` research/implement: no `routing_hard` entry — falls back to the standard `skill-pr-review-research`/`skill-pr-review-implementation` skills under `--hard`. The `pr` task type used to route through core's own standalone hard-mode research/implement skills, which have since been deleted; core's `--hard` planning/research/implement for `general`/`meta`/`markdown` now resolves through `skill-orchestrate`'s own hard-mode branch instead of a separate skill, and `pr` was never given its own dedicated hard-mode skill to fall back to.
 
 ## PR Review Workflow
 
