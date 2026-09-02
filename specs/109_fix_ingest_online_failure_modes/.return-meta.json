@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788329488_6a27b9_109",
+  "task_number": 109,
+  "findings_count": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
+      "summary": "Root-causes all three online-ingest bridge failure modes: (a) zot add --pdf hard-fails exit 3 'No DOI found in PDF' when its internal PDF-text DOI regex finds nothing and no --doi override is passed (confirmed against zotero-cli-cc v0.10.0's own Python source), fixed by deriving 10.48550/arXiv.<id> for arxiv-only records; (b) corrects the task's assumed orphan location -- the real observed sources/<doc_id>/ orphan is a pre-existing literature-ingest.sh bug (mkdir'd DOC_DIR never rm -rf'd on three conversion/chunk failure continue branches), separate from a narrower literature-ingest-online.sh staging-file leak on CREATE_FAILED/ATTACH_FAILED; (c) confirms task 102's Class A/B converter-tier characterization forecloses any automatic fallback retry, recommending a message-only diagnostic-pointer fix instead."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "zotero-cli-cc's `zot add --pdf PATH` (no --doi) is NOT a graceful degrade to a bare item on missing metadata -- read commands/add.py::_add_from_pdf directly: it calls extract_doi(pdf_path) (regex 10\\.\\d{4,9}/\\S+ over the first 2 PDF pages only) and if that finds nothing, calls emit_error('validation_error', 'No DOI found in PDF') which exits 3 with NO Zotero item created at all. Any caller wrapping `zot add --pdf` for a document whose PDF has no printed DOI (e.g. an arXiv preprint predating arXiv's ~2022 retroactive DataCite DOI minting, which is metadata-only and never printed on the PDF text) must pass an explicit --doi to avoid this hard failure -- `zot add --dry-run` cannot be used to detect or reproduce this, since add.py's dry-run branch returns before ever calling _add_from_pdf.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero-cli-cc", "zot add", "doi-extraction", "arxiv", "literature", "pdf-hard-fail"]
+    },
+    {
+      "content": "literature-ingest.sh's per-file loop mkdir -p's DOC_DIR ($LITERATURE_DIR/sources/<doc_id>/) before running literature-convert.sh, but on quality-gate rejection (CONVERT_EXIT==3), hard conversion failure (CONVERT_EXIT!=0), or chunking failure (CHUNK_COUNT==0), the continue branch cleans up its own TMP_MD_DIR/CONVERT_STDERR_FILE but never rm -rf's DOC_DIR -- leaving an empty orphaned sources/<doc_id>/ directory with no index.json entry. This is safe to fix with an unconditional rm -rf DOC_DIR on those three branches without extra 'did we create it' bookkeeping, because the loop's pre-existing re-ingestion check (EXISTING==yes -> rm -rf DOC_DIR before recreating) already guarantees DOC_DIR is fresh-this-iteration by the time conversion runs. The bug is reachable from ANY caller of literature-ingest.sh (local-file, --zotero, or the online-ingest bridge), not bridge-specific.",
+      "category": "PATTERN",
+      "source_artifact": "specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["literature-ingest", "orphan-directory", "cleanup", "quality-gate", "chunking-failure"]
+    }
+  ],
+  "next_steps": "Run /plan 109 to create implementation plan"
+}
