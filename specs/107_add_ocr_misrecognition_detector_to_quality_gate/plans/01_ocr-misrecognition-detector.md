@@ -278,35 +278,35 @@ the shared one — with its fail-open contract and its seven-value enum behavior
 
 ---
 
-### Phase 4: Non-blocking advisory in the conversion quality gate [NOT STARTED]
+### Phase 4: Non-blocking advisory in the conversion quality gate [COMPLETED]
 
 **Goal**: A conversion of a scan-pipeline PDF prints a distinctly-labeled advisory to stderr and
 still exits 0. Nothing about the exit-3 rejection path changes.
 
 **Tasks**:
-- [ ] Enumerate the stderr consumers of `literature-convert.sh` before choosing wording:
+- [x] Enumerate the stderr consumers of `literature-convert.sh` before choosing wording:
       `literature-ingest.sh` (task 105's marker-discriminated `NO TEXT LAYER:` dispatch),
       `literature-ingest-online.sh`, and `scripts/tests/test-literature-convert.sh`. Grep each for
       substrings of the candidate advisory line and confirm no existing matcher can fire on it.
-      The line uses the distinct token `ADVISORY:`.
-- [ ] Add `scan_pipeline_provenance` to the `from literature_quality_gate import (...)` list in
+      The line uses the distinct token `ADVISORY:`. *(completed)*
+- [x] Add `scan_pipeline_provenance` to the `from literature_quality_gate import (...)` list in
       the **live conversion heredoc's** import block (the later of the two import sites, the one
-      adjacent to `from literature_combining_overlay import compose_combining_overlays`).
-- [ ] In `run_quality_gate(content, doc)`, read `doc.metadata` defensively — it can be `None` for
+      adjacent to `from literature_combining_overlay import compose_combining_overlays`). *(completed)*
+- [x] In `run_quality_gate(content, doc)`, read `doc.metadata` defensively — it can be `None` for
       some documents — and extract `creator`/`producer` with `.get(..., "")`. Wrap the read in a
       `try/except` that degrades to no advisory on any failure: an unreadable metadata dict must
-      never break a conversion that would otherwise succeed.
-- [ ] When `scan_pipeline_provenance(...)` is `True`, `print(..., file=sys.stderr)` a single
+      never break a conversion that would otherwise succeed. *(completed)*
+- [x] When `scan_pipeline_provenance(...)` is `True`, `print(..., file=sys.stderr)` a single
       advisory line. Required wording properties: it says scan-pipeline provenance was detected
       from Creator/Producer metadata; it says "recommend manual spot-check"; it says explicitly
       that this is **not** a quality-gate failure; and it names the re-OCR remedy by calling the
       existing `ocr_remedy_command(pdf_path, force=True)` helper rather than hand-writing a
-      command string. It must not contain the words "defect", "corrupt", or "FAILED".
-- [ ] Add an inline comment above the block stating the two prohibitions: this must never be
+      command string. It must not contain the words "defect", "corrupt", or "FAILED". *(completed)*
+- [x] Add an inline comment above the block stating the two prohibitions: this must never be
       appended to `reasons` (which drives the exit-3 path), and it must never feed converter-tier
       selection — scan provenance does not predict which remedy, or whether any remedy, a document
-      needs.
-- [ ] Confirm by reading the diff that `reasons` is not touched anywhere in the new code.
+      needs. *(completed)*
+- [x] Confirm by reading the diff that `reasons` is not touched anywhere in the new code. *(completed)*
 
 **Timing**: 1 hour
 

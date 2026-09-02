@@ -463,6 +463,7 @@ from literature_quality_gate import (  # noqa: E402
     dehyphenation_residue_count,
     control_char_count,
     printable_ratio,
+    scan_pipeline_provenance,
 )
 
 pdf_path = os.environ["LITERATURE_CONVERT_INPUT"]
@@ -927,6 +928,29 @@ def run_quality_gate(content, doc):
             f"{_PRINTABLE_RATIO_FLOOR:.0%}) — glyph-index-as-codepoint corruption "
             f"signature (broken/custom PDF font encoding)"
         )
+
+    # Scan-pipeline provenance ADVISORY -- deliberately NEVER appended to
+    # `reasons` (which drives the exit-3 QUALITY GATE FAILED path above) and
+    # NEVER used to select a converter tier: scan provenance does not predict
+    # which remedy, or whether any remedy, a document needs (see
+    # scan_pipeline_provenance's own docstring for the measured counter-
+    # examples). This is a metadata-only heads-up for manual review, nothing
+    # more. Read doc.metadata defensively -- it can be None for some
+    # documents -- and degrade to no advisory on any failure; an unreadable
+    # metadata dict must never break a conversion that would otherwise
+    # succeed.
+    try:
+        gate_meta = doc.metadata or {}
+        if scan_pipeline_provenance(gate_meta.get("creator", ""), gate_meta.get("producer", "")):
+            print(
+                "[convert] ADVISORY: scan-pipeline provenance detected from Creator/Producer "
+                "metadata — recommend manual spot-check. This is NOT a quality-gate failure. "
+                "If a spot-check finds a degraded/poor-vintage text layer, re-OCR first, then "
+                f"reconvert: {ocr_remedy_command(pdf_path, force=True)}.",
+                file=sys.stderr,
+            )
+    except Exception:
+        pass
 
     return reasons
 

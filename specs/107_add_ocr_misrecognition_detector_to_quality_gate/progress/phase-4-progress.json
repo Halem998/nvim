@@ -1,0 +1,12 @@
+{
+  "phase": 4,
+  "phase_name": "Non-blocking advisory in the conversion quality gate",
+  "started_at": "2026-09-02T00:40:00Z",
+  "last_updated": "2026-09-02T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate stderr consumers, add live-heredoc import, defensive metadata read in run_quality_gate, print ADVISORY line, comment prohibitions", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-convert.sh"], "note": "Stderr-consumer sweep: literature-ingest.sh greps only 'QUALITY GATE FAILED' and 'NO TEXT LAYER:'; literature-ingest-online.sh does not grep convert stderr directly (delegates to literature-ingest.sh); test-literature-convert.sh greps distinct markers (control-character, printable-ratio, sentence-boundary-glue, NO TEXT LAYER:, LITERATURE_CONVERTER=ocr). None can fire on the ADVISORY: token. Manual smoke test (synthetic PDFs with real text layers, scan vs pdfTeX metadata) confirmed: scan-metadata PDF exits 0 with one ADVISORY line and no .rejected; clean PDF exits 0 with zero ADVISORY lines; Quality gate: PASSED printed in both cases."}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
