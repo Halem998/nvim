@@ -236,11 +236,11 @@ Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — 
 add:
 
 ```bash
-git add "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
-git commit -m "task ${task_number}: legal design consultation
-
-Session: ${session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: legal design consultation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ---

@@ -235,10 +235,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 7. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
    repo-wide add):
    ```bash
-   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
-   git commit -m "task {N} phase 1: {phase_name}
-
-   Session: {session_id}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase 1: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
 #### Phase 2: SAM Narrowing
@@ -265,10 +266,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
    repo-wide add):
    ```bash
-   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
-   git commit -m "task {N} phase 2: {phase_name}
-
-   Session: {session_id}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase 2: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
 #### Phase 3: SOM Projection
@@ -294,10 +296,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
    repo-wide add):
    ```bash
-   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
-   git commit -m "task {N} phase 3: {phase_name}
-
-   Session: {session_id}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase 3: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
 #### Phase 4: Typst Report Generation
@@ -348,10 +351,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    repo-wide add). Phase 4 additionally writes outside the task directory (`founder/` and
    `strategy/` or `output_dir`), so include those specific produced files:
    ```bash
-   git add "${task_dir}/" "specs/TODO.md" "specs/state.json" "$typst_file" "$output_path"
-   git commit -m "task {N} phase 4: {phase_name}
-
-   Session: {session_id}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase 4: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${task_dir}/" "specs/TODO.md" "specs/state.json" "$typst_file" "$output_path"
    ```
 
 #### Phase 5: PDF Compilation
@@ -406,10 +410,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    `.claude/context/standards/git-staging-scope.md` (never a repo-wide add), including the
    compiled PDF written outside the task directory:
    ```bash
-   git add "${task_dir}/" "specs/TODO.md" "specs/state.json" "founder/${report_type}-${slug}.pdf"
-   git commit -m "task {N} phase 5: {phase_name}
-
-   Session: {session_id}"
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase 5: {phase_name}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- "${task_dir}/" "specs/TODO.md" "specs/state.json" "founder/${report_type}-${slug}.pdf"
    ```
 
 **Self-Contained Typst Content Generation Pattern** (used in Phase 4):

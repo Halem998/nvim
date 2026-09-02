@@ -452,14 +452,11 @@ Apply the `plan` scope from `.claude/context/standards/git-staging-scope.md` —
 never a repo-wide add:
 
 ```bash
-git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
-git commit -m "$(cat <<'EOF'
-task {N}: create implementation plan
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: create implementation plan" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ### Stage 9: Cleanup

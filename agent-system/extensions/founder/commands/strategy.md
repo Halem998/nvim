@@ -250,14 +250,11 @@ Add task entry (if new task):
 ### Step 6: Git Commit (Task Creation)
 
 ```bash
-git add specs/state.json specs/TODO.md
-git commit -m "$(cat <<'EOF'
-task {N}: create GTM strategy task
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: create GTM strategy task" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- specs/state.json specs/TODO.md
 ```
 
 ### Step 7: Display Task Created Summary

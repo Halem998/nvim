@@ -232,14 +232,11 @@ metadata_file="${task_dir}/.return-meta.json"
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
-git add "${stage_paths[@]}"
-git commit -m "$(cat <<'EOF'
-task {N}: complete implementation
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: complete implementation" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- "${stage_paths[@]}"
 ```
 
 ### 9. Cleanup and Return

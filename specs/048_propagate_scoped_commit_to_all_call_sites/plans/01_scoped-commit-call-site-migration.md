@@ -364,21 +364,26 @@ cannot be derived from a grep count.
 
 ---
 
-### Phase 6: Migrate the founder extension [NOT STARTED]
+### Phase 6: Migrate the founder extension [COMPLETED]
 
 **Goal**: Convert the largest single extension territory: founder's commands, skills, and
 implementation agent.
 
 **Tasks**:
-- [ ] Enumerate the territory first:
+- [x] Enumerate the territory first:
       `grep -rln 'git commit -m' agent-system/extensions/founder/`.
-- [ ] Open each file before editing. Research sampled `skill-analyze` and `skill-grant` (2 sites)
+- [x] Open each file before editing. Research sampled `skill-analyze` and `skill-grant` (2 sites)
       and found the uniform narrow-`git add` + bare-`git commit -m "task ${n}: ..."` shape, but
-      the remaining files are hypotheses, not confirmed.
-- [ ] Convert each site, reusing its existing pathspecs and message body.
-- [ ] Flag any outlier — a site staging paths outside the task directory, or staging a whole tree
-      — as a candidate exemption with a written reason rather than converting it.
-- [ ] Note that `skill-grant` carries two sites in one file; do not stop after the first.
+      the remaining files are hypotheses, not confirmed. *(note: `skill-grant` is actually under
+      `present/`, not `founder/` — a stale cross-reference in the plan text, harmless since this
+      phase's file list was re-derived from the live enumeration grep, not from this note)*
+- [x] Convert each site, reusing its existing pathspecs and message body.
+- [x] Flag any outlier — a site staging paths outside the task directory, or staging a whole tree
+      — as a candidate exemption with a written reason rather than converting it. *(none found —
+      all 26 founder sites matched the uniform task-scoped shape)*
+- [x] Note that `skill-grant` carries two sites in one file; do not stop after the first.
+      *(N/A to this phase — see note above; founder-implement-agent.md carried the multi-site
+      file in this territory, all 5 sites converted)*
 
 **Timing**: 1.75 hours
 

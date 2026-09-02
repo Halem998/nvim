@@ -254,14 +254,14 @@ Apply the `research` scope from `.claude/context/standards/git-staging-scope.md`
 staging, never a repo-wide add:
 
 ```bash
-git add \
-  "specs/${padded_num}_${project_name}/reports/" \
-  "specs/${padded_num}_${project_name}/.return-meta.json" \
-  "specs/TODO.md" \
-  "specs/state.json"
-git commit -m "task ${task_number}: complete research
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete research" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "specs/${padded_num}_${project_name}/reports/" \
+     "specs/${padded_num}_${project_name}/.return-meta.json" \
+     "specs/TODO.md" \
+     "specs/state.json"
 ```
 
 ---
