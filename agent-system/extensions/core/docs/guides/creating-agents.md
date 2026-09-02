@@ -666,9 +666,9 @@ Research completed successfully. Found 5 patterns. See report at ...
 
 | Agent | Purpose | Invoked By |
 |-------|---------|------------|
-| `general-research-agent` | Web/codebase research | skill-researcher |
-| `planner-agent` | Implementation planning | skill-planner |
-| `general-implementation-agent` | General file implementation | skill-implementer |
+| `general-research-agent` | Web/codebase research | skill-orchestrate (direct dispatch) |
+| `planner-agent` | Implementation planning | skill-orchestrate (direct dispatch) |
+| `general-implementation-agent` | General file implementation | skill-orchestrate (direct dispatch) |
 | `meta-builder-agent` | System building and task creation | skill-meta |
 
 **Note**: Additional agents (latex, typst, filetypes) are available via extensions in `.claude/extensions/`.

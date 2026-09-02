@@ -110,7 +110,7 @@ You need to add routing logic or input validation for execution.
 | Skill | Purpose |
 |-------|---------|
 | `skill-{domain}-research` | Domain-specific research via web search |
-| `skill-researcher` | General web/codebase research |
+| `skill-reviser` | Plan revision with research synthesis |
 | `skill-status-sync` | Atomic multi-file status updates |
 
 **Do NOT create a skill when**:
@@ -173,15 +173,15 @@ Creates: Skill + Agent (command exists)
 
 **Pattern 3: New Domain Agent**
 ```
-/implement (existing)
+/orchestrate --implement (existing)
     |
     v
-skill-implementer (existing)
+skill-orchestrate's dispatch (existing) -- routing_agents.implement.{type} in your manifest
     |
     v
 database-implementation-agent (new)
 ```
-Creates: Agent only (skill routes to it)
+Creates: Agent only (manifest's `routing_agents.implement.{type}` entry routes to it)
 
 ---
 
@@ -257,15 +257,13 @@ Creates: Agent only (skill routes to it)
 
 ## Current Inventory
 
-### Commands (9)
+### Commands (partial list; not exhaustive)
 
 | Command | Skill(s) Used |
 |---------|---------------|
 | /task | skill-status-sync |
-| /research | skill-researcher (+ extension skills when loaded) |
-| /plan | skill-planner |
-| /implement | skill-implementer (+ extension skills when loaded) |
-| /revise | skill-planner |
+| /orchestrate | skill-orchestrate (dispatches general-research-agent/planner-agent/general-implementation-agent directly, or extension skills when loaded) |
+| /revise | skill-reviser |
 | /review | (direct execution) |
 | /errors | (direct execution) |
 | /todo | (direct execution) |
@@ -277,12 +275,11 @@ Creates: Agent only (skill routes to it)
 
 | Skill | Agent |
 |-------|-------|
-| skill-orchestrate | (autonomous loop) |
+| skill-orchestrate | (autonomous loop; dispatches general-research-agent/planner-agent/general-implementation-agent directly) |
 | skill-status-sync | (direct execution) |
 | skill-git-workflow | (direct execution) |
-| skill-researcher | general-research-agent |
-| skill-planner | planner-agent |
-| skill-implementer | general-implementation-agent |
+| skill-reviser | reviser-agent |
+| skill-spawn | spawn-agent |
 | skill-meta | meta-builder-agent |
 
 **Note**: Additional skills (latex, typst, filetypes) available via extensions.

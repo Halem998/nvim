@@ -63,13 +63,13 @@ Skills are located in `.claude/skills/skill-{name}/SKILL.md`:
 
 ```
 .claude/skills/
-├── skill-researcher/
+├── skill-reviser/
 │   └── SKILL.md
 ├── skill-lean-research/
 │   └── SKILL.md
-├── skill-planner/
+├── skill-spawn/
 │   └── SKILL.md
-└── skill-implementer/
+└── skill-meta/
     └── SKILL.md
 ```
 
@@ -221,7 +221,7 @@ There are two skill patterns depending on where the skill lives.
 
 ### Pattern A: Core Skills (`.claude/skills/`)
 
-Core skills (skill-researcher, skill-planner, skill-implementer, etc.) use `skill-base.sh` lifecycle functions directly and invoke agents with explicit `subagent_type` to inject structured context:
+Core skills (skill-reviser, skill-spawn, skill-meta, etc.) use `skill-base.sh` lifecycle functions directly and invoke agents with explicit `subagent_type` to inject structured context:
 
 > **Division of labor note**: this claim was aspirational when first written — at the time, no
 > core skill actually called these functions, and each hand-rolled its own preflight/postflight
@@ -269,7 +269,7 @@ skill_link_artifacts "$task_number" "$ARTIFACT_PATH" "$ARTIFACT_TYPE" "$ARTIFACT
 skill_cleanup "$PADDED_NUM" "$PROJECT_NAME"
 ```
 
-See `skill-researcher`, `skill-planner`, or `skill-implementer` for working examples.
+See `skill-reviser`, `skill-spawn`, or `skill-meta` for working examples.
 
 ### Pattern B: Extension Skills (`.claude/extensions/*/skills/`)
 

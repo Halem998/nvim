@@ -6,6 +6,12 @@ This document provides a high-level overview of the agent system architecture fo
 
 The unified workflow refactor is complete. This document describes the **current** architecture including skill-base.sh lifecycle functions, command gate scripts, the /orchestrate autonomous state machine, computed CLAUDE.md generation, and extension lifecycle hooks.
 
+**Note**: the standalone `/research`, `/plan`, `/implement` commands and the base lifecycle
+research/plan/implement skills have been deleted. `/orchestrate` is now the sole lifecycle entry
+point for the `general`/`meta`/`markdown` task types, dispatching agents directly (no
+per-function skill layer). Extension domain task types still route through their own
+research/implementation skills as shown below.
+
 ---
 
 ## Three-Layer Architecture
@@ -21,9 +27,9 @@ The agent system uses a three-layer architecture that separates user interaction
     │                   LAYER 1: COMMANDS                  │
     │                                                      │
     │   .claude/commands/                                  │
-    │   ├── research.md      Parse arguments              │
-    │   ├── plan.md          Route by language            │
-    │   ├── implement.md     Minimal logic                │
+    │   ├── orchestrate.md   Parse arguments               │
+    │   ├── meta.md          Route by task_type             │
+    │   ├── revise.md        Minimal logic                 │
     │   └── ...                                            │
     └─────────────────────────────────────────────────────┘
                              |
@@ -33,9 +39,10 @@ The agent system uses a three-layer architecture that separates user interaction
     │                   LAYER 2: SKILLS                    │
     │                                                      │
     │   .claude/skills/skill-*/SKILL.md                   │
-    │   ├── skill-researcher/        Validate inputs      │
-    │   ├── skill-planner/           Prepare context      │
-    │   ├── skill-planner/           Invoke agents        │
+    │   ├── skill-orchestrate/  Validate inputs             │
+    │   │                       Prepare context, dispatch   │
+    │   │                       agents directly (no per-    │
+    │   │                       function skill layer)       │
     │   └── ...                                            │
     └─────────────────────────────────────────────────────┘
                              |
@@ -109,12 +116,9 @@ Skills are thin wrappers that validate inputs and delegate to agents. All skills
 **Key skills**:
 | Skill | Agent | Purpose |
 |-------|-------|---------|
-| skill-researcher | general-research-agent | General web/codebase research |
-| skill-planner | planner-agent | Create implementation plans |
-| skill-implementer | general-implementation-agent | General file implementation |
 | skill-meta | meta-builder-agent | System building and task creation |
 | skill-status-sync | (direct execution) | Atomic status updates |
-| skill-orchestrate | (direct execution) | Autonomous lifecycle state machine (/orchestrate command) |
+| skill-orchestrate | (direct execution) | Autonomous lifecycle state machine (/orchestrate command) — dispatches `general-research-agent`/`planner-agent`/`general-implementation-agent` directly for `general`/`meta`/`markdown` task types |
 | skill-git-workflow | (direct execution) | Create scoped git commits |
 | skill-spawn | spawn-agent | Analyze blockers and spawn new tasks |
 
@@ -170,15 +174,15 @@ All hooks are:
 
 ## Execution Flow Example
 
-When you run `/research 1`:
+When you run `/orchestrate 1 --research`:
 
 ```
-1. Command: research.md
+1. Command: orchestrate.md
    - Parse: task_number = 1
    - Lookup: task_type = "general" (from state.json)
-   - Route: skill-researcher
+   - Route: general-research-agent (via command-route-agent.sh)
 
-2. Skill: skill-researcher
+2. Skill: skill-orchestrate
    - Generate session_id: sess_1736700000_abc123
    - Validate: task exists, status is not terminal
    - Prepare: delegation context
@@ -225,13 +229,15 @@ This ensures:
 
 ## Task-Type-Based Routing
 
-Tasks route to specialized skills based on their `task_type` field:
+Tasks route to specialized agents based on their `task_type` field. `general`/`meta`/`markdown`
+route directly to agents (no per-function skill layer); extension task types may route through
+their own domain skill instead:
 
 | Task Type | Research | Implementation |
 |----------|----------|----------------|
-| `general` | skill-researcher | skill-implementer |
-| `meta` | skill-researcher | skill-implementer |
-| `markdown` | skill-researcher | skill-implementer |
+| `general` | general-research-agent | general-implementation-agent |
+| `meta` | general-research-agent | general-implementation-agent |
+| `markdown` | general-research-agent | general-implementation-agent |
 
 The task type is automatically detected from task description or can be set explicitly.
 
@@ -259,11 +265,11 @@ Updates use the state-first pipeline:
 ```
 .claude/
 ├── commands/           # Layer 1: User commands
-│   ├── research.md
-│   ├── plan.md
+│   ├── orchestrate.md
+│   ├── meta.md
 │   └── ...
 ├── skills/             # Layer 2: Skills
-│   ├── skill-researcher/
+│   ├── skill-orchestrate/
 │   │   └── SKILL.md
 │   └── ...
 ├── agents/             # Layer 3: Agents

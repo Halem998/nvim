@@ -86,11 +86,8 @@ core/
 │   ├── spawn.md, merge.md, project-overview.md, tag.md
 │   └── (each defines preflight, delegation, postflight)
 │
-├── skills/                    # 13 skill wrappers
+├── skills/                    # 10 skill wrappers
 │   ├── skill-orchestrate/     # Autonomous lifecycle state machine (/orchestrate command)
-│   ├── skill-researcher/      # General research
-│   ├── skill-planner/         # Plan creation
-│   ├── skill-implementer/     # General implementation
 │   ├── skill-meta/            # System building
 │   ├── skill-status-sync/     # Atomic status updates
 │   ├── skill-todo/            # Task archival

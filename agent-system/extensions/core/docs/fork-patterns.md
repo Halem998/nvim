@@ -33,7 +33,7 @@ by `skill-orchestrate` for blocker research and drift inspection.
 
 **Current state**: `skill-orchestrate` uses `subagent_type: "fork"` for its two fork dispatch
 points (Stage 5a drift inspection, Stage 6 blocker research). This pattern was confirmed working
-in `skill-researcher` and is now unified across all fork dispatch sites.
+in an earlier lifecycle skill and is now unified across all fork dispatch sites.
 
 **When to use**: Lightweight analysis tasks that benefit from cache sharing (e.g., reading a
 plan file, researching a specific blocker). The fork inherits the parent's context without
@@ -77,7 +77,7 @@ When `CLAUDE_CODE_FORK_SUBAGENT=1` and `subagent_type` is omitted:
 
 ### Why core skills don't benefit today
 
-Core skills (skill-researcher, skill-planner, skill-implementer, etc.) always pass
+Core skills (skill-reviser, skill-spawn, skill-meta, etc.) always pass
 `subagent_type` explicitly to ensure the correct specialized agent is invoked. This is
 intentional: structured context injection (session_id, delegation_depth, memory_context) requires
 a known agent type. The trade-off is no FORK_SUBAGENT cache sharing.
@@ -90,9 +90,9 @@ a known agent type. The trade-off is no FORK_SUBAGENT cache sharing.
 
 ```yaml
 ---
-name: skill-implementer
-description: Execute implementation tasks.
-allowed-tools: Agent, Bash, Edit, Read, Write
+name: skill-reviser
+description: Thin wrapper that delegates plan revision to reviser-agent subagent.
+allowed-tools: Agent, Bash, Edit, Read, Write, Glob, Grep
 ---
 ```
 

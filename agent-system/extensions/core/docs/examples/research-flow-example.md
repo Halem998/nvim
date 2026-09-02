@@ -1,32 +1,43 @@
 # Integration Example: Research Flow
 
-This example traces a complete `/research` command through all three layers of the project agent system, showing how commands, skills, and agents work together.
+This example traces a complete `/orchestrate --research` invocation through the current
+architecture, showing how the command, `skill-orchestrate`, and the research agent work
+together. It supersedes an earlier version of this example that traced the now-deleted
+standalone `/research` command through the base lifecycle research skill — both were retired, and
+`skill-orchestrate` now dispatches the research agent directly with no per-function skill hop.
+
+<!-- task-ref-ok:begin illustrative worked example throughout this document uses a concrete task
+     number (427) purely to make the walkthrough concrete; it is not a citation of real task
+     provenance -->
 
 ---
 
 ## Scenario
 
-A user runs `/research {N}` to research task {N} (documenting the command/skill/subagent framework). This is a "meta" language task.
+A user runs `/orchestrate {N} --research` to research task {N} (documenting the command/skill/
+subagent framework). This is a "meta" task type.
 
 ---
 
 ## Complete Flow Diagram
 
 ```
-User Input: /research 427
+User Input: /orchestrate 427 --research
        |
        v
-[Layer 1: Command] .claude/commands/research.md
+[Layer 1: Command] .claude/commands/orchestrate.md
        |
-       | 1. parse-command-args.sh -> task_number = 427
-       | 2. command-gate-in.sh -> session_id, task validation
-       | 3. command-route-skill.sh -> meta -> skill-researcher
+       | Parses $ARGUMENTS, resolves task_number = 427, forwards to skill-orchestrate
        v
-[Layer 2: Skill] skill-researcher/SKILL.md
+[Layer 2: Skill] skill-orchestrate/SKILL.md (single-task mode)
        |
-       | 1. skill-base.sh: validate, preflight, marker
-       | 2. Prepare delegation context
-       | 3. Invoke general-research-agent via Agent tool
+       | Stage 1: Input Validation -- lookup task, extract task_type = "meta"
+       | Stage 1b: Resolve Task-Type Routing -- command-route-agent.sh resolves
+       |           RESEARCH_AGENT = "general-research-agent" for task_type "meta"
+       | Stage 2: Loop Guard Initialization
+       | Stage 3: State Machine Loop -- current_status = "not_started" -> research handler
+       | Stage 3.5: Dispatch Prep -- builds memory_context, lit_context, effort_note
+       | Invoke the Agent tool with subagent_type = "general-research-agent"
        v
 [Layer 3: Agent] general-research-agent.md
        |
@@ -38,7 +49,8 @@ User Input: /research 427
        v
 [Return Flow]
        |
-       | Agent -> Skill (postflight) -> Command (gate-out) -> User
+       | Agent -> skill-orchestrate Stage 5 (Handoff Reading) -> Stage 7 (Loop Guard Update)
+       | -> Stage 8 (Postflight, since --research stops the loop after this phase) -> User
        v
 Output: Research report created at specs/427_document.../reports/01_research-findings.md
 ```
@@ -50,69 +62,53 @@ Output: Research report created at specs/427_document.../reports/01_research-fin
 ### Step 1: User Invokes Command
 
 ```bash
-/research 427
+/orchestrate 427 --research
 ```
 
-Claude Code reads `.claude/commands/research.md`, which executes shared infrastructure scripts.
+Claude Code reads `.claude/commands/orchestrate.md`, which invokes `skill-orchestrate` with the
+task number and the `--research` phase-forcing flag.
 
-### Step 2: Command Parses Arguments and Validates Task
+### Step 2: skill-orchestrate Validates and Resolves Routing
 
-The command uses shared gate scripts instead of a separate orchestrator.
-
-**STAGE 0: Parse Arguments** (`parse-command-args.sh`)
+**Stage 1: Input Validation**
 ```bash
-source .claude/scripts/parse-command-args.sh "427"
-# Exports: TASK_NUMBERS=(427), TEAM_MODE=false, EFFORT_FLAG=, MODEL_FLAG=
+# Lookup task 427 in specs/state.json
+# Exports: task_type = "meta", project_name, padded_num, description
 ```
 
-**CHECKPOINT 1: Gate In** (`command-gate-in.sh`)
+**Stage 1b: Resolve Task-Type Routing** (`command-route-agent.sh`)
 ```bash
-source .claude/scripts/command-gate-in.sh 427 "research"
-# Validates task exists, generates session_id, updates status to "researching"
-# Exports: SESSION_ID, TASK_TYPE="meta", PROJECT_NAME, PADDED_NUM
+source .claude/scripts/command-route-agent.sh "research" "meta" "general-research-agent" "$effort_flag"
+# Resolves RESEARCH_AGENT for task_type "meta" via the manifest routing_agents ladder,
+# falling back to the caller's own default ("general-research-agent") on a miss.
+# Extension task types resolve to their own domain-specific research agent instead.
 ```
 
-**STAGE 2: Route by Task Type** (`command-route-skill.sh`)
-```bash
-source .claude/scripts/command-route-skill.sh "research" "meta" "skill-researcher"
-# Routes: meta -> skill-researcher (default)
-# Extension task types route to domain-specific skills
-```
+**Stage 2: Loop Guard Initialization** — creates `.orchestrator-loop-guard`, the ephemeral
+per-cycle runtime state tracking `cycle_count` and `detected_defects` across the state-machine
+loop.
 
-### Step 3: Skill Validates and Delegates
+### Step 3: skill-orchestrate Dispatches the Research Agent
 
-The command invokes `skill-researcher` via the Skill tool. The skill uses `skill-base.sh` shared lifecycle functions.
-
-**Skill Steps 1-3: Validate, Preflight, Marker** (`skill-base.sh`)
+**Stage 3: State Machine Loop** — `current_status = "not_started"` routes to the research
+handler in Stage 4:
 
 ```bash
-source .claude/scripts/skill-base.sh
-skill_validate_input 427          # Lookup task, extract TASK_TYPE, PROJECT_NAME, etc.
-skill_preflight_update 427 "research" "$session_id"  # Status -> researching
-skill_create_postflight_marker 427 "$PROJECT_NAME" "$session_id" "skill-researcher" "research"
+skill_preflight_update "$task_number" "research" "$session_id"
+# Status -> researching
 ```
 
-**Skill Step 4: Prepare Delegation Context**
+**Stage 3.5: Dispatch Prep** — builds `memory_context`, `lit_context`, `effort_note`, and
+`hard_contracts_block` (each skipped when empty).
 
-```json
-{
-  "session_id": "sess_1736700000_abc123",
-  "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "research", "skill-researcher"],
-  "timeout": 3600,
-  "task_context": {
-    "task_number": 427,
-    "task_name": "document_command_skill_subagent_framework",
-    "description": "Systematically document the framework for using commands, skills, and subagents in conjunction.",
-    "task_type": "meta"
-  },
-  "focus_prompt": null
-}
-```
+**Invoke the Agent tool**:
 
-**Skill Step 5: Invoke Subagent**
-
-The skill invokes `general-research-agent` via the Agent tool.
+| Field | Value |
+|-------|-------|
+| `subagent_type` | `general-research-agent` (resolved in Stage 1b) |
+| `model` | Stage 3.5's `model` output, when non-empty |
+| `prompt` | "Research task 427: {description}" plus `memory_context`, `lit_context`, `effort_note` |
+| `context` | `{ task_number: 427, task_type: "meta", session_id, orchestrator_mode: true, lit_flag, task_dir, handoff_path, dispatch_seq }` |
 
 ### Step 4: Agent Executes Research
 
@@ -123,12 +119,12 @@ The agent (`general-research-agent.md`) receives the delegation context.
 Extract:
 - task_number = 427
 - task_name = "document_command_skill_subagent_framework"
-- language = "meta"
+- task_type = "meta"
 - session_id = "sess_1736700000_abc123"
 
 **Agent Stage 2: Determine Search Strategy**
 
-Based on language = "meta":
+Based on task_type = "meta":
 - Primary: Context files + existing skills
 - Secondary: WebSearch for Claude docs
 
@@ -136,15 +132,15 @@ Based on language = "meta":
 
 ```
 Step 1: Codebase Exploration
-- Glob(".claude/skills/**/SKILL.md") -> 9 skills found
-- Glob(".claude/agents/*.md") -> 6 agents found
-- Glob(".claude/commands/*.md") -> 9 commands found
+- Glob(".claude/skills/**/SKILL.md") -> 10 skills found
+- Glob(".claude/agents/*.md") -> agents found
+- Glob(".claude/commands/*.md") -> commands found
 - Read key files to understand patterns
 
 Step 2: Context File Review
 - Read .claude/context/templates/thin-wrapper-skill.md
 - Read .claude/context/formats/subagent-return.md
-- Read .claude/context/orchestration/orchestration-core.md
+- Read .claude/context/architecture/system-overview.md
 
 Step 3: Synthesize Findings
 - 8 key patterns identified
@@ -169,7 +165,7 @@ architecture. Found 8 key patterns, 5 documentation gaps, and
 formed 4 recommendations.
 
 ## Findings
-### 1. Current Architecture: Three-Layer Delegation Pattern
+### 1. Current Architecture: Command -> Skill -> Agent Delegation
 ...
 
 ### 2. Component Relationships
@@ -210,27 +206,24 @@ The agent writes `.return-meta.json` (not inline JSON return):
 }
 ```
 
-### Step 5: Return Flow (Skill Postflight)
+### Step 5: Return Flow (skill-orchestrate Postflight)
 
-**Agent -> Skill Postflight** (`skill-base.sh` functions)
+**Agent -> Stage 5: Handoff Reading**
 
-The skill reads the metadata file and runs postflight operations:
+`skill-orchestrate` reads the agent's return after the Agent tool call completes, judging
+transport-vs-subagent-authored outcomes per `context/patterns/infra-failure-discrimination.md`.
+
+**Stage 7: Loop Guard Update** — records `cycle_count` and any `detected_defects` for this cycle.
+
+**Stage 8: Postflight** — since `--research` stops the loop after this phase (rather than
+falling through to plan/implement), the loop terminates cleanly here:
 
 ```bash
-skill_read_metadata "$PADDED_NUM" "$PROJECT_NAME"     # Read .return-meta.json
-skill_validate_artifact "$SUBAGENT_STATUS" "$ARTIFACT_PATH" "research"
 skill_postflight_update 427 "research" "$session_id" "$SUBAGENT_STATUS"  # Status -> researched
 skill_link_artifacts 427 "$ARTIFACT_PATH" "research" "$ARTIFACT_SUMMARY" '**Research**' '**Plan**'
-skill_cleanup "$PADDED_NUM" "$PROJECT_NAME"            # Remove marker and metadata files
-```
-
-**Skill -> Command Gate Out** (`command-gate-out.sh`)
-
-The command runs the gate-out checkpoint:
-
-```bash
-bash .claude/scripts/command-gate-out.sh 427 "research" "$SESSION_ID"
-# Validates artifacts, applies defensive status correction if needed
+rm -f "$loop_guard_file"  # cleanup on clean exit
+skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "implemented" \
+  "$cycle_count" "$current_status"
 ```
 
 **Command -> Git Commit**
@@ -253,7 +246,7 @@ Research completed for Task #{N}
 Report: specs/427_document.../reports/01_research-findings.md
 
 Status: [RESEARCHED]
-Next: /plan 427
+Next: /orchestrate 427 --plan
 ```
 
 ---
@@ -263,22 +256,25 @@ Next: /plan 427
 ### Routing Decision
 
 ```
-Input: /research 427 (task_type = "meta")
+Input: /orchestrate 427 --research (task_type = "meta")
 
-command-route-skill.sh resolves:
-  source .claude/scripts/command-route-skill.sh "research" "meta" "skill-researcher"
-  # Checks extension manifests for task_type-specific routing
-  # Falls back to default: skill-researcher
+command-route-agent.sh resolves:
+  source .claude/scripts/command-route-agent.sh "research" "meta" "general-research-agent" "$effort_flag"
+  # Checks extension manifests' routing_agents block for task_type-specific routing
+  # Falls back to the caller's own default: general-research-agent
 
 Decision tree:
-  Is task_type an extension type with custom routing? NO
-  -> Use default: skill-researcher
+  Is task_type an extension type with custom routing_agents? NO
+  -> Use default: general-research-agent
 ```
 
-If task {N} had a task type provided by an extension (e.g., `task_type: "python"`), the flow would route to the extension's skill:
+If task {N} had a task type provided by an extension (e.g., `task_type: "python"`), the flow would route to the extension's own research agent:
 ```
-command -> command-route-skill.sh -> skill-python-research -> python-research-agent
+skill-orchestrate -> command-route-agent.sh -> python-research-agent
 ```
+(Some extensions still route through their own domain research *skill* first — e.g.
+`skill-python-research` — depending on how the extension is built; see the extension's own
+manifest `routing`/`routing_agents` blocks.)
 
 ### Context Loading Decision
 
@@ -306,7 +302,7 @@ Context loading from index.json (4-tier progressive disclosure):
 
 ## Artifact Locations
 
-After `/research 427` completes:
+After `/orchestrate 427 --research` completes:
 
 ```
 specs/
@@ -323,10 +319,10 @@ specs/
 
 ### Scenario A: Task Not Found
 
-If user runs `/research {N}` but task {N} does not exist:
+If user runs `/orchestrate {N} --research` but task {N} does not exist:
 
 ```
-command-gate-in.sh:
+skill-orchestrate Stage 1 (Input Validation):
   Lookup task {N} in state.json -> NOT FOUND
   Aborts with: "Task {N} not found in state.json"
 
@@ -361,17 +357,17 @@ Return:
 
 ### Scenario C: Extension Task Type Routing
 
-If user runs `/research {N}` where task {N} has `task_type: "python"` (with the python extension loaded):
+If user runs `/orchestrate {N} --research` where task {N} has `task_type: "python"` (with the python extension loaded):
 
 ```
-Orchestrator Stage 2:
+skill-orchestrate Stage 1b:
   Lookup task {N} -> task_type = "python"
 
-Orchestrator Stage 3:
-  Routing: python -> skill-python-research
+Stage 1b routing resolution:
+  Routing: python -> python-research-agent (via command-route-agent.sh)
 
 Flow:
-  orchestrator -> skill-python-research -> python-research-agent
+  skill-orchestrate -> command-route-agent.sh -> python-research-agent
 
 Agent uses:
   - WebSearch for library documentation
@@ -387,23 +383,22 @@ Agent uses:
 The session_id flows through all layers:
 
 ```
-command-gate-in.sh generates: session_id = "sess_1736700000_abc123"
+skill-orchestrate Stage 1 generates: session_id = "sess_1736700000_abc123"
          |
          v
-Command passes session_id to skill via Skill tool args
-         |
-         v
-Skill passes session_id in delegation context to agent
+skill-orchestrate passes session_id in delegation context to the agent
          |
          v
 Agent includes session_id in .return-meta.json
          |
          v
-command-gate-out.sh and git commit reference session_id
+skill-orchestrate's postflight and git commit reference session_id
          |
          v
 Session tracked for debugging/auditing
 ```
+
+<!-- task-ref-ok:end -->
 
 ---
 
@@ -411,19 +406,19 @@ Session tracked for debugging/auditing
 
 This example demonstrated:
 
-1. **Command Layer**: User entry point; shared gate scripts handle parsing, validation, and routing
-2. **Skill Layer**: Shared lifecycle via `skill-base.sh`; validates, delegates to agent, runs postflight
+1. **Command Layer**: User entry point (`/orchestrate`); parses arguments and forwards to `skill-orchestrate`
+2. **Skill Layer**: `skill-orchestrate`'s state-machine dispatch — resolves routing, prepares delegation context, invokes the agent directly (no per-function skill hop for `general`/`meta`/`markdown` task types)
 3. **Agent Layer**: Executes work, creates artifacts, writes `.return-meta.json` metadata file
-4. **Return Flow**: Skill reads metadata file, runs postflight (status update, artifact linking, git commit)
-5. **Gate Out**: Command validates artifacts, applies defensive status correction
-6. **Status Updates**: Atomic state.json + TODO.md updates via shared scripts
+4. **Return Flow**: `skill-orchestrate` reads the handoff (Stage 5), updates the loop guard (Stage 7), and runs postflight (Stage 8) — status update, artifact linking, git commit
+5. **Status Updates**: Atomic state.json + TODO.md updates via shared scripts
 
-The three-layer architecture provides:
-- Clean separation of concerns
-- Shared infrastructure via gate scripts and skill-base.sh (~60% code reduction)
-- Task-type-based routing via `command-route-skill.sh`
+The current architecture provides:
+- Clean separation of concerns (command / orchestrator skill / agent)
+- Shared infrastructure via `skill-base.sh` (~60% code reduction versus per-skill hand-rolling)
+- Task-type-based routing via `command-route-agent.sh` (and `command-route-skill.sh` for
+  extensions that still route through a domain skill)
 - File-based metadata exchange (`.return-meta.json`)
-- Resume support via partial status and postflight markers
+- Resume support via partial status, the loop guard, and the orchestrator handoff file
 
 ---
 
@@ -436,6 +431,8 @@ The three-layer architecture provides:
 
 ---
 
-**Document Version**: 2.0 (Updated 2026-05-22 for shared infrastructure refactor)
+**Document Version**: 3.0 (Updated 2026-09-02 to retrace the flow through `/orchestrate` and
+`skill-orchestrate`'s direct agent dispatch, after the standalone `/research` command and the
+base lifecycle research skill were deleted)
 **Created**: 2026-01-12
 **Maintained By**: Project Development Team

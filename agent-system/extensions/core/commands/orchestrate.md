@@ -91,7 +91,7 @@ forwarded to any admission-gate script. `CLEAN_FLAG` (default `"false"`) and `EF
 also read here from the sourced parser and passed into the Skill delegation context below as
 `clean_flag` and `effort_flag` — `clean_flag` suppresses `skill-orchestrate`'s own automatic
 memory retrieval (Stage 3.5), and `effort_flag` supplies reasoning-depth guidance, on the same
-terms `skill-researcher`/`skill-planner`/`skill-implementer` already consume these flags today.
+terms every domain research/implementation skill already consumes these flags today.
 `MODEL_FLAG` (**default `""`**, not `null`) is read here from the sourced parser and passed into
 the Skill delegation context below as `model_flag`, selecting the model family for every
 lifecycle dispatch `skill-orchestrate` makes, on the same terms `clean_flag`/`effort_flag` are

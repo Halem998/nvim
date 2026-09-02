@@ -368,20 +368,24 @@ and after; post-edit must be empty.
 
 ---
 
-### Phase 7: Sweep core/docs, README, and commands/orchestrate.md [NOT STARTED]
+### Phase 7: Sweep core/docs, README, and commands/orchestrate.md [COMPLETED]
 
 **Goal**: Clear references in core documentation and the one remaining core command file.
 
 **Tasks**:
-- [ ] `docs/guides/`: `adding-domains.md`, `component-selection.md`, `creating-agents.md`,
-      `creating-skills.md`.
-- [ ] `docs/architecture/`: `handoff-schema.md`, `system-overview.md`.
-- [ ] `docs/examples/research-flow-example.md` (10 hits) -- this walks through a `/research`
+- [x] `docs/guides/`: `adding-domains.md`, `component-selection.md`, `creating-agents.md`,
+      `creating-skills.md`. *(completed)*
+- [x] `docs/architecture/`: `system-overview.md` (`handoff-schema.md` had zero hits -- already
+      clean). *(completed)*
+- [x] `docs/examples/research-flow-example.md` (10 hits) -- this walks through a `/research`
       invocation that no longer exists; rewrite it against `/orchestrate --research` or retire the
-      example, whichever leaves a truthful document.
-- [ ] `docs/fork-patterns.md`.
-- [ ] `agent-system/extensions/core/README.md`.
-- [ ] `agent-system/extensions/core/commands/orchestrate.md`.
+      example, whichever leaves a truthful document. *(completed: rewrote against
+      `/orchestrate --research` + `skill-orchestrate`'s direct-dispatch mechanism, grounding
+      every stage name and delegation-context field against skill-orchestrate/SKILL.md's actual
+      single-task Stage 1/1b/2/3/3.5/5/7/8 implementation rather than inventing detail)*
+- [x] `docs/fork-patterns.md`. *(completed)*
+- [x] `agent-system/extensions/core/README.md`. *(completed)*
+- [x] `agent-system/extensions/core/commands/orchestrate.md`. *(completed)*
 
 **Timing**: 1 hour
 

@@ -202,14 +202,15 @@ Use this approach only for the repository's primary domain (e.g., python for a P
 ### Architecture
 
 ```
-Command (/research, /implement)
+/orchestrate --research / --implement
     │
     ▼
-command-route-skill.sh (manifest routing ladder)
+skill-orchestrate's dispatch (command-route-skill.sh / command-route-agent.sh manifest routing
+ladder)
     │
     ├── task_type: your-domain → skill-your-domain-research / skill-your-domain-implementation
-    ├── task_type: general    → skill-researcher / skill-implementer
-    └── task_type: meta       → skill-researcher / skill-implementer
+    ├── task_type: general    → general-research-agent / general-implementation-agent (direct)
+    └── task_type: meta       → general-research-agent / general-implementation-agent (direct)
 ```
 
 Each task type routes to specialized skills, which delegate to specialized agents.
@@ -381,7 +382,6 @@ rule that agent names are declared, never derived):
 {
   "routing": {
     "research": { "your-domain": "skill-your-domain-research" },
-    "plan": { "your-domain": "skill-planner" },
     "implement": { "your-domain": "skill-your-domain-implementation" }
   },
   "routing_agents": {

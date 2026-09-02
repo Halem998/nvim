@@ -1,0 +1,54 @@
+{
+  "phase": 7,
+  "phase_name": "Sweep core/docs, README, and commands/orchestrate.md",
+  "started_at": "2026-09-02T03:00:00Z",
+  "last_updated": "2026-09-02T04:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Sweep docs/guides to zero hits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/guides/adding-domains.md",
+        "agent-system/extensions/core/docs/guides/component-selection.md",
+        "agent-system/extensions/core/docs/guides/creating-agents.md",
+        "agent-system/extensions/core/docs/guides/creating-skills.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Sweep docs/architecture/system-overview.md to zero hits",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/system-overview.md"]
+    },
+    {
+      "id": 3,
+      "description": "Rewrite docs/examples/research-flow-example.md against /orchestrate --research",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md"]
+    },
+    {
+      "id": 4,
+      "description": "Sweep docs/fork-patterns.md, README.md, commands/orchestrate.md to zero hits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/fork-patterns.md",
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "research-flow-example.md: rewrite against /orchestrate --research or retire the example",
+      "type": "altered",
+      "reason": "Chose full rewrite over retirement: the file is cross-linked from docs-README.md, component-selection.md, and fix-it-flow-example.md, so retiring it would leave three dangling references. Grounded the rewrite against skill-orchestrate/SKILL.md's actual verified single-task stage sequence (Stage 1, 1b, 2, 3, 3.5, 5, 7, 8) and the real Agent-tool context object shape read directly from that file, rather than inventing plausible-sounding but unverified stage detail.",
+      "annotation": "n/a -- documented in plan checklist annotation directly"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "README.md's directory-tree skill count and component-selection.md's command inventory table both had pre-existing incompleteness beyond this task's scope (missing skill-project-overview/skill-zulip, missing several newer commands like /merge, /spawn, /tag, /zulip). Fixed only what was needed for internal list/header-count consistency after removing the three deleted-skill lines/rows; did not attempt a full inventory refresh, which is out of this task's scope."
+}
