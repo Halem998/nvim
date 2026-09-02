@@ -43,9 +43,9 @@ specification, or reference document.
 The resolver directives, the four interactive sub-index setup options, sparse-coverage
 re-prompting, and the `orchestrator_mode` dual-consumer contract are canonically defined in
 `context/patterns/lit-stage4a-flow.md` — the single executable Stage 4a block that
-`skill-researcher`, `skill-planner`, `skill-implementer`, and their `-hard` variants all import
-directly and execute verbatim, rather than each maintaining its own copy. Read that file for the
-full mechanics; this section is a pointer, not a second copy.
+`skill-orchestrate` and every domain research/implementation skill import directly and execute
+verbatim, rather than each maintaining its own copy. Read that file for the full mechanics; this
+section is a pointer, not a second copy.
 
 Outside a `/research|/plan|/implement|/orchestrate --lit` dispatch, a conversational request to
 consult "the literature" is handled by the primary/root session via

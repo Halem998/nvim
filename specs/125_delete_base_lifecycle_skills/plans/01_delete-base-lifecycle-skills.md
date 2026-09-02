@@ -227,23 +227,33 @@ scope estimate was wrong and must be reported, not silently deleted.
 
 ---
 
-### Phase 4: Update the CLAUDE.md Merge Sources [NOT STARTED]
+### Phase 4: Update the CLAUDE.md Merge Sources [COMPLETED]
 
 **Goal**: Remove the three skills from both stale tables in the core merge source, plus the
 literature extension's merge source.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, remove the three rows from the
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, remove the three rows from the
       Skill-to-Agent Mapping table (`skill-researcher | general-research-agent`,
       `skill-planner | planner-agent`, `skill-implementer | general-implementation-agent`).
-- [ ] In the same file, fix the Task-Type-Based Routing table's `general` / `meta` / `markdown`
+      *(completed)*
+- [x] In the same file, fix the Task-Type-Based Routing table's `general` / `meta` / `markdown`
       rows, whose "Research Skill" and "Implementation Skill" columns name the deleted skills.
       These task types now route via `skill-orchestrate`'s direct agent dispatch; state that
-      rather than naming a skill that no longer exists.
-- [ ] Sweep the remaining hits in that file (research counted 9 total) -- including the
-      `--lit` Stage 4a pointer that enumerates the base three alongside their `-hard` variants,
-      which should name only the surviving `-hard` variants.
-- [ ] Do the same for `agent-system/extensions/literature/merge-sources/claudemd.md`.
+      rather than naming a skill that no longer exists. *(completed: replaced with a
+      Research/Plan/Implementation Agent table plus an explanatory sentence)*
+- [x] Sweep the remaining hits in that file (research counted 9 total; actual count was 6: the
+      3 Skill-to-Agent rows plus the 3 routing-table rows above -- no separate `--lit` Stage 4a
+      pointer exists in the core merge source). *(completed)*
+- [x] Do the same for `agent-system/extensions/literature/merge-sources/claudemd.md`.
+      *(deviation: altered — the file's Stage 4a pointer sentence named
+      "`skill-researcher`, `skill-planner`, `skill-implementer`, and their `-hard` variants" as
+      importers of `lit-stage4a-flow.md`. Repo-wide grep confirms zero references anywhere to
+      `skill-researcher-hard`/`skill-planner-hard`/`skill-implementer-hard` -- no such `-hard`
+      variants exist in the source tree (apparently removed by a separate, unrelated prior task),
+      so "name only the surviving `-hard` variants" was not an available option. Rewrote the
+      sentence to name the actual current importers instead: `skill-orchestrate` and every domain
+      research/implementation skill, verified via `grep -rl lit-stage4a-flow`)*
 
 **Timing**: 0.5 hours
 

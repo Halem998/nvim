@@ -70,11 +70,14 @@ This distinction enables identification of which system created each task.
 
 **Core Task Types** (always available):
 
-| Task Type | Research Skill | Implementation Skill | Tools |
-|-----------|----------------|---------------------|-------|
-| `general` | `skill-researcher` | `skill-implementer` | WebSearch, WebFetch, Read, Write, Edit, Bash |
-| `meta` | `skill-researcher` | `skill-implementer` | Read, Grep, Glob, Write, Edit |
-| `markdown` | `skill-researcher` | `skill-implementer` | Read, Write, Edit |
+These task types route directly to agents via `skill-orchestrate`'s dispatch
+(`command-route-agent.sh`), not through a dedicated research/plan/implement skill layer.
+
+| Task Type | Research Agent | Plan Agent | Implementation Agent | Tools |
+|-----------|-----------------|------------|-----------------------|-------|
+| `general` | `general-research-agent` | `planner-agent` | `general-implementation-agent` | WebSearch, WebFetch, Read, Write, Edit, Bash |
+| `meta` | `general-research-agent` | `planner-agent` | `general-implementation-agent` | Read, Grep, Glob, Write, Edit |
+| `markdown` | `general-research-agent` | `planner-agent` | `general-implementation-agent` | Read, Write, Edit |
 
 **Extension Task Types** (available when extensions are loaded via the extension picker):
 
@@ -143,9 +146,6 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 
 | Skill | Agent |
 |-------|-------|
-| skill-researcher | general-research-agent |
-| skill-planner | planner-agent |
-| skill-implementer | general-implementation-agent |
 | skill-meta | meta-builder-agent |
 | skill-status-sync | (direct execution) |
 | skill-refresh | (direct execution) |

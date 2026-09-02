@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Update the CLAUDE.md Merge Sources",
+  "started_at": "2026-09-02T00:40:00Z",
+  "last_updated": "2026-09-02T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Remove the three Skill-to-Agent Mapping rows and fix the Task-Type-Based Routing table in the core merge source",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]
+    },
+    {
+      "id": 2,
+      "description": "Sweep remaining hits in the core merge source to zero",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]
+    },
+    {
+      "id": 3,
+      "description": "Fix the literature merge source's Stage 4a skill enumeration",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/merge-sources/claudemd.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Do the same for the literature merge source's Stage 4a pointer, naming only the surviving -hard variants",
+      "type": "altered",
+      "reason": "No skill-researcher-hard/skill-planner-hard/skill-implementer-hard variants exist anywhere in the source tree (repo-wide grep confirms zero hits); the plan's premise that they survive as a rename target does not hold. Rewrote the sentence to name the real current importers of lit-stage4a-flow.md (skill-orchestrate and every domain research/implementation skill) instead.",
+      "annotation": "*(deviation: altered — ...)*"
+    }
+  ],
+  "handoff_count": 0
+}
