@@ -1,0 +1,15 @@
+{
+  "dispatch_seq": 4,
+  "status": "planned",
+  "summary": "Created a 4-phase, 1.75-hour implementation plan for the repo-mode literature-briefing.sh SIGPIPE crash. Root cause confirmed at lines 238-241 and 245-247 (jq whole-object piped into head -1 under set -euo pipefail). Fix direction: jq -c 'first(.entries[] | select(...))' at both sites, removing head from the pipeline. Plan phases: (1) capture pre-fix baseline against the real Logos/Theory sub-index, (2) apply the two-site fix in the source store, (3) audit the 8 remaining head -1 sites, (4) end-to-end verification closing all four verification bars. Plan passes validate-artifact.sh --strict with 0 warnings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md",
+      "summary": "4-phase plan for the jq/head -1 SIGPIPE fix in literature-briefing.sh."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": []
+}
