@@ -35,10 +35,23 @@
 # demonstrate a failing probe without it, because `mktemp -d` directories are never git work
 # trees.
 #
-# Degenerate case: when zero `*.sh` AND zero `*.json` candidates are found under --root,
-# `build_errors` is emitted as JSON `null` (not the string "null", not 0, not 1) meaning
-# "no applicable structural probe found -- not measured". This is the same nullable-field pattern
-# already used by `memory_health.last_distilled` in state-schema.json.
+# Existence filter: `git ls-files` reads the git INDEX, not the worktree -- a tracked path that
+# has been moved/renamed/deleted on disk but not yet staged is still emitted at its old, now
+# nonexistent location. The two structural candidate arrays (SH_FILES, JSON_FILES) are filtered
+# for on-disk existence at their single population site (right after the `mapfile` calls below),
+# so a phantom index entry contributes to neither `total_candidates` nor `build_errors`. Every
+# dropped candidate is counted in `phantom_paths` instead, emitted as a diagnostic rather than
+# silently discarded -- index/worktree divergence is a real signal outside this script's own
+# concerns. `count_marker()`'s TODO/FIXME enumeration needs no equivalent filter; see the comment
+# at its definition below for why.
+#
+# Degenerate case: when zero `*.sh` AND zero `*.json` candidates remain **after** the existence
+# filter under --root, `build_errors` is emitted as JSON `null` (not the string "null", not 0, not
+# 1) meaning "no applicable structural probe found -- not measured". This is the same
+# nullable-field pattern already used by `memory_health.last_distilled` in state-schema.json.
+# Phantom paths are excluded from this candidate total, not merely from the error count: a root
+# whose only tracked structural candidates have all been moved away unstaged reports `unknown`,
+# not `healthy`.
 #
 # This script never `source`s, `eval`s, or executes any candidate file -- `bash -n` and `jq empty`
 # are both parse-only.
@@ -61,7 +74,12 @@
 #                   *.tex` files containing the literal marker `TODO`.
 #   fixme_count     integer, same enumeration, literal marker `FIXME`.
 #   build_errors    integer, or JSON null in the degenerate zero-candidate case. Count of
-#                   `*.sh` files failing `bash -n` plus `*.json` files failing `jq empty`.
+#                   `*.sh` files failing `bash -n` plus `*.json` files failing `jq empty`,
+#                   AFTER the existence filter (see Enumeration below) drops phantom index
+#                   entries -- a moved-but-unstaged tracked file never contributes here.
+#   phantom_paths   integer, always measured (never null). Count of git-index entries among the
+#                   `*.sh`/`*.json` structural candidates that were absent from the worktree at
+#                   assessment time -- dropped from both `total_candidates` and `build_errors`.
 #   status          string, one of the schema's declared enum members, derived solely from
 #                   build_errors: null -> "unknown", 0 -> "healthy", >0 -> "critical".
 #
@@ -152,8 +170,33 @@ enumerate_by_glob() {
   fi
 }
 
-mapfile -d '' -t SH_FILES < <(enumerate_by_glob '*.sh')
-mapfile -d '' -t JSON_FILES < <(enumerate_by_glob '*.json')
+# populate_filtered GLOB ARRAY_NAME -- populates ARRAY_NAME (via nameref) with the absolute paths
+# matching GLOB that still exist on disk, incrementing the global `phantom_paths` counter for each
+# index entry that does not. This is the single existence-filter choke point for both structural
+# candidate arrays -- callers of the filtered arrays never need their own existence guard.
+#
+# Deliberately NOT `enumerate_by_glob | while read ...`: a `|` runs its right-hand side in a
+# subshell, so a counter incremented inside a piped loop is invisible to the parent shell once the
+# pipe exits. Feeding the loop via `< <(...)` process substitution instead keeps the `while` in
+# the current shell, so both the nameref array writes and the `phantom_paths` increments persist.
+phantom_paths=0
+populate_filtered() {
+  local glob="$1"
+  local -n _out_arr="$2"
+  local p
+  _out_arr=()
+  while IFS= read -r -d '' p; do
+    if [ -e "$p" ]; then
+      _out_arr+=("$p")
+    else
+      phantom_paths=$((phantom_paths + 1))
+    fi
+  done < <(enumerate_by_glob "$glob")
+}
+
+declare -a SH_FILES JSON_FILES
+populate_filtered '*.sh' SH_FILES
+populate_filtered '*.json' JSON_FILES
 
 # ── Structural probe: bash -n / jq empty, never source/eval/execute a candidate ─────────────────
 errors=0
@@ -184,6 +227,10 @@ fi
 
 # ── TODO/FIXME counts, over the same enumeration mechanism, scoped to the historical
 #    source-file extension filter (*.lua *.py *.js *.ts *.tex) ──────────────────────────────────
+# No existence filter needed here, unlike SH_FILES/JSON_FILES above: `grep -c` on a path that no
+# longer exists fails and its output is coalesced to 0 via `c="${c:-0}"` below, so a phantom index
+# entry already contributes nothing to the TODO/FIXME totals by construction. Do not add a
+# redundant existence guard.
 count_marker() {
   local marker="$1"
   local total=0
@@ -209,10 +256,12 @@ jq -n \
   --argjson fixme_count "$fixme_count" \
   --argjson build_errors "$build_errors_json" \
   --arg status "$status" \
+  --argjson phantom_paths "$phantom_paths" \
   '{
     last_assessed: $last_assessed,
     todo_count: $todo_count,
     fixme_count: $fixme_count,
     build_errors: $build_errors,
-    status: $status
+    status: $status,
+    phantom_paths: $phantom_paths
   }'

@@ -53,6 +53,10 @@
         "build_errors": {
           "type": ["integer", "null"],
           "description": "Documented-optional sub-field, confirmed live. Count of build/lint errors found by the last scan. null means no applicable structural probe found -- not measured (same nullable-field pattern as memory_health.last_distilled below), distinct from both 0 and any positive count."
+        },
+        "phantom_paths": {
+          "type": "integer",
+          "description": "Count of git-index entries among the last scan's structural (*.sh/*.json) candidates that were absent from the worktree at assessment time -- e.g. a tracked file moved or deleted but not yet staged. Always an integer (0 when none), never null: unlike build_errors, this count is always measurable. Excluded from build_errors and from the candidate total build_errors is derived from."
         }
       },
       "additionalProperties": false

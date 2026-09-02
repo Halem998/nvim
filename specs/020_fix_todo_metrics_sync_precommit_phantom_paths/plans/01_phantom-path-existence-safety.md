@@ -1,7 +1,7 @@
 # Implementation Plan: Metrics sync measures a stale git index, inflating build_errors with phantom paths
 
 - **Task**: 20 - Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/020_fix_todo_metrics_sync_precommit_phantom_paths/reports/01_metrics-sync-phantom-paths.md
@@ -112,35 +112,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Existence-safe enumeration and phantom_paths field [NOT STARTED]
+### Phase 1: Existence-safe enumeration and phantom_paths field [COMPLETED]
 
 **Goal**: `assess-repo-health.sh` filters non-existent candidates at the single population site,
 excludes them from `total_candidates`, and emits a new `phantom_paths` integer alongside
 `build_errors` — with the schema and schema documentation updated in the same commit.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/assess-repo-health.sh`, filter the two structural
+- [x] In `agent-system/extensions/core/scripts/assess-repo-health.sh`, filter the two structural
       candidate arrays for on-disk existence at their `mapfile` population sites (`SH_FILES`,
       `JSON_FILES`), retaining a count of dropped paths in a `phantom_paths` counter. Do not add
-      per-loop existence guards downstream — the filter is the choke point.
-- [ ] Confirm `total_candidates` is computed from the filtered arrays, so the degenerate
+      per-loop existence guards downstream — the filter is the choke point. *(completed: replaced
+      `mapfile` + pipe with a nameref `populate_filtered()` helper fed via process substitution,
+      since a pipe would run the counter increment in a subshell)*
+- [x] Confirm `total_candidates` is computed from the filtered arrays, so the degenerate
       zero-candidate branch (`build_errors: null` / `status: "unknown"`) reflects real candidates
-      only.
-- [ ] Leave `count_marker()` unchanged; add a short comment recording *why* it needs no filter
+      only. *(completed: `total_candidates` reads `${#SH_FILES[@]}`/`${#JSON_FILES[@]}` unchanged,
+      which are now the filtered arrays; verified live with an all-phantom git fixture)*
+- [x] Leave `count_marker()` unchanged; add a short comment recording *why* it needs no filter
       (`grep -c` on a missing path already coalesces to 0 via the existing `c="${c:-0}"`), so a
-      future reader does not "fix" it redundantly.
-- [ ] Emit `phantom_paths` as a fifth key in the script's final `jq -n` object, always an integer
+      future reader does not "fix" it redundantly. *(completed)*
+- [x] Emit `phantom_paths` as a fifth key in the script's final `jq -n` object, always an integer
       (0 when none) — never null, since "how many index entries were missing from disk" is always
-      measurable, unlike `build_errors`.
-- [ ] Update the script's header block: the `Output (stdout)` key list, the `Enumeration`
+      measurable, unlike `build_errors`. *(completed)*
+- [x] Update the script's header block: the `Output (stdout)` key list, the `Enumeration`
       paragraph (state the index-vs-worktree divergence and the existence filter), and the
       `Degenerate case` paragraph (state that phantom paths are excluded from the candidate total).
-- [ ] Add the `phantom_paths` property to `repository_health.properties` in
+      *(completed)*
+- [x] Add the `phantom_paths` property to `repository_health.properties` in
       `agent-system/extensions/core/context/schemas/state-schema.json` (`"type": "integer"`, with a
       description naming it a count of git-index entries absent from the worktree at assessment
-      time). `additionalProperties: false` stays as-is.
-- [ ] Add the matching row to the `### Repository Health Fields` table in
-      `agent-system/extensions/core/context/reference/state-management-schema.md`.
+      time). `additionalProperties: false` stays as-is. *(completed)*
+- [x] Add the matching row to the `### Repository Health Fields` table in
+      `agent-system/extensions/core/context/reference/state-management-schema.md`. *(completed)*
 
 **Timing**: 1.5 hours
 

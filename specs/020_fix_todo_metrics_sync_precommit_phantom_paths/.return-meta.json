@@ -1,33 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md",
-      "summary": "4-phase plan making assess-repo-health.sh existence-safe with a new phantom_paths diagnostic, re-sequencing /todo's metrics sync after its commit, and adding git-fixture regression cases."
-    }
-  ],
-  "next_steps": "Run /implement 20 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788390027_14a27d_20",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Enumerating candidate files via `git ls-files` reads the git INDEX, not the worktree: a path moved/renamed/deleted on disk but not yet staged is still emitted at its old, now-nonexistent location. Any per-file check that treats 'command failed' as 'file is broken' (bash -n, jq empty, a compiler) will therefore score phantom paths as real defects, and any derived total/status is wrong. Filter for on-disk existence at the single array-population choke point rather than guarding each downstream loop, so counts and future consumers are all fixed from one place. Checks whose failure mode already coalesces to zero (grep -c with a `${c:-0}` default) are incidentally immune and need no guard. Callers that run such a probe before their own commit compound the hazard and should be re-sequenced to measure the tree they actually committed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-ls-files", "index-worktree-divergence", "enumeration", "existence-check", "phantom-paths", "repo-health-probe"]
-    }
-  ],
-  "modified_files": [
-    "specs/020_fix_todo_metrics_sync_precommit_phantom_paths/plans/01_phantom-path-existence-safety.md"
-  ],
-  "errors": []
+    "session_id": "sess_1788390027_14a27d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

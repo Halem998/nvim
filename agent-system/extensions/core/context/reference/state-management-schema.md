@@ -286,6 +286,7 @@ complementary and are never merged or reconciled against each other.
 | `todo_count` | number | Documented-optional, confirmed live. Count of TODO: tags found by the last scan |
 | `fixme_count` | number | Documented-optional, confirmed live. Count of FIXME:/FIX: tags found by the last scan |
 | `build_errors` | number or null | Documented-optional, confirmed live. Count of build/lint errors found by the last scan. `null` means no applicable structural probe found -- not measured (same nullable-field pattern as `memory_health.last_distilled`), distinct from both `0` and any positive count |
+| `phantom_paths` | number | Count of git-index entries among the last scan's structural (`*.sh`/`*.json`) candidates that were absent from the worktree at assessment time (e.g. a tracked file moved or deleted but not yet staged). Always an integer, never `null` -- excluded from both `build_errors` and the candidate total it is derived from |
 
 ### Vault Fields
 

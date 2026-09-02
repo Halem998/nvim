@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Existence-safe enumeration and phantom_paths field",
+  "started_at": "2026-09-02T23:15:00Z",
+  "last_updated": "2026-09-02T23:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Filter SH_FILES/JSON_FILES for on-disk existence at mapfile population sites, track phantom_paths counter", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]},
+    {"id": 2, "description": "Confirm total_candidates computed from filtered arrays", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]},
+    {"id": 3, "description": "Comment on count_marker() needing no filter", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]},
+    {"id": 4, "description": "Emit phantom_paths as fifth key in jq -n output, always integer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]},
+    {"id": 5, "description": "Update script header block (Output keys, Enumeration, Degenerate case)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/assess-repo-health.sh"]},
+    {"id": 6, "description": "Add phantom_paths property to state-schema.json repository_health", "status": "done", "files_touched": ["agent-system/extensions/core/context/schemas/state-schema.json"]},
+    {"id": 7, "description": "Add matching row to state-management-schema.md Repository Health Fields table", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Piping enumerate_by_glob output through a filter_existing function", "result": "failed", "reason": "The right-hand side of a `|` runs in a subshell; phantom_paths increments inside it never propagate to the parent shell. Replaced with a nameref-based function fed via process substitution (`< <(...)`) so the while loop stays in the current shell."}
+  ],
+  "handoff_count": 0
+}
