@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Audit Remaining | head -1 Sites",
+  "started_at": "2026-09-02T16:21:00Z",
+  "last_updated": "2026-09-02T16:24:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate and classify all remaining | head -1 sites post-Phase-2",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "site_count": 8,
+    "classification": {
+      ":175": "get_doc_fidelity(): .provenance_fidelity // empty -- scalar string (or empty)",
+      ":261": "title: .title // \"Unknown Title\" -- scalar string",
+      ":265": "authors_raw: (.authors // [] | ... | join(\", \")) -- joined scalar string",
+      ":269": "year: (.year // \"?\") | tostring -- scalar string",
+      ":285": "parent_tokens: .token_count // 0 -- scalar number",
+      ":291": "total_tokens (else branch): .token_count // 0 -- scalar number",
+      ":299": "parent_path: .path // \"\" -- scalar string",
+      ":320": "relevance: .relevance // \"\" -- scalar string (from SUB_INDEX, not GLOBAL_INDEX)"
+    },
+    "result": "All 8 sites confirmed scalar-emitting (string, joined string, tostring-coerced number, or number with // 0 fallback). Zero sites emit an object or array. No newly discovered crash site. Matches the research report's expected classification (per-site line numbers shifted by exactly the -1/-2 line delta introduced by Phase 2's edit, consistent with the Scope Hypothesis note); re-read each enclosing jq program directly rather than trusting the research report's line numbers.",
+    "git_diff_this_phase": "empty (no files modified) -- expected result per plan"
+  },
+  "deviations": []
+}

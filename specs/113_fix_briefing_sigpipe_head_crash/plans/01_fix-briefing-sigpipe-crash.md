@@ -241,24 +241,31 @@ a change confined to the `:238-247` region.
 
 ---
 
-### Phase 3: Audit Remaining `| head -1` Sites [NOT STARTED]
+### Phase 3: Audit Remaining `| head -1` Sites [COMPLETED]
 
 **Goal**: Close verification bar #4 — confirm no `jq ... | head -1` site remains in the file where
 the jq program can emit a multi-line value. This is an audit, not a refactor.
 
 **Tasks**:
-- [ ] Enumerate every remaining `| head -1` site with
+- [x] Enumerate every remaining `| head -1` site with
       `grep -n "head -1" agent-system/extensions/literature/scripts/literature-briefing.sh`.
-- [ ] For each, read the enclosing jq program and classify its result shape: scalar string,
-      `tostring`-coerced number, joined string, or object/array.
-- [ ] Confirm each remaining site is scalar-only. The research report's expected classification
+      *(completed: 8 sites found at :175, :261, :265, :269, :285, :291, :299, :320)*
+- [x] For each, read the enclosing jq program and classify its result shape: scalar string,
+      `tostring`-coerced number, joined string, or object/array. *(completed, see progress file
+      phase-3-progress.json for the full per-site classification)*
+- [x] Confirm each remaining site is scalar-only. The research report's expected classification
       (post-fix line numbers will shift slightly): `:175` `.provenance_fidelity // empty`;
       `:262` `.title // "Unknown Title"`; `:266` joined `.authors`; `:270` `.year | tostring`;
       `:286` and `:292` `.token_count // 0`; `:300` `.path // ""`; `:321` `.relevance // ""`.
-- [ ] If any site is found to emit an object or array, treat it as a newly discovered crash site
+      *(completed: all 8 confirmed scalar-only; actual post-fix line numbers were :175, :261,
+      :265, :269, :285, :291, :299, :320 -- close to but not identical to the research report's
+      estimate, re-verified directly rather than trusted)*
+- [x] If any site is found to emit an object or array, treat it as a newly discovered crash site
       and apply the same `first(...)` / `-c` fix, then re-run Phase 2's verification greps.
-- [ ] Record the audit result (site count and per-site classification) in the phase notes for the
-      implementation summary. Do not write a separate report file.
+      *(completed: not applicable -- no such site found)*
+- [x] Record the audit result (site count and per-site classification) in the phase notes for the
+      implementation summary. Do not write a separate report file. *(completed: recorded in
+      progress/phase-3-progress.json)*
 
 **Timing**: 0.25 hours
 
