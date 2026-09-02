@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788323839_c3b8b4_110",
+  "task_number": 110,
+  "findings_count": 12,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md",
+      "summary": "Design for S2_API_KEY support and an ordered OpenAlex/Crossref fallback chain in literature-discover.sh's Tier 3, preserving the discover-record schema, the four-branch doc_id contract, and the TIER3_STATUS FAILED stderr contract consumed by commands/literature.md."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "literature-discover.sh's Tier 3 doc_id derivation has exactly four branches (doi-slug, arxiv_<id>, ss_<paperId>, unknown_<slug>). When adding a new online-discovery provider, never mint a new prefix (e.g. oa_/cr_) — map the provider's own id fields onto the existing four branches (DOI when present, else fall straight to unknown_<slug> if no paperId analog exists), because literature-ingest-online.sh and index-patching downstream key off this exact contract.",
+      "category": "PATTERN",
+      "source_artifact": "specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature", "discover", "doc_id", "tier3", "schema-contract"]
+    },
+    {
+      "content": "literature-discover.sh's TIER3_STATUS: FAILED stderr line is consumed by commands/literature.md via `grep -q 'TIER3_STATUS: FAILED'` plus `grep -o 'http_code=[^ ]*'`. Both are substring/token-tolerant, so a richer multi-provider failure line (extra parenthetical detail after http_code=<token>) is backward compatible as long as the literal FAILED substring and a space-free http_code= token both appear on one line.",
+      "category": "PATTERN",
+      "source_artifact": "specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["literature", "discover", "TIER3_STATUS", "stderr-contract", "commands"]
+    },
+    {
+      "content": "As of 2026-09-01, OpenAlex (api.openalex.org) and Crossref (api.crossref.org) both answer anonymous, keyless GET requests successfully (live-verified). A secondary source (Google Groups thread) claims OpenAlex mandated API keys starting Feb 13, but the canonical openalex-docs repo and a live test both contradict that — treat any OpenAlex key requirement as disputed/optional, and design key support as additive (like S2_API_KEY) rather than required.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/110_add_discover_multi_provider_fallback/reports/01_multi-provider-tier3-fallback.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["openalex", "crossref", "api-key", "rate-limit", "literature-discovery"]
+    }
+  ],
+  "next_steps": "Run /plan 110 to create implementation plan"
+}
