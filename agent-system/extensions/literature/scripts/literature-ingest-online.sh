@@ -715,6 +715,10 @@ if [ "$CLASSIFICATION" = "resolvable" ]; then
   rm -f /tmp/ingest-online-item-add-stderr.$$
 
   if [ "$ITEM_ADD_EXIT" -ne 0 ]; then
+    # The PDF was already downloaded and %PDF-verified at $STAGING_PATH above; item-add failing
+    # after that point must not leak it -- remove it before stopping (download_and_verify()
+    # already handles its own two failure branches, so this is the only staging leak on this path).
+    rm -f "$STAGING_PATH"
     directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
       "zotero-write.sh item-add failed for doc_id=$DOC_ID (exit $ITEM_ADD_EXIT): $ITEM_ADD_STDERR"
   fi
@@ -818,6 +822,9 @@ if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
     rm -f /tmp/ingest-online-attach-stderr.$$
 
     if [ "$ATTACH_EXIT" -ne 0 ]; then
+      # Same staging leak as the create-item path above: the PDF was already downloaded and
+      # %PDF-verified at $STAGING_PATH; attach-file failing after that must not leak it.
+      rm -f "$STAGING_PATH"
       directive_stop "ONLINE_INGEST_ZOTERO_ATTACH_FAILED" 5 \
         "zotero-write.sh attach-file failed for doc_id=$DOC_ID, key=$ZOTERO_ITEM_KEY (exit $ATTACH_EXIT): $ATTACH_STDERR"
     fi

@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Clean the staging file on post-download failure stops (defect b, part 1)",
+  "started_at": "2026-09-01T23:52:00Z",
+  "last_updated": "2026-09-01T23:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "rm -f STAGING_PATH before ONLINE_INGEST_ZOTERO_CREATE_FAILED directive_stop", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "rm -f STAGING_PATH before ONLINE_INGEST_ZOTERO_ATTACH_FAILED directive_stop", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Confirm DOWNLOAD_FAILED stops untouched and no post-stop read of STAGING_PATH", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

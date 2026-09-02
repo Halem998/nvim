@@ -240,20 +240,24 @@ short-circuiting `_add_from_pdf`'s `doi_override` path.
 
 ---
 
-### Phase 3: Clean the staging file on post-download failure stops (defect b, part 1) [NOT STARTED]
+### Phase 3: Clean the staging file on post-download failure stops (defect b, part 1) [COMPLETED]
 
 **Goal**: Stop leaking `$STAGING_PATH` on the two `directive_stop` calls that fire after a
 successful download and magic-byte verification.
 
 **Tasks**:
-- [ ] Add `rm -f "$STAGING_PATH"` immediately before the `ONLINE_INGEST_ZOTERO_CREATE_FAILED`
+- [x] Add `rm -f "$STAGING_PATH"` immediately before the `ONLINE_INGEST_ZOTERO_CREATE_FAILED`
   `directive_stop` (line ~704-706 as of this plan; anchor on the `ITEM_ADD_EXIT -ne 0` guard)
-- [ ] Add `rm -f "$STAGING_PATH"` immediately before the `ONLINE_INGEST_ZOTERO_ATTACH_FAILED`
-  `directive_stop` (line ~807-809; anchor on the `ATTACH_EXIT -ne 0` guard)
-- [ ] Leave both `ONLINE_INGEST_DOWNLOAD_FAILED` stops untouched — `download_and_verify()` already
-  `rm -f`s `$dest` on both its failure branches
-- [ ] Confirm no later success path reads `$STAGING_PATH` after these two stop points (both call
-  `exit`, so this is a read-through confirmation, not a behavioral question)
+  *(completed: landed at line 721, shifted +14 lines by Phase 2's added elif arm)*
+- [x] Add `rm -f "$STAGING_PATH"` immediately before the `ONLINE_INGEST_ZOTERO_ATTACH_FAILED`
+  `directive_stop` (line ~807-809; anchor on the `ATTACH_EXIT -ne 0` guard) *(completed: landed
+  at line 827)*
+- [x] Leave both `ONLINE_INGEST_DOWNLOAD_FAILED` stops untouched — `download_and_verify()` already
+  `rm -f`s `$dest` on both its failure branches *(completed: verified untouched by grep)*
+- [x] Confirm no later success path reads `$STAGING_PATH` after these two stop points (both call
+  `exit`, so this is a read-through confirmation, not a behavioral question) *(completed: grep of
+  every $STAGING_PATH reference confirms directive_stop exits unconditionally at both sites; the
+  only other reads are the success-path RESOLVED_PDF_PATH fallback, unreached after either rm -f)*
 
 **Timing**: 0.5 hours
 
