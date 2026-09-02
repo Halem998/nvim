@@ -307,36 +307,36 @@ and from a silent `skill_cleanup` removal.
 
 ---
 
-### Phase 5: Cross-session fixture tests for both hooks [NOT STARTED]
+### Phase 5: Cross-session fixture tests for both hooks [COMPLETED]
 
 **Goal**: `test-subagent-postflight-marker.sh` proves both hooks act only on the correlated
 marker with foreign markers present, and every pre-existing case in the file still exercises what
 it claims to.
 
 **Tasks**:
-- [ ] Update `run_postflight` to pipe a synthetic SubagentStop payload (parameterised
+- [x] Update `run_postflight` to pipe a synthetic SubagentStop payload (parameterised
       `session_id`) into the hook rather than inheriting the harness's stdin, mirroring
-      `run_events_hook`'s `jq -n | bash` construction.
-- [ ] Update every existing `subagent-postflight.sh` case — starting with the fixture self-check,
+      `run_events_hook`'s `jq -n | bash` construction. *(completed)*
+- [x] Update every existing `subagent-postflight.sh` case — starting with the fixture self-check,
       whose stated purpose is to fail loudly rather than let later cases pass vacuously — so its
       marker carries a `cc_session_id` and its payload carries the matching `session_id`. A case
-      that silently stops reaching the block branch is a false pass, not a fix.
-- [ ] Add a `subagent-postflight.sh` case: two task dirs, two markers, two distinct
+      that silently stops reaching the block branch is a false pass, not a fix. *(completed: cases (c) and (e), which test the malformed-marker path, were revised rather than merely re-parameterised -- a malformed marker's cc_session_id is structurally unreadable so find_marker() can never select it; their assertions now check the fail-safe {} plus byte-identical marker/loop-guard survival)*
+- [x] Add a `subagent-postflight.sh` case: two task dirs, two markers, two distinct
       `cc_session_id` values, payload matching one. Assert the block reason comes from the
       matched marker; assert the foreign marker still exists byte-identical after the run; assert
-      no loop guard was created in the foreign task dir.
-- [ ] Add a `subagent-postflight.sh` case driving the correlated session to the
+      no loop guard was created in the foreign task dir. *(completed: case (f))*
+- [x] Add a `subagent-postflight.sh` case driving the correlated session to the
       `MAX_CONTINUATIONS` cap with a foreign marker present: assert only the correlated marker is
-      deleted and the foreign one survives.
-- [ ] Add a `subagent-postflight.sh` case for a legacy marker (no `cc_session_id` key at all):
+      deleted and the foreign one survives. *(completed: case (g), also asserts exactly one CAP-REACHED DELETE: log line)*
+- [x] Add a `subagent-postflight.sh` case for a legacy marker (no `cc_session_id` key at all):
       assert `{}` on stdout, no block, and the marker untouched — the fail-safe, asserted as
-      intended behavior.
-- [ ] Add an `events-log-lifecycle.sh` companion case using `make_events_fixture`/
+      intended behavior. *(completed: case (h))*
+- [x] Add an `events-log-lifecycle.sh` companion case using `make_events_fixture`/
       `run_events_hook`: two markers, two `cc_session_id` values; assert exactly one event line is
       appended, that its `session_id` is the correlated marker's, and that its `cc_session_id`
-      equals the payload's. Add a no-match case asserting zero lines appended.
-- [ ] Run the full file and confirm the pass count rose by the number of new assertions rather
-      than staying flat (a flat count means a new case is not executing).
+      equals the payload's. Add a no-match case asserting zero lines appended. *(completed)*
+- [x] Run the full file and confirm the pass count rose by the number of new assertions rather
+      than staying flat (a flat count means a new case is not executing). *(completed: 9 -> 20 passed)*
 
 **Timing**: 1.25 hours
 

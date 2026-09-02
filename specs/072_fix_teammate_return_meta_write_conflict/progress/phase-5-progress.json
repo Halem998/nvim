@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Cross-session fixture tests for both hooks",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Parameterise run_postflight with a payload", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 2, "description": "Update every existing subagent-postflight.sh case with cc_session_id", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 3, "description": "Add cross-session correlation case (f)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 4, "description": "Add cap-deletion cross-session case (g)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 5, "description": "Add legacy-marker fail-safe case (h)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 6, "description": "Add events-log-lifecycle.sh cross-session + no-match companion cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh"]},
+    {"id": 7, "description": "Run full file, confirm pass count rose (9 -> 20)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "Update every existing subagent-postflight.sh case so its marker carries a cc_session_id and its payload carries the matching session_id",
+      "type": "altered",
+      "reason": "Cases (c) and (e) test the malformed-marker path specifically. Under the new correlation-first find_marker(), a malformed marker's cc_session_id is structurally unreadable and can never match any CC_SESSION_ID, so it can never be selected as MARKER_FILE -- this hook's old diagnosable parse-failure block reason for a malformed marker is gone by design, not by omission. Rather than force a cc_session_id onto a marker whose entire point is to be unparseable, these two cases were rewritten to assert the new, correct fail-safe behavior ({} stdout, marker/loop-guard left byte-identical) and the comment block explains the semantic shift plus the pointer to where malformed-marker observability now lives (events-log-lifecycle.sh's malformed_postflight_marker deviation event).",
+      "annotation": "*(completed: cases (c) and (e), which test the malformed-marker path, were revised rather than merely re-parameterised -- a malformed marker's cc_session_id is structurally unreadable so find_marker() can never select it; their assertions now check the fail-safe {} plus byte-identical marker/loop-guard survival)*"
+    }
+  ]
+}
