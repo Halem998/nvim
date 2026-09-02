@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "Delete the Three Skill Directories",
+  "started_at": "2026-09-02T00:30:00Z",
+  "last_updated": "2026-09-02T00:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "git rm -r the three skill directories",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+        "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+        "agent-system/extensions/core/skills/skill-implementer/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Confirm no stray files remain inside the three directories",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Ran whole-tree orphan detection (find_orphans) directly via nvim --headless rather than through the slower verify-deploy.sh wrapper, after two async Monitor calls stalled",
+      "result": "succeeded",
+      "reason": "Confirmed the only 3 orphan findings are the now-stale .claude/skills/skill-{researcher,planner,implementer}/ deploy copies -- expected per source-store-deploy-boundary.md; left untouched for Phase 10's redeploy to reconcile"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "validate-wiring.sh and lint-routing-wiring.sh both pass with no Skill-missing lines post-deletion. verify-deploy.sh's whole-tree orphan detection (gate 13) reports exactly the 3 expected stale .claude/skills/ deploy copies, no unexpected findings. Pre-existing, unrelated failures observed in the same deploy verification run (doc-lint literature index-entries.json line_count drift, validate-state.sh --deep unknown-field findings on unrelated task numbers, state-writer boundary lint violations in test-force-phases.sh) predate this task and are out of scope."
+}

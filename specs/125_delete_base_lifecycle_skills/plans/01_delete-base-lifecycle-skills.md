@@ -186,15 +186,17 @@ agent-system/extensions/` before editing and again after; the post-edit run must
 
 ---
 
-### Phase 3: Delete the Three Skill Directories [NOT STARTED]
+### Phase 3: Delete the Three Skill Directories [COMPLETED]
 
 **Goal**: Remove the three skill directories in full from the source store.
 
 **Tasks**:
-- [ ] `git rm -r agent-system/extensions/core/skills/skill-researcher/`
-- [ ] `git rm -r agent-system/extensions/core/skills/skill-planner/`
-- [ ] `git rm -r agent-system/extensions/core/skills/skill-implementer/`
-- [ ] Confirm no other file remains inside those directories (untracked strays).
+- [x] `git rm -r agent-system/extensions/core/skills/skill-researcher/` *(completed)*
+- [x] `git rm -r agent-system/extensions/core/skills/skill-planner/` *(completed)*
+- [x] `git rm -r agent-system/extensions/core/skills/skill-implementer/` *(completed)*
+- [x] Confirm no other file remains inside those directories (untracked strays). *(completed: each
+      directory held exactly one SKILL.md at 424/508/726 lines, matching the scope hypothesis; no
+      strays)*
 
 **Timing**: 0.5 hours
 
