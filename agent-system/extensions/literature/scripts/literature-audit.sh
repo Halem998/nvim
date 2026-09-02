@@ -373,6 +373,20 @@ audit_crossrefs() {
   log_result "AUDIT 2: PASS (patterns are adequate for formal math literature)"
 }
 
+# ---------------------------------------------------------------------------
+# Usage
+# ---------------------------------------------------------------------------
+
+usage() {
+  cat >&2 << 'USAGE'
+Usage:
+  literature-audit.sh [--pdf <path>...]       # Audit conversion quality
+  literature-audit.sh --xref [<pdf>...]        # Audit cross-reference extraction
+  literature-audit.sh --all [<pdf>...]         # Run both audits
+  literature-audit.sh -h|--help                # Show this help
+USAGE
+}
+
 # --- Main ---
 main() {
   local mode="all"
@@ -384,6 +398,7 @@ main() {
       --xref) mode="xref"; shift ;;
       --all) mode="all"; shift ;;
       *.pdf|*.djvu) explicit_pdfs+=("$1"); shift ;;
+      -h|--help) usage; exit 0 ;;
       *) shift ;;
     esac
   done
