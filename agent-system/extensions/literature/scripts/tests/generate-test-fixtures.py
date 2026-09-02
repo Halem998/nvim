@@ -12,6 +12,7 @@ Usage:
     generate-test-fixtures.py biblio-quantifier <output.pdf>
     generate-test-fixtures.py fused-word <output.pdf>
     generate-test-fixtures.py broken-font <output.pdf>
+    generate-test-fixtures.py image-only <output.pdf>
 """
 import sys
 
@@ -60,6 +61,54 @@ def build_two_column_pdf(out_path):
 
     doc.save(out_path)
     doc.close()
+
+
+def build_image_only_pdf(out_path):
+    """A single-page document simulating a genuinely image-only (scanned,
+    no-text-layer) PDF: real, legible words are rendered on an intermediate
+    page via ordinary insert_text(), rasterized to a pixmap, and that pixmap
+    is inserted as a full-page IMAGE into a fresh output page — so the final
+    PDF has visible, human-readable content but zero extractable text via
+    plain fitz text extraction (page.get_text()), exactly the property this
+    task's exit-2 NO TEXT LAYER path and LITERATURE_CONVERTER=ocr mode exist
+    to handle. Asserts this property on itself before returning, per this
+    phase's Scope Hypothesis, rather than assuming the pixmap round-trip
+    strips all text.
+
+    NOTE for any caller composing this fixture with LITERATURE_CONVERTER=auto
+    on a machine where the primary tier's venv is provisioned AND system
+    `tesseract` is on PATH: pymupdf4llm.to_markdown()'s force_text=True
+    default (a pre-existing, out-of-scope PyMuPDF/pymupdf4llm behavior,
+    unrelated to the `ocrmypdf` CLI this task adds) can silently recover real
+    text from this exact fixture shape via its own internal Tesseract call,
+    which would make `auto` exit 0 instead of the expected exit 2. Callers
+    asserting the exit-2 contract deterministically should force the primary
+    tier unavailable (e.g. LITERATURE_PYENV_DIR pointed at a scratch/
+    nonexistent directory) so `auto` degrades to the mandatory fallback tier,
+    which has no such internal OCR trigger — see this task's implementation
+    summary for the full finding."""
+    text_doc = fitz.open()
+    text_page = text_doc.new_page(width=612, height=792)
+    text_page.insert_text((72, 100), "Introduction", fontsize=20, fontname="hebo")
+    text_page.insert_text((72, 150), "This is a scanned page with real words on it.", fontsize=14)
+    text_page.insert_text((72, 180), "Optical character recognition should read this text.", fontsize=14)
+    pix = text_page.get_pixmap(dpi=150)
+    text_doc.close()
+
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+    page.insert_image(page.rect, pixmap=pix)
+    doc.save(out_path)
+    doc.close()
+
+    check_doc = fitz.open(out_path)
+    extracted = check_doc[0].get_text()
+    check_doc.close()
+    assert not extracted.strip(), (
+        f"build_image_only_pdf: fixture unexpectedly has an extractable text "
+        f"layer ({extracted!r}) -- the pixmap-insert-as-image round-trip did "
+        f"not strip all text as required by this fixture's whole purpose"
+    )
 
 
 def build_bold_heading_pdf(out_path):
@@ -247,6 +296,8 @@ def main():
         build_fused_word_pdf(out_path)
     elif kind == "broken-font":
         build_broken_font_pdf(out_path)
+    elif kind == "image-only":
+        build_image_only_pdf(out_path)
     else:
         print(f"Unknown fixture kind: {kind}", file=sys.stderr)
         sys.exit(1)

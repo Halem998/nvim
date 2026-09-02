@@ -353,6 +353,241 @@ fi
 t_log "WARNING: broken-font-encoding fixture is NOT asserted against the primary (pymupdf4llm) tier — see this test's header comment for why (pymupdf4llm's own cleanup heuristics sanitize this specific synthetic construction). This is a documented limitation of the synthetic reproduction technique, never silently skipped without explanation."
 
 # ============================================================
+# Test 6: image-only (no-text-layer) fixture — locks in the exit-2 NO TEXT
+# LAYER: messaging contract, the never-auto-invoked guarantee for
+# LITERATURE_CONVERTER=ocr, the graceful ocrmypdf-absence path, and the
+# real OCR round-trip when ocrmypdf is actually available.
+# ============================================================
+
+FIXTURE_IMG="$WORKDIR/image_only.pdf"
+python3 "$FIXTURE_GEN" image-only "$FIXTURE_IMG" >/dev/null
+
+# --- 6a: auto exits 2 with the marker and the named remedy ---
+#
+# The primary tier's venv is forced unavailable here so this assertion is
+# deterministic: see generate-test-fixtures.py's build_image_only_pdf()
+# docstring — pymupdf4llm's own force_text=True default (pre-existing,
+# unrelated to this task's ocrmypdf-based mode) can otherwise silently
+# recover real text from this exact fixture shape via its own internal
+# Tesseract call whenever the primary tier's venv AND system tesseract are
+# both present, which would mask the exit-2 contract this test locks in.
+# `auto` degrading to the mandatory fallback tier (no such internal OCR
+# trigger) is exactly what happens on any machine without a provisioned
+# venv, so this is a representative, not a contrived, scenario.
+
+# A nonexistent-but-writable LITERATURE_PYENV_DIR is NOT sufficient to force
+# unavailability -- literature-pyenv-provision.sh happily auto-provisions a
+# fresh venv there if `uv` and network access are available, which silently
+# restores the very primary tier this test needs unavailable. An unwritable
+# parent directory makes `uv venv` fail deterministically instead.
+UNWRITABLE_PYENV_PARENT="$WORKDIR/unwritable_pyenv_parent"
+mkdir -p "$UNWRITABLE_PYENV_PARENT"
+chmod 000 "$UNWRITABLE_PYENV_PARENT"
+
+OUT_IMG_AUTO="$WORKDIR/out_img_auto"
+mkdir -p "$OUT_IMG_AUTO"
+STDERR_IMG_AUTO="$WORKDIR/stderr_img_auto.log"
+LITERATURE_PYENV_DIR="$UNWRITABLE_PYENV_PARENT/venv" \
+  "$CONVERT_SH" "$FIXTURE_IMG" "$OUT_IMG_AUTO" >/dev/null 2>"$STDERR_IMG_AUTO"
+EXIT_IMG_AUTO=$?
+chmod 755 "$UNWRITABLE_PYENV_PARENT"
+
+if [ "$EXIT_IMG_AUTO" -eq 2 ]; then
+  t_pass "image-only fixture (auto, primary tier forced unavailable): exit 2"
+else
+  t_fail "image-only fixture (auto, primary tier forced unavailable): expected exit 2, got $EXIT_IMG_AUTO — stderr:"
+  cat "$STDERR_IMG_AUTO" >&2
+fi
+
+if grep -q 'NO TEXT LAYER:' "$STDERR_IMG_AUTO"; then
+  t_pass "image-only fixture: NO TEXT LAYER: marker present in stderr"
+else
+  t_fail "image-only fixture: NO TEXT LAYER: marker missing from stderr"
+fi
+
+if grep -q 'LITERATURE_CONVERTER=ocr' "$STDERR_IMG_AUTO"; then
+  t_pass "image-only fixture: stderr names the LITERATURE_CONVERTER=ocr remedy"
+else
+  t_fail "image-only fixture: stderr does not name the LITERATURE_CONVERTER=ocr remedy"
+fi
+
+# --- 6b: auto never invokes ocrmypdf ---
+#
+# A PATH-shadowing stub records invocation via a marker file; prepended
+# ahead of the real ocrmypdf (if any), it intercepts any call the script
+# makes. Run WITHOUT forcing the primary tier unavailable this time — the
+# assertion (ocrmypdf, the external CLI, is never invoked) holds regardless
+# of which tier `auto` actually uses.
+OCR_STUB_DIR="$WORKDIR/ocr_stub_bin"
+mkdir -p "$OCR_STUB_DIR"
+OCR_INVOKED_MARKER="$WORKDIR/ocr_invoked_marker"
+cat > "$OCR_STUB_DIR/ocrmypdf" << STUBEOF
+#!/usr/bin/env bash
+touch "$OCR_INVOKED_MARKER"
+exit 1
+STUBEOF
+chmod +x "$OCR_STUB_DIR/ocrmypdf"
+
+OUT_IMG_AUTO2="$WORKDIR/out_img_auto2"
+mkdir -p "$OUT_IMG_AUTO2"
+rm -f "$OCR_INVOKED_MARKER"
+PATH="$OCR_STUB_DIR:$PATH" "$CONVERT_SH" "$FIXTURE_IMG" "$OUT_IMG_AUTO2" >/dev/null 2>"$WORKDIR/stderr_img_auto2.log"
+
+if [ ! -f "$OCR_INVOKED_MARKER" ]; then
+  t_pass "image-only fixture: auto mode never invokes ocrmypdf (stub not triggered)"
+else
+  t_fail "image-only fixture: auto mode invoked ocrmypdf (stub WAS triggered) — auto must never reach the ocr_explicit branch"
+fi
+
+# --- 6c: LITERATURE_CONVERTER=ocr with ocrmypdf absent from PATH ---
+#
+# Runs UNCONDITIONALLY (does not require ocrmypdf to be installed). Masks
+# ocrmypdf (and tesseract) off PATH by symlinking every OTHER entry of
+# ocrmypdf's real bin directory into a scratch dir — a plain PATH override
+# excluding that whole directory breaks bash's own shebang resolution on a
+# single-bin-dir system (e.g. NixOS, where bash/python3/ocrmypdf all live
+# side by side) — then invokes the script via `bash "$CONVERT_SH"` directly
+# so the calling shell (not the masked PATH) resolves `bash` itself.
+mask_ocrmypdf_path() {
+  local real_ocrmypdf real_dir scratch_bin f base
+  real_ocrmypdf=$(command -v ocrmypdf 2>/dev/null || true)
+  scratch_bin=$(mktemp -d)
+  if [ -z "$real_ocrmypdf" ]; then
+    echo "$scratch_bin"
+    return
+  fi
+  real_dir=$(dirname "$real_ocrmypdf")
+  for f in "$real_dir"/*; do
+    base=$(basename "$f")
+    case "$base" in
+      ocrmypdf|tesseract) continue ;;
+    esac
+    ln -s "$f" "$scratch_bin/$base" 2>/dev/null
+  done
+  echo "$scratch_bin"
+}
+
+MASKED_BIN=$(mask_ocrmypdf_path)
+OUT_IMG_NOOCR="$WORKDIR/out_img_noocr"
+mkdir -p "$OUT_IMG_NOOCR"
+STDERR_IMG_NOOCR="$WORKDIR/stderr_img_noocr.log"
+PATH="$MASKED_BIN" LITERATURE_CONVERTER=ocr bash "$CONVERT_SH" "$FIXTURE_IMG" "$OUT_IMG_NOOCR" >/dev/null 2>"$STDERR_IMG_NOOCR"
+EXIT_IMG_NOOCR=$?
+
+if [ "$EXIT_IMG_NOOCR" -ne 0 ] && grep -qi "ocrmypdf: not available" "$STDERR_IMG_NOOCR" && ! grep -qi "traceback" "$STDERR_IMG_NOOCR"; then
+  t_pass "LITERATURE_CONVERTER=ocr with ocrmypdf absent: clean non-zero exit, graceful-detection message, no traceback"
+else
+  t_fail "LITERATURE_CONVERTER=ocr with ocrmypdf absent: expected a clean non-zero exit with a graceful-detection message and no traceback; got exit $EXIT_IMG_NOOCR — stderr:"
+  cat "$STDERR_IMG_NOOCR" >&2
+fi
+
+# --- 6d: real OCR round-trip (ocrmypdf-dependent; SKIPS WITH A VISIBLE
+# WARNING when ocrmypdf is absent — never silently passes, never fails the
+# suite, following the existing LITERATURE_TEST_PDF skip idiom) ---
+if command -v ocrmypdf >/dev/null 2>&1; then
+  OUT_IMG_OCR="$WORKDIR/out_img_ocr"
+  mkdir -p "$OUT_IMG_OCR"
+  STDERR_IMG_OCR="$WORKDIR/stderr_img_ocr.log"
+  LITERATURE_CONVERTER=ocr "$CONVERT_SH" "$FIXTURE_IMG" "$OUT_IMG_OCR" >/dev/null 2>"$STDERR_IMG_OCR"
+  EXIT_IMG_OCR=$?
+  if [ "$EXIT_IMG_OCR" -eq 0 ] && [ -s "$OUT_IMG_OCR/image_only.md" ]; then
+    t_pass "LITERATURE_CONVERTER=ocr on image-only fixture: exit 0, non-empty .md written"
+  else
+    t_fail "LITERATURE_CONVERTER=ocr on image-only fixture: expected exit 0 with non-empty output; got exit $EXIT_IMG_OCR — stderr:"
+    cat "$STDERR_IMG_OCR" >&2
+  fi
+else
+  t_log "WARNING: ocrmypdf not available on PATH — skipping the real-OCR-path test for LITERATURE_CONVERTER=ocr (never fails the suite). Install ocrmypdf (and tesseract) to exercise this path."
+fi
+
+# --- 6e: exit-3 gate-rejection stderr still starts with the unmodified
+# QUALITY GATE FAILED prefix, and now also carries the remedy line. Reuses
+# Test 3b's fused-word fixture/stderr capture rather than reconverting. ---
+if grep -q '^\[convert\] QUALITY GATE FAILED' "$STDERR_FW"; then
+  t_pass "gate-rejection stderr: QUALITY GATE FAILED prefix unmodified"
+else
+  t_fail "gate-rejection stderr: QUALITY GATE FAILED prefix missing or modified — stderr:"
+  cat "$STDERR_FW" >&2
+fi
+
+if grep -q 'Remedy:' "$STDERR_FW"; then
+  t_pass "gate-rejection stderr: carries the new remedy line"
+else
+  t_fail "gate-rejection stderr: missing the new remedy line — stderr:"
+  cat "$STDERR_FW" >&2
+fi
+
+# --- 6f: literature-ingest.sh bucketing coverage — an image-only file lands
+# in "Files needing OCR", and a marker-free exit-2 (primary tier forced but
+# unavailable) still lands in "Files failed". Scratch directories only;
+# never touches ~/Projects/Literature/. ---
+INGEST_SH="$SCRIPT_DIR/literature-ingest.sh"
+if [ -x "$INGEST_SH" ]; then
+  INGEST_SCRATCH_LIT="$WORKDIR/ingest_scratch_lit"
+  INGEST_SRC_DIR="$WORKDIR/ingest_src"
+  mkdir -p "$INGEST_SCRATCH_LIT" "$INGEST_SRC_DIR"
+  cp "$FIXTURE1" "$INGEST_SRC_DIR/good_doc.pdf"
+  cp "$FIXTURE_IMG" "$INGEST_SRC_DIR/image_only.pdf"
+
+  STDOUT_INGEST="$WORKDIR/stdout_ingest.log"
+  LITERATURE_DIR="$INGEST_SCRATCH_LIT" LITERATURE_CONVERTER=pymupdf \
+    "$INGEST_SH" "$INGEST_SRC_DIR" --no-local >"$STDOUT_INGEST" 2>"$WORKDIR/stderr_ingest.log"
+
+  if grep -q "Files needing OCR: 1" "$STDOUT_INGEST" && grep -q "image_only.pdf" "$STDOUT_INGEST"; then
+    t_pass "literature-ingest.sh: image-only file lands in the needs-OCR bucket"
+  else
+    t_fail "literature-ingest.sh: image-only file did not land in the needs-OCR bucket — stdout:"
+    cat "$STDOUT_INGEST" >&2
+  fi
+
+  if grep -q "Files failed: 0" "$STDOUT_INGEST"; then
+    t_pass "literature-ingest.sh: Files failed stayed 0 (image-only file correctly bucketed as needs-OCR, not a hard failure)"
+  else
+    t_fail "literature-ingest.sh: expected Files failed: 0 — stdout:"
+    cat "$STDOUT_INGEST" >&2
+  fi
+
+  INGEST_SCRATCH_LIT2="$WORKDIR/ingest_scratch_lit2"
+  INGEST_SRC_DIR2="$WORKDIR/ingest_src2"
+  mkdir -p "$INGEST_SCRATCH_LIT2" "$INGEST_SRC_DIR2"
+  cp "$FIXTURE1" "$INGEST_SRC_DIR2/good_doc.pdf"
+
+  UNWRITABLE_PYENV_PARENT2="$WORKDIR/unwritable_pyenv_parent2"
+  mkdir -p "$UNWRITABLE_PYENV_PARENT2"
+  chmod 000 "$UNWRITABLE_PYENV_PARENT2"
+
+  STDOUT_INGEST2="$WORKDIR/stdout_ingest2.log"
+  STDERR_INGEST2="$WORKDIR/stderr_ingest2.log"
+  # LITERATURE_CONVERTER applies to the whole run (there is no per-file
+  # override), so the sole source file here fails via the marker-free
+  # exit-2 path and PROCESSED stays 0 -- literature-ingest.sh takes its
+  # early "all files failed" branch and exits 3 BEFORE ever reaching the
+  # "=== Ingestion Summary ===" block (that block is unreachable when
+  # PROCESSED==0), so this asserts against the early-exit aggregate log
+  # line instead (the Phase 2 task bullet that added the needs-OCR count to
+  # that exact message).
+  LITERATURE_DIR="$INGEST_SCRATCH_LIT2" LITERATURE_CONVERTER=pymupdf4llm \
+    LITERATURE_PYENV_DIR="$UNWRITABLE_PYENV_PARENT2/venv" \
+    "$INGEST_SH" "$INGEST_SRC_DIR2" --no-local >"$STDOUT_INGEST2" 2>"$STDERR_INGEST2"
+  chmod 755 "$UNWRITABLE_PYENV_PARENT2"
+
+  # GATE_FAILED and OCR_NEEDED are both 0 in this pure-hard-failure scenario,
+  # so literature-ingest.sh takes the plain "All files failed to process"
+  # branch (the parenthesized breakdown only appears when at least one of
+  # those two counters is nonzero) -- assert the plain line, and NOT the
+  # needs-OCR breakdown, so this stays a real regression lock rather than a
+  # match against a string that never actually appears in this scenario.
+  if grep -q "All files failed to process" "$STDERR_INGEST2" && ! grep -q "needing OCR" "$STDERR_INGEST2"; then
+    t_pass "literature-ingest.sh: marker-free exit-2 (primary tier unavailable) reported as a plain hard failure, not needs-OCR"
+  else
+    t_fail "literature-ingest.sh: marker-free exit-2 mis-bucketed — stderr:"
+    cat "$STDERR_INGEST2" >&2
+  fi
+else
+  t_fail "literature-ingest.sh not found or not executable at $INGEST_SH"
+fi
+
+# ============================================================
 # Optional stronger check: real Alur SyGuS PDF, if available. Converts to a
 # scratch dir ONLY — never touches ~/Projects/Literature/. Skips with a
 # visible warning (never fails the suite) if LITERATURE_TEST_PDF is unset.

@@ -1,0 +1,37 @@
+{
+  "phase": 4,
+  "phase_name": "Regression tests",
+  "started_at": "2026-09-01T01:20:00Z",
+  "last_updated": "2026-09-01T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "image-only fixture builder in generate-test-fixtures.py", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 2, "description": "auto exits 2 with marker + remedy test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 3, "description": "auto never invokes ocrmypdf test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 4, "description": "ocrmypdf-absent graceful-detection test (unconditional)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 5, "description": "ocrmypdf-dependent real OCR round-trip test (skips with warning if absent)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 6, "description": "exit-3 QUALITY GATE FAILED prefix + remedy line test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 7, "description": "literature-ingest.sh bucketing coverage (needs-OCR vs marker-free hard-failure)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-literature-convert.sh"]},
+    {"id": 8, "description": "manifest.json test-file registration check", "status": "done", "files_touched": []},
+    {"id": 9, "description": "corpus-mutation guard confirmation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Build the image-only fixture from a plain fitz.draw_rect() shape with no rendered text", "result": "failed", "reason": "no OCR-recognizable content at all -- confirms zero-text-layer but ocrmypdf also correctly finds nothing, so the LITERATURE_CONVERTER=ocr round-trip test could never observe real text recovery"},
+    {"approach": "Point LITERATURE_PYENV_DIR at a nonexistent-but-writable scratch directory to force the primary tier unavailable", "result": "failed", "reason": "literature-pyenv-provision.sh happily auto-provisions a fresh venv there (uv + network both available in this environment), silently restoring the primary tier and defeating the forced-unavailable premise; replaced with an unwritable (chmod 000) parent directory, which makes `uv venv` fail deterministically"},
+    {"approach": "Assert the full '=== Ingestion Summary ===' block for the marker-free exit-2 ingest scenario", "result": "failed", "reason": "when PROCESSED==0 (the sole file in the batch hard-fails), literature-ingest.sh takes its early All-files-failed branch and exits 3 BEFORE ever reaching the summary block -- replaced with an assertion against the early-exit aggregate stderr log line instead"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.additional",
+      "description": "Fixed a pre-existing gap in literature-convert.sh's exit-2 empty-output check (not originally scoped to any single phase's task list, but directly blocking Phase 1-3's real-world efficacy)",
+      "type": "altered",
+      "reason": "Discovered while building/verifying this phase's image-only fixture: the mandatory fallback tier's extract_blocks_mode()/extract_dict_mode() emit a literal '[figure omitted]' placeholder for every image XObject block, so a genuinely image-only PDF (built the standard way, an embedded image rather than vector-only drawing) does NOT produce an empty string and was silently succeeding with a useless one-line '.md' instead of hitting the exit-2 NO TEXT LAYER path -- defeating the entire premise of Phases 1-3 for the realistic case of an operator without a provisioned pymupdf4llm venv. Added a small _is_placeholder_only() helper (literature-convert.sh) that treats placeholder-only content as empty for this check; verified via full suite + two targeted revert-and-confirm-failure checks.",
+      "annotation": "*(deviation: altered -- extended Phase 1's exit-2 empty-output check to also catch placeholder-only fallback-tier output; see phase-4-progress.json findings)*"
+    }
+  ],
+  "findings": [
+    "pymupdf4llm's own force_text=True default (pre-existing, unrelated to this task) makes the PRIMARY tier silently recover text via its own internal Tesseract call whenever a page has no text layer and system tesseract is on PATH -- confirmed with the image-only fixture under LITERATURE_CONVERTER=auto with the venv provisioned. This is a DIFFERENT code path than the ocrmypdf CLI this task adds; the 'auto never invokes ocrmypdf' guarantee holds regardless. Phase 4's auto-exits-2 test forces the primary tier unavailable (via an unwritable LITERATURE_PYENV_DIR parent) to get a deterministic assertion, matching how auto degrades on any machine without a provisioned venv.",
+    "SEPARATE AND MORE SIGNIFICANT: literature-convert.sh's mandatory fallback tier (the one every operator without a provisioned primary-tier venv actually uses) does NOT treat a genuinely image-only PDF as empty output on its own -- it emits a non-empty '[figure omitted]' placeholder for the image block, which passed the pre-existing `not content.strip()` check and the quality gate (page-coverage check is bypassed when the source itself has 0 extractable words). Fixed as part of this phase (see deviations); without this fix the entire task's exit-2/needs-OCR/LITERATURE_CONVERTER=ocr chain would never trigger for a real scanned PDF converted via the fallback tier."
+  ]
+}

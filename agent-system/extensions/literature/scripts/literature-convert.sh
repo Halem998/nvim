@@ -915,6 +915,26 @@ def ocr_remedy_command(input_path, force=False):
     return f"{env} literature-convert.sh {input_path} {output_dir}"
 
 
+# A genuinely image-only PDF converted via the MANDATORY FALLBACK tier does
+# NOT produce an empty string: extract_blocks_mode()/extract_dict_mode()
+# (and their TOC/heuristic callers) emit this literal placeholder for every
+# image XObject block, so a page consisting entirely of one embedded scan
+# image still "extracts" as non-empty content that would otherwise slip
+# past the `not content.strip()` check below and silently succeed with a
+# useless one-line ".md" (discovered while verifying this task's image-only
+# fixture against LITERATURE_CONVERTER=auto with the primary tier
+# unavailable -- the realistic path most operators without a provisioned
+# pymupdf4llm venv actually take).
+_FIGURE_PLACEHOLDER = "[figure omitted]"
+
+
+def _is_placeholder_only(text):
+    """True if `text` carries no real extracted content beyond the fallback
+    tier's own image placeholders (and surrounding whitespace/markdown
+    noise)."""
+    return not text.replace(_FIGURE_PLACEHOLDER, "").strip()
+
+
 # ============================================================
 # MAIN
 # ============================================================
@@ -935,7 +955,7 @@ if content is None:
     print(f"[convert] Using mandatory PyMuPDF column-clustering fallback tier ({log_reason})", file=sys.stderr)
     content, engine_used = try_pymupdf_fallback()
 
-if not content or not content.strip():
+if not content or _is_placeholder_only(content):
     print(
         "[convert] NO TEXT LAYER: all engine tiers produced empty output — this PDF "
         "appears to have no extractable text layer at all (likely a scanned, "

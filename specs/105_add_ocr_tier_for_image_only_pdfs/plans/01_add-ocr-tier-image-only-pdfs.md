@@ -298,37 +298,37 @@ and record the runtime path as unverified rather than assuming it works.
 
 ---
 
-### Phase 4: Regression tests [NOT STARTED]
+### Phase 4: Regression tests [COMPLETED]
 
 **Goal**: The messaging contract, the bucketing discrimination, and the never-auto-invoked
 guarantee are locked in by tests that fail if any of them regresses.
 
 **Tasks**:
-- [ ] Add an image-only PDF fixture builder to `scripts/tests/generate-test-fixtures.py`,
+- [x] Add an image-only PDF fixture builder to `scripts/tests/generate-test-fixtures.py`,
       following the existing `build_*_pdf` convention: render a text-bearing page to a pixmap and
       insert it as an image into a fresh page so the result has visible content and zero
       extractable text. Assert in the builder itself that `page.get_text()` returns empty.
-- [ ] Add a test to `scripts/tests/test-literature-convert.sh` asserting `auto` on the image-only
+- [x] Add a test to `scripts/tests/test-literature-convert.sh` asserting `auto` on the image-only
       fixture exits 2, stderr carries the distinctive marker, and stderr names the
       `LITERATURE_CONVERTER=ocr` remedy.
-- [ ] Add a test asserting `auto` on the image-only fixture never invokes `ocrmypdf` (a `PATH`
+- [x] Add a test asserting `auto` on the image-only fixture never invokes `ocrmypdf` (a `PATH`
       shim recording invocation, or an assertion that no OCR log line appears).
-- [ ] Add a test asserting `LITERATURE_CONVERTER=ocr` with `ocrmypdf` absent from `PATH` fails
+- [x] Add a test asserting `LITERATURE_CONVERTER=ocr` with `ocrmypdf` absent from `PATH` fails
       with the graceful-detection message and no traceback. This test must run unconditionally,
       since it does not require `ocrmypdf` to be installed.
-- [ ] Add an `ocrmypdf`-dependent test that runs the real OCR path on the image-only fixture. It
+- [x] Add an `ocrmypdf`-dependent test that runs the real OCR path on the image-only fixture. It
       must SKIP WITH A VISIBLE WARNING when `ocrmypdf` is absent, following the existing
       `LITERATURE_TEST_PDF` skip idiom — never silently pass and never fail the suite.
-- [ ] Add a test asserting the exit-3 gate-rejection stderr still starts with the unmodified
+- [x] Add a test asserting the exit-3 gate-rejection stderr still starts with the unmodified
       `QUALITY GATE FAILED` prefix and now also carries the remedy line.
-- [ ] Add coverage for `literature-ingest.sh`'s new bucket: an image-only file lands in
+- [x] Add coverage for `literature-ingest.sh`'s new bucket: an image-only file lands in
       `Files needing OCR`, a marker-free exit-2 lands in `Files failed`. Place it in
       `test-literature-convert.sh` or a sibling test file, whichever matches the suite's existing
       separation of concerns.
-- [ ] Register any new test file in `manifest.json`'s `provides.scripts` array (existing test
+- [x] Register any new test file in `manifest.json`'s `provides.scripts` array (existing test *(completed: no new test file added, both files already registered)*
       files are listed there); no registration change is needed if tests are added to existing
       files.
-- [ ] Confirm every test writes only to scratch temp directories and never reads from or writes to
+- [x] Confirm every test writes only to scratch temp directories and never reads from or writes to
       `~/Projects/Literature/`, per the suite's stated corpus constraint.
 
 **Timing**: 1.5 hours
