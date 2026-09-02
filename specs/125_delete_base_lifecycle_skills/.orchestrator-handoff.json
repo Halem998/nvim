@@ -1,0 +1,19 @@
+{
+  "task_number": 125,
+  "dispatch_seq": 2,
+  "operation": "plan",
+  "status": "planned",
+  "session_id": "sess_1788357501_0d2431_125",
+  "agent_type": "planner-agent",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/125_delete_base_lifecycle_skills/plans/01_delete-base-lifecycle-skills.md",
+      "summary": "10-phase plan with 4 dependency waves; 11h estimate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 10,
+  "next_steps": "Dispatch implement for task 125. Phases 1 and 2 are parallel-safe (wave 1); phase 3 is the deletion gate; phases 4-9 are six disjoint-territory parallel sweeps; phase 10 is final verification.",
+  "notes": "Scope is materially larger than the delegation's 4-item work list. Research found 129 files / ~352 hit lines referencing the three skill names across agent-system/, plus a SECOND hard blocker not in the research headline: core/manifest.json provides.skills lists all three (deploy breakage), alongside the validate-wiring.sh existence loop research did find. Plan resolves the deferred design call on extension manifest routing blocks: prune only key-value pairs valued at the three deleted skills (lint-safe under Check A/B)."
+}
