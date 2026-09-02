@@ -1,5 +1,5 @@
 ---
-next_project_number: 143
+next_project_number: 145
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 143
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141,142 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141,142,143,144 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,127,136,140 | 29,74,91,121,139 | core-agent-system, extensions |
 | 3 | 88 | 127 | core-agent-system |
 
@@ -42,6 +42,8 @@ next_project_number: 143
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 141 [NOT STARTED] — Relay the admission verdict's own reason string in orchestrate-dr
 142 [NOT STARTED] — Reduce the orchestrator's own token consumption so that multi-tas
+143 [NOT STARTED] — Port the handoff staleness gate and the dispatch_seq identity gat
+144 [NOT STARTED] — Narrow the coarse whole-directory file_scope declarations that ma
 
 ### Extensions
 
@@ -71,6 +73,53 @@ next_project_number: 143
 138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
 
 ## Tasks
+
+### 144. Narrow coarse file scope declarations
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration.
+
+DEFECT. validate-state.sh Check 8 currently reports three coarse declarations, each naming a directory root rather than the files the task will actually touch:
+- project 44 declares 'agent-system/extensions/core/context/', overlapping 10 distinct non-terminal tasks (29, 51, 53, 72, 88, 91, 100, 127, 129, 140)
+- project 129 declares 'agent-system/extensions/core/context/standards/', overlapping 5 (44, 51, 53, 72, 140)
+- project 88 declares 'agent-system/extensions/core/context/patterns/', overlapping 3 (44, 72, 100)
+
+CONSEQUENCE. orchestrate-batch-admit.sh resolves collisions with a directory-prefix overlap predicate, so a whole-directory declaration collides with every task touching anything beneath it. The admission gate then defers those tasks as file_scope_collision even when their real footprints are disjoint. This is not merely cosmetic: each false defer costs a whole orchestration cycle, and every deferred-then-retried task re-runs classification and admission on the next cycle, so coarse declarations directly reduce batch throughput and inflate the orchestrator's own context growth. A batch that could run three tasks in parallel is serialized into three cycles by a declaration that was never meant to assert that much.
+
+WORK. For each flagged declaration, narrow it to the files the task will genuinely modify. Where a task cannot know its footprint before its own research phase has run, do NOT simply leave a directory root in place: decide and document the convention for that case (candidates include declaring the narrowest known subtree, declaring nothing and relying on the lock layer, or re-declaring after research completes) and record the decision so future task creation follows it rather than defaulting to a root.
+
+CONSTRAINT -- PRECISION, NOT TRIMMING. Narrowing must not introduce false NEGATIVES. Under-declaring is strictly worse than over-declaring: it silently removes the collision protection that stops two agents editing the same file concurrently, whereas over-declaring only costs a cycle. Every narrowed declaration must still cover everything the task actually writes.
+
+OUT OF SCOPE. The advisory is WARN-only by design and must stay non-blocking; do not convert Check 8 into a gate as part of this work. Do not change the overlap predicate itself in file-footprint-overlap.md.
+
+ACCEPTANCE. Check 8 reports clean, or each surviving coarse declaration carries an explicit recorded justification; no task's narrowed file_scope omits a path that task actually modifies; validate-state.sh green on the duplicate check; full gate run green.
+
+---
+
+### 143. Mt handoff staleness and dispatch seq gates
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Port the handoff staleness gate and the dispatch_seq identity gate to the multi-task postflight path in skill-orchestrate/SKILL.md. Both gates exist in single-task Stage 5 and neither exists in Stage MT-4; the multi-task path therefore trusts any handoff file that happens to sit at the expected path.
+
+DEFECT. Single-task Stage 5 applies two checks before trusting .orchestrator-handoff.json: (a) an mtime staleness gate comparing the handoff's mtime against this dispatch's own dispatch_start_ts, fail-closed via a 9999999999 default so a dispatch site that forgot to set its window marks the handoff stale rather than trusting it; and (b) a dispatch_seq identity gate comparing the handoff's echoed dispatch_seq against the value the orchestrator minted for this cycle, which is the only check that can discriminate a woken predecessor's late write (such a write always carries a NEWER mtime and so passes the mtime check looking exactly like an on-time report). Either failing sets handoff_stale=true, routes to .return-meta.json recovery, and records a HANDOFF_STALE_OR_ABSENT system defect. Stage MT-4 step 1 has neither gate: it reads the handoff whenever the file exists and only attempts recovery when the file is absent.
+
+OBSERVED. During a live multi-task run, a task directory carried a handoff left by an earlier interrupted session, with mtime predating the dispatch window and dispatch_seq=4 against the cycle's minted 1, reporting status "planned" and phases_completed 0 -- while the dispatch that had just returned actually completed 6 of 6 phases. Stage MT-4 step 1 as written would have consumed that stale file and reported a completed task as planned with zero phases done, regressing real work. The correct outcome was only reached by checking mtime and dispatch_seq by hand and routing to the return-meta recovery path instead.
+
+WHY THIS IS CHEAP. Multi-task mode already records both inputs the gates need: Stage MT-4's own dispatch-time mint snippet writes dispatch_start_ts[task_num] and dispatch_seq[task_num] into the multi-state file in one atomic read-modify-write. Nothing new needs to be captured -- only the comparison is missing.
+
+WORK. Add both gates to Stage MT-4 step 1, ahead of its existing "if present, continue to step 2" branch, mirroring single-task Stage 5's shape and semantics rather than inventing a second convention. A stale or seq-mismatched handoff must route into the EXISTING return-meta recovery path, not a new branch. Record the detection through the existing append_detected_defect_mt idiom with defect_class HANDOFF_STALE_OR_ABSENT. While there, evaluate whether the stray-handoff sweep that single-task mode gets from orchestrate-stage5-gates.sh should also serve the multi-task path, or whether a narrower fix is correct -- decide and record the reasoning either way.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md (never .claude/**).
+
+ACCEPTANCE. A fixture-driven regression test proving that (1) a handoff with mtime predating the dispatch window and (2) a handoff whose dispatch_seq does not match the minted value each route to return-meta recovery rather than being trusted; both engines visibly agree on the gate semantics; full gate run green.
+
+---
 
 ### 142. Reduce orchestrator token consumption
 - **Status**: [NOT STARTED]
