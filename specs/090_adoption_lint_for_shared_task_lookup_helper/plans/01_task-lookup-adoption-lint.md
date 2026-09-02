@@ -457,22 +457,22 @@ the `[COMPLETED WITH EXCLUSIONS]` branch above rather than migrating a deletion-
 
 ---
 
-### Phase 8: Full gate run and deploy verification [NOT STARTED]
+### Phase 8: Full gate run and deploy verification [COMPLETED]
 
 **Goal**: Confirm the whole change set is green end-to-end, deployed, and that gate 17 actually
 runs against the deployed tree.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm the full suite
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm the full suite
       passes, including the new test-lint suite.
-- [ ] Run the deploy (`deploy-headless.sh`) so the new lint and test land in `.claude/scripts/`.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and confirm gate 17 appears
+- [x] Run the deploy (`deploy-headless.sh`) so the new lint and test land in `.claude/scripts/`.
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and confirm gate 17 appears *(gate 17 read as gate 18, per Phase 5's renumbering)*
       and passes, and that no previously-passing gate regressed.
-- [ ] Diff any remaining `verify-deploy.sh` findings against a pre-change baseline (`git log` /
+- [x] Diff any remaining `verify-deploy.sh` findings against a pre-change baseline (`git log` /
       `git stash` comparison) so pre-existing unrelated findings are not attributed to this work.
-- [ ] Confirm no file under `.claude/**` was hand-authored: every `.claude/` change is attributable
+- [x] Confirm no file under `.claude/**` was hand-authored: every `.claude/` change is attributable
       to the deploy step (`git status` review plus the deploy log).
-- [ ] Confirm the working tree contains no edits to `commands/research.md`, `commands/plan.md`,
+- [x] Confirm the working tree contains no edits to `commands/research.md`, `commands/plan.md`,
       `commands/implement.md` (deleted earlier in this batch) and none to `git commit -m` call
       sites (task 48's territory).
 
@@ -496,21 +496,21 @@ runs against the deployed tree.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose` exits
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose` exits
       0 against the current source store.
-- [ ] A newly planted inline task-lookup on an executable surface causes the lint to exit 1 and be
+- [x] A newly planted inline task-lookup on an executable surface causes the lint to exit 1 and be
       named in the output (the task's stated acceptance criterion, covered by an explicit test).
-- [ ] A planted offender under `context/` or `docs/` is not flagged.
-- [ ] Deployed-layout `.md` files under `commands/`/`skills/`/`agents/` are scanned, not skipped.
-- [ ] All four legitimate jq shapes (mutation, deletion, existence/length, single-field read) are
+- [x] A planted offender under `context/` or `docs/` is not flagged.
+- [x] Deployed-layout `.md` files under `commands/`/`skills/`/`agents/` are scanned, not skipped.
+- [x] All four legitimate jq shapes (mutation, deletion, existence/length, single-field read) are
       exempted with shape-specific reasons.
-- [ ] `skill-base.sh` and `command-gate-in.sh` are never flagged.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh` passes.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-common-lib.sh` still passes (unchanged).
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh` still passes.
-- [ ] `verify-deploy.sh` gate 17 present and passing.
-- [ ] Adopter count and duplicate count recorded, before and after, each with its command.
+- [x] `skill-base.sh` and `command-gate-in.sh` are never flagged.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh` passes.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-common-lib.sh` still passes (unchanged).
+- [x] `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh` still passes.
+- [x] `verify-deploy.sh` gate 17 present and passing. *(gate 17 read as gate 18)*
+- [x] Adopter count and duplicate count recorded, before and after, each with its command.
 
 ## Artifacts & Outputs
 

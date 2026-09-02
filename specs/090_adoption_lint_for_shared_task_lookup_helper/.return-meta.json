@@ -1,9 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md",
+      "summary": "Landed lint-task-lookup-adoption.sh as verify-deploy.sh gate 18 with a fixture suite, context doc, and a bounded 3-site migration; direction metrics recorded before/after."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built and landed lint-task-lookup-adoption.sh (dual-mode root resolution, balanced-paren Layer 1 classifier, reasoned Layer 2 allowlist), wired it as verify-deploy.sh gate 18 with an 18-assertion fixture suite, wrote the adoption-lint-conventions context doc, and migrated 3 verified-safe SKILL.md sites to skill_validate_input() (0 -> 3 real callers), recording before/after adopter and duplicate counts."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/context/patterns/adoption-lint-conventions.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+    "specs/090_adoption_lint_for_shared_task_lookup_helper/plans/01_task-lookup-adoption-lint.md",
+    "specs/090_adoption_lint_for_shared_task_lookup_helper/progress/phase-1-scratch-measurements.md",
+    "specs/090_adoption_lint_for_shared_task_lookup_helper/progress/phase-5-progress.json",
+    "specs/090_adoption_lint_for_shared_task_lookup_helper/progress/phase-7-progress.json",
+    "specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When building an executable-surface adoption lint, require the SPECIFIC comparison operator the canonical helper uses in the candidate pattern (e.g. `select(.field ==`), not just the field name. A broader candidate match (`select(.field`) catches structurally different operations (e.g. an `as $x | ... index ...` membership test) that are not duplicates of the target shape and need a new exemption bucket instead of being excluded at the source.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["adoption-lint", "candidate-pattern", "jq", "false-positive", "structural-classifier"]
+    },
+    {
+      "content": "Before migrating a call site to a shared validation helper that blocks on terminal task status, check whether the site's own documentation explicitly overrides that default (e.g. \"works regardless of task status\") or exists specifically for recovery on unusual states. A site whose contract conflicts with the helper's blocking behavior should be recorded as rejected, not migrated, even if variable names match.",
+      "category": "PATTERN",
+      "source_artifact": "specs/090_adoption_lint_for_shared_task_lookup_helper/summaries/01_task-lookup-adoption-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["migration-safety", "skill_validate_input", "terminal-state", "variable-parity", "per-site-judgment"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788317021_p90imp1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
