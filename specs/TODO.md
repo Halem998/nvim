@@ -58,7 +58,7 @@ next_project_number: 139
     └─ 107 [NOT STARTED] — Add an OCR-misrecognition detector to the literature quality gate
   └─ 105 [NOT STARTED] — Add an OCR tier to the literature converter, or make the pre-OCR 
   └─ 109 [NOT STARTED] — Fix three distinct failure modes in the online-ingest bridge, eac
-103 [PLANNING] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
+103 [PLANNED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
 106 [PLANNING] — Route skill-literature's convert path through literature-convert.
 108 [PLANNING] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
@@ -1446,11 +1446,12 @@ MANDATORY RECONCILIATION. Whichever route wins MUST reconcile itself with the pr
 ---
 
 ### 103. Fix fidelity audit chunk-only blindness and the absent-baseline majority
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/reports/01_fidelity-audit-chunk-blindness-baseline.md]
+- **Plan**: [103_fix_fidelity_audit_chunk_blindness_and_baseline/plans/01_fidelity-audit-chunk-scan-fixes.md]
 
 **Description**: Fix literature-fidelity-audit.sh so it can verify pipeline-ingested documents at all, and resolve the absent-baseline problem that blocks the overwhelming majority of the corpus. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
