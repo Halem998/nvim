@@ -394,12 +394,20 @@ main() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --pdf) shift; explicit_pdfs+=("$1"); shift ;;
+      --pdf)
+        shift
+        if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
+          echo "literature-audit.sh: --pdf requires a path argument" >&2
+          exit 64
+        fi
+        explicit_pdfs+=("$1")
+        shift
+        ;;
       --xref) mode="xref"; shift ;;
       --all) mode="all"; shift ;;
       *.pdf|*.djvu) explicit_pdfs+=("$1"); shift ;;
       -h|--help) usage; exit 0 ;;
-      *) shift ;;
+      *) echo "literature-audit.sh: unknown argument: $1" >&2; usage; exit 64 ;;
     esac
   done
 
