@@ -1,0 +1,50 @@
+{
+  "phase": 5,
+  "phase_name": "Pilot extraction -- skill-email-cleanup --all Mode",
+  "started_at": "2026-09-02T15:58:00Z",
+  "last_updated": "2026-09-02T16:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm clean git status, re-locate boundaries, mark section, confirm lint fires red on the real file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/email/skills/skill-email-cleanup/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Create destination file (heading promotion + framing), verify content-preservation diff",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/email/context/project/email/patterns/email-cleanup-all-mode.md"]
+    },
+    {
+      "id": 3,
+      "description": "Replace marked span with imperative pointer, add separator, grep for dangling inbound references (none found)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/email/skills/skill-email-cleanup/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Register in email/index-entries.json, confirm no manifest.json edit needed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/email/index-entries.json"]
+    },
+    {
+      "id": 5,
+      "description": "Measure before/after bytes, update convention doc's Measured Example slot and line_count, re-run lint clean",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/mode-gated-section-loading.md",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Interpreted plan's 'demote internal headings' literally in the convention doc",
+      "result": "failed",
+      "reason": "wording was backwards -- fixed to 'promote' (## -> #, ### -> ##) to match repo's single-H1-per-file convention, corrected in the convention doc during this phase"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -157,6 +157,27 @@
       "domain": "project",
       "subdomain": "email",
       "summary": "Design for routing confirmed skill-email-cleanup classify decisions into sender/domain-aggregated memory-vault preferences (create-once, update/extend)"
+    },
+    {
+      "path": "project/email/patterns/email-cleanup-all-mode.md",
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Complete specification for /email --all mode (whole-mailbox sweep, one consolidated bucket approval, sub-50 transparent drain) -- extracted from skill-email-cleanup/SKILL.md per the mode-gated section loading convention",
+      "line_count": 259,
+      "keywords": [
+        "email",
+        "all-mode",
+        "whole-mailbox",
+        "bucket-review",
+        "drain"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/email"
+        ]
+      }
     }
   ]
 }

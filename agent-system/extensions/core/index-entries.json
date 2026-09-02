@@ -3316,7 +3316,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Marker syntax and extraction procedure for mode/branch-gated sections in skill and command bodies -- paired branch-gated:begin/end markers, the imperative pointer test, path selection, and the lint that enforces it",
-      "line_count": 207,
+      "line_count": 215,
       "keywords": [
         "branch-gated",
         "mode-gated",

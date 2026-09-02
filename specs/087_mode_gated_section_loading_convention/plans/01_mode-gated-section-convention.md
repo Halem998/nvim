@@ -401,48 +401,48 @@ immediately before editing; if a Gate 19 already exists, take the next free numb
 
 ---
 
-### Phase 5: Pilot extraction — skill-email-cleanup `--all` Mode [NOT STARTED]
+### Phase 5: Pilot extraction — skill-email-cleanup `--all` Mode [COMPLETED]
 
 **Goal**: The convention is demonstrated end to end on one independent file: marker applied, lint
 detection observed firing, section extracted behind an imperative pointer, destination registered,
 byte delta measured.
 
 **Tasks**:
-- [ ] `git status --short` on `agent-system/extensions/email/` first; abort and report if the
+- [x] `git status --short` on `agent-system/extensions/email/` first; abort and report if the *(completed: clean, no concurrent edits)*
   pilot file has uncommitted concurrent edits.
-- [ ] Re-locate the section boundaries by heading text, not by the line numbers in this plan:
+- [x] Re-locate the section boundaries by heading text, not by the line numbers in this plan: *(completed: lines 281-534, matches plan's figures)*
   the `` ## `--all` Mode (`mode=all`): ... `` heading, and the line immediately before
   `## Archive Scope (`scope=archive`): ...`. Inspect the span for fence-interior `#`/`##` lines
   and confirm by direct reading that the chosen end boundary is the real next `##` heading and not
   a decoy.
-- [ ] Insert `<!-- branch-gated:begin condition="mode=all" -->` immediately above the heading and
+- [x] Insert `<!-- branch-gated:begin condition="mode=all" -->` immediately above the heading and *(completed)*
   `<!-- branch-gated:end -->` immediately after the section's last line.
-- [ ] **Run the lint now and record its output.** It MUST report a violation naming
+- [x] **Run the lint now and record its output.** It MUST report a violation naming *(completed: `[VIOLATION] .../skill-email-cleanup/SKILL.md: 17383 B marked-but-unextracted (threshold 8000 B)`)*
   `skill-email-cleanup/SKILL.md`. This is the proof that detection works on a real file, not only
   on a fixture; capture the exact line for the summary. (This intermediate state is expected red —
   see Commit Mode.)
-- [ ] Create `agent-system/extensions/email/context/project/email/patterns/email-cleanup-all-mode.md`
+- [x] Create `agent-system/extensions/email/context/project/email/patterns/email-cleanup-all-mode.md` *(completed)*
   containing the section's content verbatim, preceded by an opening line stating it is the
   complete and only specification for `/email --all` mode's execution and MUST be followed
   exactly. Demote the section's internal headings by one level if needed so the destination file
   has a single top-level heading.
-- [ ] Replace the entire marked span in `SKILL.md` (markers included) with an imperative pointer
+- [x] Replace the entire marked span in `SKILL.md` (markers included) with an imperative pointer *(completed)*
   in the Execution Flow / mode-dispatch position, using the deployed path form:
   `.claude/context/project/email/patterns/email-cleanup-all-mode.md`, phrased "READ ... now and
   follow it exactly". Apply the imperative/passive test to the wording before accepting it.
-- [ ] Grep the email extension (and `commands/email.md` specifically) for inbound references into
+- [x] Grep the email extension (and `commands/email.md` specifically) for inbound references into *(completed: no matches, nothing needed repointing)*
   the extracted region and repoint any that would now dangle. Record the result of the check even
   if nothing needed repointing — the check is required every time, never assumed clean.
-- [ ] Add the `index-entries.json` entry in `agent-system/extensions/email/index-entries.json`
+- [x] Add the `index-entries.json` entry in `agent-system/extensions/email/index-entries.json` *(completed)*
   with `load_when.commands: ["/email"]` (plus `skills`/`task_types` keys matching the shape of the
   existing entries in that file), correct `line_count`, and a one-line `summary`.
-- [ ] Confirm no `email/manifest.json` edit is needed (`provides.context` lists `project/email`
+- [x] Confirm no `email/manifest.json` edit is needed (`provides.context` lists `project/email` *(completed: confirmed)*
   wholesale) — verify rather than assume.
-- [ ] Measure and record: `SKILL.md` bytes before, bytes after, delta and percentage; extracted
+- [x] Measure and record: `SKILL.md` bytes before, bytes after, delta and percentage; extracted *(completed: 47,832 -> 30,656 B, -17,176 B/-35.9%; extracted file 17,729 B; ~4,300 tokens saved per non---all invocation)*
   file bytes; approximate token saving per non-`--all` `/email` invocation. Put this table in the
   task summary and add a one-line worked reference to it in the convention doc's "measured
   example" slot.
-- [ ] Re-run the lint: it MUST now exit 0 for that file.
+- [x] Re-run the lint: it MUST now exit 0 for that file. *(completed: exit 0, 0 violations)*
 
 **Timing**: 1.25 hours
 

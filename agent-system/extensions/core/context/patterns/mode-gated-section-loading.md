@@ -69,8 +69,12 @@ Extract" below):
    drift the moment any earlier edit lands. Confirm the span with a direct read.
 3. **Create the destination file** (see "Path Selection Rule" below) containing the section's
    content verbatim, preceded by the framing line required in "Whole-Section vs.
-   Reference-Appendix Risk" below. Demote internal headings by one level if needed so the
-   destination file has a single top-level heading.
+   Reference-Appendix Risk" below. **Promote** the extracted heading hierarchy by one level so
+   the section's own heading becomes the file's single `#` top-level heading (e.g. a `##`
+   section heading becomes `#`, and any `###` subsections beneath it become `##`) — matching the
+   single-H1-per-file convention every other `context/**/*.md` file in this repo already follows.
+   Only promote; nothing about the source file's own heading levels changes (they stay exactly as
+   extracted, since the marked span is being deleted from the source, not edited in place).
 4. **Replace the marked span** in the source file (markers included) with the imperative pointer
    (see "The Imperative/Passive Pointer Test" below).
 5. **Register** the destination file in the owning extension's `index-entries.json` (see
@@ -194,11 +198,15 @@ section is invisible to it by construction.
 
 ## Measured Example
 
-`skill-email-cleanup/SKILL.md`'s `` `--all` Mode `` section (17,309 B of a 47,832 B file) was
-extracted to
+`skill-email-cleanup/SKILL.md`'s `` `--all` Mode `` section was extracted to
 `agent-system/extensions/email/context/project/email/patterns/email-cleanup-all-mode.md` as this
-convention's pilot. See that task's implementation summary for the exact before/after byte
-figures and the measured per-invocation token saving for a non-`--all` `/email` call.
+convention's pilot. Measured: `SKILL.md` 47,832 B before -> 30,656 B after (17,176 B / 35.9%
+removed from a surface loaded on every `/email` invocation); the extracted file is 17,729 B
+(marginally larger than the removed span, because of the added opening framing line and the
+`## -> #` / `### -> ##` heading promotion). Approximate token saving per non-`--all` `/email`
+invocation (default mode, or `--archive` without `--all`): ~4,300 tokens (17,176 B / ~4 B per
+token, a rough English/markdown heuristic, not a tokenizer-exact count). See that task's
+implementation summary for the full measurement writeup.
 
 ## See Also
 
