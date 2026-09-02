@@ -587,7 +587,21 @@ skill_postflight_update() {
       if [[ "$_clamp_skip" == "true" ]]; then
         :
       else
-        bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" || _postflight_rc=$?
+        # --file-scope-add write-back (research only): read proposed_file_scope from this
+        # task's own .return-meta.json and forward it as --file-scope-add=<json> so
+        # update-task-status.sh's additive union-merge picks it up in the same postflight
+        # write. Same empty-array-expansion pattern as phase_check_args above -- an absent
+        # field, null, or [] passes no flag at all (byte-for-byte no-op).
+        local _fsa_args=()
+        if [[ "$operation" == "research" && -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
+          local _proposed_fs
+          _proposed_fs=$(jq -c '.proposed_file_scope // [] | if (type == "array") then . else [] end' \
+            "${_task_dir}/.return-meta.json" 2>/dev/null)
+          if [[ -n "$_proposed_fs" && "$_proposed_fs" != "[]" && "$_proposed_fs" != "null" ]]; then
+            _fsa_args=(--file-scope-add="$_proposed_fs")
+          fi
+        fi
+        bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" "${_fsa_args[@]}" || _postflight_rc=$?
       fi
       ;;
     *)

@@ -270,30 +270,33 @@ first rather than adding a third.
 
 ---
 
-### Phase 4: Wire the Research-Postflight Consumers [NOT STARTED]
+### Phase 4: Wire the Research-Postflight Consumers [COMPLETED]
 
 **Goal**: Make the mechanism live on both real research-postflight paths, and extend this task's
 own `file_scope` to cover the files this phase touches.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/skill-base.sh`, in `skill_postflight_update`'s
+- [x] In `agent-system/extensions/core/scripts/skill-base.sh`, in `skill_postflight_update`'s
       `researched|planned|implemented` branch, read `proposed_file_scope` from
       `${_task_dir}/.return-meta.json` when `operation == research` and append
       `--file-scope-add=<json>` to the `update-task-status.sh` call. Derive it from the already
       resolved `_task_dir` rather than adding a new positional argument, so every existing
-      4-arg/5-arg/6-arg/7-arg call site is unchanged.
-- [ ] Use the same empty-array-expansion pattern already used for `phase_check_args` so an
-      absent or empty field passes no flag at all.
-- [ ] In `agent-system/extensions/core/scripts/orchestrator-postflight.sh` Stage 7, extract
+      4-arg/5-arg/6-arg/7-arg call site is unchanged. *(completed)*
+- [x] Use the same empty-array-expansion pattern already used for `phase_check_args` so an
+      absent or empty field passes no flag at all. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/orchestrator-postflight.sh` Stage 7, extract
       `proposed_file_scope` from the already-open `$metadata_file` and pass the same flag when
-      `operation_type == research`.
-- [ ] Confirm both sites treat a missing file, missing field, `null`, or `[]` as a no-op with no
-      warning.
-- [ ] Extend task 144's own `file_scope` in `specs/state.json` via `state-write.sh` to add
+      `operation_type == research`. *(completed)*
+- [x] Confirm both sites treat a missing file, missing field, `null`, or `[]` as a no-op with no
+      warning. *(completed: verified via scratch .return-meta.json test, see progress file)*
+- [x] Extend task 144's own `file_scope` in `specs/state.json` via `state-write.sh` to add
       `agent-system/extensions/core/scripts/skill-base.sh`,
       `agent-system/extensions/core/scripts/orchestrator-postflight.sh`, and
       `agent-system/extensions/core/scripts/tests/test-update-task-status.sh` — an additive
-      union, never a replacement, matching the convention this task defines.
+      union, never a replacement, matching the convention this task defines. *(completed: also
+      added `agent-system/extensions/core/scripts/command-gate-out.sh`, a third live
+      research-postflight call site found by the Scope Hypothesis's own grep — see deviation
+      note)*
 
 **Timing**: 1.5 hours
 
@@ -323,7 +326,10 @@ reason.
 - A scratch `.return-meta.json` carrying `proposed_file_scope` drives an observable union on a
   `--dry-run` research postflight; the same run with the field removed produces no flag.
 - `jq '.active_projects[] | select(.project_number == 144) | .file_scope' specs/state.json` shows
-  eight entries, with the original five intact.
+  eight entries, with the original five intact. *(actual: nine entries — the plan's stated eight
+  plus `agent-system/extensions/core/scripts/command-gate-out.sh`, the third live
+  research-postflight call site this phase's own Scope Hypothesis grep surfaced; see the
+  deviation note above. All five original entries are intact.)*
 
 ---
 

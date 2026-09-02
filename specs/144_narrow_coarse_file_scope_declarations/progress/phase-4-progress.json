@@ -1,0 +1,42 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the Research-Postflight Consumers",
+  "started_at": "2026-09-02T01:00:00Z",
+  "last_updated": "2026-09-02T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Wire skill-base.sh, orchestrator-postflight.sh, and command-gate-out.sh consumers; extend task 144's file_scope",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "specs/state.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Re-ran the Scope Hypothesis's own grep (grep -rn 'update-task-status.sh postflight' agent-system/extensions/) live rather than trusting the plan's two-site assertion",
+      "result": "found a third live site",
+      "reason": "command-gate-out.sh (a core defensive status corrector, not an extension skill) also calls update-task-status.sh postflight with status_token=research when a skill's own status write was missed"
+    },
+    {
+      "approach": "Verified skill_postflight_update's new wiring end-to-end via a scratch fixture (isolated .claude/scripts/ copy + scratch specs/state.json + scratch .return-meta.json), not just bash -n",
+      "result": "confirmed",
+      "reason": "a scratch .return-meta.json carrying proposed_file_scope=[\"fixture/newfile.sh\"] drove file_scope from null to [\"fixture/newfile.sh\"]; the same run with the field removed left file_scope unchanged (no-op)"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.deviation-1",
+      "description": "Wire a third research-postflight call site (command-gate-out.sh) not named in the plan's Scope Hypothesis, and add it to task 144's file_scope (9 entries instead of the plan's stated 8)",
+      "type": "altered",
+      "reason": "The Scope Hypothesis's own instruction was to grep and check EVERY hit for a research path, wiring or explicitly recording out of scope with a reason -- command-gate-out.sh's defensive-correction branch (fired when a skill's own postflight status write was missed) calls update-task-status.sh postflight with status_token=research and already has $meta_file open. Leaving it unwired would silently drop proposed_file_scope in exactly the failure-recovery scenario where the primary call site's own write-back may be the thing that got skipped.",
+      "annotation": "*(deviation: altered — wired command-gate-out.sh, a third live research-postflight site)*"
+    }
+  ]
+}

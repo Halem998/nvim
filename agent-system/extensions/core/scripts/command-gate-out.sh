@@ -127,8 +127,24 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
     if [ "$status_token" = "implement" ]; then
       gate_out_phase_check="--phase-check=refuse"
     fi
+    # --file-scope-add write-back (research only): this defensive corrector already has
+    # $meta_file open above (it read $skill_status from it) -- a third live research-postflight
+    # call site alongside skill_postflight_update (skill-base.sh) and orchestrator-postflight.sh
+    # Stage 7, found via a fresh grep at implementation time rather than trusted from the plan's
+    # two-site Scope Hypothesis. Wired here rather than left out of scope: this is exactly the
+    # failure-recovery path where the primary call site's own write-back may have been the thing
+    # that got skipped, so leaving this site unwired would silently drop the proposal in the one
+    # scenario it matters most.
+    gate_out_fsa=""
+    if [ "$status_token" = "research" ] && [ -f "$meta_file" ]; then
+      gate_out_proposed_fs=$(jq -c '.proposed_file_scope // [] | if (type == "array") then . else [] end' \
+        "$meta_file" 2>/dev/null)
+      if [ -n "$gate_out_proposed_fs" ] && [ "$gate_out_proposed_fs" != "[]" ] && [ "$gate_out_proposed_fs" != "null" ]; then
+        gate_out_fsa="--file-scope-add=${gate_out_proposed_fs}"
+      fi
+    fi
     gate_out_rc=0
-    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" ${gate_out_phase_check} || gate_out_rc=$?
+    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" ${gate_out_phase_check} ${gate_out_fsa} || gate_out_rc=$?
     if [ "$gate_out_rc" -eq 4 ]; then
       echo "[gate-out] Phase-accounting backstop refused the defensive correction for task $task_number (plan file shows incomplete phases). Leaving status as '$current_status'." >&2
     elif [ "$gate_out_rc" -eq 6 ]; then

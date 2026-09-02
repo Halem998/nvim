@@ -345,7 +345,20 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_status_update" = "true" ] && [ "$status" = "$success_status" ]; then
   echo "[postflight] Updating task status via update-task-status.sh..."
+  # --file-scope-add write-back (research only): extract proposed_file_scope from the
+  # already-open $metadata_file and forward it as --file-scope-add=<json>, so
+  # update-task-status.sh's additive union-merge picks it up in the same postflight write.
+  # Absent field, null, or [] passes no flag at all (byte-for-byte no-op).
+  fsa_args=()
+  if [ "$operation_type" = "research" ] && [ -f "$metadata_file" ]; then
+    proposed_file_scope=$(jq -c '.proposed_file_scope // [] | if (type == "array") then . else [] end' \
+      "$metadata_file" 2>/dev/null)
+    if [ -n "$proposed_file_scope" ] && [ "$proposed_file_scope" != "[]" ] && [ "$proposed_file_scope" != "null" ]; then
+      fsa_args=(--file-scope-add="$proposed_file_scope")
+    fi
+  fi
   bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation_type" "$session_id" \
+    "${fsa_args[@]}" \
     || echo "[postflight] WARNING: update-task-status.sh failed (non-blocking)" >&2
 fi
 
