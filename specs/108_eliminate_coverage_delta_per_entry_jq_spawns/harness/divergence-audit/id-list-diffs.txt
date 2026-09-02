@@ -1,0 +1,10 @@
+=== candidate-id list diffs (before vs after) ===
+q1-modal-10term: IDENTICAL (n=107)
+q2-erdos-graph: IDENTICAL (n=72)
+q3-since-until: IDENTICAL (n=49)
+q4-quantum-field: IDENTICAL (n=64)
+q5-fmt-ehrenfeucht: IDENTICAL (n=38)
+q6-nonascii-buchi: IDENTICAL (n=21)
+q7-nonascii-erdos-title: IDENTICAL (n=5)
+=== delta_candidates count diff ===
+delta_candidates counts IDENTICAL

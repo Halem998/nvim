@@ -1,0 +1,1 @@
+Rationale: delta_gap=290 (>= LITERATURE_COVERAGE_GAP_MIN=25); keyword pass found 5 topic-matched candidate(s) absent from the sub-index (top 1000 bounded in output; LITERATURE_COVERAGE_DELTA_THRESHOLD=1).

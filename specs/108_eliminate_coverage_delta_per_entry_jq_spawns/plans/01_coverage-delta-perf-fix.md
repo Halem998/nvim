@@ -284,33 +284,45 @@ loop header (166) through the `done < <(...)` feeder (212) is the entirety of th
 
 ---
 
-### Phase 4: Candidate-set equivalence and non-ASCII/locale divergence audit [NOT STARTED]
+### Phase 4: Candidate-set equivalence and non-ASCII/locale divergence audit [COMPLETED]
 
 **Goal**: Prove the candidate set did not move, and specifically resolve the one risk that could
 legitimately move it — the locale-aware case-folding difference between `${var,,}` and
 `tr '[:upper:]' '[:lower:]'`.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 harness against the edited source-store scripts and diff the full
+- [x] Re-run the Phase 1 harness against the edited source-store scripts and diff the full
       unbounded candidate-id list per query against the stored BEFORE lists. Byte-identical,
-      order-preserved output is the pass condition.
-- [ ] Diff `delta_candidates` counts per query as an independent check on the id-list diff.
-- [ ] Run the dedicated divergence audit over the WHOLE corpus, not a sample: for every top-level
+      order-preserved output is the pass condition. *(completed: `harness/after-capture/`; 7/7
+      queries byte-identical to `harness/baseline/`, see `harness/divergence-audit/id-list-diffs.txt`)*
+- [x] Diff `delta_candidates` counts per query as an independent check on the id-list diff.
+      *(completed: identical for every query — 107, 72, 49, 64, 38, 21, 5)*
+- [x] Run the dedicated divergence audit over the WHOLE corpus, not a sample: for every top-level
       doc, compute both the old (`echo|tr`) and new (`${var,,}`) folded forms of title and joined
       keywords and report every entry where they differ. Do the same for the folded forms of every
-      filtered query term.
-- [ ] For each divergence found, determine whether it can change a match decision (it can only ever
+      filtered query term. *(completed: `harness/divergence-audit/corpus-fold-divergence.txt`; 1 of
+      292 top-level entries diverges — `doets_1989` "Monadic Π¹₁-Theories of Π¹₁-Properties" (Greek
+      Π folds to π under `${var,,}`, untouched by `tr`); 0 of the 7 harness queries' filtered terms
+      diverge)*
+- [x] For each divergence found, determine whether it can change a match decision (it can only ever
       ADD a match, since the new fold is strictly more aggressive). Record the count and the
-      affected entries.
-- [ ] **Decision gate**: if the full candidate-set diff is clean, record the divergence audit as
+      affected entries. *(completed: 1 entry, `doets_1989`; confirmed add-only per the plan's risk
+      analysis; did not manifest in any harness query since none contain a Greek-letter term)*
+- [x] **Decision gate**: if the full candidate-set diff is clean, record the divergence audit as
       informational and proceed. If ANY query's candidate set changed, STOP — do not proceed to
       Phase 5. Surface the change with the specific entries and terms involved, and record the two
       remediation options (pin `LC_ALL=C` around the fold to restore byte-exact `tr` parity, or
       accept the change as a deliberate correctness improvement) as a decision for the user rather
-      than choosing one unilaterally.
-- [ ] Audit the second `to_lower` consumer path: confirm `literature-discover.sh`'s title-dedup use
+      than choosing one unilaterally. *(GATE PASSED: candidate-set diff is clean across all 7
+      queries; divergence audit recorded as informational per the plan's own rule; proceeding to
+      Phase 5 — no `LC_ALL=C` pinning applied, see conclusion in
+      `harness/divergence-audit/corpus-fold-divergence.txt`)*
+- [x] Audit the second `to_lower` consumer path: confirm `literature-discover.sh`'s title-dedup use
       (`SEEN_TITLES` accumulation and the dedup comparison) is unaffected by the trailing-newline
-      and `-n`/`-e` deltas recorded in Phase 2.
+      and `-n`/`-e` deltas recorded in Phase 2. *(completed: both deltas are unreachable at every
+      current to_lower call site — all wrap the call in `$(...)`, which already stripped trailing
+      newlines under the OLD implementation too, and all pass single-line pre-tokenized
+      titles/terms, never a bare `-n`/`-e` argument; see corpus-fold-divergence.txt)*
 
 **Timing**: 0.75 hours
 
@@ -322,7 +334,9 @@ legitimately move it — the locale-aware case-folding difference between `${var
 characters, and the subset containing non-ASCII UPPERCASE characters (the only ones that can
 diverge) is expected to be smaller still. Confirm at implementation time by running the audit over
 the full corpus and reporting the real counts for both figures; do not restate 30 without
-re-measuring.
+re-measuring. *(confirmed: 30 of 292 top-level title/keyword lines contain non-ASCII characters,
+unchanged from research; of those, exactly 1 entry — `doets_1989` — contains a non-ASCII uppercase
+character (Greek Π) whose fold actually diverges between the two methods)*
 
 **Files to modify**:
 - `specs/108_eliminate_coverage_delta_per_entry_jq_spawns/harness/` - AFTER capture, per-query

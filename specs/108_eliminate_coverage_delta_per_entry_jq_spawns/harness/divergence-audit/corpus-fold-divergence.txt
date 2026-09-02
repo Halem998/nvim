@@ -1,0 +1,43 @@
+=== Per-entry title+keywords fold divergence (whole corpus, top-level docs only) ===
+DIVERGE doc_id=doets_1989
+  title=Monadic Π¹₁-Theories of Π¹₁-Properties
+  old_fold=monadic Π¹₁-theories of Π¹₁-properties monadic second-order logic scattered orderings well-orderings well-founded trees
+  new_fold=monadic π¹₁-theories of π¹₁-properties monadic second-order logic scattered orderings well-orderings well-founded trees
+
+entries_checked=292 entries_diverged=1
+=== Filtered query-term fold divergence check (7 harness queries) ===
+term_divergences_found=0 (expected 0 -- all 7 queries are plain-ASCII English text)
+
+=== literature-discover.sh to_lower consumer audit (title-dedup, SEEN_TITLES) ===
+All current call sites of to_lower() wrap the call in command substitution ($(to_lower ...)):
+  - literature-term-match.sh filter_terms(): term=$(to_lower "$raw")
+  - literature-discover.sh add_seen(): SEEN_TITLES+=("$(to_lower "$title")")
+  - literature-discover.sh is_seen_title(): title=$(to_lower "$1")
+Command substitution strips ALL trailing newlines from captured output regardless of what
+produced it, so the "no longer strips trailing newline" delta was already masked by $(...) under
+the OLD implementation too -- it is unreachable at every current call site, not merely unlikely.
+The "-n"/"-e" swallow delta is likewise unreachable: every call site passes a single-line title
+or already-whitespace-tokenized term, never a bare "-n"/"-e" string.
+Dedup itself (add_seen/is_seen_title) applies to_lower identically on both the stored key and the
+lookup key within a single literature-discover.sh invocation (SEEN_TITLES starts empty per run),
+so it is internally self-consistent under either fold method. The only way dedup behavior could
+observably change is the same class of case-fold divergence documented above: two titles in the
+SAME result set that differ only by non-ASCII case would now collide where they previously did
+not. No such pair exists in the live corpus's 292 top-level titles (the one divergent title,
+doets_1989, has no case-variant duplicate).
+
+=== CONCLUSION ===
+Per-query candidate-id diffs: CLEAN (7/7 queries byte-identical between BEFORE and AFTER,
+including delta_candidates counts).
+Corpus-wide fold divergence: 1 of 292 top-level entries (doets_1989, "Monadic Π¹₁-Theories of
+Π¹₁-Properties") has a title+keywords fold that differs between tr (old) and ${var,,} (new) --
+the Greek capital Pi (Π, U+03A0) folds to π under the new locale-aware method but is left
+untouched by tr. This divergence can only ever ADD a match (never remove one), as established
+in the plan's risk analysis, and did not manifest in any of the 7 harness queries because none
+contain a Greek-letter query term (filtered-term-side divergence audit: 0/0 across all 7 queries).
+DECISION GATE: candidate-set diff is clean across all tested queries -> the divergence audit is
+recorded as INFORMATIONAL, per the plan's decision-gate rule. Proceeding to Phase 5. No remediation
+(LC_ALL=C pinning) applied -- not needed given the clean candidate-set result, and pinning would
+foreclose the one-entry improvement (Π¹₁ becoming findable via a lowercase-typed query term) that
+this divergence would otherwise enable, which is a deliberate correctness improvement rather than
+a regression.
