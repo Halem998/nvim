@@ -1,9 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+      "summary": "Full 5-phase implementation summary: OCR-naming failure messages, needs-OCR ingest bucket, LITERATURE_CONVERTER=ocr mode, regression tests, and documentation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all 5 phases: actionable NO TEXT LAYER/QUALITY GATE FAILED remedy messaging in literature-convert.sh, a distinct needs-OCR bucket in literature-ingest.sh, an explicit never-auto LITERATURE_CONVERTER=ocr mode built on ocrmypdf, a 12-test regression suite, and updated documentation. Also fixed a pre-existing gap where the mandatory fallback tier's image-block placeholder text was masking genuinely image-only PDFs from ever reaching the exit-2 path."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+    "agent-system/extensions/literature/context/guides/literature-organization.md",
+    "agent-system/extensions/literature/context/project/literature/domain/extension-dependencies.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-1-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-2-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-3-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-4-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-5-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When testing a bash pipeline that shells out to `command -v <tool>` for graceful-absence detection on a single-bin-dir Linux distro (e.g. NixOS, where bash/python3/every CLI tool live in one directory like /run/current-system/sw/bin), do NOT mask the tool by overriding PATH to exclude that whole directory -- it breaks the shebang/env resolution of the test harness itself. Instead build a scratch directory of symlinks to every OTHER entry in that directory (excluding only the target tool(s)), and invoke the script under test via `bash <script>` explicitly rather than relying on its own `#!/usr/bin/env bash` shebang, so the calling shell (not the masked PATH) resolves `bash` itself.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash-testing", "path-masking", "nixos", "command-v", "graceful-degradation"]
+    },
+    {
+      "content": "A `LITERATURE_PYENV_DIR`-style env var pointed at a nonexistent-but-writable scratch directory does NOT reliably simulate 'primary tier unavailable' in a test, when the provisioning script (e.g. via `uv venv`) will happily auto-create a venv there given network access. Use an unwritable parent directory (mkdir + chmod 000) instead, so provisioning fails deterministically regardless of network/uv availability, then restore permissions (chmod 755) before any cleanup that needs to remove it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["venv-provisioning", "test-determinism", "chmod", "uv", "pyenv-mocking"]
+    },
+    {
+      "content": "When an overloaded exit code needs a stderr-marker discriminator (grep-based bucketing), a marker string without unique framing (e.g. no trailing colon) can false-match an unrelated generic log line elsewhere in the same script that merely mentions the marker phrase in explanatory prose. Require a syntactic anchor (a trailing colon after the marker token, matching its one true emission site) and document the false-positive risk inline at both the emission site and the consuming grep.",
+      "category": "PATTERN",
+      "source_artifact": "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stderr-marker", "grep-discrimination", "exit-code-overload", "bash-logging"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788329488_6a27b9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

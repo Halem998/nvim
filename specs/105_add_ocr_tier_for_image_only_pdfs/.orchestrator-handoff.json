@@ -1,0 +1,32 @@
+{
+  "status": "implemented",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+      "summary": "Full 5-phase implementation summary: OCR-naming failure messages, needs-OCR ingest bucket, LITERATURE_CONVERTER=ocr mode, regression tests, and documentation."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+    "agent-system/extensions/literature/context/guides/literature-organization.md",
+    "agent-system/extensions/literature/context/project/literature/domain/extension-dependencies.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/plans/01_add-ocr-tier-image-only-pdfs.md",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/summaries/01_add-ocr-tier-image-only-pdfs-summary.md",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-1-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-2-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-3-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-4-progress.json",
+    "specs/105_add_ocr_tier_for_image_only_pdfs/progress/phase-5-progress.json"
+  ],
+  "completion_summary": "Implemented all 5 phases: actionable NO TEXT LAYER/QUALITY GATE FAILED remedy messaging in literature-convert.sh, a distinct needs-OCR bucket in literature-ingest.sh, an explicit never-auto LITERATURE_CONVERTER=ocr mode built on ocrmypdf, a 12-test regression suite, and updated documentation. Also fixed a pre-existing gap where the mandatory fallback tier's image-block placeholder text was masking genuinely image-only PDFs from ever reaching the exit-2 path.",
+  "session_id": "sess_1788329488_6a27b9"
+}
