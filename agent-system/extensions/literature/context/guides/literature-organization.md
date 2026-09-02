@@ -359,7 +359,7 @@ fallback tier). Two distinct classes exist, each with its own remedy:
 | **Fallback tier's effect** | Fixes it — bypasses the structuring layer entirely | Does nothing to it, and can add unrelated noise from its own column-clustering |
 | **Confirmed cases** | `savage_1972_foundations-of-statistics` (73 hits -> 3), `bacon_dorr_2024_classicism`, the Goldblatt/Hodkinson/Venema 2003 case | `joyce_1999_foundations-causal-decision-theory` (4 hits -> 5) |
 | **Document provenance** | Mixed — one scanned, two very likely born-digital | Scanned (poor-vintage OCR, a 2019 archive.org pass) |
-| **Correct remedy** | Reconvert with `LITERATURE_CONVERTER=fallback` | Re-OCR the source (`ocrmypdf --force-ocr` on the affected pages), then reconvert — a converter-tier switch alone will not help |
+| **Correct remedy** | Reconvert with `LITERATURE_CONVERTER=fallback` | Re-OCR the source, then reconvert — a converter-tier switch alone will not help. In-pipeline: `LITERATURE_OCR_FORCE=1 LITERATURE_CONVERTER=ocr literature-convert.sh <input.pdf> <output_dir>` (runs `ocrmypdf --force-ocr` and feeds the result back through conversion + the quality gate) |
 | **Diagnostic tell** | Hits positionally concentrated in a structural region (e.g. back matter misdetected as a table), or centered on footnote/superscript markers | Hits scattered singly at otherwise-clean sentence boundaries with no structural pattern |
 
 **Diagnostic procedure**: on a gate rejection, inspect where the `sentence_boundary_glue_count()`
@@ -369,6 +369,20 @@ hits fall in the converted markdown.
 - Scattered singly at otherwise-clean sentence boundaries with no structural pattern suggests
   Class B — check the source page's OCR quality; running `ocrmypdf --force-ocr` on the affected
   pages and reconverting is the correct remedy, since a tier switch alone will not help.
+
+**Class C: no text layer (absence)**. A third, distinct failure mode — not a gate rejection at
+all, and not diagnosed by inspecting hit positions the way Class A/B are. The tell: conversion
+exits 2 (not 3) with a `NO TEXT LAYER:` marker in stderr, because BOTH engine tiers produced
+empty output before the quality gate was ever reached — a genuinely image-only, scanned PDF with
+no extractable text layer at all, as opposed to Class B's already-present-but-degraded text
+layer. The remedy is the same OCR machinery as Class B's, but without `--force-ocr` (there is no
+existing text layer to discard): `LITERATURE_CONVERTER=ocr literature-convert.sh <input.pdf>
+<output_dir>`. `literature-ingest.sh` reports a Class C document under its own
+"Files needing OCR" summary bucket, distinct from both "Files quality-gate-failed" (Class A/B)
+and the generic "Files failed" (a hard failure such as a missing input file, or an
+explicitly-requested engine tier that is itself unavailable — the exit code 2 is shared with
+Class C, so a consumer must key off the `NO TEXT LAYER:` stderr marker, never off the bare code,
+exactly as exit 3 is already keyed off the `QUALITY GATE FAILED` prefix rather than its code).
 
 **`joyce_1999_foundations-causal-decision-theory` resolved example**: at implementation time this
 Class B document converted cleanly and passed the gate at 2 hits — both known math-notation false
@@ -383,6 +397,11 @@ documents by masking a real text-layer defect behind a tier switch that does not
 also that `LITERATURE_CONVERTER=auto`'s fallback is an engine-availability fallback (it only
 engages the fallback tier when the primary engine itself is unavailable or fails to run) — it is
 not a quality-gate retry, and nothing reconverts a gate-rejected document automatically.
+`LITERATURE_CONVERTER=ocr` is likewise explicit-only and never entered by `auto`: an OCR pass is
+a document-scale, minutes-long operation (tens of minutes on a several-hundred-page scan), and
+running it automatically inside `literature-ingest.sh`'s batch loop would silently balloon
+wall-clock time for every image-only document in a directory ingest, with no way for the operator
+to opt out per-document.
 
 ## Maintenance
 

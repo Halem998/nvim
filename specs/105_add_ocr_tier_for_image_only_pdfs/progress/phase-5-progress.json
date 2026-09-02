@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Documentation and dependency registration",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Class C treatment in literature-organization.md", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 2, "description": "Class B remedy cell update", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 3, "description": "No-auto-selection paragraph extended for OCR mode", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 4, "description": "ocrmypdf/tesseract added to extension-dependencies.md", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/extension-dependencies.md"]},
+    {"id": 5, "description": "index-entries.json line_count/keywords refresh", "status": "done", "files_touched": ["agent-system/extensions/literature/index-entries.json"]},
+    {"id": 6, "description": "Re-grep for other LITERATURE_CONVERTER-enumerating surfaces", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 7, "description": "No task-number references check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "literature-ingest-online.sh's pipeline_failed_diagnostic_hint() heredoc documents the same manual Class A/B remedy prose as the guide, without enumerating the full LITERATURE_CONVERTER value list",
+      "type": "altered",
+      "reason": "Found via the plan's mandated re-grep; not one of the plan's named 'Files to modify' for this phase, but it duplicates guide prose this phase already updates (Class B remedy, Class C addition), so updating it keeps the two consistent rather than leaving a stale manual-ocrmypdf-only remedy alongside the new in-pipeline LITERATURE_CONVERTER=ocr command",
+      "annotation": "*(deviation: altered -- extended the re-grep's file list to include this diagnostic-hint consumer)*"
+    }
+  ]
+}

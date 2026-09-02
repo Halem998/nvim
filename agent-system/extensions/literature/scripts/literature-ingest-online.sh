@@ -631,9 +631,11 @@ manually re-run: literature-convert.sh "$resolved_path" <output-dir>, then inspe
 context/guides/literature-organization.md's "Converter Tier Selection" section: hits positionally
 concentrated near a structural region or footnote/superscript markers (Class A) -- reconvert with
 LITERATURE_CONVERTER=fallback; hits scattered singly at otherwise-clean sentence boundaries
-(Class B) -- re-OCR the source first (e.g. ocrmypdf --force-ocr), then reconvert. This is a
-MANUAL decision only: no automatic tier selection or retry is performed, since Class A and Class
-B respond oppositely to the fallback engine.
+(Class B) -- re-OCR the source first, then reconvert (in-pipeline: LITERATURE_OCR_FORCE=1
+LITERATURE_CONVERTER=ocr). A genuinely image-only source (Class C: conversion exits 2, not 3,
+with a NO TEXT LAYER: stderr marker) needs the same OCR mode WITHOUT the force flag:
+LITERATURE_CONVERTER=ocr. This is a MANUAL decision only: no automatic tier or mode selection or
+retry is performed, since Classes A/B/C respond differently to the fallback engine and to OCR.
 HINT
 }
 

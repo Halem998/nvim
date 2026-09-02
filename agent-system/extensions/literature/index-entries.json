@@ -222,7 +222,8 @@
         "literature",
         "dependencies",
         "manifest",
-        "filetypes"
+        "filetypes",
+        "ocr"
       ],
       "keywords": [
         "dependencies",
@@ -230,10 +231,13 @@
         "filetypes",
         "core",
         "transitive",
-        "extension-loading"
+        "extension-loading",
+        "ocrmypdf",
+        "tesseract",
+        "gracefully-detected"
       ],
-      "summary": "Why the literature manifest declares only core: filetypes is not a transitive dependency and must be loaded explicitly by repos that need it alongside literature",
-      "line_count": 22,
+      "summary": "Why the literature manifest declares only core (filetypes is not a transitive dependency), plus the optional, gracefully-detected, never-provisioned external binaries (pdftotext, DJVU tools, ocrmypdf/tesseract) literature-convert.sh calls out to",
+      "line_count": 42,
       "load_when": {
         "agents": [
           "literature-agent"
@@ -452,17 +456,23 @@
         "literature",
         "specs-literature",
         "organization",
-        "lit-flag"
+        "lit-flag",
+        "ocr"
       ],
       "keywords": [
         "specs/literature",
         "index.json",
         "chunking",
         "token-budget",
-        "directory-structure"
+        "directory-structure",
+        "ocr",
+        "ocrmypdf",
+        "text-layer",
+        "scanned",
+        "converter-tier-selection"
       ],
-      "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory) and how --lit injection selects and budgets content from it",
-      "line_count": 389,
+      "summary": "Reference guide for the specs/literature/ directory layout (flat vs subdirectory), how --lit injection selects and budgets content from it, and the Converter Tier Selection remedies for gate-rejected (Class A/B) and image-only, no-text-layer (Class C) documents",
+      "line_count": 414,
       "load_when": {
         "agents": [
           "general-research-agent",

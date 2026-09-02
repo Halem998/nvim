@@ -358,35 +358,35 @@ suite's section layout to place the ingest-level tests correctly.
 
 ---
 
-### Phase 5: Documentation and dependency registration [NOT STARTED]
+### Phase 5: Documentation and dependency registration [COMPLETED]
 
 **Goal**: The new mode and the absence class are documented where an operator and a future agent
 will find them, closing the "documented but not discoverable" gap the research identified.
 
 **Tasks**:
-- [ ] Add a `Class C: no text layer (absence)` treatment to
+- [x] Add a `Class C: no text layer (absence)` treatment to
       `context/guides/literature-organization.md`'s "Converter Tier Selection" section — either a
       third column on the existing Class A/Class B table or a parallel subsection, whichever reads
       better against the existing prose. It must state the tell (exit 2 with the marker; both
       tiers produce empty output), the remedy (`LITERATURE_CONVERTER=ocr`), and that this is a
       third failure mode distinct from the two post-conversion glue-defect classes.
-- [ ] Update the Class B `Correct remedy` cell to name `LITERATURE_OCR_FORCE=1
+- [x] Update the Class B `Correct remedy` cell to name `LITERATURE_OCR_FORCE=1
       LITERATURE_CONVERTER=ocr` as the in-pipeline way to run the `ocrmypdf --force-ocr` remedy it
       already prescribes in prose.
-- [ ] Extend the section's "No automatic tier selection exists or is intended" paragraph to state
+- [x] Extend the section's "No automatic tier selection exists or is intended" paragraph to state
       that the OCR mode is likewise explicit-only and never entered by `auto`, and why (a
       document-scale, minutes-long operation inside a batch loop).
-- [ ] Add `ocrmypdf` and `tesseract` to
+- [x] Add `ocrmypdf` and `tesseract` to
       `context/project/literature/domain/extension-dependencies.md` as optional, externally
       provisioned, gracefully detected dependencies required only by `LITERATURE_CONVERTER=ocr` —
       explicitly contrasted with the primary tier's pinned-venv provisioning, and explicitly noted
       as not provisioned or guaranteed by this repo.
-- [ ] Refresh `line_count` in `index-entries.json` for every context file this phase edits, and
+- [x] Refresh `line_count` in `index-entries.json` for every context file this phase edits, and
       extend that entry's `keywords`/`topics` with the OCR vocabulary (`ocr`, `ocrmypdf`,
       `text-layer`, `scanned`) so the new content is retrievable.
-- [ ] Re-grep the extension for any other surface documenting `LITERATURE_CONVERTER` values
+- [x] Re-grep the extension for any other surface documenting `LITERATURE_CONVERTER` values
       (skills, README, merge-sources) and update any that enumerate the mode list.
-- [ ] Verify no task-number references appear in any edited file
+- [x] Verify no task-number references appear in any edited file
       (`.claude/rules/no-task-references-in-deliverables.md`); cite section headings and filenames.
 
 **Timing**: 1 hour
