@@ -26,7 +26,7 @@ When the skill spawns a subagent via the Agent tool, the subagent receives deleg
 {
   "session_id": "sess_1736700000_abc123",
   "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "/research", "skill-researcher", "general-research-agent"],
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "timeout": 1800,
   "task_context": {
     "task_number": 42,

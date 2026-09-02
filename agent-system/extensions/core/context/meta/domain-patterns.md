@@ -78,7 +78,6 @@ Each extension declares its capabilities in `manifest.json`:
   },
   "routing": {
     "research": { "{ext}": "skill-{ext}-research" },
-    "plan": { "{ext}": "skill-planner" },
     "implement": { "{ext}": "skill-{ext}-implementation" }
   }
 }

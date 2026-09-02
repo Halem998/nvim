@@ -105,7 +105,7 @@ merged into `skill-orchestrate` and then deleted, it used a different, undocumen
 (last-match-wins, no core exclusion) — see `context/guides/hard-mode-routing.md` for that
 history.
 
-Only Step 5's emptiness is a true "miss" — a caller's own default (e.g. `skill-researcher`,
+Only Step 5's emptiness is a true "miss" — a caller's own default (e.g. `skill-epi-research`,
 `general-research-agent`) is substituted OUTSIDE the ladder, by the caller, never inside
 `routing_lookup()` itself.
 
@@ -170,7 +170,6 @@ doesn't hold:
 
 | `task_type` | Routed skill | sed-derived (wrong) | Real agent |
 |---|---|---|---|
-| `email` | `skill-researcher` | `researcher-agent` | `general-research-agent` |
 | `memory` | `skill-learn` | `learn-agent` | *(none — direct-execution; declared explicitly as `general-research-agent`/`general-implementation-agent`)* |
 | `filetypes` | `skill-filetypes` | `filetypes-agent` | `filetypes-router-agent` |
 | `present:slides` (implement) | `skill-slides:assemble` | `slides:assemble-agent` (invalid identifier) | `slidev-assembly-agent` (representative primary agent) |
@@ -202,7 +201,6 @@ indistinguishable from an oversight.
   "task_type": "mytype",
   "routing": {
     "research": { "mytype": "skill-mytype-research" },
-    "plan": { "mytype": "skill-planner" },
     "implement": { "mytype": "skill-mytype-implementation" }
   },
   "routing_agents": {

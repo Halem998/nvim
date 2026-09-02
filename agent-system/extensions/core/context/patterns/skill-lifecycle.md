@@ -97,43 +97,42 @@ Every skill shares Stages 6, 6a, 7, 7a, 8, 8a. They diverge on **who commits, an
 numbered stages that takes** — this is a real, intentional difference between skill families, not
 drift to be flattened.
 
-### Collapsed shape (every surviving domain/extension thin wrapper)
+### Collapsed shape (domain/extension research and implementation thin wrappers)
 
 `skill-{domain}-research` and `skill-{domain}-implementation` skills (neovim, nix, latex, typst,
-z3, python, web, email, epidemiology, founder, present, etc.), plus `skill-reviser` and
-`skill-spawn`, fold Stages 7/7a/8/8a/9 into a single `@`-import of `skill-postflight-flow.md`,
-where that block's own Stage 9 is **Cleanup** (`skill_cleanup()`) — there is no inline git-commit
-stage in the skill body at all. These skills rely entirely on a batch commit further up the call
-chain to persist their changes. The skill's own numbering ends at Stage 9 (cleanup, via the
-shared block) followed by either an explicit `### Stage 10: Return Brief Summary` heading (as in
-`skill-reviser`) or an unnumbered `## Return Format` section (as in most domain thin wrappers) —
-both are compliant with the skeleton; the final heading number is a readability choice, not a
-validated field.
+z3, python, web, email, epidemiology, founder, present, etc.) fold Stages 7/7a/8/8a/9 into a
+single `@`-import of `skill-postflight-flow.md`, where that block's own Stage 9 is **Cleanup**
+(`skill_cleanup()`) — there is no inline git-commit stage in the skill body at all. These skills
+rely entirely on a batch commit further up the call chain to persist their changes. The skill's
+own numbering ends at Stage 9 (cleanup, via the shared block) followed by an unnumbered
+`## Return Format` section (as in most domain thin wrappers) — this is compliant with the
+skeleton; the final heading number is a readability choice, not a validated field.
 
-### Split shape (historical: the deleted base plan/implement skills, core general/meta/markdown tasks)
+### Split shape (skill-reviser, skill-spawn, and — historically — the deleted base plan/implement skills)
 
-The base lifecycle plan/implement skills — since deleted, `general`/`meta`/`markdown` now
-dispatch through `skill-orchestrate` directly — used to interleave an explicit, inline **Stage 9:
-Git Commit** between the shared block's TTS-notify stage and cleanup, calling
-`.claude/scripts/git-commit-scoped.sh` directly (the sole sanctioned path-scoped, mutex-serialized
-committer; see `@.claude/context/standards/git-staging-scope.md`) rather than relying solely on a
-higher-level batch commit. Their Stage numbering ran one stage longer:
+`skill-reviser` and `skill-spawn` interleave an explicit, inline **Stage 9: Git Commit** between
+the shared block's TTS-notify stage and cleanup, calling `.claude/scripts/git-commit-scoped.sh`
+directly (the sole sanctioned path-scoped, mutex-serialized committer; see
+`@.claude/context/standards/git-staging-scope.md`) rather than relying solely on a higher-level
+batch commit. The base lifecycle plan/implement skills — since deleted, `general`/`meta`/
+`markdown` now dispatch through `skill-orchestrate` directly — used to follow this same shape.
+Their Stage numbering runs one stage longer:
 
 - Stage 9: Git Commit (inline, via `git-commit-scoped.sh`)
 - Stage 10: Cleanup (`skill_cleanup()`, called explicitly rather than through the shared block's
   own Stage 9 slot, since that slot is now occupied by Git Commit)
 - Stage 11: Return Brief Summary
 
-The underlying rationale still applies today, just relocated: `skill-orchestrate` itself now calls
-`git-commit-scoped.sh` inline per task during multi-task dispatch (see its own commit-scope
-section) for the same reason the two deleted skills once did — a genuinely concurrent site where
-each in-flight task must commit its own changes rather than wait for a shared batch step.
+`skill-orchestrate` itself also calls `git-commit-scoped.sh` inline per task during multi-task
+dispatch (see its own commit-scope section), for the same reason: a genuinely concurrent site
+where each in-flight task must commit its own changes rather than wait for a shared batch step.
 
-**Rule of thumb**: `skill-orchestrate`'s own multi-task dispatch owns the inline-commit shape for
-`general`/`meta`/`markdown` and extension task types alike now. If you are writing a
-**domain/extension** thin wrapper (research or implementation), follow the collapsed shape above
-and let `skill-orchestrate`'s dispatch loop own the commit, exactly as `skill-reviser` and the
-existing domain skills already do.
+**Rule of thumb**: if you are writing a skill whose caller may run several instances
+concurrently (multi-task dispatch, or standalone tasks like `skill-reviser`/`skill-spawn` that
+have no guaranteed batch-commit caller), give it an explicit Stage 9 Git Commit. If you are
+writing a **domain/extension** thin wrapper (research or implementation) invoked one-at-a-time
+under `skill-orchestrate`'s dispatch loop, follow the collapsed shape above and let the
+higher-level batch commit own it, exactly as the existing domain skills already do.
 
 ---
 

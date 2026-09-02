@@ -16,7 +16,7 @@ agent's or skill's `## Context References` section. This contract carries that b
 `agents/general-implementation-agent.md` (standard mode, and — since core's standalone hard-mode
 implementation agent was deleted and merged into `skill-orchestrate`'s H1 per-phase dispatch
 branch — the sole surviving core implement-dispatch target for hard mode too), and
-`skills/skill-implementer/SKILL.md` (a discoverability reference — the skill delegates loading to
+`skills/skill-orchestrate/SKILL.md` (a discoverability reference — the skill delegates loading to
 its agent). It is
 additionally referenced from every non-core extension implementer agent that runs a plan-phase
 loop, and from any extension skill file maintaining its own contract-bullet list, following the

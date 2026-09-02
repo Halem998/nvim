@@ -7,7 +7,7 @@
 
 ## Overview
 
-**Template scope**: This template shows the **extension skill pattern** (Pattern B) using `context: fork` + `agent:` frontmatter. Core workflow skills (skill-researcher, skill-planner, skill-implementer, etc.) use Pattern A: explicit Agent tool with `subagent_type` and no `context: fork`. See @.claude/context/patterns/fork-patterns.md for the decision matrix on which pattern to use.
+**Template scope**: This template shows the **extension skill pattern** (Pattern B) using `context: fork` + `agent:` frontmatter. Core workflow skills (skill-reviser, skill-spawn, skill-meta, etc.) use Pattern A: explicit Agent tool with `subagent_type` and no `context: fork`. See @.claude/context/patterns/fork-patterns.md for the decision matrix on which pattern to use.
 
 This template defines the minimal structure for skills that use the `context: fork` pattern. These skills act as thin wrappers that:
 1. Validate inputs

@@ -325,24 +325,27 @@ before and after; post-edit must be empty.
 
 ---
 
-### Phase 6: Sweep the remainder of core/context [NOT STARTED]
+### Phase 6: Sweep the remainder of core/context [COMPLETED]
 
 **Goal**: Clear references in the remaining core context subtrees.
 
 **Tasks**:
-- [ ] `context/contracts/`: `anti-analysis.md`, `phase-closure.md`, `pre-edit-gate.md`,
-      `recovery.md`, `wrap-up.md`.
-- [ ] `context/guides/`: `extension-development.md`, `hard-mode-routing.md`,
-      `manifest-routing-schema.md` -- note these describe the routing ladder, so an edit here must
-      stay truthful about `command-route-skill.sh` still existing and still serving domain skills.
-- [ ] `context/formats/`: `errors-format.md`, `plan-format.md`.
-- [ ] `context/meta/`: `domain-patterns.md`, `meta-guide.md`.
-- [ ] `context/standards/`: `git-staging-scope.md`, `orchestrator-runtime-files.md`,
-      `postflight-tool-restrictions.md`.
-- [ ] `context/templates/`: `command-template.md`, `subagent-template.md`,
-      `thin-wrapper-skill.md`.
-- [ ] `context/reference/skill-agent-mapping.md`, `context/routing.md`,
+- [x] `context/contracts/`: `phase-closure.md`, `pre-edit-gate.md` (`anti-analysis.md`,
+      `recovery.md`, `wrap-up.md` had zero hits -- already clean). *(completed)*
+- [x] `context/guides/`: `extension-development.md`, `manifest-routing-schema.md`
+      (`hard-mode-routing.md` had zero hits -- already clean) -- note these describe the routing
+      ladder, so an edit here must stay truthful about `command-route-skill.sh` still existing and
+      still serving domain skills. *(completed)*
+- [x] `context/formats/`: `errors-format.md` (`plan-format.md` had zero hits -- already clean).
+      *(completed)*
+- [x] `context/meta/`: `domain-patterns.md`, `meta-guide.md`. *(completed)*
+- [x] `context/standards/`: `git-staging-scope.md`, `orchestrator-runtime-files.md`,
+      `postflight-tool-restrictions.md`. *(completed)*
+- [x] `context/templates/`: `command-template.md`, `subagent-template.md`,
+      `thin-wrapper-skill.md`. *(completed)*
+- [x] `context/reference/skill-agent-mapping.md`, `context/routing.md`,
       `context/schemas/errors-schema.json` (JSON -- confirm it still parses after the edit).
+      *(completed)*
 
 **Timing**: 1.5 hours
 

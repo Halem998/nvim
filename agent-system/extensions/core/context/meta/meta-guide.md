@@ -216,13 +216,14 @@ After `/meta --analyze`:
 Tasks created by `/meta` follow the standard lifecycle:
 
 ```
-/meta (creates tasks) -> /research N -> /plan N -> /implement N
+/meta (creates tasks) -> /orchestrate N
 ```
 
-Meta tasks route through the standard skill pipeline:
-- `/research N` uses `skill-researcher` (not a meta-specific research agent)
-- `/plan N` uses `skill-planner`
-- `/implement N` uses `skill-implementer`
+Meta tasks route through `skill-orchestrate`'s direct agent dispatch (no per-function skill
+layer for the `meta` task type):
+- Research uses `general-research-agent` (not a meta-specific research agent)
+- Planning uses `planner-agent`
+- Implementation uses `general-implementation-agent`
 
 The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used during research, planning, or implementation of the tasks it creates.
 
@@ -240,7 +241,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 ## Future Extensions
 
-1. **Memory retrieval during task creation**: Add memory retrieval to skill-meta (similar to skill-researcher's Stage 4a). When creating tasks for familiar domains, retrieved memories about past patterns and decisions would inform the interview. Implementation would use the existing `memory-retrieve.sh` infrastructure.
+1. **Memory retrieval during task creation**: Add memory retrieval to skill-meta (similar to the memory-retrieval Stage 4a other lifecycle skills already carry). When creating tasks for familiar domains, retrieved memories about past patterns and decisions would inform the interview. Implementation would use the existing `memory-retrieve.sh` infrastructure.
 
 2. **Roadmap-aware priority hints**: Pass `roadmap_path` in delegation context. During ReviewAndConfirm (Stage 5), the agent could check if proposed tasks align with roadmap priorities and surface alignment information.
 

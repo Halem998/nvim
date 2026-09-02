@@ -2,9 +2,9 @@
 
 Token budget: ~200 tokens
 
-## Language → Skill Routing
+## Language → Skill/Agent Routing
 
-| Language | Research Skill | Implementation Skill |
+| Language | Research Skill | Implementation |
 |----------|---------------|---------------------|
 | lean4 | skill-lean-research | skill-lean-implementation |
 | latex | skill-latex-research | skill-latex-implementation |
@@ -14,10 +14,10 @@ Token budget: ~200 tokens
 | web | skill-web-research | skill-web-implementation |
 | epi, epi:study | skill-epi-research | skill-epi-implement |
 | z3 | skill-z3-research | skill-z3-implementation |
-| formal, logic, math, physics | skill-formal-research | skill-implementer |
-| general | skill-researcher | skill-implementer |
-| meta | skill-researcher | skill-implementer |
-| markdown | skill-researcher | skill-implementer |
+| formal, logic, math, physics | skill-formal-research (or subtype-specific) | general-implementation-agent (direct, no skill layer) |
+| general | general-research-agent (direct, no skill layer) | general-implementation-agent (direct, no skill layer) |
+| meta | general-research-agent (direct, no skill layer) | general-implementation-agent (direct, no skill layer) |
+| markdown | general-research-agent (direct, no skill layer) | general-implementation-agent (direct, no skill layer) |
 
 ## Status Transitions
 

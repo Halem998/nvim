@@ -92,7 +92,7 @@
               "delegation_path": {
                 "type": "array",
                 "items": { "type": "string" },
-                "description": "Ordered list of delegation hops, e.g. [\"orchestrator\", \"implement\", \"skill-implementer\", \"general-implementation-agent\"]."
+                "description": "Ordered list of delegation hops, e.g. [\"orchestrator\", \"implement\", \"general-implementation-agent\"]."
               },
               "failed_at_depth": {
                 "type": "integer",

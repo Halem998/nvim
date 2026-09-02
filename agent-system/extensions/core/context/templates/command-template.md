@@ -112,7 +112,7 @@ Generate session_id at GATE IN, include in commit for traceability.
 ### STAGE 2: DELEGATE
 Route by task_type:
 - Extension type → extension-provided skill
-- Core types → skill-researcher
+- Core types → general-research-agent (direct, via `command-route-agent.sh`)
 
 ### CHECKPOINT 2: GATE OUT
 1. Validate return

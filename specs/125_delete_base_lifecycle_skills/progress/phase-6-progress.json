@@ -1,0 +1,45 @@
+{
+  "phase": 6,
+  "phase_name": "Sweep the remainder of core/context",
+  "started_at": "2026-09-02T02:15:00Z",
+  "last_updated": "2026-09-02T02:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Sweep context/contracts, guides, formats, meta, standards, templates, reference, schemas, routing.md to zero hits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/phase-closure.md",
+        "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+        "agent-system/extensions/core/context/guides/extension-development.md",
+        "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+        "agent-system/extensions/core/context/formats/errors-format.md",
+        "agent-system/extensions/core/context/meta/domain-patterns.md",
+        "agent-system/extensions/core/context/meta/meta-guide.md",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+        "agent-system/extensions/core/context/templates/command-template.md",
+        "agent-system/extensions/core/context/templates/subagent-template.md",
+        "agent-system/extensions/core/context/templates/thin-wrapper-skill.md",
+        "agent-system/extensions/core/context/reference/skill-agent-mapping.md",
+        "agent-system/extensions/core/context/routing.md",
+        "agent-system/extensions/core/context/schemas/errors-schema.json",
+        "agent-system/extensions/core/context/patterns/skill-lifecycle.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.all",
+      "description": "Scope Hypothesis estimated 21 files in this territory",
+      "type": "altered",
+      "reason": "Actual hit count was 16 files, not 21: anti-analysis.md, recovery.md, wrap-up.md (contracts/), hard-mode-routing.md (guides/), and plan-format.md (formats/) all returned zero hits under the word-boundary grep -- confirmed already clean, not missed.",
+      "annotation": "n/a -- documented in plan checklist annotations directly"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Self-correction during this phase: an edit made in Phase 5 to skill-lifecycle.md's 'Collapsed shape' section incorrectly listed skill-reviser and skill-spawn as collapsed-shape (no inline commit) skills. Verified against their actual SKILL.md stage lists (both carry an explicit 'Stage 9: Git Commit' before Cleanup) and corrected in this phase: skill-lifecycle.md's Collapsed/Split shape sections were re-edited so skill-reviser/skill-spawn are correctly classified as split-shape (inline commit), and postflight-tool-restrictions.md's worked example was retargeted from the non-existent skill-researcher to the genuinely collapsed-shape skill-nix-research, verified against its own SKILL.md stage headings."
+}

@@ -110,8 +110,8 @@ validation dependency.
 ## Reconciliation Decisions
 
 This schema/format pair reconciles three previously inconsistent documented shapes
-(`rules/error-handling.md`, two blocks in `commands/errors.md`, and the live inline writer in
-`skills/skill-planner/SKILL.md`) into one. The key decisions:
+(`rules/error-handling.md`, two blocks in `commands/errors.md`, and the live inline writer in the
+base lifecycle plan skill, since deleted) into one. The key decisions:
 
 - **`recurrence_count` is not a persisted field.** No writer has ever populated it. `/errors`'
   Analysis Mode computes recurrence at query time by grouping records on `type` -- it is derived,

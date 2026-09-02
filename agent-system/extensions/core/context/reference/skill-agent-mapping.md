@@ -8,19 +8,25 @@ Core skills are always available regardless of which extensions are loaded.
 
 ### Research and Planning
 
-| Skill | Agent | Model | Purpose |
-|-------|-------|-------|---------|
-| skill-researcher | general-research-agent | opus | General web/codebase research |
-| skill-planner | planner-agent | opus | Implementation plan creation |
+`general`/`meta`/`markdown` research and planning route directly to agents via
+`skill-orchestrate`'s dispatch (`command-route-agent.sh`), not through a dedicated research/plan
+skill layer — the base lifecycle skills that used to occupy this table have been deleted:
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| general-research-agent | opus | General web/codebase research |
+| planner-agent | opus | Implementation plan creation |
 
 ### Implementation
 
 | Skill | Agent | Model | Purpose |
 |-------|-------|-------|---------|
-| skill-implementer | general-implementation-agent | - | General file implementation |
 | skill-meta | meta-builder-agent | - | System building and meta tasks |
 | skill-reviser | reviser-agent | opus | Plan revision with research synthesis |
 | skill-spawn | spawn-agent | opus | Blocker analysis and task decomposition |
+
+`general`/`meta`/`markdown` implementation likewise routes directly to
+`general-implementation-agent` via `skill-orchestrate`'s dispatch — no dedicated implement skill.
 
 ### Direct Execution Skills
 
@@ -61,11 +67,11 @@ Skills are selected based on task language:
 
 ### Core Languages
 
-| Task Type | Research Skill | Implementation Skill | Tools |
+| Task Type | Research Agent | Implementation Agent | Tools |
 |----------|----------------|---------------------|-------|
-| `general` | skill-researcher | skill-implementer | WebSearch, WebFetch, Read, Write, Edit, Bash |
-| `meta` | skill-researcher | skill-implementer | Read, Grep, Glob, Write, Edit |
-| `markdown` | skill-researcher | skill-implementer | Read, Write, Edit |
+| `general` | general-research-agent | general-implementation-agent | WebSearch, WebFetch, Read, Write, Edit, Bash |
+| `meta` | general-research-agent | general-implementation-agent | Read, Grep, Glob, Write, Edit |
+| `markdown` | general-research-agent | general-implementation-agent | Read, Write, Edit |
 
 ### Extension Languages
 

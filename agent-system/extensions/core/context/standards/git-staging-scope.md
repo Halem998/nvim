@@ -7,7 +7,7 @@ pipeline (`/research`, `/plan`, `/implement`). It replaces repo-wide `git add -A
 targeted, work-scoped staging so every commit contains only the files the operation actually
 produced — never a concurrent session's stray edits.
 
-This is the canonical authority referenced by `orchestrator-postflight.sh`, `skill-implementer`,
+This is the canonical authority referenced by `orchestrator-postflight.sh`, `skill-orchestrate`,
 `general-implementation-agent`, `git-workflow.md`, and `skill-git-workflow`.
 
 ## Canonical Runtime-File Exclusion Set

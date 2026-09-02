@@ -53,7 +53,6 @@ For the full directory layout including agents, skills, rules, context, and opti
   },
   "routing": {
     "research": { "python": "skill-python-research" },
-    "plan": { "python": "skill-planner" },
     "implement": { "python": "skill-python-implementation" }
   },
   "merge_targets": {

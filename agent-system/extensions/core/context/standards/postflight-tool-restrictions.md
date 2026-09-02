@@ -89,12 +89,12 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 
 ## Examples
 
-### Correct Postflight (skill-researcher pattern)
+### Correct Postflight (collapsed-shape domain skill pattern)
 
-Reflects the actual converted `skill-researcher/SKILL.md` shape — see
+Reflects the actual `skill-nix-research/SKILL.md` shape — see
 `@.claude/context/patterns/skill-lifecycle.md` for the full Stage-N skeleton and the "Two
 Postflight Shapes" section explaining why this collapsed form has no inline git-commit stage
-(the command-level batch commit owns that instead, for this skill family):
+(a higher-level batch commit owns that instead, for this skill family):
 
 ```markdown
 ### Stage 6: Parse Subagent Return (Read Metadata File)
@@ -112,17 +112,16 @@ Postflight Shapes" section explaining why this collapsed form has no inline git-
 - `skill_lifecycle_notify()` — background TTS/tab-color notification
 - `skill_cleanup()` — rm -f marker files only (`.postflight-pending`, `.postflight-loop-guard`).
   `.return-meta.json` is deliberately NOT removed here — its deletion is owned by the calling
-  command's own last consumer (`/research`'s CHECKPOINT 3 for this skill); see
-  `context/patterns/skill-postflight-flow.md`'s reader table
+  command's own last consumer; see `context/patterns/skill-postflight-flow.md`'s reader table
 
-### Stage 10: Return Brief Summary
+## Return Format
 - Return a 3-6 bullet text summary (not JSON)
 ```
 
-**Git commit**: this skill has no inline commit stage — the command-level batch commit
-(`/research`'s CHECKPOINT 3) is the sole git-commit mechanism for this collapsed-shape family.
-`skill-planner` and `skill-implementer` instead interleave an explicit inline Stage 9: Git Commit
-before cleanup — see `skill-lifecycle.md`'s "Two Postflight Shapes" for both variants.
+**Git commit**: this skill has no inline commit stage — `skill-orchestrate`'s own dispatch-loop
+commit is the sole git-commit mechanism for this collapsed-shape family. `skill-reviser` and
+`skill-spawn` instead interleave an explicit inline Stage 9: Git Commit before cleanup — see
+`skill-lifecycle.md`'s "Two Postflight Shapes" for both variants.
 
 ### Incorrect Postflight (VIOLATION)
 
