@@ -1,21 +1,41 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/plans/01_audit-arg-validation-and-validate-schema-scoping.md",
-      "summary": "Two-phase plan (single parallel wave) fixing literature-audit.sh usage/unknown-arg validation and scoping /literature --validate's required-field check to top-level document entries."
+      "type": "summary",
+      "path": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/summaries/01_audit-arg-validation-and-validate-schema-scoping-summary.md",
+      "summary": "Implementation summary covering literature-audit.sh arg validation and /literature --validate schema scoping, with before/after warning counts."
     }
   ],
-  "next_steps": "Run /implement 111 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788329488_6a27b9_111",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1, 2]]
+  "completion_data": {
+    "completion_summary": "Added usage()/-h|--help/unknown-arg-exit-64/--pdf-operand-guard to literature-audit.sh, and scoped /literature --validate's missing_fields schema check to top-level document entries only (schema-warning population dropped from ~11,093 to 50 on the real index), reconciling Step 2 prose with the actually-enforced 4-field list."
   },
-  "memory_candidates": []
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature-audit.sh",
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When scoping a per-index-entry validation check to only top-level/document entries (excluding section/chunk children), reuse the existing top-level predicate from the codebase verbatim (here: `.parent_doc == null or .parent_doc == \"\"` from literature-coverage-delta.sh) rather than inventing a new one (e.g. a path-trailing-slash check) that may serve a different purpose elsewhere. Verify empirically with before/after counts against the real data file, not just a code read -- a predicate that looks right can still leave the wrong population size.",
+      "category": "PATTERN",
+      "source_artifact": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/summaries/01_audit-arg-validation-and-validate-schema-scoping-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["jq", "schema-validation", "parent_doc", "scoping", "literature-index"]
+    },
+    {
+      "content": "literature-audit.sh and literature-ingest-online.sh in agent-system/extensions/literature/scripts/ share a usage/argument-validation convention: a usage()/show_usage() function that cat's a heredoc to stderr mirroring the script header's documented invocation forms, a `-h|--help) usage; exit 0 ;;` arm, and a catch-all `*) echo \"<script>: unknown argument: $1\" >&2; usage; exit 64 ;;`. New scripts in this extension should follow the same shape rather than silently swallowing unrecognized flags.",
+      "category": "CONFIG",
+      "source_artifact": "specs/111_fix_audit_arg_validation_and_validate_schema_scoping/summaries/01_audit-arg-validation-and-validate-schema-scoping-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["literature-extension", "arg-parsing", "usage", "exit-64", "shell-convention"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  }
 }

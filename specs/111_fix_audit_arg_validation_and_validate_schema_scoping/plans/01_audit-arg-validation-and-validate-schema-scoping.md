@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-audit.sh arg validation and /literature --validate schema scoping
 
 - **Task**: 111 - Fix literature-audit.sh arg validation and /literature --validate schema scoping
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md
@@ -107,33 +107,33 @@ touch different files with no shared state — so Phase 2 must not be blocked on
 
 ---
 
-### Phase 1: Add usage and argument validation to literature-audit.sh [NOT STARTED]
+### Phase 1: Add usage and argument validation to literature-audit.sh [COMPLETED]
 
 **Goal**: `literature-audit.sh` prints usage and exits 0 on `-h`/`--help`, rejects unrecognized
 arguments with a stderr message and exit 64, and refuses a `--pdf` with a missing or flag-shaped
 operand — all matching the convention `literature-ingest-online.sh` already establishes.
 
 **Tasks**:
-- [ ] Confirm the current arg loop in `agent-system/extensions/literature/scripts/literature-audit.sh`
+- [x] Confirm the current arg loop in `agent-system/extensions/literature/scripts/literature-audit.sh`
       still matches the research's transcription (locate by anchor: `while [[ $# -gt 0 ]]; do` inside
-      `main()`), and confirm no `usage()`/`show_usage()` already exists (`grep -n 'usage'`).
-- [ ] Enumerate in-repo invocations of the script (`grep -rn 'literature-audit' agent-system/ .claude/`)
+      `main()`), and confirm no `usage()`/`show_usage()` already exists (`grep -n 'usage'`). *(completed)*
+- [x] Enumerate in-repo invocations of the script (`grep -rn 'literature-audit' agent-system/ .claude/`)
       and record the result in the implementation summary — this is the evidence backing the
-      Scope Hypothesis below and the `--pdf` risk mitigation.
-- [ ] Add a `usage()` function mirroring `literature-ingest-online.sh:153-163`: a
+      Scope Hypothesis below and the `--pdf` risk mitigation. *(completed)*
+- [x] Add a `usage()` function mirroring `literature-ingest-online.sh:153-163`: a
       `cat >&2 << 'USAGE' ... USAGE` heredoc whose body reproduces the three invocation forms
       already documented in the script header (lines 9-11), verbatim, so header and usage cannot
-      drift. Include `-h, --help` in the listed forms.
-- [ ] Add a `-h|--help) usage; exit 0 ;;` arm to the `case` in `main()`, placed before the
-      catch-all.
-- [ ] Replace the catch-all `*) shift ;;` with:
+      drift. Include `-h, --help` in the listed forms. *(completed)*
+- [x] Add a `-h|--help) usage; exit 0 ;;` arm to the `case` in `main()`, placed before the
+      catch-all. *(completed)*
+- [x] Replace the catch-all `*) shift ;;` with:
       `*) echo "literature-audit.sh: unknown argument: $1" >&2; usage; exit 64 ;;`
       — matching `literature-ingest-online.sh`'s message shape (`scriptname: unknown argument: $1`)
-      and the codebase-wide exit-64 usage-error convention.
-- [ ] Harden the `--pdf` arm as a separate hunk: reject a missing operand (nothing follows) or an
+      and the codebase-wide exit-64 usage-error convention. *(completed)*
+- [x] Harden the `--pdf` arm as a separate hunk: reject a missing operand (nothing follows) or an
       operand beginning with `-`, with a stderr message plus `exit 64` in the same style. Keep the
-      existing `*.pdf|*.djvu)` positional arm working unchanged.
-- [ ] Do NOT touch `.claude/scripts/literature-audit.sh`.
+      existing `*.pdf|*.djvu)` positional arm working unchanged. *(completed)*
+- [x] Do NOT touch `.claude/scripts/literature-audit.sh`. *(completed)*
 
 **Timing**: 45 minutes
 
@@ -173,7 +173,7 @@ silently changing that caller's behavior.
 
 ---
 
-### Phase 2: Scope /literature --validate schema check to top-level document entries [NOT STARTED]
+### Phase 2: Scope /literature --validate schema check to top-level document entries [COMPLETED]
 
 **Goal**: The `missing_fields` check in `/literature --validate` Step 2 evaluates only top-level
 document entries (via the existing `parent_doc` predicate), section entries are held only to the
@@ -181,35 +181,35 @@ checks that already apply to them, and the Step 2 prose plus the Step 4 report h
 the corrected behavior accurately.
 
 **Tasks**:
-- [ ] **Location pass first**: re-locate the three edit sites in
+- [x] **Location pass first**: re-locate the three edit sites in
       `agent-system/extensions/literature/skills/skill-literature/SKILL.md` by anchor text, not
       line number — `Required schema fields present` (Step 2 prose, ~line 380),
       `missing_fields=$(echo "$entry_json"` (jq block, ~lines 457-464), and
       `### Schema Warnings` (Step 4 report, ~line 653). If the parallel SKILL.md restructure has
-      landed, use the anchors and record the new locations in the summary.
-- [ ] Capture the **before** measurement against the real index so the fix is empirically
+      landed, use the anchors and record the new locations in the summary. *(completed)*
+- [x] Capture the **before** measurement against the real index so the fix is empirically
       demonstrated, not asserted: count entries total, entries lacking `doc_type`, entries lacking
-      `authors`, and how many of each are top-level (`parent_doc` null/empty) vs. section entries.
-- [ ] Gate the `missing_fields` jq block on the canonical top-level predicate, reusing
+      `authors`, and how many of each are top-level (`parent_doc` null/empty) vs. section entries. *(completed)*
+- [x] Gate the `missing_fields` jq block on the canonical top-level predicate, reusing
       `literature-coverage-delta.sh:212`'s form verbatim — `.parent_doc == null or .parent_doc == ""`
       — reading from the already-parsed `$entry_json` (no new file read, no second index query).
-      Section entries produce no `missing_fields` output and never populate `schema_warnings[]`.
-- [ ] Update the Step 2 prose (point 3) to state that the required-field list applies to
+      Section entries produce no `missing_fields` output and never populate `schema_warnings[]`. *(completed)*
+- [x] Update the Step 2 prose (point 3) to state that the required-field list applies to
       **top-level document entries only**, and to name the fields the check *actually* enforces
       (`doc_type`, `source_format`, `authors`, `title`) rather than the 7 it currently lists —
-      closing the pre-existing prose/implementation mismatch the research surfaced.
-- [ ] In the same prose edit, state explicitly which checks section entries remain subject to:
+      closing the pre-existing prose/implementation mismatch the research surfaced. *(completed)*
+- [x] In the same prose edit, state explicitly which checks section entries remain subject to:
       existence, the schema-shape bucket (`id`/`path`), and token-count drift. Do not imply a
       separate 3-field section-entry check exists — no such code path does, and none is being
-      added.
-- [ ] Leave the book/parent `doc_type: "book"` note (SKILL.md:426-427) unchanged; the research
-      confirmed that record is top-level and already covered by the new scoping.
-- [ ] Confirm the Step 4 `### Schema Warnings ({count}) — entries missing required v2 fields`
+      added. *(completed)*
+- [x] Leave the book/parent `doc_type: "book"` note (SKILL.md:426-427) unchanged; the research
+      confirmed that record is top-level and already covered by the new scoping. *(completed: adjusted heading to "top-level document entries missing required v2 fields" for accuracy)*
+- [x] Confirm the Step 4 `### Schema Warnings ({count}) — entries missing required v2 fields`
       heading remains accurate under the new scoping; adjust its wording only if it now overstates
-      scope, and keep the per-entry line format unchanged.
-- [ ] Do NOT touch `.claude/skills/skill-literature/SKILL.md`.
-- [ ] Do NOT modify any index data (`specs/literature-index.json` or the global index) — the ~137
-      genuine data defects stay untouched by design.
+      scope, and keep the per-entry line format unchanged. *(completed)*
+- [x] Do NOT touch `.claude/skills/skill-literature/SKILL.md`. *(completed)*
+- [x] Do NOT modify any index data (`specs/literature-index.json` or the global index) — the ~137
+      genuine data defects stay untouched by design. *(completed)*
 
 **Timing**: 45 minutes
 
