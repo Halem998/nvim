@@ -204,9 +204,16 @@ override.
 1. **Populate `file_scope` per proposed task**: Using whatever structured signal the calling
    command already has (tag `file:line` locations for `/fix-it`, keyword-to-directory inference
    for `meta-builder-agent`, blocker/codebase research paths for `skill-spawn`), assign each
-   proposed task an anticipated `file_scope` array of repo-relative paths or directory-prefixes.
-   Bias toward over-declaring (broader prefixes): false positives here only cost parallelism,
-   not correctness.
+   proposed task an anticipated `file_scope` array of repo-relative paths. Declare the narrowest
+   currently-known files — the actual paths the task is expected to read or write, not a
+   directory prefix chosen as a hedge. A directory root or extension-wide prefix is warranted
+   only when the task's real footprint is genuinely expected to span most of that directory, never
+   as a stand-in for a footprint that simply isn't known yet before research. The
+   no-false-negatives constraint from the overlap check below still governs: under-declaring
+   remains strictly worse than over-declaring, because a missed collision serializes silently
+   while a false one only costs an orchestration wave — a narrowing must never drop a path the
+   task actually writes. See "Unknown-Footprint Convention" below for what to do when the real
+   footprint genuinely cannot be named yet.
 2. **Run the shared overlap algorithm pairwise across the batch**: apply the directory-prefix
    overlap check defined once in `.claude/context/patterns/file-footprint-overlap.md` (reference
    by path — do not restate the rule) to every unordered pair of proposed tasks in the current
@@ -219,6 +226,26 @@ override.
 4. **Never silent**: every auto-added edge from this sub-step must be visibly annotated in the
    Component 7 confirmation summary (see below) so the user can override it via the existing
    Custom/Revise path.
+
+**Unknown-Footprint Convention**: when a proposed task's real file footprint genuinely cannot be
+named at creation time — the work depends on what research discovers — declaring a directory root
+as a placeholder is not the answer; it manufactures false collisions against every other task that
+touches anything beneath that root (see `validate-state.sh` Check 8, WARN-only, which detects
+exactly this pattern). Instead:
+(a) At creation time, declare only the narrowest currently-known files in `file_scope`, and never
+    a directory root as a stand-in for "not known yet".
+(b) At research postflight, the research phase may propose additional concrete paths it
+    discovered via `proposed_file_scope` in `.return-meta.json`; these are union-merged into the
+    task's `file_scope` before the plan phase begins (see
+    `context/formats/return-metadata-file.md` for the field contract and
+    `scripts/update-task-status.sh`'s `--file-scope-add` flag for the consumer mechanism).
+(c) The merge is additive only, never subtractive — it can only add paths research discovered, and
+    can never remove a path declared at creation time. Pruning an over-broad declaration is a
+    human or plan-phase decision, not something this mechanism does automatically.
+
+Check 8 in `validate-state.sh` is the WARN-only detector for violations of this guidance — a
+coarse, directory-root `file_scope` entry that collides with other tasks' declared scopes. It
+remains advisory, not a blocking gate.
 
 Components 5 (Kahn ordering) and 6 (Visualization) require no change — they consume whatever
 `dependency_map` they are given, now augmented with 4a's auto-added edges, automatically.

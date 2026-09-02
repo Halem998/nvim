@@ -1,7 +1,7 @@
 # Implementation Plan: Task #144
 
 - **Task**: 144 - Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md`
@@ -120,32 +120,32 @@ operator's binding sequencing requires the generator fix (Phase 1) to land befor
 
 ---
 
-### Phase 1: Rewrite Component 4a Guidance and Record the Unknown-Footprint Convention [NOT STARTED]
+### Phase 1: Rewrite Component 4a Guidance and Record the Unknown-Footprint Convention [COMPLETED]
 
 **Goal**: Remove the documented instruction that generates coarse declarations, and put the
 decided unknown-until-research convention in its place, so no task created after this change
 reintroduces a directory root as a stand-in for "not known yet".
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md`
-      section `### 4a. File Footprint Capture and Overlap Detection (Automatic)`, step 1.
-- [ ] Replace the sentence "Bias toward over-declaring (broader prefixes): false positives here
+- [x] Read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md`
+      section `### 4a. File Footprint Capture and Overlap Detection (Automatic)`, step 1. *(completed)*
+- [x] Replace the sentence "Bias toward over-declaring (broader prefixes): false positives here
       only cost parallelism, not correctness." with guidance that: declare the narrowest
       currently-known files; a directory root or extension-wide prefix is warranted ONLY when the
       task's real footprint is expected to span most of that directory, never as a stand-in for
-      an unknown footprint.
-- [ ] In the same step, preserve the no-false-negatives constraint explicitly: under-declaring
+      an unknown footprint. *(completed)*
+- [x] In the same step, preserve the no-false-negatives constraint explicitly: under-declaring
       remains strictly worse than over-declaring, and a narrowing must never drop a path the task
-      actually writes.
-- [ ] Add a new subsection under 4a documenting the unknown-until-research convention: (a) at
+      actually writes. *(completed)*
+- [x] Add a new subsection under 4a documenting the unknown-until-research convention: (a) at
       creation time declare only the narrowest currently-known files and never a directory root
       as a placeholder; (b) at research postflight the research phase proposes additions via
       `proposed_file_scope` in `.return-meta.json`, union-merged into `file_scope` before the
-      plan phase begins; (c) the merge is additive only, never subtractive.
-- [ ] Cross-reference `context/patterns/file-footprint-overlap.md` by path for the predicate
-      itself (do not restate the rule — the existing step 2 convention).
-- [ ] Note in the subsection that Check 8 in `validate-state.sh` is the WARN-only detector for
-      violations of this guidance, and remains advisory.
+      plan phase begins; (c) the merge is additive only, never subtractive. *(completed)*
+- [x] Cross-reference `context/patterns/file-footprint-overlap.md` by path for the predicate
+      itself (do not restate the rule — the existing step 2 convention). *(completed: retained the existing step 2 reference unchanged)*
+- [x] Note in the subsection that Check 8 in `validate-state.sh` is the WARN-only detector for
+      violations of this guidance, and remains advisory. *(completed)*
 
 **Timing**: 0.75 hours
 

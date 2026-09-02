@@ -1,33 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
-      "summary": "Six-phase sequential plan: fix the Component 4a over-declaring guidance first, add proposed_file_scope + --file-scope-add additive write-back, then apply the per-declaration narrowings and verify Check 8 plus the three preserved genuine collisions."
-    }
-  ],
-  "next_steps": "Run /implement 144 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788390027_14a27d_144",
-    "agent_type": "planner-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task's declared file_scope omits files its own plan must edit, the safe repair is an additive union via state-write.sh (never an array replacement), because active_projects[].file_scope may have been changed independently by other writers between read and write. This is the same additive-only discipline that makes a research-postflight file_scope write-back categorically safe against false negatives: under-declaring silently removes the collision guard between concurrent agents, while over-declaring only costs an orchestration cycle. Any mechanism that mutates file_scope should therefore be union-only by construction, not by author care.",
-      "category": "PATTERN",
-      "source_artifact": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "additive-union", "state-write", "false-negative", "collision-guard"]
-    }
-  ],
-  "modified_files": [
-    "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md"
-  ],
-  "errors": []
+    "session_id": "sess_1788390027_14a27d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 3,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }
