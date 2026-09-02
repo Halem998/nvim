@@ -1,5 +1,5 @@
 ---
-next_project_number: 142
+next_project_number: 143
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 142
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,20,22,27,29,39,42,43,44,45,51,53,72,74,89,91,100,113,121,125,129,134,137,138,139,141,142 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,127,136,140 | 29,74,91,121,139 | core-agent-system, extensions |
 | 3 | 88 | 127 | core-agent-system |
 
@@ -41,6 +41,7 @@ next_project_number: 142
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 141 [NOT STARTED] — Relay the admission verdict's own reason string in orchestrate-dr
+142 [NOT STARTED] — Reduce the orchestrator's own token consumption so that multi-tas
 
 ### Extensions
 
@@ -70,6 +71,33 @@ next_project_number: 142
 138 [NOT STARTED] — DEFERRED FROM the single-task phase-forcing-flags (A2) implementa
 
 ## Tasks
+
+### 142. Reduce orchestrator token consumption
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Reduce the orchestrator's own token consumption so that multi-task /orchestrate runs can proceed much further before exhausting context. Review-and-optimize task: identify every optimization available WITHOUT damaging functionality, quantify each, and land the safe ones.
+
+PROBLEM. The orchestrator lead is the context bottleneck in multi-task runs. Its eager load is dominated by two runtime-loaded .md files read IN FULL on every invocation: commands/orchestrate.md and skills/skill-orchestrate/SKILL.md (the latter alone is ~190k characters as deployed). The lead then accumulates further context per cycle from admission verdicts, classifier NDJSON, handoff/return-meta reads, and its own warning text. Observed in practice: a 5-task batch consumed a large fraction of available context before the second dispatch completed.
+
+RELATIONSHIP TO EXISTING WORK (do not duplicate). Task 87 landed the mode-gated section loading convention plus a lint (verify-deploy Gate 19) for exactly this defect class. Task 88 already owns the single largest instance -- extracting skill-orchestrate/SKILL.md's `## Multi-Task Mode` section (103,462 B, 55% of the file). This task is the BROADER sweep that those two do not cover; it must build on the convention rather than re-deciding it, and must not re-do task 88's extraction.
+
+SCOPE TO INVESTIGATE.
+1. Remaining mutually-exclusive branch sections in skill-orchestrate/SKILL.md beyond the multi-task one: the Stage 3.6/3.6a team fan-out (fires only under --team), Stage 5a vs Stage 5b (mutually exclusive on hard_mode by construction), and any hard-mode-gated regions that survive the hard-mode deletion work.
+2. Procedural bash currently inline in SKILL.md. The convention notes that moving procedural bash to scripts/ removes it from context ENTIRELY, whereas moving prose to context/ saves only on invocations that do not need it -- so bash extraction is the strictly stronger lever and should be enumerated first.
+3. commands/orchestrate.md itself, which carries large bash blocks its own text explicitly labels illustrative-not-executed (the runtime wave-split check, the consolidated-output template). These cost tokens on every invocation and execute never.
+4. Per-cycle growth: measure actual per-cycle context cost against the ~450 tokens/cycle the Context Flatness Constraint claims, and identify what exceeds it (verdict JSON, classifier output, repeated warning prose, re-read state).
+5. Further delegation of lead work to scripts that return compact decision JSON -- the pattern orchestrate-stage5-gates.sh and orchestrate-stage5-postflight.sh already establish. Enumerate what remains inline in the lead that could follow the same shape.
+
+METHOD. Establish a measured baseline first (scripts/measure-eager-context.sh exists), quantify each candidate in bytes/tokens, and rank by saving-per-unit-risk. Report measured numbers, not estimates.
+
+MUST NOT DAMAGE. These are load-bearing safety mechanisms and must survive unchanged in behavior: the four admission gates and their defer-not-fail semantics; the handoff staleness and dispatch_seq identity gates; per-task scoped commits (never a batch commit); the inter-cycle redeploy checkpoint; task-lock acquire/heartbeat/release. An optimization that weakens any of these is out of scope regardless of its saving.
+
+ACCEPTANCE. Measured before/after numbers for the orchestrator's eager load, the safe optimizations landed, Gate 19 green, and full gate run green.
+
+---
 
 ### 141. Relay admission verdict reason in dry run report
 - **Status**: [NOT STARTED]
