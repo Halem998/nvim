@@ -1,7 +1,7 @@
 # Implementation Plan: Task #105
 
 - **Task**: 105 - Add an OCR tier for image-only and poor-vintage-OCR PDFs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: Task 102 (converter-tier characterization; COMPLETED)
 - **Research Inputs**: specs/105_add_ocr_tier_for_image_only_pdfs/reports/01_add-ocr-tier-image-only-pdfs.md

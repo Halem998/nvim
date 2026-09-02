@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-briefing.sh --global FTS5 over-constraint
 
 - **Task**: 112 - Fix literature-briefing.sh --global FTS5 over-constraint returning zero segments
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.25 hours
 - **Dependencies**: 108 (completed; verified non-overlapping — `literature-term-match.sh`'s public
   contract `filter_terms`/`STOP_WORDS`/`MULTI_TERM_MATCH_THRESHOLD` is unchanged by it)

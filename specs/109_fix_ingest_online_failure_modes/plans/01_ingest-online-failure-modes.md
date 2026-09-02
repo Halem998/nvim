@@ -1,7 +1,7 @@
 # Implementation Plan: Task #109
 
 - **Task**: 109 - Fix three distinct failure modes in the online-ingest bridge
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: specs/102_characterize_converter_tiers_and_ocr_vintage (completed; consumed for defect (c))
 - **Research Inputs**: specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md

@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature-audit.sh arg validation and /literature --validate schema scoping
 
 - **Task**: 111 - Fix literature-audit.sh arg validation and /literature --validate schema scoping
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/111_fix_audit_arg_validation_and_validate_schema_scoping/reports/01_audit-arg-validation-and-validate-schema-scoping.md
