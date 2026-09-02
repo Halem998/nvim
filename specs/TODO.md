@@ -26,10 +26,10 @@ next_project_number: 151
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-20 [PLANNED] — /todo's repository-metrics sync runs before its git commit, so th
+20 [IMPLEMENTING] — /todo's repository-metrics sync runs before its git commit, so th
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-72 [PLANNED] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
+72 [IMPLEMENTING] — === REVISED 2026-09-02 (team mode deleted; narrowed to the marker
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
@@ -62,7 +62,7 @@ next_project_number: 151
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-113 [PLANNED] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
+113 [IMPLEMENTING] — Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail 
 
 ### Neovim
 
@@ -1503,7 +1503,7 @@ RELATED, NOT A DEPENDENCY: task wire_lit_flag_through_team_skills is the same de
 ---
 
 ### 113. Fix briefing sigpipe head crash
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -2502,7 +2502,7 @@ in isolation.
 
 ### 72. Correlate subagent-postflight marker selection to the stopping session
 - **Effort**: 4h
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -3201,7 +3201,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 20. Metrics sync measures a stale git index, inflating build_errors with phantom paths
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

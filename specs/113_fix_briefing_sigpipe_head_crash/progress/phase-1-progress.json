@@ -1,0 +1,52 @@
+{
+  "phase": 1,
+  "phase_name": "Capture Pre-Fix Baseline and Reproduction Evidence",
+  "started_at": "2026-09-02T16:00:00Z",
+  "last_updated": "2026-09-02T16:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record starting git state for the target file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm crash-site line numbers (238-241, 245-247)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm global index and Logos/Theory sub-index exist, horty entry present", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run pre-fix script against observed failing case, capture BASELINE.out/err/exit", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Capture deterministic jq|head -1 mechanism repro (141) and -c counterpart (0)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Literal plan instruction: cd ~/Projects/Logos/Theory && bash <absolute source-store path> --query ... ",
+      "result": "did_not_exercise_target",
+      "reason": "literature-briefing.sh resolves PROJECT_ROOT from $SCRIPT_DIR/../.. (its own file location via BASH_SOURCE), not from $PWD. Invoking the source-store copy by absolute path always resolves SUB_INDEX to agent-system/extensions/specs/literature-index.json (does not exist), so the script hits its documented 'sub-index missing -> exit 0 empty stdout' branch regardless of cwd. This is a pre-existing, out-of-scope path-resolution property of the script, not part of this task's fix."
+    }
+  ],
+  "handoff_count": 0,
+  "notes": {
+    "git_rev_parse_HEAD_at_start": "cfbe27b3caf1a8f6763d84f73250d690a4d8b6c2",
+    "git_status_target_file_at_start": "clean (no output from git status --short on the target path)",
+    "parent_entry_grep_line_numbers": "238, 243, 245, 250 (matches plan's asserted 238-241 / 245-247 crash sites)",
+    "global_index_path": "~/Projects/Literature/index.json (7,923,459 bytes, present)",
+    "logos_theory_sub_index_path": "~/Projects/Logos/Theory/specs/literature-index.json (52 entries, present)",
+    "horty_entry_grep_count_in_global_index": 892,
+    "literal_plan_invocation_result": "exit 0, BASELINE.out and BASELINE.err both 0 bytes -- did not reach the crash sites at all (sub-index-missing no-op path, see approaches_tried)",
+    "deviation_scratch_harness": "Built a scratch harness at the session scratchpad mirroring the real per-repo deploy layout (<fake-root>/.claude/scripts/*.sh copied verbatim from agent-system/extensions/literature/scripts/, plus <fake-root>/specs/literature-index.json copied verbatim from ~/Projects/Logos/Theory/specs/literature-index.json) so PROJECT_ROOT resolves correctly to the fake root (mirroring how the real per-repo deploy at ~/Projects/Logos/Theory/.claude/scripts/literature-briefing.sh would resolve it) while GLOBAL_INDEX still resolves to the real live ~/Projects/Literature/index.json via the unmodified LITERATURE_DIR default. This exercises the exact source-store script content against the real observed sub-index content and the real live global index without ever touching any file outside the scratchpad or the declared source-store target.",
+    "authoritative_baseline_via_scratch_harness": {
+      "command": "cd $SCRATCH/fake-repo && bash .claude/scripts/literature-briefing.sh --query \"game theory self-play\"",
+      "exit_code": 141,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "observation": "Live SIGPIPE crash reproduced against the real observed data (contradicts the plan's risk note that the race might not fire on this machine -- it did fire). BASELINE.out and BASELINE.err are both 0-byte files, i.e. the empty baseline is itself valid evidence per the plan's Phase 1 verification bullet ('empty is a valid baseline if the script died before emitting')."
+    },
+    "deterministic_mechanism_repro": {
+      "piped_head_1_variant": {"command": "bash -c 'set -euo pipefail; jq -n \"{a:1,d:[range(0;20000)]}\" | head -1'", "exit_code": 141},
+      "dash_c_variant": {"command": "bash -c 'set -euo pipefail; jq -cn \"{a:1,d:[range(0;20000)]}\" | head -1'", "exit_code": 0}
+    }
+  },
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Run the pre-fix script from the Logos/Theory repo via `cd ~/Projects/Logos/Theory && bash <absolute source-store path> --query ...`",
+      "type": "altered",
+      "reason": "The literal command as written in the plan does not exercise repo mode at all: literature-briefing.sh resolves its sub-index path from the script's own on-disk location, not the invoking shell's cwd, so invoking the source-store copy by absolute path from within Logos/Theory silently hits the sub-index-missing no-op branch (exit 0, empty output) rather than the target parent_entry code paths. Built an equivalent scratch harness (mirroring the real per-repo .claude/scripts/ deploy layout, with the real sub-index content copied in and the real live global index used unmodified) to genuinely exercise the crash sites against the real observed data. This IS the authoritative baseline for Phase 4's diff.",
+      "annotation": "*(deviation: altered — literal cd+absolute-path invocation does not reach repo mode due to literature-briefing.sh's SCRIPT_DIR-relative PROJECT_ROOT resolution; used an equivalent scratch harness mirroring the real deploy layout instead, which reproduced the live 141 crash)*"
+    }
+  ]
+}

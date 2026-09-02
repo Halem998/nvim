@@ -1,7 +1,7 @@
 # Implementation Plan: Task #113
 
 - **Task**: 113 - Fix the SIGPIPE crash that makes repo-mode `--lit` briefing fail outright
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None. Sequenced BEFORE the sibling task that edits this same file's
   global-mode query construction; that sibling's edits have already landed, so the line
@@ -117,35 +117,52 @@ No ROADMAP.md found at `specs/ROADMAP.md`. No roadmap phases added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Capture Pre-Fix Baseline and Reproduction Evidence [NOT STARTED]
+### Phase 1: Capture Pre-Fix Baseline and Reproduction Evidence [COMPLETED]
 
 **Goal**: Record the pre-fix behavior of repo-mode briefing against the observed failing case, so
 Phase 4's "identical content" comparison has a real baseline rather than an assertion. No code
 changes in this phase.
 
 **Tasks**:
-- [ ] Record the starting state: `git rev-parse HEAD` and
+- [x] Record the starting state: `git rev-parse HEAD` and
       `git status --short agent-system/extensions/literature/scripts/literature-briefing.sh`.
-      Confirm the file has no unexpected uncommitted modifications.
-- [ ] Confirm the crash-site line numbers are still `238-241` and `245-247` via
+      Confirm the file has no unexpected uncommitted modifications. *(completed: HEAD
+      cfbe27b3caf1a8f6763d84f73250d690a4d8b6c2, target file clean/no diff)*
+- [x] Confirm the crash-site line numbers are still `238-241` and `245-247` via
       `grep -n parent_entry agent-system/extensions/literature/scripts/literature-briefing.sh`
       (expect exactly four hits: `238, 243, 245, 250`). If they have shifted, re-derive them and
-      record the correction before proceeding.
-- [ ] Confirm `~/Projects/Literature/index.json` and
+      record the correction before proceeding. *(completed: confirmed exactly 238, 243, 245, 250 —
+      no shift)*
+- [x] Confirm `~/Projects/Literature/index.json` and
       `~/Projects/Logos/Theory/specs/literature-index.json` both exist, and that the global index
-      contains `horty_2001_agency-and-deontic-logic`.
-- [ ] Run the pre-fix script from the Logos/Theory repo, capturing stdout, stderr, and exit code
+      contains `horty_2001_agency-and-deontic-logic`. *(completed: both present; horty entry found,
+      892 grep hits in the 11,545-entry global index)*
+- [x] Run the pre-fix script from the Logos/Theory repo, capturing stdout, stderr, and exit code
       to scratch files (do not discard stderr — the `2>/dev/null` inside the script hides jq's
       diagnostic, but the wrapper-level exit code is the signal):
       `cd ~/Projects/Logos/Theory && bash /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing.sh --query "game theory self-play" > BASELINE.out 2> BASELINE.err; echo $?`
-- [ ] Record the observed exit code. **Either outcome is acceptable evidence**: 141 confirms the
+      *(deviation: altered — see phase notes; the literal command never reaches repo mode because
+      `literature-briefing.sh` resolves `PROJECT_ROOT` from its own on-disk location
+      (`$SCRIPT_DIR/../..`), not from `$PWD`, so the source-store copy invoked by absolute path
+      always looks for `agent-system/extensions/specs/literature-index.json` regardless of cwd —
+      that path doesn't exist, so the script silently takes its documented
+      sub-index-missing/exit-0/empty-stdout branch without ever reaching the `parent_entry` sites.
+      Used an equivalent scratch harness mirroring the real per-repo `.claude/scripts/` deploy
+      layout (script content + real sub-index content copied in, real live global index used
+      unmodified) to genuinely exercise the crash sites — see progress/phase-1-progress.json.
+      Result: live SIGPIPE reproduced, exit 141, BASELINE.out/err both 0 bytes)*
+- [x] Record the observed exit code. **Either outcome is acceptable evidence**: 141 confirms the
       live crash; 0 means the pipe-buffer race did not fire on this machine's data — record that
-      fact and continue. Do not treat a non-reproducing run as a blocker.
-- [ ] Capture the deterministic mechanism reproduction independently, as the authoritative "before"
+      fact and continue. Do not treat a non-reproducing run as a blocker. *(completed: 141 — the
+      live crash DID reproduce via the scratch-harness invocation, contra the plan's risk note that
+      it might not fire on this machine)*
+- [x] Capture the deterministic mechanism reproduction independently, as the authoritative "before"
       evidence: `bash -c 'set -euo pipefail; jq -n "{a:1,d:[range(0;20000)]}" | head -1'; echo $?`
-      (expect 141), and its `-c` counterpart (expect 0).
-- [ ] Preserve `BASELINE.out` / `BASELINE.err` and the recorded exit code in the session scratchpad
-      for Phase 4. Do not commit them into the repo.
+      (expect 141), and its `-c` counterpart (expect 0). *(completed: 141 and 0 respectively, as
+      expected)*
+- [x] Preserve `BASELINE.out` / `BASELINE.err` and the recorded exit code in the session scratchpad
+      for Phase 4. Do not commit them into the repo. *(completed: preserved in session scratchpad,
+      not committed)*
 
 **Timing**: 0.5 hours
 

@@ -1,38 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md",
-      "summary": "4-phase plan (1.75h) replacing the two jq-object-into-head-1 pipelines in literature-briefing.sh with jq -c first(...), plus baseline capture, head -1 audit, and end-to-end verification against the observed failing Logos/Theory sub-index."
-    }
-  ],
-  "next_steps": "Run /implement 113 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788390027_14a27d_113",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 113,
-    "task_type": "meta",
-    "phase_count": 4,
-    "estimated_hours": 1.75,
-    "dependency_waves": [[1], [2], [3, 4]],
-    "complexity": "simple",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "memory_candidates": [
-    {
-      "content": "Shell scripts running under `set -euo pipefail` must never pipe a jq query that can emit a JSON object or array into a line-truncating tool (`head -N`, `sed -n 1p`). jq pretty-prints objects across many lines by default (`-r` does NOT change this -- it only affects string scalars); `head` reads the first line and closes the pipe; jq receives SIGPIPE and dies 141; `pipefail` promotes the pipeline status and `set -e` kills the script. The failure looks intermittent because it is a 64KB-pipe-buffer race: small objects fit the buffer and jq completes before the reader exits, so many iterations succeed before one large entry crashes the script. Fix by bounding the result inside jq -- `jq -c 'first(.entries[] | select(...))'` or `limit(1; ...)` -- which removes the pipe entirely and also stops the scan at the first match instead of streaming discarded matches. `first(...)` over an empty stream emits nothing and exits 0 under `set -e`, so no `|| true` guard is needed. Adding `-c` alone also removes the race but leaves the fragile idiom in place. Never 'fix' this by removing pipefail or set -e.",
-      "category": "PATTERN",
-      "source_artifact": "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md",
-      "confidence": 0.88,
-      "suggested_keywords": ["jq", "sigpipe", "pipefail", "shell-script", "head", "exit-141"]
-    }
-  ],
-  "modified_files": [
-    "specs/113_fix_briefing_sigpipe_head_crash/plans/01_fix-briefing-sigpipe-crash.md"
-  ],
-  "errors": []
+    "session_id": "sess_1788390027_14a27d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }
