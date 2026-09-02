@@ -246,14 +246,11 @@ Add task entry to TODO.md (if new task):
 ### Step 6: Git Commit (Task Creation)
 
 ```bash
-git add specs/state.json specs/TODO.md
-git commit -m "$(cat <<'EOF'
-task {N}: create grant budget task
-
-Session: {session_id}
-
-EOF
-)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: create grant budget task" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- specs/state.json specs/TODO.md
 ```
 
 ### Step 7: Display Task Created Summary

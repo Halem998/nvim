@@ -316,10 +316,11 @@ sed -i 's/^next_project_number: [0-9]*/next_project_number: {NEW_NUMBER}/' \
 ### Step 5: Git commit
 
 ```bash
-git add specs/
-git commit -m "task {N}: create {title}
-
-Session: {session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N}: create {title}" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- specs/
 ```
 
 ### Step 6: Output

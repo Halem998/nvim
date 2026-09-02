@@ -376,11 +376,11 @@ For each phase in the implementation plan, commit after completing it:
 6. **Git commit** with message: `task {N} phase {P}: {phase_name}`
 
 ```bash
-git add <modified-files-for-this-phase>
-git commit -m "task {N} phase {P}: {phase_name}
-
-Session: {session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: {phase_name}" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- <modified-files-for-this-phase>
 ```
 
 **Why phase-granular commits**:

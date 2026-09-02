@@ -371,10 +371,11 @@ Apply the `plan` scope from `.claude/context/standards/git-staging-scope.md` —
 never a repo-wide add:
 
 ```bash
-git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
-git commit -m "task ${task_number}: create slide implementation plan
-
-Session: ${session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: create slide implementation plan" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ---

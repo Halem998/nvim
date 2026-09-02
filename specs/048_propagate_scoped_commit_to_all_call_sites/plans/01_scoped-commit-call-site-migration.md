@@ -409,16 +409,20 @@ the live grep, not from this plan.
 
 ---
 
-### Phase 7: Migrate the present and lean extensions [NOT STARTED]
+### Phase 7: Migrate the present and lean extensions [COMPLETED]
 
 **Goal**: Convert the second- and third-largest extension territories.
 
 **Tasks**:
-- [ ] Enumerate: `grep -rln 'git commit -m' agent-system/extensions/present/ agent-system/extensions/lean/`.
-- [ ] present: 5 commands + 7 skills. Open each before editing.
-- [ ] lean: 4 skills + 2 agents. Open each before editing; lean's implementation agents may
+- [x] Enumerate: `grep -rln 'git commit -m' agent-system/extensions/present/ agent-system/extensions/lean/`.
+- [x] present: 5 commands + 7 skills. Open each before editing.
+- [x] lean: 4 skills + 2 agents. Open each before editing; lean's implementation agents may
       commit proof artifacts, so check whether any stages paths outside a task directory.
-- [ ] Convert each site; record any outlier as a candidate exemption with a reason.
+      *(checked — both lean-implementation-agent.md and lean-implementation-hard-agent.md stage
+      only `<modified-files-for-this-phase>` / the task dir, never outside it)*
+- [x] Convert each site; record any outlier as a candidate exemption with a reason. *(none found
+      — all 18 sites, including the two multi-site files commands/grant.md and
+      skills/skill-grant/SKILL.md, matched the uniform task-scoped shape)*
 
 **Timing**: 1.25 hours
 

@@ -514,10 +514,11 @@ esac
 
 # Targeted staging per .claude/context/standards/git-staging-scope.md — never a repo-wide add
 padded_num=$(printf "%03d" "$task_number")
-git add "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
-git commit -m "task ${task_number}: ${commit_action}
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: ${commit_action}" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 ```
 
 **On commit failure**: Non-blocking. Log the failure but continue with success response.
@@ -888,12 +889,13 @@ For each created task, prepend entry to TODO.md `## Tasks` section:
 ### Step F12: Git Commit
 
 ```bash
-git add specs/state.json specs/TODO.md
-git commit -m "task ${task_number}: create fix-it tasks from grant tags
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: create fix-it tasks from grant tags
 
-Created {count} tasks from embedded tags in grant directory.
-
-Session: ${session_id}
+Created {count} tasks from embedded tags in grant directory." \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- specs/state.json specs/TODO.md
 ```
 
 ---

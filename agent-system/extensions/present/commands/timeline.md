@@ -220,11 +220,11 @@ Capture all responses in a forcing_data object:
 
 8. **Git commit**:
    ```bash
-   git add specs/
-   git commit -m "task {N}: create {title}
-
-   Session: {session_id}
-
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N}: create {title}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- specs/
    ```
 
 9. **Output**:

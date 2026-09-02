@@ -245,10 +245,11 @@ Lean-specific: verify no unchecked tactics or unresolved sorries remain.
 
 **H. Git Commit**:
 ```bash
-git add <modified-files-for-this-phase>
-git commit -m "task {N} phase {P}: {phase_name}
-
-Session: {session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: {phase_name}" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- <modified-files-for-this-phase>
 ```
 
 **Single-phase stop**: When `phase_number` is set and target phase is complete, STOP
@@ -344,10 +345,11 @@ the entire working tree:
 ```bash
 task_dir="specs/{NNN}_{SLUG}"
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
-git add "${stage_paths[@]}"
-git commit -m "task {N} phase {P}: complete
-
-Session: {session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: complete" \
+  --session "{session_id}" \
+  --honest-index-rows {N} \
+  -- "${stage_paths[@]}"
 ```
 
 ### Stage 6: Final Verification Stage (Mandatory)

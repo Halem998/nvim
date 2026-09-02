@@ -216,11 +216,11 @@ Capture all responses in a forcing_data object:
 
 8. **Git commit**:
    ```bash
-   git add specs/
-   git commit -m "task {N}: create {title}
-
-   Session: {session_id}
-
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N}: create {title}" \
+     --session "{session_id}" \
+     --honest-index-rows {N} \
+     -- specs/
    ```
 
 9. **Output**:
@@ -469,10 +469,11 @@ Create a new task to revise an existing grant.
 ### CHECKPOINT 2: COMMIT
 
 ```bash
-git add specs/
-git commit -m "task {NEW_N}: create revision for grant {N}
-
-Session: {session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {NEW_N}: create revision for grant {N}" \
+  --session "{session_id}" \
+  --honest-index-rows {NEW_N} \
+  -- specs/
 ```
 
 **On success, output**:

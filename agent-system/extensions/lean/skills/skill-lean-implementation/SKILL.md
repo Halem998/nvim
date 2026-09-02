@@ -249,15 +249,15 @@ fi
 Commit changes with session ID:
 
 ```bash
-git add \
-  "Theories/" \
-  "specs/${padded_num}_${project_name}/summaries/" \
-  "specs/${padded_num}_${project_name}/plans/" \
-  "specs/TODO.md" \
-  "specs/state.json"
-git commit -m "task ${task_number}: complete implementation
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete implementation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "Theories/" \
+     "specs/${padded_num}_${project_name}/summaries/" \
+     "specs/${padded_num}_${project_name}/plans/" \
+     "specs/TODO.md" \
+     "specs/state.json"
 ```
 
 ---

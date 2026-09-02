@@ -348,7 +348,7 @@
     },
     {
       "path": "project/lean4/operations/multi-instance-optimization.md",
-      "line_count": 121,
+      "line_count": 198,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
