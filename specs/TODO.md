@@ -60,7 +60,7 @@ next_project_number: 139
   └─ 109 [NOT STARTED] — Fix three distinct failure modes in the online-ingest bridge, eac
 103 [PLANNED] — Fix literature-fidelity-audit.sh so it can verify pipeline-ingest
 106 [PLANNED] — Route skill-literature's convert path through literature-convert.
-108 [PLANNING] — Make the topic-scoped coverage-delta guard fast enough that every
+108 [PLANNED] — Make the topic-scoped coverage-delta guard fast enough that every
   └─ 112 [NOT STARTED] — Make global-corpus briefing actually return results instead of si
 110 [PLANNING] — Stop Tier 3 online discovery from being a single point of failure
 111 [NOT STARTED] — Two small, independent correctness fixes in literature tooling. S
@@ -1280,11 +1280,12 @@ TEST VEHICLE. Automated discovery could not be exercised during the observed ses
 
 ### 108. Eliminate literature-coverage-delta.sh per-entry jq spawns so --lit stops timing out
 - **Effort**: 4-8 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md]
+- **Plan**: [108_eliminate_coverage_delta_per_entry_jq_spawns/plans/01_coverage-delta-perf-fix.md]
 
 **Description**: Make the topic-scoped coverage-delta guard fast enough that every `--lit` invocation does not pay a multi-minute stall. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/literature/ (the .claude/ tree is a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Verified during task creation: the BimodalLogic deploy copies of every script named below are byte-identical to the source store, so there is no drift to reconcile.
 

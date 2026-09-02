@@ -1,33 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md",
-      "summary": "Benchmarked literature-coverage-delta.sh against the live 11,545-entry global index: the per-entry jq triple-spawn is only ~30% of the cost; literature-term-match.sh's to_lower/term_matches subprocess forking is the dominant ~65-70%. Validated a combined fix (single-pass @tsv jq extraction + pure-bash term matching) at 181x speedup (33.36s -> 0.184s) with byte-identical candidate sets across 5 queries; recommends against caching and flags that literature-term-match.sh must be edited (relevant to the serialized FTS5 task's file-overlap gate)."
+      "type": "plan",
+      "path": "specs/108_eliminate_coverage_delta_per_entry_jq_spawns/plans/01_coverage-delta-perf-fix.md",
+      "summary": "5-phase plan applying the validated combined perf fix (single-pass jq @tsv extraction plus fork-free pure-bash term matching) behind a candidate-set equivalence gate."
     }
   ],
-  "next_steps": "Run /plan 108 to create implementation plan",
+  "next_steps": "Run /implement 108 to execute the plan",
   "metadata": {
     "session_id": "sess_1788323839_c3b8b4_108",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.5,
+    "dependency_waves": [[1], [2, 3], [4], [5]]
   },
   "memory_candidates": [
     {
-      "content": "Bash helper functions that fork subprocesses per call (echo|tr, echo|grep) are frequently the dominant cost in a hot loop, not the more visible jq subprocess spawns around them. When profiling a bash script that loops over N items and calls a shared matching/normalization helper M times per item, benchmark the helper in isolation (e.g. 1000 bare calls) before assuming the per-item jq/external-tool calls are the bottleneck. Pure-bash replacements (${var,,} for lowercasing, [[ $a == *$b* ]] for substring match) eliminate the fork/exec cost entirely and are safe once bash 4+ is already an established baseline in the codebase.",
+      "content": "In bash hot loops, the dominant cost is usually fork/exec, not the tool being forked. Before optimizing an obvious 'N jq spawns per iteration' pattern, profile which helper is actually forking: shared helpers implemented as `echo \"$x\" | tr` or `echo \"$h\" | grep -qF \"$n\"` fork 2-6 processes per CALL and are invoked far more often than the per-iteration extraction. Replacing them with pure-bash `${var,,}` and `[[ \"$h\" == *\"$n\"* ]]` is typically a ~360x per-call win. Caveat to check when doing so: `${var,,}` is locale-aware and case-folds non-ASCII uppercase, while GNU `tr '[:upper:]' '[:lower:]'` operates bytewise and does not - so the pure-bash form can strictly ADD matches on a corpus with non-ASCII text. Also `$(echo \"$1\" | ...)` strips trailing newlines and swallows a bare `-n`/`-e` argument; `${1,,}` does neither. On a performance-only task these differences must be audited over the full corpus and surfaced, not silently accepted.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md",
+      "source_artifact": "specs/108_eliminate_coverage_delta_per_entry_jq_spawns/plans/01_coverage-delta-perf-fix.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash performance", "subprocess forking", "jq", "term_matches", "profiling", "literature extension"]
-    },
-    {
-      "content": "jq's @tsv format-string escapes literal tab/newline/backslash characters within a field as two-character sequences rather than stripping or leaving them raw, so real tab separators between fields are never ambiguous when consumed by `while IFS=$'\\t' read`. This makes @tsv safe as a field-delimiter format for jq-to-bash record extraction even when field content is untrusted, at the cost of a narrow cosmetic caveat: any field content containing those characters is exposed to the bash consumer in escaped form, not raw.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/108_eliminate_coverage_delta_per_entry_jq_spawns/reports/01_coverage-delta-perf.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["jq", "@tsv", "bash read", "field delimiter", "delimiter safety"]
+      "suggested_keywords": ["bash", "performance", "fork-exec", "subprocess", "to_lower", "jq"]
     }
-  ]
+  ],
+  "modified_files": []
 }
