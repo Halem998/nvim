@@ -343,6 +343,41 @@ Run a command with `--lit` and a relevant task description to verify the paper a
 
 Check the agent context for a `<literature-context>` block containing the paper.
 
+## Converter Tier Selection
+
+When `/literature --convert` (or `literature-convert.sh` directly) gate-rejects a document with a
+`sentence_boundary_glue_count()` failure, the operator remedy depends on *where the defect
+originates* — not on whether the source was scanned or born-digital. "Scanned vs. born-digital"
+is explicitly NOT the discriminator: `bacon_dorr_2024_classicism` is a very-likely born-digital
+2024 paper and the fallback tier fixes it; `joyce_1999_foundations-causal-decision-theory` is
+scanned and the fallback tier makes it marginally worse (4 hits on the primary tier -> 5 on the
+fallback tier). Two distinct classes exist, each with its own remedy:
+
+| | Class A: primary-tier structuring artifact | Class B: text-layer defect |
+|---|---|---|
+| **Where the defect lives** | Introduced by pymupdf4llm's markdown-structuring heuristics (table detection, `<sup>`/`<sub>` span wrapping) | Already present in the extracted text layer (both tiers read it via the same underlying `fitz` extraction) |
+| **Fallback tier's effect** | Fixes it — bypasses the structuring layer entirely | Does nothing to it, and can add unrelated noise from its own column-clustering |
+| **Confirmed cases** | `savage_1972_foundations-of-statistics` (73 hits -> 3), `bacon_dorr_2024_classicism`, the Goldblatt/Hodkinson/Venema 2003 case | `joyce_1999_foundations-causal-decision-theory` (4 hits -> 5) |
+| **Document provenance** | Mixed — one scanned, two very likely born-digital | Scanned (poor-vintage OCR, a 2019 archive.org pass) |
+| **Correct remedy** | Reconvert with `LITERATURE_CONVERTER=fallback` | Re-OCR the source (`ocrmypdf --force-ocr` on the affected pages), then reconvert — a converter-tier switch alone will not help |
+| **Diagnostic tell** | Hits positionally concentrated in a structural region (e.g. back matter misdetected as a table), or centered on footnote/superscript markers | Hits scattered singly at otherwise-clean sentence boundaries with no structural pattern |
+
+**Diagnostic procedure**: on a gate rejection, inspect where the `sentence_boundary_glue_count()`
+hits fall in the converted markdown.
+- Positionally concentrated near back matter or clustered around footnote/superscript markers
+  suggests Class A — try `LITERATURE_CONVERTER=fallback` and reconvert.
+- Scattered singly at otherwise-clean sentence boundaries with no structural pattern suggests
+  Class B — check the source page's OCR quality; running `ocrmypdf --force-ocr` on the affected
+  pages and reconverting is the correct remedy, since a tier switch alone will not help.
+
+**No automatic tier selection exists or is intended.** The discriminator above requires
+inspecting where the post-conversion hits fall; it is not computable a priori from document
+metadata (page count, scan status, ingestion source), so a naive auto-select would regress Class B
+documents by masking a real text-layer defect behind a tier switch that does nothing for it. Note
+also that `LITERATURE_CONVERTER=auto`'s fallback is an engine-availability fallback (it only
+engages the fallback tier when the primary engine itself is unavailable or fails to run) — it is
+not a quality-gate retry, and nothing reconverts a gate-rejected document automatically.
+
 ## Maintenance
 
 - **Token counts go stale**: After editing a file, re-estimate its `token_count` using the

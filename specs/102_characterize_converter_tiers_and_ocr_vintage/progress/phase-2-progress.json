@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Add the Converter Tier Selection guide section",
+  "started_at": "2026-09-01T00:15:00Z",
+  "last_updated": "2026-09-01T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ## Converter Tier Selection heading", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 2, "description": "Include Class A / Class B table", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 3, "description": "State scanned vs born-digital is not the discriminator", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 4, "description": "Add diagnostic procedure", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 5, "description": "Note no auto-selection exists/intended", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 6, "description": "Note auto's fallback is engine-availability, not quality-gate retry", "status": "done", "files_touched": ["agent-system/extensions/literature/context/guides/literature-organization.md"]},
+    {"id": 7, "description": "Durable anchors only, no task-number citations", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

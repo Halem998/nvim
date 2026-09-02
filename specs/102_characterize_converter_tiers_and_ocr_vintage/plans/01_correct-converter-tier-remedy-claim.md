@@ -158,35 +158,35 @@ deviation.
 
 ---
 
-### Phase 2: Add the Converter Tier Selection guide section [NOT STARTED]
+### Phase 2: Add the Converter Tier Selection guide section [COMPLETED]
 
 **Goal**: `literature-organization.md` gains a self-contained operator-facing section explaining
 when each converter tier helps, keyed on defect origin rather than document provenance.
 
 **Tasks**:
-- [ ] Add a new top-level section with the exact heading `## Converter Tier Selection`, placed
+- [x] Add a new top-level section with the exact heading `## Converter Tier Selection`, placed
       after `### Step 7: Test the injection` / before `## Maintenance`, or as a subsection under
       `### Step 2: Convert and chunk the document` — pick one and keep the heading text exact
-      either way, since the docstring points at it by name.
-- [ ] Include the Class A / Class B table from the research report's Recommendations §1 (rows:
+      either way, since the docstring points at it by name. *(completed: placed after Step 7, before Maintenance)*
+- [x] Include the Class A / Class B table from the research report's Recommendations §1 (rows:
       where the defect lives, fallback tier's effect, confirmed cases, document provenance,
-      correct remedy, diagnostic tell).
-- [ ] State explicitly that "scanned vs. born-digital" is NOT the discriminator, citing
+      correct remedy, diagnostic tell). *(completed)*
+- [x] State explicitly that "scanned vs. born-digital" is NOT the discriminator, citing
       `bacon_dorr_2024_classicism` (very likely born-digital, fallback tier fixes it) and
       `joyce_1999_foundations-causal-decision-theory` (scanned, fallback tier makes it worse) as
-      the two counterexamples.
-- [ ] Add the diagnostic procedure: on a gate rejection, inspect where the
+      the two counterexamples. *(completed)*
+- [x] Add the diagnostic procedure: on a gate rejection, inspect where the
       `sentence_boundary_glue_count()` hits fall — positionally concentrated near back matter or
       footnote/superscript markers suggests Class A (try `LITERATURE_CONVERTER=fallback`);
       scattered singly at otherwise-clean sentence boundaries with no structural pattern suggests
       Class B (check the source page's OCR quality; `ocrmypdf --force-ocr` on the affected pages,
-      then reconvert — a tier switch alone will not help).
-- [ ] Add an explicit note that no automatic tier selection exists or is intended, and why: the
+      then reconvert — a tier switch alone will not help). *(completed)*
+- [x] Add an explicit note that no automatic tier selection exists or is intended, and why: the
       discriminator requires inspecting post-conversion hit positions and is not computable from
-      document metadata beforehand.
-- [ ] Note that `LITERATURE_CONVERTER=auto`'s fallback is an engine-availability fallback, not a
-      quality-gate retry — nothing reconverts a gate-rejected document automatically.
-- [ ] Use durable anchors only; no task-number citations.
+      document metadata beforehand. *(completed)*
+- [x] Note that `LITERATURE_CONVERTER=auto`'s fallback is an engine-availability fallback, not a
+      quality-gate retry — nothing reconverts a gate-rejected document automatically. *(completed)*
+- [x] Use durable anchors only; no task-number citations. *(completed)*
 
 **Timing**: 40 minutes
 
