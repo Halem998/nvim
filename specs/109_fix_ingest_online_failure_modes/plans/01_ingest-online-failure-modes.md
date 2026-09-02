@@ -1,7 +1,7 @@
 # Implementation Plan: Task #109
 
 - **Task**: 109 - Fix three distinct failure modes in the online-ingest bridge
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: specs/102_characterize_converter_tiers_and_ocr_vintage (completed; consumed for defect (c))
 - **Research Inputs**: specs/109_fix_ingest_online_failure_modes/reports/01_ingest-online-failure-modes.md
@@ -131,29 +131,34 @@ serialized despite having no logical dependency on each other: all three edit
 
 ---
 
-### Phase 1: Build the forced-failure / stub verification harness [NOT STARTED]
+### Phase 1: Build the forced-failure / stub verification harness [COMPLETED]
 
 **Goal**: Establish the test vehicle every later phase verifies against, since `--dry-run` cannot
 reach any of the three defects' code paths.
 
 **Tasks**:
-- [ ] Read `literature-ingest-online.sh` header lines 20-38 (the documented INPUT SCHEMA) and hand-build
+- [x] Read `literature-ingest-online.sh` header lines 20-38 (the documented INPUT SCHEMA) and hand-build
   three synthetic record JSON documents in a scratch directory:
   - `arxiv_only.json` — `status: "open_access"`, `tier: 3`, `doi: null`, `arxiv_id: "1009.2803"`,
     `doc_id: "arxiv_1009_2803"`, a reachable `pdf_url`
   - `doi_present.json` — same shape but with a non-null `doi`, to prove Phase 2 does not disturb
     the existing `--doi` branch
   - `in_zotero_no_pdf.json` — `status: "in_zotero_no_pdf"`, `tier: 2`, to reach the attach path
-- [ ] Write a stub `zot` that exits 3 on `add --pdf` with no `--doi` and prints the real
+  *(completed: harness/records/*.json; arxiv_only.json's pdf_url is the real, reachable
+  https://arxiv.org/pdf/1009.2803)*
+- [x] Write a stub `zot` that exits 3 on `add --pdf` with no `--doi` and prints the real
   `No DOI found in PDF` validation-error text to stderr; exits 0 with a minimal valid envelope when
-  `--doi` is present. Put it first on `PATH` for harness runs only
-- [ ] Write a stub `literature-convert.sh` that exits 3 and prints
+  `--doi` is present. Put it first on `PATH` for harness runs only *(completed:
+  harness/stub-path/zot; also implements `attach` and `search` for Phases 3/4)*
+- [x] Write a stub `literature-convert.sh` that exits 3 and prints
   `[convert] QUALITY GATE FAILED (<engine>): <reasons>` to stderr, for exercising the quality-gate
-  `continue` branch and both `PIPELINE_FAILED` sites
-- [ ] Point `LITERATURE_DIR` at a scratch corpus root and confirm the override is honored: run one
-  invocation and verify nothing was written under the real `~/Projects/Literature/`
-- [ ] Record the exact reproduction commands in the harness directory so Phases 2-7 and the
-  implementation summary can cite them verbatim
+  `continue` branch and both `PIPELINE_FAILED` sites *(completed: harness/bin/literature-convert.sh,
+  4 modes: success/quality_gate_fail/hard_fail/no_md_produced)*
+- [x] Point `LITERATURE_DIR` at a scratch corpus root and confirm the override is honored: run one
+  invocation and verify nothing was written under the real `~/Projects/Literature/` *(completed:
+  run-harness.sh's before/after md5sum trap on `~/Projects/Literature`, verified on every scenario)*
+- [x] Record the exact reproduction commands in the harness directory so Phases 2-7 and the
+  implementation summary can cite them verbatim *(completed: harness/README.md)*
 
 **Timing**: 0.75 hours
 
@@ -166,6 +171,19 @@ reach any of the three defects' code paths.
 time by tracing each target `directive_stop`/`continue` site from a harness run and checking no
 third external binary (e.g. `curl`, `zotero-resolve-pdf.sh`) also needs stubbing; if one does, add
 it here and note the correction rather than silently widening a later phase.
+
+**Correction (confirmed at implementation time)**: two stubs were not sufficient. The
+`existing_no_pdf` (attach) path needed under Phase 3 additionally required stubbing
+`zotero-resolve-pdf.sh` (avoids a real call to the local Zotero HTTP API at `127.0.0.1:23119`)
+and `zotero-read.sh` (the `search` op used by the DOI dedup check) as sibling files placed
+alongside the real, symlinked `literature-ingest-online.sh`/`literature-ingest.sh` in
+`harness/bin/` (so `$SCRIPT_DIR`-relative resolution picks up the stubs); a stub `curl`
+(intercepting only `api.unpaywall.org`, passing every other URL through to the real binary) was
+added to `harness/stub-path/` so the attach path's Unpaywall OA-lookup step is controllable
+without depending on a real DOI's real Unpaywall record; and a stub `literature-chunk.sh` was
+added (also in `harness/bin/`) to deterministically exercise Phase 5's chunking-failure branch.
+Final stub count: 6 (`zot`, `curl`, `literature-convert.sh`, `literature-chunk.sh`,
+`zotero-resolve-pdf.sh`, `zotero-read.sh`), not 2.
 
 **Files to modify**:
 - `specs/109_fix_ingest_online_failure_modes/harness/` (new, task-local scratch — synthetic

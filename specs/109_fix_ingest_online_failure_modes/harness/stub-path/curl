@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Harness stub for `curl` -- intercepts ONLY the Unpaywall API lookup used by the
+# existing_no_pdf/attach branch's `resolved existing Zotero item -> discoverable PDF URL` step,
+# so the harness never depends on a real DOI actually being resolvable via Unpaywall. Every
+# other invocation (real PDF downloads via the arxiv.org URLs used in the synthetic records)
+# passes straight through to the real curl binary unmodified.
+#
+# Controlled via:
+#   HARNESS_UNPAYWALL_OA_URL   URL to report as .best_oa_location.url. Empty/unset means
+#                               Unpaywall reports no OA location (real-world honest-stop case).
+set -euo pipefail
+
+REAL_CURL="${HARNESS_REAL_CURL:-/usr/bin/curl}"
+
+is_unpaywall=0
+for arg in "$@"; do
+  case "$arg" in
+    *api.unpaywall.org*) is_unpaywall=1 ;;
+  esac
+done
+
+if [ "$is_unpaywall" -eq 1 ]; then
+  if [ -n "${HARNESS_UNPAYWALL_OA_URL:-}" ]; then
+    printf '{"best_oa_location": {"url": "%s"}}\n' "$HARNESS_UNPAYWALL_OA_URL"
+  else
+    echo '{"best_oa_location": null}'
+  fi
+  exit 0
+fi
+
+exec "$REAL_CURL" "$@"

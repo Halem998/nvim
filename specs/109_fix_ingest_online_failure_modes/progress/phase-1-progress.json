@@ -1,0 +1,36 @@
+{
+  "phase": 1,
+  "phase_name": "Build the forced-failure / stub verification harness",
+  "started_at": "2026-09-01T23:35:00Z",
+  "last_updated": "2026-09-01T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Hand-build three synthetic discovery record JSON documents", "status": "done",
+     "files_touched": [
+       "specs/109_fix_ingest_online_failure_modes/harness/records/arxiv_only.json",
+       "specs/109_fix_ingest_online_failure_modes/harness/records/doi_present.json",
+       "specs/109_fix_ingest_online_failure_modes/harness/records/in_zotero_no_pdf.json"
+     ]},
+    {"id": 2, "description": "Write stub zot (add/attach/search)", "status": "done",
+     "files_touched": ["specs/109_fix_ingest_online_failure_modes/harness/stub-path/zot"]},
+    {"id": 3, "description": "Write stub literature-convert.sh, literature-chunk.sh, zotero-resolve-pdf.sh, zotero-read.sh, curl", "status": "done",
+     "files_touched": [
+       "specs/109_fix_ingest_online_failure_modes/harness/bin/literature-convert.sh",
+       "specs/109_fix_ingest_online_failure_modes/harness/bin/literature-chunk.sh",
+       "specs/109_fix_ingest_online_failure_modes/harness/bin/zotero-resolve-pdf.sh",
+       "specs/109_fix_ingest_online_failure_modes/harness/bin/zotero-read.sh",
+       "specs/109_fix_ingest_online_failure_modes/harness/stub-path/curl"
+     ]},
+    {"id": 4, "description": "Symlink real scripts into harness/bin; write run-harness.sh driver with LITERATURE_DIR scratch override and real-corpus safety trap", "status": "done",
+     "files_touched": ["specs/109_fix_ingest_online_failure_modes/harness/run-harness.sh"]},
+    {"id": 5, "description": "Record reproduction commands", "status": "done",
+     "files_touched": ["specs/109_fix_ingest_online_failure_modes/harness/README.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Use real zotero-resolve-pdf.sh against the real local Zotero HTTP API for the existing_no_pdf path", "result": "rejected", "reason": "requires knowing a real matching title/item in the user's live library and risks real API interaction; replaced with a stub returning canned resolution JSON"}
+  ],
+  "deviations": [
+    {"task_id": "1.1", "description": "Phase 1 Scope Hypothesis: exactly two stubs (zot, literature-convert.sh) suffice", "type": "altered", "reason": "existing_no_pdf/attach path additionally required stubbing zotero-resolve-pdf.sh, zotero-read.sh, literature-chunk.sh, and curl (Unpaywall-only intercept); corrected inline in the plan's Scope Hypothesis block", "annotation": "*(deviation: altered — widened from 2 to 6 stubs, documented as a Correction in the Scope Hypothesis)*"}
+  ],
+  "handoff_count": 0
+}

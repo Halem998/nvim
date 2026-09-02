@@ -1,0 +1,5 @@
+[ingest] Found 1 source file(s) to ingest
+[ingest] Processing: /home/benjamin/.config/nvim/specs/109_fix_ingest_online_failure_modes/harness/scratch/run-rKvPxd/harness_orphan_doc.pdf
+[ingest] Converting: harness_orphan_doc.pdf
+[ingest] QUALITY GATE FAILED: harness_orphan_doc.pdf — [convert] QUALITY GATE FAILED (harness-stub): simulated sentence_boundary_glue_count() rejection
+[ingest] All files failed to process (1 rejected by the conversion quality gate, 0 hard-failed)

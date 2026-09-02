@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Harness stub for the `zot` CLI (zotero-cli-cc). Reproduces only the exit codes and stderr
+# text needed to drive literature-ingest-online.sh through its Zotero-write branches, without
+# ever touching a real Zotero library. Controlled via environment variables:
+#   HARNESS_ZOT_ADD_FAIL=1      force `zot add` to fail exit 3 regardless of --doi (simulates
+#                                ONLINE_INGEST_ZOTERO_CREATE_FAILED for defect-b testing)
+#   HARNESS_ZOT_ATTACH_FAIL=1   force `zot attach` to fail exit 1 (simulates
+#                                ONLINE_INGEST_ZOTERO_ATTACH_FAILED for defect-b testing)
+set -euo pipefail
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  add)
+    has_doi=0
+    doi_val=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --doi) doi_val="${2:-}"; has_doi=1; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    if [ "${HARNESS_ZOT_ADD_FAIL:-0}" = "1" ]; then
+      echo '{"error": "validation_error", "message": "No DOI found in PDF"}' >&2
+      exit 3
+    fi
+    if [ "$has_doi" -eq 0 ]; then
+      # Real zot behavior (zotero-item-creation.md): _add_from_pdf hard-fails before
+      # writer.add_item when no DOI can be regexed from the PDF and none was passed.
+      echo '{"error": "validation_error", "message": "No DOI found in PDF"}' >&2
+      exit 3
+    fi
+    cat <<JSON
+{"data": {"key": "HARNESSKEY1", "doi": "$doi_val", "sync_required": true}}
+JSON
+    exit 0
+    ;;
+  attach)
+    if [ "${HARNESS_ZOT_ATTACH_FAIL:-0}" = "1" ]; then
+      echo "zot: attach failed: simulated harness failure" >&2
+      exit 1
+    fi
+    cat <<'JSON'
+{"data": {"attachment": {"key": "HARNESSATTACH1", "filename": "harness.pdf"}}}
+JSON
+    exit 0
+    ;;
+  search)
+    echo '[]'
+    exit 0
+    ;;
+  *)
+    echo "harness stub zot: unhandled subcommand: $cmd" >&2
+    exit 1
+    ;;
+esac

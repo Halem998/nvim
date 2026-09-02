@@ -1,0 +1,1 @@
+/home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-ingest-online.sh

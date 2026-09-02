@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md",
-      "summary": "7-phase, 5-wave plan fixing all three online-ingest bridge failure modes in the literature source store: arXiv DataCite --doi derivation, staging-file and doc-directory orphan cleanup, and a message-only converter-tier diagnostic pointer, preceded by a stub/forced-failure harness since --dry-run cannot reach any of these paths."
-    }
-  ],
-  "next_steps": "Run /implement 109 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788329488_6a27b9_109",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2, 5], [3, 6], [4], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A research report's enumerated call-site counts ('three continue branches', 'the directive_stop at line 736-738') are hypotheses to re-grep at plan time, not facts to phase against. Verifying task 109's report against live source found two undercounts: literature-ingest.sh has FOUR no-cleanup continue branches (the 'conversion reported success but no .md file found' branch was missed), and literature-ingest-online.sh has TWO ONLINE_INGEST_PIPELINE_FAILED directive_stop sites (resolvable path and existing-no-pdf attach path), not one. A plan phased against an undercount silently descopes the missed sites -- the implementer edits exactly what the plan enumerates and reports success. Cheap mitigation: before writing phases, run one grep per asserted count against the current file, and attach a Scope Hypothesis line naming the confirming command to every phase that carries a count. Line numbers cited in a research report are especially untrustworthy since they drift; anchor on function names and guard conditions instead.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/109_fix_ingest_online_failure_modes/plans/01_ingest-online-failure-modes.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["planning", "scope-hypothesis", "research-verification", "call-site-enumeration", "undercount", "grep-before-phasing"]
-    }
-  ]
+    "session_id": "sess_1788329488_6a27b9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

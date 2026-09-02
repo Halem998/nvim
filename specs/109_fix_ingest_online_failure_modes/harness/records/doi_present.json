@@ -1,0 +1,11 @@
+{
+  "title": "Harness DOI-present open-access record",
+  "authors": ["B. Author"],
+  "year": 2011,
+  "doc_id": "doi_present_doc",
+  "status": "open_access",
+  "tier": 3,
+  "doi": "10.9999/harness.fake.doi",
+  "arxiv_id": null,
+  "pdf_url": "https://arxiv.org/pdf/1009.2803"
+}
