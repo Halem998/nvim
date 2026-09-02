@@ -63,8 +63,8 @@ in how far they split the postflight stages apart (see "Two Postflight Shapes").
 | 10 | Cleanup *or* Return Brief Summary | See "Two Postflight Shapes" below | varies |
 | 11 | Return Brief Summary | Prose: a 3-6 bullet text summary, never JSON | skill body |
 
-**Not part of the per-skill stage list** (used only by `skill-orchestrate` /
-`skill-orchestrate-hard`, not by the research/plan/implement skills above):
+**Not part of the per-skill stage list** (used only by `skill-orchestrate` — both effort modes,
+one engine — not by the research/plan/implement skills above):
 `skill_gate_completion_claim()` and `skill_corroborate_phase_counts()` implement the
 completion-claim gate and plan-heading corroboration for autonomous orchestration. They live in
 `scripts/skill-base.sh` alongside the Stage-N functions but are orchestrator-only — do not expect
@@ -218,7 +218,7 @@ Not every skill needs this lifecycle pattern. Skills matching these patterns are
 |---------|--------------|-----------------|
 | **Utility** | Provides a utility function, no task state management | skill-git-workflow |
 | **Task Creation** | Creates new tasks, does not transition existing tasks | skill-meta |
-| **Autonomous Loop** | Runs multi-phase lifecycle autonomously, delegates to workflow skills | skill-orchestrate, skill-orchestrate-hard |
+| **Autonomous Loop** | Runs multi-phase lifecycle autonomously, delegates to workflow skills | skill-orchestrate (both effort modes) |
 | **Terminal State** | Operates only on completed/abandoned tasks | (archive operations) |
 | **Non-Task** | Operates on different data like errors or reviews | (error/review skills) |
 | **Mechanism** | IS the status update mechanism itself | skill-status-sync |
@@ -226,17 +226,19 @@ Not every skill needs this lifecycle pattern. Skills matching these patterns are
 ### Workflow Skills (Follow This Pattern)
 
 These skills manage task lifecycle transitions and follow the Stage-N skeleton above:
-- skill-researcher / skill-researcher-hard (not_started/researched -> researching -> researched)
-- skill-planner / skill-planner-hard (researched -> planning -> planned)
-- skill-implementer / skill-implementer-hard (planned -> implementing -> completed)
+- skill-researcher (not_started/researched -> researching -> researched)
+- skill-planner (researched -> planning -> planned)
+- skill-implementer (planned -> implementing -> completed) — core's own standalone hard-mode
+  research/plan/implement skills are deleted; `--hard` on these task types now runs through
+  `skill-orchestrate`'s own hard_mode branch instead of a separate `-hard` skill
 - Every extension's `skill-{domain}-research` / `skill-{domain}-implementation` pair
 
 ### Non-Workflow Skills (Excluded from Pattern)
 
 - skill-status-sync: IS the mechanism, used for standalone operations
 - skill-git-workflow: creates commits, no task state
-- skill-orchestrate / skill-orchestrate-hard: runs the autonomous lifecycle loop (dispatches to
-  workflow skills, which handle their own state)
+- skill-orchestrate (both effort modes, one engine): runs the autonomous lifecycle loop
+  (dispatches to workflow skills, which handle their own state)
 - skill-meta: creates tasks via interview, no transitions
 
 ---

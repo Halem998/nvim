@@ -3,8 +3,8 @@
 **Created**: 2026-08-12
 **Purpose**: State once, canonically, the shared root cause behind a class of orchestrator
 run-state-integrity defects, so individual fix sites can point at it instead of restating it.
-**Audience**: `skill-orchestrate`, `skill-orchestrate-hard`, every dispatched agent that writes a
-handoff or a territory declaration, and any future author of a mechanism that assumes a
+**Audience**: `skill-orchestrate` (both effort modes, one engine), every dispatched agent that
+writes a handoff or a territory declaration, and any future author of a mechanism that assumes a
 dispatched agent is gone once it has reported.
 **Related**: `../standards/orchestrator-runtime-files.md` (handoff tracking rationale),
 `../contracts/territory.md` (Territory Declaration Template), `../formats/handoff-artifact.md`,
@@ -63,8 +63,8 @@ that can wake, observe stale context, and act as though it is still the current 
 This file is the single statement of the model. Fix sites point at it with a one-line pointer —
 they do not restate it:
 
-- `skill-orchestrate-hard/SKILL.md` Stage 5 staleness-gate comment block
-- `skill-orchestrate/SKILL.md`'s equivalent Stage 5 staleness-gate comment block
+- `skill-orchestrate/SKILL.md`'s Stage 5 staleness-gate comment block (covering both effort
+  modes; the formerly-separate hard-mode engine's own mirrored block was merged into this one)
 - `context/contracts/territory.md`'s Territory Declaration Template
 - `context/standards/orchestrator-runtime-files.md`'s `.orchestrator-handoff.json` tracking
   rationale entry

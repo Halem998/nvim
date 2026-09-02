@@ -46,13 +46,14 @@ original diagnosis's line numbers had already drifted by the time this document 
 which is itself evidence that citations must always be re-verified rather than trusted from a
 prior report):
 
-- `skills/skill-orchestrate/SKILL.md:682` (single-task Stage 5 recovered-outcome branch)
+- `skills/skill-orchestrate/SKILL.md:682` (single-task Stage 5 recovered-outcome branch,
+  covering both effort modes — the formerly-separate hard-mode engine's own mirrored site was
+  merged into this one when that file was deleted)
 - `skills/skill-orchestrate/SKILL.md:826` (handoff-present branch, D3 note)
 - `skills/skill-orchestrate/SKILL.md:1870` (multi-task Stage MT-4 mirror)
 - `skills/skill-orchestrate/SKILL.md:2316` (the three-reachable-branches prose specification)
-- `skills/skill-orchestrate-hard/SKILL.md:888` (hard-mode mirror)
 
-Five consumer sites, one signal, zero readers. This is Deliverable 2's class (b) below — a
+Four consumer sites, one signal, zero readers. This is Deliverable 2's class (b) below — a
 detector with no consumer, not a missing detector.
 
 ## The predicate
@@ -225,8 +226,7 @@ beside the existing banner** — the diagnosis is already in hand.
 
 | Site | File:line | What it detects | Defect class |
 |------|-----------|------------------|--------------|
-| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` | `OFF_SCHEMA_STATUS` |
-| Off-schema Tier C (hard mode) | `skills/skill-orchestrate-hard/SKILL.md:1186` | same, hard-mode mirror | `OFF_SCHEMA_STATUS` |
+| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` (both effort modes; the formerly-separate hard-mode engine's own mirrored site was merged into this one) | `OFF_SCHEMA_STATUS` |
 | Off-schema (multi-task) | `skills/skill-orchestrate/SKILL.md:2028-2038` | same, Stage MT-4 prose specification | `OFF_SCHEMA_STATUS` |
 | Stale-handoff gate | `skills/skill-orchestrate/SKILL.md:590-591` | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug | `HANDOFF_STALE_OR_ABSENT` |
 | Stray-handoff sweep | `skills/skill-orchestrate/SKILL.md:606-612` | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
@@ -280,7 +280,7 @@ The mechanism must not fire on defects in itself — a bug in the discrimination
 being reported by that same pipeline risks an unbounded regress (the recorder crashing while
 recording a defect about its own crash; a dedup-logic bug producing infinite duplicate records of
 itself). This is a narrower, more specific concern than "every orchestrator-critical file" — most
-of the Class (a) detection sites above (`skill-orchestrate/SKILL.md`, `skill-orchestrate-hard/SKILL.md`,
+of the Class (a) detection sites above (`skill-orchestrate/SKILL.md` (both effort modes),
 `scripts/skill-base.sh`) are ordinary orchestrator machinery whose defects are exactly the kind of
 thing this mechanism should record normally, not exempt. The guard's scope is limited to the files
 that **implement the discrimination/recording pipeline itself**.
@@ -325,7 +325,7 @@ above, and only those four, carry an additional `"recursion_guard": true` boolea
 `orchestrator-critical-paths.json`. The recorder filters
 `.critical_paths | map(select(.recursion_guard == true))` **before** calling `self_mod_match` — it
 never matches against the unfiltered list. This is deliberate and load-bearing: `critical_paths`
-already contains `skills/skill-orchestrate/SKILL.md`, `skills/skill-orchestrate-hard/SKILL.md`,
+already contains `skills/skill-orchestrate/SKILL.md` (both effort modes),
 and `scripts/skill-base.sh`, and matching the whole list would suppress every defect attributed to
 those files — the exact opposite of this section's own stated intent above ("most of the Class (a)
 detection sites ... are ordinary orchestrator machinery whose defects are exactly the kind of thing

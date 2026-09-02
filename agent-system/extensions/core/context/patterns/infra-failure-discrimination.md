@@ -70,8 +70,8 @@ path become a loophole.
 
 ## The counter and its cap
 
-`infra_failures` is a per-run counter, `MAX_INFRA_FAILURES=3`, flat and identical in both
-`skill-orchestrate` and `skill-orchestrate-hard` — not scaled with `MAX_CYCLES` (5 vs. 13),
+`infra_failures` is a per-run counter, `MAX_INFRA_FAILURES=3`, flat and identical across both of
+`skill-orchestrate`'s effort-mode branches — not scaled with `MAX_CYCLES` (5 base vs. 13 hard),
 because infra tolerance has no relationship to phase count. This matches this codebase's other
 small-cap precedents (`MAX_BLOCKER_ESCALATIONS=2`, `MAX_DRIFT_INSPECTIONS=1`).
 
@@ -97,8 +97,8 @@ neither. The worst-case number of loop iterations in a single invocation is ther
 
 ```
 MAX_CYCLES + MAX_INFRA_FAILURES
-  = 5 + 3 = 8   (skill-orchestrate)
-  = 13 + 3 = 16 (skill-orchestrate-hard)
+  = 5 + 3 = 8   (base mode)
+  = 13 + 3 = 16 (hard mode)
 ```
 
 ## Terminal condition

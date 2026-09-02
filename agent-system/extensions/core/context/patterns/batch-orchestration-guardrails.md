@@ -152,24 +152,27 @@ A file belongs on the critical-path list if and only if **both** hold:
 Both tests must hold. A file that is reachable but not decision-relevant, or decision-relevant
 but not reachable from MT dispatch, is excluded.
 
-### Inclusion Table (ten files, with per-file evidence)
+### Inclusion Table (nine files, with per-file evidence)
 
-Re-applied at the narrowing that added row 10 below: rows 1-9 were re-confirmed against both
-conjunctive tests and are UNCHANGED — no row's reachability or decision-relevance verdict
-differs from the prior evaluation.
+Re-applied at the narrowing that added the `scripts/verify-deploy.sh` row below: the other files
+already in the table at that time were re-confirmed against both conjunctive tests and were
+UNCHANGED — no row's reachability or decision-relevance verdict differed from the prior
+evaluation. (The table originally carried a tenth row, a separate one for the standalone
+hard-mode engine; that engine has since been merged into `skill-orchestrate/SKILL.md` and
+deleted, so its row was folded into row 1 above rather than kept as a separate entry — the table
+is nine rows today, not ten.)
 
 | # | Path (relative to the core extension root) | Reachability evidence | Decision-relevance evidence |
 |---|---|---|---|
-| 1 | `skills/skill-orchestrate/SKILL.md` | The multi-task dispatch state machine itself — Stages MT-1 through MT-5 ARE the MT batch-dispatch path | A defect here silently mis-routes eligibility, wave/cycle admission, or postflight status — the core decision surface |
-| 2 | `skills/skill-orchestrate-hard/SKILL.md` | Hard-mode inherits and extends MT-1..MT-5 for `/orchestrate --hard` batch runs | Same class of silent mis-routing risk as #1, scoped to the hard-mode contract layer |
-| 3 | `commands/orchestrate.md` | The command entry point that builds the wave schedule and invokes the admission predicate for MT dispatch (Step 3) | A defect silently changes which wave a task lands in, or skips the admission call entirely |
-| 4 | `scripts/skill-base.sh` | Sourced by preflight/postflight for every dispatched task in a batch | A defect silently corrupts the preflight/postflight/completion-claim gate for every task in the batch, not just one |
-| 5 | `scripts/task-lock.sh` | Acquired/released per task inside MT dispatch (Stage MT-4) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
-| 6 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
-| 7 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
-| 8 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
-| 9 | `scripts/orchestrate-dry-run-report.sh` | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
-| 10 | `scripts/verify-deploy.sh` | Executed directly from Stage MT-3 step 7 on the MT dispatch path (the inter-cycle redeploy checkpoint) | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 7's own "a bug in it defeats the very check meant to catch bugs like it" language |
+| 1 | `skills/skill-orchestrate/SKILL.md` | The multi-task dispatch state machine itself — Stages MT-1 through MT-5 ARE the MT batch-dispatch path, covering both effort modes (the formerly-separate hard-mode engine, which used to inherit and extend MT-1..MT-5 for `/orchestrate --hard` batch runs, has been merged into this same file and deleted) | A defect here silently mis-routes eligibility, wave/cycle admission, or postflight status — the core decision surface, for both effort modes now that there is only one file |
+| 2 | `commands/orchestrate.md` | The command entry point that builds the wave schedule and invokes the admission predicate for MT dispatch (Step 3) | A defect silently changes which wave a task lands in, or skips the admission call entirely |
+| 3 | `scripts/skill-base.sh` | Sourced by preflight/postflight for every dispatched task in a batch | A defect silently corrupts the preflight/postflight/completion-claim gate for every task in the batch, not just one |
+| 4 | `scripts/task-lock.sh` | Acquired/released per task inside MT dispatch (Stage MT-4) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
+| 5 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
+| 6 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
+| 7 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
+| 8 | `scripts/orchestrate-dry-run-report.sh` | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
+| 9 | `scripts/verify-deploy.sh` | Executed directly from Stage MT-3 step 7 on the MT dispatch path (the inter-cycle redeploy checkpoint) | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 6's own "a bug in it defeats the very check meant to catch bugs like it" language |
 
 ### Exclusion Table (explicitly excluded, with evidence)
 
@@ -243,13 +246,13 @@ this gate:
      actual `modified_files` do, invisible to a gate that only reads `file_scope` pre-dispatch —
      and **cross-invocation staleness** — a correctly-excluded task is later re-run solo, commits
      its fix, and nothing redeploys it before the next invocation picks up stale machinery.
-   - (iii) **The replacement exposure, named as such**: seven of the ten critical paths
+   - (iii) **The replacement exposure, named as such**: seven of the nine critical paths
      (`scripts/skill-base.sh`, `scripts/task-lock.sh`, `scripts/update-task-status.sh`,
      `scripts/orchestrate-batch-admit.sh`, `scripts/orchestrate-triage-classify.sh`,
      `scripts/orchestrate-dry-run-report.sh`, `scripts/verify-deploy.sh`) are shell scripts
      re-invoked via a fresh `bash .claude/scripts/X.sh` subprocess at every use site, so they
-     genuinely re-read on-disk bytes; the remaining three (`skills/skill-orchestrate/SKILL.md`,
-     `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`) are read once into the
+     genuinely re-read on-disk bytes; the remaining two (`skills/skill-orchestrate/SKILL.md`,
+     `commands/orchestrate.md`) are read once into the
      orchestrator's context at dispatch time and are unaffected for the current turn. A mid-run
      redeploy therefore genuinely swaps executing machinery mid-flight for the seven script paths.
      This is the **same underlying verification-gap tension as hazard 1, now manifesting
@@ -333,8 +336,9 @@ gap in the self-modification check.
 **The `--allow-self-modifying` override — recorded, default off.** Name:
 `--allow-self-modifying`. Default: off (`"false"`), threaded through
 `scripts/parse-command-args.sh`'s scan and strip chain exactly like every other boolean flag, and
-read at the consumer (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 and the
-`skill-orchestrate-hard` transcription) — never passed to `orchestrate-batch-admit.sh`, which
+read at the consumer (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, covering both effort
+modes now that the formerly-separate hard-mode engine's own transcription has been merged in and
+deleted) — never passed to `orchestrate-batch-admit.sh`, which
 always computes and emits the verdict honestly regardless of the flag. Justification for the
 default: the narrowing itself trades a HUMAN-PACED solo re-run (where a person decides when to
 redeploy after a self-modifying fix) for a self-modifying candidate now potentially running

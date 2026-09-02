@@ -637,9 +637,10 @@ grep result, not a permanent fact -- re-run the same searches before trusting th
 
 - Every `specs/state.json` writer in `agent-system/extensions/core/**` now routes through
   `state-write.sh`. The 11 skill files this note previously listed as still carrying hand-rolled
-  write blocks (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
-  `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`,
-  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-todo`) each show zero hand-rolled hits today and call
+  write blocks (`skill-implementer`, `skill-planner`, `skill-project-overview`, `skill-researcher`,
+  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-todo`, and core's own three
+  standalone hard-mode research/plan/implement skills -- since deleted outright, not merely
+  fixed) each show zero hand-rolled hits today and the survivors call
   `state-write.sh` instead -- that claim was stale; a separate, already-completed effort had
   closed it before this section's own `--state-file`/`--init` work began. `commands/task.md` and
   `commands/todo.md` likewise carry zero hand-rolled `specs/state.json` or
@@ -1115,12 +1116,13 @@ the same conversation) always succeeds. This property has a dedicated functional
    acquire/release in the multi-task loop) — these paths bypass the gate scripts entirely and
    need their own acquire/release bracketing. Heartbeat refresh is wired at two distinct layers:
    a CYCLE-layer refresh at existing natural checkpoints (`skill-orchestrate/SKILL.md`'s Stage 3
-   cycle loop, alongside the existing `.orchestrator-loop-guard` refresh, and
-   `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write, mirroring it exactly) for
-   research/plan cycles which have no phase transitions of their own to hook; and a PHASE-layer
-   refresh that is now MECHANIZED INSIDE `update-phase-status.sh` itself, firing at every phase
-   transition of every caller (including `agents/general-implementation-agent.md`'s Stage 4D and
-   `agents/general-implementation-hard-agent.md`'s equivalent call) with `session_id` derived
+   cycle loop, alongside the existing `.orchestrator-loop-guard` refresh — covering both effort
+   modes in this one engine now that the formerly-separate hard-mode engine's own mirrored
+   Stage 3 write was merged in and deleted) for research/plan cycles which have no phase
+   transitions of their own to hook; and a PHASE-layer refresh that is now MECHANIZED INSIDE
+   `update-phase-status.sh` itself, firing at every phase transition of every caller (including
+   `agents/general-implementation-agent.md`'s Stage 4D, which every implement-dispatch target —
+   base or hard-mode, core or extension — follows the same shape of) with `session_id` derived
    from the task's own `.lock/holder.json` — no per-caller wiring or argument threading required.
    `skill-implementer/SKILL.md` has no phase-transition point of its own and needs none, since it
    delegates its entire phase loop to `general-implementation-agent`, which already inherits the
@@ -1144,9 +1146,10 @@ the same conversation) always succeeds. This property has a dedicated functional
    by that check, but in-batch `file_scope` collisions are already excluded earlier by the
    batch-admission pre-check.
 3. **`init-marker` call sites** (file-granularity, independent of the two paths above):
-   `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
-   `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
-   `.orchestrator-churn-state.json` creation).
+   `skill-orchestrate/SKILL.md` Stage 2, covering both effort modes in this one engine —
+   `.orchestrator-loop-guard` creation unconditionally, plus `.orchestrator-churn-state.json`
+   creation when `hard_mode` is true (formerly a separate hard-mode engine's own Stage 2, since
+   merged in and deleted).
 4. **`reap` call site** (see the "Reap Contract" section above): `skill-refresh/SKILL.md`'s
    "Reap Stale Task Locks" step is the SOLE caller — reap is explicit-invocation-only, so it has
    exactly one wiring path rather than the acquire/release-style multiple entry points above.
@@ -1167,9 +1170,9 @@ the same conversation) always succeeds. This property has a dedicated functional
      handling) — the `/orchestrate` multi-task batch path. Single-task `/orchestrate` needs no
      separate wiring: its CHECKPOINT 1/2 already routes through the gate scripts above.
    - Heartbeat refresh is wired at existing checkpoints only, never a new one:
-     `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (single-task) and Stage MT-3 step 1 status
-     refresh (multi-task batch), `skill-orchestrate-hard/SKILL.md`'s own Stage 3 loop-guard write
-     (single-task `--hard`, mirroring `skill-orchestrate/SKILL.md`'s Stage 3 site exactly), and
+     `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (single-task, both effort modes — the
+     formerly-separate hard-mode engine's own mirrored Stage 3 write was merged in and deleted)
+     and Stage MT-3 step 1 status refresh (multi-task batch), and
      the phase-layer refresh MECHANIZED INSIDE `update-phase-status.sh` itself — fired at every
      phase transition of every caller, `agents/general-implementation-agent.md`'s Stage 4D
      included, with `session_id` derived from the task's own `.lock/holder.json` rather than
@@ -1233,11 +1236,10 @@ so the wiring paths cannot drift from each other's semantics.
   Serialization" section documents the same contract from the caller's perspective
 - `.claude/scripts/command-gate-in.sh` / `command-gate-out.sh` — single-task wiring
 - `.claude/skills/skill-orchestrate/SKILL.md` — multi-task/wave wiring + heartbeat +
-  `.orchestrator-loop-guard` `init-marker` call site
+  `.orchestrator-loop-guard` (both effort modes) and `.orchestrator-churn-state.json`
+  (hard mode only) `init-marker` call sites
 - `.claude/commands/implement.md` — multi-task Step 3 wiring
 - `.claude/skills/skill-implementer/SKILL.md` — phase-transition heartbeat
-- `.claude/skills/skill-orchestrate-hard/SKILL.md` — `.orchestrator-loop-guard` and
-  `.orchestrator-churn-state.json` `init-marker` call sites
 - `checkpoint-before-overflow.md` — the git checkpoint procedure this lock composes with (a
   session holding the lock still checkpoints/commits exactly as before; the lock only adds
   cross-session exclusivity, it does not change checkpoint behavior)

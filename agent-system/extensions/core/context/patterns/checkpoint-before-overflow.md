@@ -4,9 +4,9 @@
 **Purpose**: Define, once, the procedure a dispatched agent runs at the context-pressure
 threshold so a handoff is always preceded by a durable git checkpoint — never a stale handoff
 sitting on top of a RED, uncommitted working tree.
-**Audience**: general-implementation-agent, general-implementation-hard-agent,
-general-research-agent, general-research-hard-agent (and any future agent that writes
-context-pressure handoffs)
+**Audience**: general-implementation-agent (both effort modes — core's own standalone hard-mode
+implementation agent is deleted), general-research-agent, cslib's and lean's own hard-mode
+implementation agents (and any future agent that writes context-pressure handoffs)
 **Related**: `context-exhaustion-detection.md`, `../formats/handoff-artifact.md`,
 `../contracts/wrap-up.md`, `.claude/scripts/git-snapshot.sh` (the sanctioned snapshot helper)
 
@@ -144,9 +144,9 @@ agent that references it — no agent may modify it.
 
 ## Research-Shaped Handoff Guidance (Distinct from H9)
 
-Research agents (`general-research-agent`, `general-research-hard-agent`) that adopt this
-pattern write a **research-shaped** handoff, not the hard-mode implementation contract's H9
-wrap-up schema:
+Research agents (`general-research-agent`, used identically regardless of effort mode) that
+adopt this pattern write a **research-shaped** handoff, not the hard-mode implementation
+contract's H9 wrap-up schema:
 
 - **Use**: `../formats/handoff-artifact.md`'s template, plus a `partial`-status
   `.return-meta.json` with `handoff_path` set in `partial_progress` — exactly the same
