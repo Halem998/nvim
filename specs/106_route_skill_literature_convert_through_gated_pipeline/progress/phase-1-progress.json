@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "Delegate Convert Step 3b text extraction to literature-convert.sh",
+  "started_at": "2026-09-01T00:00:00Z",
+  "last_updated": "2026-09-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace inline pdftotext/djvutxt extraction with delegated literature-convert.sh call", "status": "done", "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

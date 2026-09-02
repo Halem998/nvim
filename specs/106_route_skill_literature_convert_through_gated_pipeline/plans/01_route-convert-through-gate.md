@@ -1,7 +1,7 @@
 # Implementation Plan: Task #106
 
 - **Task**: 106 - Route skill-literature's convert path through the gated pipeline
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/106_route_skill_literature_convert_through_gated_pipeline/reports/01_route-convert-through-gate.md
@@ -104,39 +104,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Delegate Convert Step 3b text extraction to literature-convert.sh [NOT STARTED]
+### Phase 1: Delegate Convert Step 3b text extraction to literature-convert.sh [COMPLETED]
 
 **Goal**: Replace the inline `pdftotext -layout` / `djvutxt` extraction in Convert Step 3b with a
 per-file delegated call to `literature-convert.sh`, so `full_text` arrives already tier-selected
 and gate-passed. Downstream chunking logic is untouched.
 
 **Tasks**:
-- [ ] Locate `#### 3b: Extract Full Text and Determine Chunking` in
+- [x] Locate `#### 3b: Extract Full Text and Determine Chunking` in
       `agent-system/extensions/literature/skills/skill-literature/SKILL.md` by heading (currently
       near line 780) and confirm the two-branch `if [ "$ext" = "pdf" ] ... elif [ "$ext" = "djvu" ]`
       extraction block is still the only text source feeding `full_text`.
-- [ ] Resolve `SCRIPT_DIR` defensively in the Step 3b snippet using the convention already used
+- [x] Resolve `SCRIPT_DIR` defensively in the Step 3b snippet using the convention already used
       twice in this file (`SCRIPT_DIR="${SCRIPT_DIR:-$(dirname "$0")/../../scripts}"`, as at the
       doc-key block near line 522) — do not assume Ingest Step 2's assignment is in scope.
-- [ ] Replace the extraction block with: `tmp_convert_dir=$(mktemp -d)`,
+- [x] Replace the extraction block with: `tmp_convert_dir=$(mktemp -d)`,
       `convert_stderr=$(mktemp)`, then the delegated call using the exit-capture idiom copied from
       `literature-ingest.sh`:
       `if convert_stdout=$("$SCRIPT_DIR/literature-convert.sh" "$src" "$tmp_convert_dir" 2>"$convert_stderr"); then convert_exit=0; else convert_exit=$?; fi`
-- [ ] Route **both** `pdf` and `djvu` through the single delegated call — remove the `djvutxt`
+- [x] Route **both** `pdf` and `djvu` through the single delegated call — remove the `djvutxt`
       branch entirely (`literature-convert.sh` has its own DJVU path). This is the second of the
       two call sites the acceptance criteria requires gone.
-- [ ] On `convert_exit -eq 0`: glob the tmp dir for its single `.md`
+- [x] On `convert_exit -eq 0`: glob the tmp dir for its single `.md`
       (`md_file=$(ls "$tmp_convert_dir"/*.md 2>/dev/null | head -1)`), guard the
       reported-success-but-no-output case the way `literature-ingest.sh` does, and assign
       `full_text=$(cat "$md_file")`. Clean up `tmp_convert_dir` and `convert_stderr`.
-- [ ] Verify by reading the diff that `basename_no_ext` and every downstream derivation from it
+- [x] Verify by reading the diff that `basename_no_ext` and every downstream derivation from it
       (`output_files`, `chunk_dir`, `doc_title`) is byte-for-byte unchanged — the tmp `.md` is read
       for content only, never for its name.
-- [ ] Confirm `total_lines`, `LINE_THRESHOLD`, `MERGE_MIN`, and the entire content-aware chunking
+- [x] Confirm `total_lines`, `LINE_THRESHOLD`, `MERGE_MIN`, and the entire content-aware chunking
       algorithm below the replaced block are unmodified.
-- [ ] Add a short comment above the delegated call naming why the `if VAR=$(...)` form is used
+- [x] Add a short comment above the delegated call naming why the `if VAR=$(...)` form is used
       (set -e safety) and why the tmp `.md` is read for content only (doc_id vs. `basename_no_ext`),
-      mirroring the explanatory comments `literature-ingest.sh` already carries.
+      mirroring the explanatory comments `literature-ingest.sh` already carries. *(completed: comment added; the exit-3/exit-1/2 branches from Phase 2 were written in the same edit since they share the same `if/elif` block — see Phase 2's deviation note)*
 
 **Timing**: 1.5 hours
 
@@ -166,7 +166,7 @@ if the counts or locations differ, re-locate by heading and report the delta bef
 
 ---
 
-### Phase 2: Surface gate rejections and hard failures as actionable operator messages [NOT STARTED]
+### Phase 2: Surface gate rejections and hard failures as actionable operator messages [COMPLETED]
 
 **Goal**: Make exit 3 (quality-gate rejection) and exit 1/2 (hard conversion failure) skip the file
 with a visible, reasoned message — and make those files appear in Convert Step 4's completion
@@ -174,23 +174,23 @@ summary. This phase carries the task's hard constraint: a rejection must never b
 or an index entry.
 
 **Tasks**:
-- [ ] In the Step 3b block from Phase 1, add the `convert_exit -eq 3` branch: extract the reason
+- [x] In the Step 3b block from Phase 1, add the `convert_exit -eq 3` branch: extract the reason
       with `gate_reason=$(grep -m1 'QUALITY GATE FAILED' "$convert_stderr" 2>/dev/null || echo "QUALITY GATE FAILED (reason unavailable)")`,
       echo an operator-facing line naming the file and the reason, append the entry to a
-      `gate_failed_entries` array, clean up both temp paths, and `continue` to the next target.
-- [ ] Add the `convert_exit -ne 0` (i.e. 1 or 2) branch: echo the failure with its exit code, pipe
+      `gate_failed_entries` array, clean up both temp paths, and `continue` to the next target. *(deviation: altered — written together with Phase 1's delegated call in one edit since both branch off the same `if convert_exit -eq 0/3/else` statement; behavior matches the plan exactly, only the edit sequencing differs)*
+- [x] Add the `convert_exit -ne 0` (i.e. 1 or 2) branch: echo the failure with its exit code, pipe
       `convert_stderr` through `sed 's/^/  /'` to stderr so the engine-tier reason is visible,
       append to a `convert_failed_entries` array, clean up, and `continue`.
-- [ ] Verify by reading the control flow that both `continue` statements exit the per-file loop
+- [x] Verify by reading the control flow that both `continue` statements exit the per-file loop
       **before** Step 3c — no chunk files, no `AskUserQuestion` prompt, no `index.json` write, no
       `literature-chunk.sh` call is reachable for a rejected or failed file.
-- [ ] Initialize `gate_failed_entries=()` and `convert_failed_entries=()` before the Convert Step 3
+- [x] Initialize `gate_failed_entries=()` and `convert_failed_entries=()` before the Convert Step 3
       target loop so they accumulate across files.
-- [ ] Extend Convert Step 4's `**Skipped Files**:` completion-summary template (currently near line
+- [x] Extend Convert Step 4's `**Skipped Files**:` completion-summary template (currently near line
       1233) with two new rendered categories: `{file} — QUALITY GATE FAILED: {reason}` and
       `{file} — conversion failed (exit {code}): {reason}`, alongside the existing djvutxt/no-text
       lines.
-- [ ] Add one sentence to the Convert Step 4 summary template stating explicitly that gate-rejected
+- [x] Add one sentence to the Convert Step 4 summary template stating explicitly that gate-rejected
       files were **not** written to `index.json` and were not chunked, so the operator cannot read
       a skip as a success.
 
@@ -218,7 +218,7 @@ summary template exists between `## Mode: Convert` and `## Mode: Index`.
 
 ---
 
-### Phase 3: Loosen Convert Step 2's pdftotext hard gate [NOT STARTED]
+### Phase 3: Loosen Convert Step 2's pdftotext hard gate [COMPLETED]
 
 **Goal**: Remove the now-incorrect hard error that aborts Mode: Convert when `pdftotext` is absent.
 After Phase 1, `pdftotext` is only reachable via an explicit `LITERATURE_CONVERTER=pdftotext`
@@ -226,18 +226,18 @@ override that Mode: Convert never sets, so a machine with a working PyMuPDF stac
 poppler-utils would be wrongly blocked.
 
 **Tasks**:
-- [ ] Locate `### Convert Step 2: Check Tool Availability` (currently ~741-748) and replace the
+- [x] Locate `### Convert Step 2: Check Tool Availability` (currently ~741-748) and replace the
       `exit 1` hard error with either removal of the check or a non-fatal informational line
       (recommended: drop the check entirely and let `literature-convert.sh`'s exit 2 carry a genuine
       all-tiers-failed condition, which is exactly what `literature-ingest.sh` does with no
       equivalent pre-check).
-- [ ] Leave the `has_djvutxt` checks alone — Step 3a's page-count guard and the soft-skip still
+- [x] Leave the `has_djvutxt` checks alone — Step 3a's page-count guard and the soft-skip still
       need `djvutxt`, and `literature-convert.sh`'s DJVU path still depends on it.
-- [ ] If Convert Step 2 becomes empty after the removal, either delete the now-vacant step and
+- [x] If Convert Step 2 becomes empty after the removal, either delete the now-vacant step and
       renumber nothing (the step headings are prose anchors, not indices consumed by a script) or
       replace its body with the informational tool-availability echo; pick one and note which in the
-      commit message.
-- [ ] Confirm `has_pdftotext` is still computed near line 73 for the status/scan report lines (185,
+      commit message. *(completed: chose the informational-echo replacement, keeping the `### Convert Step 2` heading as an anchor)*
+- [x] Confirm `has_pdftotext` is still computed near line 73 for the status/scan report lines (185,
       248, 323) that legitimately display it — do not remove the variable itself.
 
 **Timing**: 0.5 hours

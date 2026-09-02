@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 106,
-  "session_id": "sess_1788323839_c3b8b4_106",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/106_route_skill_literature_convert_through_gated_pipeline/plans/01_route-convert-through-gate.md",
-      "summary": "5-phase plan delegating skill-literature Mode: Convert Step 3b text extraction to literature-convert.sh, surfacing gate rejections as actionable skips, loosening the pdftotext hard gate, syncing the Error Handling contract, and verifying all three acceptance criteria via live runs."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2, 3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "Direct-execution SKILL.md files in this repo embed executable bash in their prose steps, which lets them drift into a second, ungated implementation of a pipeline that already exists as a script. skill-literature's Mode: Convert shelled out to bare `pdftotext -layout` while the sibling Mode: Ingest correctly delegated to literature-convert.sh (engine tiers + quality gate). When auditing a skill that duplicates a scripted pipeline, look for a sibling caller in the same extension's scripts/ directory that already delegates correctly and mirror its exit-code-handling block verbatim (the `if VAR=$(cmd); then EXIT=0; else EXIT=$?; fi` idiom for set -e safety, and deriving output identity from the actual output filename rather than reconstructing it) rather than designing a new integration. Delegation is usually viable even when the skill has interactive prompts the script knows nothing about, because the script's contract typically ends at whole-document text and the interactive steps consume that text as plain data.",
-      "category": "PATTERN",
-      "source_artifact": "specs/106_route_skill_literature_convert_through_gated_pipeline/plans/01_route-convert-through-gate.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["skill-literature", "duplicate-implementation", "delegation", "exit-code-handling", "quality-gate", "direct-execution-skill"]
-    }
-  ],
-  "next_steps": "Run /implement 106 to execute the plan"
+  "session_id": "sess_1788323839_c3b8b4"
 }

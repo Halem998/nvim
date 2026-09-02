@@ -740,14 +740,23 @@ fi
 
 ### Convert Step 2: Check Tool Availability
 
-```bash
-if [ "$has_pdftotext" = "no" ]; then
-  echo "Error: pdftotext not found. Install with: nix-env -iA nixpkgs.poppler_utils"
-  exit 1
-fi
-```
+Conversion engine-tier availability (pymupdf4llm, marker, `pdftotext`, `djvutxt`) is
+`literature-convert.sh`'s concern, not Mode: Convert's — since Step 3b now delegates extraction
+to it, a machine with a working PyMuPDF stack but no poppler-utils installed is still fully
+capable of converting, so there is no longer a hard `pdftotext`-only gate here. An
+all-engine-tiers-failed condition is still loud: it surfaces as `literature-convert.sh`'s own
+exit 2 in Step 3b, which is skipped and reported per-file rather than aborting the whole run.
+`has_pdftotext` itself is still computed above and remains in the status/scan report lines — only
+this hard gate is removed.
 
 ### Convert Step 3: Process Each File
+
+```bash
+# Accumulate across all target files (not reset per-file) so Step 4's summary can report every
+# gate rejection and hard conversion failure from this invocation.
+gate_failed_entries=()
+convert_failed_entries=()
+```
 
 For each target file:
 
@@ -781,11 +790,62 @@ First, extract the complete text from the source file (page-range extraction hap
 needed for page-range chunks; for content-aware chunking, extract all text first):
 
 ```bash
-if [ "$ext" = "pdf" ]; then
-  full_text=$(pdftotext -layout "$src" - 2>/dev/null)
-elif [ "$ext" = "djvu" ]; then
-  full_text=$(djvutxt "$src" 2>/dev/null)
+# Resolve SCRIPT_DIR defensively here rather than assuming it is already set (mirrors the
+# doc-key block's convention above).
+SCRIPT_DIR="${SCRIPT_DIR:-$(dirname "$0")/../../scripts}"
+
+# Delegate extraction to literature-convert.sh for BOTH pdf and djvu -- this is the single
+# gated conversion path (engine-tier ladder + quality gate), replacing the two inline
+# pdftotext/djvutxt call sites that used to make this a second, ungated implementation.
+tmp_convert_dir=$(mktemp -d)
+convert_stderr=$(mktemp)
+
+# Capture the exit code explicitly rather than a bare `full_text=$(...)` assignment: under
+# `set -e`, a bare assignment would abort this whole target loop on one file's non-zero
+# exit. literature-convert.sh distinguishes exit 3 (quality-gate rejection) from exit 0
+# (success) and exit 1/2 (hard failure) -- the `if VAR=$(...); then ... else ...; fi` idiom
+# below is copied verbatim from literature-ingest.sh's CONVERT_STDOUT capture.
+if convert_stdout=$("$SCRIPT_DIR/literature-convert.sh" "$src" "$tmp_convert_dir" 2>"$convert_stderr"); then
+  convert_exit=0
+else
+  convert_exit=$?
 fi
+
+if [ "$convert_exit" -eq 3 ]; then
+  # Quality gate rejected the output -- loud, actionable skip. No chunk files, no
+  # AskUserQuestion prompt, no index.json entry, no literature-chunk.sh call are reachable
+  # past this continue (Step 3c onward never runs for this file).
+  gate_reason=$(grep -m1 'QUALITY GATE FAILED' "$convert_stderr" 2>/dev/null || echo "QUALITY GATE FAILED (reason unavailable)")
+  echo "QUALITY GATE FAILED: $src — ${gate_reason#*QUALITY GATE FAILED: }"
+  gate_failed_entries+=("$src :: ${gate_reason#*QUALITY GATE FAILED: }")
+  rm -rf "$tmp_convert_dir"
+  rm -f "$convert_stderr"
+  continue
+elif [ "$convert_exit" -ne 0 ]; then
+  # Hard conversion failure (all engine tiers exhausted, or a converter crashed). Surface the
+  # engine's own reason from stderr and skip -- same "no Step 3c" guarantee as the exit-3 path.
+  echo "Error: conversion failed for $src (exit $convert_exit)"
+  sed 's/^/  /' "$convert_stderr" >&2
+  convert_failed_entries+=("$src :: conversion failed (exit $convert_exit)")
+  rm -rf "$tmp_convert_dir"
+  rm -f "$convert_stderr"
+  continue
+fi
+
+# Exit 0: glob the tmp dir for its single .md output. This file is read for CONTENT ONLY --
+# literature-convert.sh's internal $DOC_ID is a lower-cased/sanitized string distinct from
+# this loop's $basename_no_ext, which every downstream derivation (output_files, chunk_dir,
+# doc_title) continues to use unchanged.
+md_file=$(ls "$tmp_convert_dir"/*.md 2>/dev/null | head -1)
+if [ -z "$md_file" ]; then
+  echo "Error: conversion reported success but no .md file found for $src (skipping)"
+  rm -rf "$tmp_convert_dir"
+  rm -f "$convert_stderr"
+  continue
+fi
+full_text=$(cat "$md_file")
+rm -rf "$tmp_convert_dir"
+rm -f "$convert_stderr"
 
 # Count total lines
 total_lines=$(echo "$full_text" | wc -l)
@@ -1234,7 +1294,13 @@ fi
 **Skipped Files**:
 - {file.djvu} — djvutxt not installed (install: nix-env -iA nixpkgs.djvulibre)
 - {scan.pdf} — No text extracted (OCR required for scanned PDFs)
+- {file} — QUALITY GATE FAILED: {reason}
+- {file} — conversion failed (exit {code}): {reason}
 ```
+
+A file listed under Skipped Files for either of the last two reasons was **not** written to
+`index.json` and was **not** chunked — a gate rejection or hard conversion failure is a full skip,
+never a partial or silent one.
 
 ---
 
