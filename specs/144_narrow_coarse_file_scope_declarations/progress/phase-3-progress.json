@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "phase_name": "Implement --file-scope-add in update-task-status.sh",
+  "started_at": "2026-09-02T00:20:00Z",
+  "last_updated": "2026-09-02T00:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add flag parsing, validation, restriction, union-merge (including noop-branch), usage text, and 6 test cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Re-derived Scope Hypothesis live by reading update_state_json()'s state-write.sh call site",
+      "result": "confirmed",
+      "reason": "exactly one state-write.sh transform on the status-write path; union merge rides along in the same filter as planned"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.deviation-1",
+      "description": "Extend the union-merge to the state_is_noop branch's own state-write.sh call (not explicitly named in the plan's task list)",
+      "type": "altered",
+      "reason": "Without this, a --file-scope-add passed on a research postflight re-run against an already-researched task would be silently dropped even though the flag's own restriction (operation=postflight && target_status=research) explicitly permits that combination.",
+      "annotation": "*(deviation: altered — extended merge to the noop branch)*"
+    }
+  ]
+}

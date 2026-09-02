@@ -209,33 +209,36 @@ reintroduces a directory root as a stand-in for "not known yet".
 
 ---
 
-### Phase 3: Implement `--file-scope-add` in `update-task-status.sh` [NOT STARTED]
+### Phase 3: Implement `--file-scope-add` in `update-task-status.sh` [COMPLETED]
 
 **Goal**: Give `update-task-status.sh` a validated, additive-only `file_scope` merge that runs
 inside its existing single mutex-guarded `state-write.sh` write.
 
 **Tasks**:
-- [ ] Add `--file-scope-add=*` (and/or `--file-scope-add <json-array>`) to the flag loop
+- [x] Add `--file-scope-add=*` (and/or `--file-scope-add <json-array>`) to the flag loop
       alongside `--dry-run`, `--allow-pr-ready`, and `--phase-check=*`; keep it out of
-      `POSITIONAL_ARGS`.
-- [ ] Validate the value: must parse as a JSON array of strings (`jq -e 'type == "array" and
+      `POSITIONAL_ARGS`. *(completed)*
+- [x] Validate the value: must parse as a JSON array of strings (`jq -e 'type == "array" and
       (all(.[]; type == "string"))'`). Follow the `--phase-check` precedent — a malformed value
       is a hard validation error with a named message and a non-zero exit, never a silent no-op,
-      so a typo cannot quietly drop coverage.
-- [ ] Restrict the flag to `operation == postflight && target_status == research`. Any other
-      combination is a validation error naming the restriction.
-- [ ] Merge as a set union onto the existing array inside the existing `state-write.sh`
+      so a typo cannot quietly drop coverage. *(completed)*
+- [x] Restrict the flag to `operation == postflight && target_status == research`. Any other
+      combination is a validation error naming the restriction. *(completed)*
+- [x] Merge as a set union onto the existing array inside the existing `state-write.sh`
       invocation's jq filter: `.file_scope = ((.file_scope // []) + $add | unique)` scoped to the
       matching `active_projects[]` entry. Never assign a replacement array; never add a second
-      write.
-- [ ] Make the empty/absent case a byte-for-byte no-op: no flag, an empty array, or an array
-      whose members are all already present leaves `file_scope` unchanged.
-- [ ] Update the script header usage block and the `Usage:` error string to include the new flag.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-update-task-status.sh` with cases:
+      write. *(completed: also extended to the state_is_noop branch's own state-write.sh call, so a
+      pending --file-scope-add still applies even when the status transition itself is a no-op)*
+- [x] Make the empty/absent case a byte-for-byte no-op: no flag, an empty array, or an array
+      whose members are all already present leaves `file_scope` unchanged. *(completed: gated the
+      merge clause on a non-empty parsed array length so an empty array never runs jq `unique`
+      over an already-identical array)*
+- [x] Update the script header usage block and the `Usage:` error string to include the new flag. *(completed)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-update-task-status.sh` with cases:
       (a) union adds only new paths; (b) re-running with the same array is idempotent; (c) an
       already-null `file_scope` becomes the added array; (d) no flag leaves `file_scope`
       untouched; (e) a malformed value exits non-zero without writing state; (f) the flag on a
-      non-research or non-postflight call is rejected.
+      non-research or non-postflight call is rejected. *(completed: Case 11a-f, all 29 suite cases pass)*
 
 **Timing**: 1.5 hours
 

@@ -432,6 +432,97 @@ else
 fi
 
 # =====================================================================
+# Case 11: --file-scope-add -- additive-only union-merge onto file_scope, restricted to
+# operation=postflight/target_status=research. Six sub-cases (a)-(f) share one fixture, run in
+# sequence, mirroring Case 1/2's continuation pattern.
+# =====================================================================
+info "=== Case 11: --file-scope-add ==="
+FIXTURE_ROOT="$WORKDIR/case11"
+build_fixture_repo "$FIXTURE_ROOT"
+file_scope() { jq -c '.active_projects[0].file_scope' "$FIXTURE_ROOT/specs/state.json" 2>/dev/null; }
+
+UTS preflight 1 research sess_test_c11 >"$WORKDIR/c11pre.out" 2>"$WORKDIR/c11pre.err" || true
+
+# --- 11a: an already-null file_scope becomes the added array (real, non-noop write path) ---
+if UTS postflight 1 research sess_test_c11 --file-scope-add='["a.sh","b.sh"]' \
+    >"$WORKDIR/c11a.out" 2>"$WORKDIR/c11a.err"; then
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh"]' ]]; then
+    pass "11a: null file_scope becomes the added array"
+  else
+    fail "11a: expected [\"a.sh\",\"b.sh\"], got '$fs' (see $WORKDIR/c11a.err)"
+  fi
+else
+  fail "11a: postflight with --file-scope-add exited nonzero (see $WORKDIR/c11a.err)"
+fi
+
+# --- 11b: re-running with the same array is idempotent (status is now a no-op path) ---
+if UTS postflight 1 research sess_test_c11 --file-scope-add='["a.sh","b.sh"]' \
+    >"$WORKDIR/c11b.out" 2>"$WORKDIR/c11b.err"; then
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh"]' ]]; then
+    pass "11b: re-running with the same array is idempotent"
+  else
+    fail "11b: expected unchanged [\"a.sh\",\"b.sh\"], got '$fs' (see $WORKDIR/c11b.err)"
+  fi
+else
+  fail "11b: idempotent re-run exited nonzero (see $WORKDIR/c11b.err)"
+fi
+
+# --- 11c: union adds only new paths (status no-op path; only 'c.sh' is genuinely new) ---
+if UTS postflight 1 research sess_test_c11 --file-scope-add='["b.sh","c.sh"]' \
+    >"$WORKDIR/c11c.out" 2>"$WORKDIR/c11c.err"; then
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh","c.sh"]' ]]; then
+    pass "11c: union adds only the new path ('c.sh'), 'b.sh' not duplicated"
+  else
+    fail "11c: expected [\"a.sh\",\"b.sh\",\"c.sh\"], got '$fs' (see $WORKDIR/c11c.err)"
+  fi
+else
+  fail "11c: union-add call exited nonzero (see $WORKDIR/c11c.err)"
+fi
+
+# --- 11d: no flag leaves file_scope untouched ---
+if UTS postflight 1 research sess_test_c11 >"$WORKDIR/c11d.out" 2>"$WORKDIR/c11d.err"; then
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh","c.sh"]' ]]; then
+    pass "11d: no --file-scope-add flag leaves file_scope untouched"
+  else
+    fail "11d: expected unchanged [\"a.sh\",\"b.sh\",\"c.sh\"], got '$fs' (see $WORKDIR/c11d.err)"
+  fi
+else
+  fail "11d: postflight without the flag exited nonzero (see $WORKDIR/c11d.err)"
+fi
+
+# --- 11e: a malformed value exits non-zero without writing state ---
+BEFORE_11E="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS postflight 1 research sess_test_c11 --file-scope-add='{"bad":1}' \
+    >"$WORKDIR/c11e.out" 2>"$WORKDIR/c11e.err"; then
+  fail "11e: malformed --file-scope-add value unexpectedly exited 0"
+else
+  AFTER_11E="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_11E" == "$AFTER_11E" ]]; then
+    pass "11e: malformed --file-scope-add value exits non-zero without writing state"
+  else
+    fail "11e: malformed --file-scope-add value exited non-zero but state.json changed anyway"
+  fi
+fi
+
+# --- 11f: the flag on a non-research or non-postflight call is rejected ---
+BEFORE_11F="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS preflight 1 implement sess_test_c11 --file-scope-add='["x.sh"]' \
+    >"$WORKDIR/c11f.out" 2>"$WORKDIR/c11f.err"; then
+  fail "11f: --file-scope-add on preflight/implement unexpectedly exited 0"
+else
+  AFTER_11F="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_11F" == "$AFTER_11F" ]]; then
+    pass "11f: --file-scope-add rejected on a non-research/non-postflight call, state unchanged"
+  else
+    fail "11f: --file-scope-add rejection exited non-zero but state.json changed anyway"
+  fi
+fi
+
+# =====================================================================
 # Real-tree contamination guard (delta check against the pre-suite baseline; see
 # test-skill-base-lifecycle.sh's identical guard for why this is a delta, not an absolute
 # emptiness check).

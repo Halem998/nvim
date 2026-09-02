@@ -7,7 +7,7 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
@@ -49,6 +49,24 @@
 #   headings (never a caller-supplied count) and acts on conclusive on-disk evidence of
 #   incompleteness: `warn` logs loudly and proceeds, `refuse` exits 4 without writing anything.
 #   Passing the flag with any other operation/target_status pair is silently ignored.
+#
+# Optional flag: --file-scope-add=<json-array>
+#   Absent by default (byte-for-byte no-op). Additive-only union-merge of the given JSON array of
+#   repo-relative path strings onto the target task's existing `file_scope` in specs/state.json --
+#   never a replacement, never subtractive. Implements the "Unknown-Footprint Convention" from
+#   docs/reference/standards/multi-task-creation-standard.md's Component 4a: research may discover
+#   concrete files not covered by the task's creation-time file_scope, and proposes them via
+#   `proposed_file_scope` in .return-meta.json (see context/formats/return-metadata-file.md); this
+#   flag is the consumer that merges the proposal in.
+#   VALUE must parse as a JSON array of strings (`jq -e 'type == "array" and (all(.[]; type ==
+#   "string"))'`) -- a malformed value is a hard validation error (exit 1) with a named message,
+#   never a silent no-op, so a typo cannot quietly drop coverage.
+#   RESTRICTED to operation==postflight && target_status==research. Any other combination is a
+#   validation error naming the restriction.
+#   The merge rides along inside update_state_json()'s existing single state-write.sh invocation
+#   (`.file_scope = ((.file_scope // []) + $add | unique)`, scoped to the matching
+#   active_projects[] entry) -- never a second write. An empty array, or an array whose members
+#   are all already present, leaves file_scope byte-for-byte unchanged.
 #
 # Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
 # for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
@@ -137,6 +155,7 @@ fi
 DRY_RUN=false
 ALLOW_PR_READY=false
 PHASE_CHECK=""
+FILE_SCOPE_ADD=""
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
@@ -144,6 +163,7 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=true ;;
     --allow-pr-ready) ALLOW_PR_READY=true ;;
     --phase-check=*) PHASE_CHECK="${arg#--phase-check=}" ;;
+    --file-scope-add=*) FILE_SCOPE_ADD="${arg#--file-scope-add=}" ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -155,7 +175,7 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>]" >&2
   echo "  operation:     preflight | postflight" >&2
   echo "  target_status: research | plan | implement | pr_ready | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; partial/blocked are postflight-only)" >&2
   exit 1
@@ -181,6 +201,32 @@ fi
 if [[ -n "$PHASE_CHECK" && "$PHASE_CHECK" != "warn" && "$PHASE_CHECK" != "refuse" ]]; then
   echo "Error: --phase-check must be 'warn' or 'refuse', got '$PHASE_CHECK'" >&2
   exit 1
+fi
+
+# --file-scope-add validation: a malformed value is a hard validation error, never a silent
+# no-op, so a typo cannot quietly drop coverage (same precedent as --phase-check above). Follows
+# --phase-check's own guard shape: only validate when the flag was actually passed.
+if [[ -n "$FILE_SCOPE_ADD" ]]; then
+  if ! echo "$FILE_SCOPE_ADD" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+    echo "Error: --file-scope-add value must be a JSON array of strings, got: $FILE_SCOPE_ADD" >&2
+    exit 1
+  fi
+  # Restricted to operation==postflight && target_status==research (the research-postflight
+  # write-back consumer point). Any other combination is a validation error naming the
+  # restriction, never a silent no-op.
+  if [[ "$operation" != "postflight" || "$target_status" != "research" ]]; then
+    echo "Error: --file-scope-add is only valid with operation=postflight and target_status=research (got operation='$operation', target_status='$target_status')." >&2
+    exit 1
+  fi
+fi
+
+# Only a genuinely non-empty array triggers the merge clause below -- an empty array (or an
+# absent flag) skips the jq file_scope clause entirely rather than running `unique` over an
+# unchanged array, so the empty/absent case is a byte-for-byte no-op (including array element
+# order), not merely a content-equal one.
+FILE_SCOPE_ADD_LEN=0
+if [[ -n "$FILE_SCOPE_ADD" ]]; then
+  FILE_SCOPE_ADD_LEN=$(echo "$FILE_SCOPE_ADD" | jq 'length')
 fi
 
 if [[ ! -f "$STATE_FILE" ]]; then
@@ -579,6 +625,9 @@ update_state_json() {
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[dry-run] state.json: task $task_number status '$current_state_status' -> '$STATE_STATUS'"
     echo "[dry-run] state.json: last_updated -> '$ts', session_id -> '$session_id'"
+    if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
+      echo "[dry-run] state.json: file_scope union-merge -> add ${FILE_SCOPE_ADD}"
+    fi
     echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
     return 0
   fi
@@ -586,10 +635,24 @@ update_state_json() {
   if [[ "$state_is_noop" == "true" ]]; then
     # Preserves the original guard exactly: the workflow-active marker write below is scoped to
     # the REAL (non-noop) write path only, matching pre-conversion behavior byte-for-byte -- a
-    # noop preflight replay does not refresh the marker.
-    "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
-      echo "Warning: state-write.sh failed during no-op TODO.md regen (non-fatal)" >&2
-    }
+    # noop preflight replay does not refresh the marker. A pending --file-scope-add still rides
+    # along even on a status no-op (e.g. a research postflight re-run against an already
+    # "researched" task proposing further paths) -- status is unaffected either way, so this
+    # merge is independent of the noop/real-write branch.
+    if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
+      "$SCRIPT_DIR/state-write.sh" \
+        '(.active_projects[] | select(.project_number == ($num | tonumber)) | .file_scope) |= ((. // []) + $add | unique)' \
+        --session-id "$session_id" \
+        --arg num "$task_number" \
+        --argjson add "$FILE_SCOPE_ADD" \
+        --regen-todo || {
+        echo "Warning: state-write.sh failed during no-op file_scope merge (non-fatal)" >&2
+      }
+    else
+      "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
+        echo "Warning: state-write.sh failed during no-op TODO.md regen (non-fatal)" >&2
+      }
+    fi
     return 0
   fi
 
@@ -615,17 +678,35 @@ update_state_json() {
     echo "$task_number $(common_timestamp_iso)" > "$SCRIPT_DIR/../tmp/workflow-active-${marker_session_key}"
   fi
 
-  if ! "$SCRIPT_DIR/state-write.sh" \
-    '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+  # The --file-scope-add union-merge rides along inside this SAME state-write.sh invocation's jq
+  # filter, scoped to the matching active_projects[] entry -- never a second write. Only a
+  # genuinely non-empty array extends the filter; an absent flag or an empty array leaves the
+  # base filter untouched (see FILE_SCOPE_ADD_LEN's byte-for-byte no-op comment above).
+  local jq_filter='(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
       status: $status,
       last_updated: $ts,
       session_id: $sid
-    }' \
-    --session-id "$session_id" \
-    --arg num "$task_number" \
-    --arg status "$STATE_STATUS" \
-    --arg ts "$ts" \
-    --arg sid "$session_id" \
+    }'
+  local jq_args=(
+    --session-id "$session_id"
+    --arg num "$task_number"
+    --arg status "$STATE_STATUS"
+    --arg ts "$ts"
+    --arg sid "$session_id"
+  )
+
+  if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
+    jq_filter='(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+      status: $status,
+      last_updated: $ts,
+      session_id: $sid
+    } | (.active_projects[] | select(.project_number == ($num | tonumber)) | .file_scope) |= ((. // []) + $add | unique)'
+    jq_args+=(--argjson add "$FILE_SCOPE_ADD")
+  fi
+
+  if ! "$SCRIPT_DIR/state-write.sh" \
+    "$jq_filter" \
+    "${jq_args[@]}" \
     --regen-todo; then
     return 1
   fi
