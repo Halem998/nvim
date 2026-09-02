@@ -1034,8 +1034,8 @@
       "path": "patterns/system-defect-discrimination.md",
       "domain": "core",
       "subdomain": "patterns",
-      "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, and dedup rule",
-      "line_count": 420,
+      "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
+      "line_count": 483,
       "keywords": [
         "patterns",
         "orchestrate",

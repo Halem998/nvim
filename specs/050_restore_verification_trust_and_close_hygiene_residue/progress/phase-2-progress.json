@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Re-scope and record the live-cycle defect-acceptance criterion",
+  "started_at": "2026-09-02T01:52:00Z",
+  "last_updated": "2026-09-02T01:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive current event census via grep/jq uniq -c", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Read sibling task's three dated evidence blocks in specs/TODO.md", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Read capstone's UNVERIFIABLE-AS-WRITTEN precedent for re-scoping an unverifiable criterion", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Draft criterion: no new defect classes AND no unexplained rate increase in a known class", "status": "done", "files_touched": []},
+    {"id": 5, "description": "State evaluation procedure alongside criterion", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Add decision section to system-defect-discrimination.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 7, "description": "Record the two individually-owned classes out of scope for this decision", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.extra",
+      "description": "check-extension-docs.sh Rule R line_count mismatch caused by the new section's added lines",
+      "type": "altered",
+      "reason": "Updated agent-system/extensions/core/index-entries.json's system-defect-discrimination.md entry (line_count 420 -> 483, summary extended) to keep the doc-lint index in sync with the edited file; not itself a plan-listed file but required by the phase's own doc-lint verification step",
+      "annotation": "n/a — not a plan checklist item, recorded here for traceability"
+    }
+  ]
+}

@@ -213,17 +213,17 @@ before editing; if a third entry has appeared, widen the phase rather than editi
 
 ---
 
-### Phase 2: Re-scope and record the live-cycle defect-acceptance criterion [NOT STARTED]
+### Phase 2: Re-scope and record the live-cycle defect-acceptance criterion [COMPLETED]
 
 **Goal**: Replace the unverifiable "zero `system_defect` events on a clean run" bar with a
 criterion that is both sound against the observed evidence and mechanically evaluable, and record
 it where the acceptance criteria live.
 
 **Tasks**:
-- [ ] Re-derive the current event census rather than trusting any recorded number:
+- [x] Re-derive the current event census rather than trusting any recorded number: *(completed)*
       `grep 'system_defect' specs/events.jsonl | jq -r '.detail.defect_class' | sort | uniq -c`.
       Record the live counts and class list in the criterion's own evidence block.
-- [ ] Read the sibling evidence-contributor task's **three dated evidence blocks** in
+- [x] Read the sibling evidence-contributor task's **three dated evidence blocks** in *(completed)*
       `specs/TODO.md` (the original filing plus the two `EVIDENCE ADDED` blocks) before drafting
       any wording. That task is written as a contributor to this decision, not merely a sibling.
       Weigh both directions it establishes:
@@ -231,24 +231,24 @@ it where the acceptance criteria live.
       correct non-writer behavior (a recorder firing where nothing went wrong);
       *against* relaxing carelessly — two independent live clobber incidents where the single
       defect event was the only signal distinguishing a predecessor clobber from a normal report.
-- [ ] Read the capstone's own precedent for re-scoping an unverifiable criterion in
+- [x] Read the capstone's own precedent for re-scoping an unverifiable criterion in *(completed)*
       `specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md` (the
       UNVERIFIABLE-AS-WRITTEN gate-out item, which states the criterion may be amended to something
       checkable rather than waiting on new instrumentation). Match its framing.
-- [ ] Draft the criterion. The report's recommended shape is: *no new defect classes on a clean
+- [x] Draft the criterion. The report's recommended shape is: *no new defect classes on a clean *(completed)*
       run, AND no unexplained increase in a known class's firing rate absent a corresponding real
       incident.* A pure "no new classes" bar is under-specified against the clobber evidence and
       must not be adopted alone.
-- [ ] **State the evaluation procedure alongside the criterion** — the concrete command that
+- [x] **State the evaluation procedure alongside the criterion** — the concrete command that *(completed)*
       computes the class set and per-class rate, what the baseline is compared against, and what a
       failing evaluation looks like. A criterion with no evaluation procedure reproduces the exact
       defect being replaced.
-- [ ] Add the decision as a new section in
+- [x] Add the decision as a new section in *(completed)*
       `agent-system/extensions/core/context/patterns/system-defect-discrimination.md` — the
       existing home of the system-defect predicate, signal vocabulary, and recursion/deduplication
       rules. Cross-reference the existing "Extending the Signal A vocabulary is an explicit
       decision" section, whose deliberate-extension posture the "no new classes" half depends on.
-- [ ] Record explicitly, inside the new section, that the two individually-owned defect classes are
+- [x] Record explicitly, inside the new section, that the two individually-owned defect classes are *(completed)*
       out of scope for this decision and remain owned elsewhere — so the criterion is not read as
       having dispositioned them.
 

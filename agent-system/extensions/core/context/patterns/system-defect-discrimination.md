@@ -405,6 +405,69 @@ This keeps the check entirely inside the already-decided `specs/events.jsonl` su
 file, no new field on `active_projects`, and no dependency on `errors.json`'s independently
 tracked schema drift.
 
+## The live-cycle acceptance criterion
+
+**Decision (recorded here 2026-09-02)**: a clean orchestration cycle's acceptance bar is *not*
+"zero `system_defect` events". It is **no new defect classes on a clean run, AND no unexplained
+increase in a known class's firing rate absent a corresponding real incident.**
+
+A pure "zero events" bar was never sound: Signal A's detection sites are correctly-firing
+detectors, and a clean run can legitimately still trip one when a genuine agent-compliance slip
+occurs mid-cycle — that is the recorder working as designed, not noise. A pure "no new classes"
+bar alone is under-specified in the other direction, established by live evidence (below): a
+class firing zero times for weeks and then once is architecturally "not new" yet may be exactly
+the incident the bar exists to catch. The adopted criterion requires both halves.
+
+**Evaluation procedure**: `grep 'system_defect' specs/events.jsonl | jq -r '.detail.defect_class' | sort | uniq -c`,
+compared against the immediately-prior baseline census taken the same way. A failing evaluation
+looks like either: (a) a `defect_class` value appears in the current census that is absent from
+the baseline census (a new class — investigate whether Signal A's vocabulary needs the extension
+recorded per the "Extending the Signal A vocabulary" section above, and whether the triggering
+site is a genuine defect or a detector miscalibration); or (b) an existing class's count rises
+between baseline and current census without a corresponding recorded incident (own task, error,
+or dated evidence block) explaining the rise. A rise that is fully explained by a recorded,
+understood incident (e.g. a live-predecessor clobber correctly caught) is not a failing
+evaluation — see the evidence below for why that distinction matters.
+
+**Live event census (taken 2026-09-02, re-derived at decision time rather than trusted from any
+prior filing)**: 13 `system_defect` events across 4 classes —
+`AMBIENT_BINDING_MISMATCH`: 1, `HANDOFF_STALE_OR_ABSENT`: 7, `META_MISSING_AFTER_NARRATION`: 1,
+`OFF_SCHEMA_STATUS`: 4.
+
+**Evidence weighed, both directions** (from the sibling task "Suppress expected handoff absence
+defect", `specs/TODO.md`, whose three dated blocks bear directly on this decision):
+
+- *For relaxing a pure zero-events bar*: the task's original filing observed
+  `HANDOFF_STALE_OR_ABSENT` fire on a clean, fully-successful base-mode `/orchestrate` run — a
+  contractual non-writer (base-mode implement) left no fresh handoff, exactly as designed, and
+  the recorder still filed a defect. This is a recorder firing on expected, correct behavior, not
+  on an incident — the textbook case for "zero events" being the wrong bar.
+- *Against relaxing carelessly, to a bare "no new classes" bar*: the same task's two
+  `EVIDENCE ADDED` blocks (2026-08-24 and 2026-09-01) record two independent, real, live
+  predecessor-clobber incidents — a still-running dispatch completing late, and a closed
+  dispatch's files resurrected via `git restore` — in both of which the single
+  `HANDOFF_STALE_OR_ABSENT` event was the *only* signal distinguishing the clobber from a normal
+  report. `HANDOFF_STALE_OR_ABSENT` is not a new class in either incident (it already has prior
+  occurrences), so a "no new classes" bar alone would have accepted both clobbers as clean. This
+  is why the adopted criterion's second half — rate-of-a-known-class, not merely class novelty —
+  is required, not optional.
+
+**Precedent matched**: this re-scoping follows the framing set by
+`specs/reviews/review-2026-08-10-agent-system-refactor-capstone.md`'s UNVERIFIABLE-AS-WRITTEN
+gate-out item (`err_1786350581339_Q4VnFy`), which holds that an acceptance criterion with no
+instrumented way to evaluate it may be amended to something checkable rather than left waiting on
+new instrumentation. The prior "zero events" bar was checkable but unsound, rather than
+unverifiable; the correction here is the same posture — replace an unworkable criterion with a
+workable one rather than defer the decision — applied to a different failure mode of the same
+underlying problem (an acceptance bar that does not survive contact with real recorded evidence).
+
+**Out of scope, not dispositioned here**: the two individually-owned defect classes discussed
+above (`OFF_SCHEMA_STATUS` and `META_MISSING_AFTER_NARRATION`) remain owned by their respective
+in-flight tasks (the handoff identity-contract work and the nonterminal-fanout work,
+respectively). This decision settles only the acceptance-bar shape and its evaluation procedure —
+it does not fix, close, or otherwise disposition either individual defect class, and must not be
+read as having done so.
+
 ## Related documentation
 
 - [Infra-Failure vs. Work-Cycle Discrimination](infra-failure-discrimination.md) — the structural
