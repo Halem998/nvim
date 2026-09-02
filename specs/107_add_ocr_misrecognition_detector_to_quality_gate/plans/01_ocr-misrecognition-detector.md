@@ -1,7 +1,7 @@
 # Implementation Plan: Task #107
 
 - **Task**: 107 - Add an OCR-misrecognition detector to the literature quality gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 102 (converter-tier characterization, COMPLETED), Task 104 (glue-check false-positive class, COMPLETED), Task 105 (OCR tier, COMPLETED)
 - **Research Inputs**: specs/107_add_ocr_misrecognition_detector_to_quality_gate/reports/01_ocr-misrecognition-detector.md
@@ -385,29 +385,29 @@ and extend the file set if that grep finds additional stale text.
 
 ---
 
-### Phase 6: Regression tests and full gate run [NOT STARTED]
+### Phase 6: Regression tests and full gate run [COMPLETED]
 
 **Goal**: The advisory's non-blocking property is locked in by a test, and the whole literature
 test surface is green.
 
 **Tasks**:
-- [ ] Add a `scan-metadata` fixture arm to `scripts/tests/generate-test-fixtures.py` building a
+- [x] Add a `scan-metadata` fixture arm to `scripts/tests/generate-test-fixtures.py` building a
       small valid PDF with a real text layer whose Creator/Producer are set to a scan-pipeline
       signature (via PyMuPDF `set_metadata`). It must be a document that otherwise passes every
-      existing gate check, so the test isolates the advisory.
-- [ ] Add assertions to `scripts/tests/test-literature-convert.sh`: converting that fixture emits
+      existing gate check, so the test isolates the advisory. *(completed)*
+- [x] Add assertions to `scripts/tests/test-literature-convert.sh`: converting that fixture emits
       a line containing `ADVISORY:` and `scan-pipeline provenance`; the exit code is **0**, not 3;
-      no `.rejected` file is written; and the `Quality gate: PASSED` line is still printed.
-- [ ] Add the negative assertion: converting an existing born-digital fixture emits no `ADVISORY:`
-      line.
-- [ ] Add the ingest-bucketing assertion: `literature-ingest.sh` processing the scan-metadata
+      no `.rejected` file is written; and the `Quality gate: PASSED` line is still printed. *(completed)*
+- [x] Add the negative assertion: converting an existing born-digital fixture emits no `ADVISORY:`
+      line. *(completed)*
+- [x] Add the ingest-bucketing assertion: `literature-ingest.sh` processing the scan-metadata
       fixture does not bucket it as needs-OCR or as a hard failure — the advisory must not
-      disturb task 105's marker-discriminated dispatch.
-- [ ] Run the full suite: `--self-test`, `test-literature-convert.sh`,
+      disturb task 105's marker-discriminated dispatch. *(completed)*
+- [x] Run the full suite: `--self-test`, `test-literature-convert.sh`,
       `test-quality-gate-notation.sh`, `test-literature-build-index.sh`, and a fidelity-audit run
-      compared against the Phase 3 baseline.
-- [ ] Verify no file under `.claude/**` was modified: `git status --short | grep '^.*\.claude/'`
-      returns nothing.
+      compared against the Phase 3 baseline. *(completed)*
+- [x] Verify no file under `.claude/**` was modified: `git status --short | grep '^.*\.claude/'`
+      returns nothing. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -430,16 +430,16 @@ test surface is green.
 
 ## Testing & Validation
 
-- [ ] `literature-convert.sh --self-test` passes, including all new `gate/scan-pipeline-*` fixtures
-      and the NUL-byte regression lock.
-- [ ] `test-literature-convert.sh` passes, including the new advisory assertions (fires on a
-      scan-metadata fixture, exit 0, no `.rejected`; silent on a born-digital fixture).
-- [ ] `test-quality-gate-notation.sh` and `test-literature-build-index.sh` pass unchanged.
-- [ ] `literature-fidelity-audit.sh` produces the same `unverified_scan_source` verdict count as
-      the pre-edit baseline.
-- [ ] `grep -rn 'SCAN_SOURCE_SIGNATURE_RE' agent-system/` returns nothing.
-- [ ] No new task-number reference outside `specs/**`.
-- [ ] No file modified under `.claude/**`.
+- [x] `literature-convert.sh --self-test` passes, including all new `gate/scan-pipeline-*` fixtures
+      and the NUL-byte regression lock. *(verified)*
+- [x] `test-literature-convert.sh` passes, including the new advisory assertions (fires on a
+      scan-metadata fixture, exit 0, no `.rejected`; silent on a born-digital fixture). *(verified)*
+- [x] `test-quality-gate-notation.sh` and `test-literature-build-index.sh` pass unchanged. *(verified)*
+- [x] `literature-fidelity-audit.sh` produces the same `unverified_scan_source` verdict count as
+      the pre-edit baseline. *(verified)*
+- [x] `grep -rn 'SCAN_SOURCE_SIGNATURE_RE' agent-system/` returns nothing. *(verified)*
+- [x] No new task-number reference outside `specs/**`. *(verified)*
+- [x] No file modified under `.claude/**`. *(verified)*
 
 ## Artifacts & Outputs
 

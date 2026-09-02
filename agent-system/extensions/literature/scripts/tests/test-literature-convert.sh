@@ -588,6 +588,84 @@ else
 fi
 
 # ============================================================
+# Test 7: scan-pipeline provenance ADVISORY — locks in that a scan-metadata
+# document converts cleanly (exit 0, no .rejected, "Quality gate: PASSED")
+# while still emitting a distinctly-labeled, non-blocking ADVISORY: line;
+# that a born-digital document emits no such line; and that
+# literature-ingest.sh's bucketing is undisturbed by it.
+# ============================================================
+
+FIXTURE_SCAN_META="$WORKDIR/scan_metadata.pdf"
+python3 "$FIXTURE_GEN" scan-metadata "$FIXTURE_SCAN_META" >/dev/null
+
+OUT_SCAN_META="$WORKDIR/out_scan_meta"
+mkdir -p "$OUT_SCAN_META"
+STDERR_SCAN_META="$WORKDIR/stderr_scan_meta.log"
+LITERATURE_CONVERTER=pymupdf "$CONVERT_SH" "$FIXTURE_SCAN_META" "$OUT_SCAN_META" >/dev/null 2>"$STDERR_SCAN_META"
+EXIT_SCAN_META=$?
+
+if [ "$EXIT_SCAN_META" -eq 0 ]; then
+  t_pass "scan-metadata fixture: exit 0 (advisory never rejects a conversion)"
+else
+  t_fail "scan-metadata fixture: expected exit 0, got $EXIT_SCAN_META — stderr:"
+  cat "$STDERR_SCAN_META" >&2
+fi
+
+if grep -q 'ADVISORY:' "$STDERR_SCAN_META" && grep -q 'scan-pipeline provenance' "$STDERR_SCAN_META"; then
+  t_pass "scan-metadata fixture: ADVISORY: line naming scan-pipeline provenance present"
+else
+  t_fail "scan-metadata fixture: ADVISORY: line missing or not naming scan-pipeline provenance — stderr:"
+  cat "$STDERR_SCAN_META" >&2
+fi
+
+if ls "$OUT_SCAN_META"/*.rejected >/dev/null 2>&1; then
+  t_fail "scan-metadata fixture: a .rejected file was written (advisory must never reject)"
+else
+  t_pass "scan-metadata fixture: no .rejected file written"
+fi
+
+if grep -q '^\[convert\] Quality gate: PASSED' "$STDERR_SCAN_META"; then
+  t_pass "scan-metadata fixture: Quality gate: PASSED still printed"
+else
+  t_fail "scan-metadata fixture: Quality gate: PASSED line missing — stderr:"
+  cat "$STDERR_SCAN_META" >&2
+fi
+
+# --- 7a: negative — a born-digital fixture (the two-column fixture, whose
+# Creator/Producer are unset/default, i.e. not a scan-pipeline signature)
+# emits no ADVISORY: line at all. ---
+if grep -q 'ADVISORY:' "$STDERR1"; then
+  t_fail "born-digital fixture: unexpected ADVISORY: line emitted — stderr:"
+  cat "$STDERR1" >&2
+else
+  t_pass "born-digital fixture: no ADVISORY: line emitted"
+fi
+
+# --- 7b: literature-ingest.sh bucketing is undisturbed — a scan-metadata
+# file is neither bucketed as needs-OCR nor as a hard failure; it lands in
+# the ordinary processed/converted count exactly like any other clean
+# conversion, since the advisory never touches `reasons` or the exit code. ---
+if [ -x "$INGEST_SH" ]; then
+  INGEST_SCRATCH_LIT3="$WORKDIR/ingest_scratch_lit3"
+  INGEST_SRC_DIR3="$WORKDIR/ingest_src3"
+  mkdir -p "$INGEST_SCRATCH_LIT3" "$INGEST_SRC_DIR3"
+  cp "$FIXTURE_SCAN_META" "$INGEST_SRC_DIR3/scan_metadata.pdf"
+
+  STDOUT_INGEST3="$WORKDIR/stdout_ingest3.log"
+  LITERATURE_DIR="$INGEST_SCRATCH_LIT3" LITERATURE_CONVERTER=pymupdf \
+    "$INGEST_SH" "$INGEST_SRC_DIR3" --no-local >"$STDOUT_INGEST3" 2>"$WORKDIR/stderr_ingest3.log"
+
+  if grep -q "Files needing OCR: 0" "$STDOUT_INGEST3" && grep -q "Files failed: 0" "$STDOUT_INGEST3"; then
+    t_pass "literature-ingest.sh: scan-metadata file not bucketed as needs-OCR or as a hard failure"
+  else
+    t_fail "literature-ingest.sh: scan-metadata file mis-bucketed — stdout:"
+    cat "$STDOUT_INGEST3" >&2
+  fi
+else
+  t_fail "literature-ingest.sh not found or not executable at $INGEST_SH"
+fi
+
+# ============================================================
 # Optional stronger check: real Alur SyGuS PDF, if available. Converts to a
 # scratch dir ONLY — never touches ~/Projects/Literature/. Skips with a
 # visible warning (never fails the suite) if LITERATURE_TEST_PDF is unset.

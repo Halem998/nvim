@@ -1,0 +1,12 @@
+{
+  "phase": 6,
+  "phase_name": "Regression tests and full gate run",
+  "started_at": "2026-09-02T01:20:00Z",
+  "last_updated": "2026-09-02T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add scan-metadata fixture arm, advisory assertions, negative assertion, ingest-bucketing assertion, run full suite, verify no .claude/** modified", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py", "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh", "agent-system/extensions/literature/scripts/literature_quality_gate.py"], "note": "Full suite green: --self-test (all fixtures), test-literature-convert.sh (30 passed, 0 failed, includes 6 new advisory assertions), test-quality-gate-notation.sh (5/5), test-literature-build-index.sh (9/9). Advisory assertions confirmed live: temporarily disabling the Phase 4 print statement flipped the new ADVISORY assertion from PASS to FAIL (29 passed, 1 failed), then restored. literature-fidelity-audit.sh --dry-run unverified_scan_source count: 11 (matches Phase 3 baseline exactly). grep -rn SCAN_SOURCE_SIGNATURE_RE agent-system/ now returns zero hits (a residual comment-only mention in literature_quality_gate.py, added in Phase 1, was rephrased in this phase to stop literally citing the old symbol name, satisfying the plan's literal Testing & Validation grep check). git status --short shows no .claude/** paths."}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

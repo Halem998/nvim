@@ -13,6 +13,7 @@ Usage:
     generate-test-fixtures.py fused-word <output.pdf>
     generate-test-fixtures.py broken-font <output.pdf>
     generate-test-fixtures.py image-only <output.pdf>
+    generate-test-fixtures.py scan-metadata <output.pdf>
 """
 import sys
 
@@ -281,6 +282,38 @@ def build_broken_font_pdf(out_path):
     doc.close()
 
 
+def build_scan_metadata_pdf(out_path):
+    """A single-page, single-column document with a real, clean text layer
+    (no corruption of any kind -- it must pass every OTHER existing gate
+    check, so the advisory test isolates scan_pipeline_provenance() alone)
+    whose Creator/Producer metadata are set to a real scan-pipeline
+    signature (`Acrobat 3.0 Capture Plug-in` / `Acrobat 3.0 Import
+    Plug-in`), matching one of the positive fixtures measured in research
+    and exercised by literature-convert.sh --self-test's
+    gate/scan-pipeline-provenance-capture-plugin fixture."""
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)
+
+    y = 72
+    page.insert_text((72, y), "Introduction", fontsize=14, fontname="hebo")
+    y += 28
+    for i in range(16):
+        page.insert_text(
+            (72, y),
+            f"This is ordinary body text line number {i} with no corruption of any kind.",
+            fontsize=10,
+        )
+        y += 16
+
+    doc.set_metadata({
+        "creator": "Acrobat 3.0 Capture Plug-in",
+        "producer": "Acrobat 3.0 Import Plug-in",
+    })
+
+    doc.save(out_path)
+    doc.close()
+
+
 def main():
     if len(sys.argv) != 3:
         print(__doc__, file=sys.stderr)
@@ -298,6 +331,8 @@ def main():
         build_broken_font_pdf(out_path)
     elif kind == "image-only":
         build_image_only_pdf(out_path)
+    elif kind == "scan-metadata":
+        build_scan_metadata_pdf(out_path)
     else:
         print(f"Unknown fixture kind: {kind}", file=sys.stderr)
         sys.exit(1)

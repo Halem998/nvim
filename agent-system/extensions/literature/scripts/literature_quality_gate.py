@@ -377,10 +377,10 @@ def printable_ratio(text):
 
 # Known scan/OCR-pipeline Creator/Producer signature, matched case-insensitively
 # against the combined Creator+Producer metadata strings. Byte-identical to the
-# regex `literature-fidelity-audit.sh` carried inline before this promotion
-# (`SCAN_SOURCE_SIGNATURE_RE`) -- widening it (e.g. adding bare `scan` or
-# `abbyy` alternatives) is a separate, unvalidated change and is explicitly
-# out of scope for the promotion itself.
+# module-level regex constant `literature-fidelity-audit.sh` carried inline
+# (under a different name) before this promotion -- widening it (e.g. adding
+# bare `scan` or `abbyy` alternatives) is a separate, unvalidated change and
+# is explicitly out of scope for the promotion itself.
 _SCAN_PIPELINE_SIGNATURE_RE = re.compile(
     r"capture|finereader|image conversion",
     re.IGNORECASE,
