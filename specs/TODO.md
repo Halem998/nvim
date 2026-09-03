@@ -11,39 +11,41 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,22,29,39,43,44,45,51,74,89,91,127,129,134,137,139,149 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,75,76,136,140,145 | 29,74,91,139,149 | core-agent-system, extensions |
+| 1 | 13,22,29,39,43,45,89,91,127,134,137,149 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,145 | 29,149 | core-agent-system, extensions |
 | 3 | 146 | 145 | core-agent-system |
-| 4 | 147 | 146 | core-agent-system |
-| 5 | 143 | 147 | core-agent-system |
-| 6 | 148 | 143 | core-agent-system |
-| 7 | 88 | 148 | core-agent-system |
-| 8 | 142,150 | 88 | core-agent-system |
+| 4 | 136,139,147 | 91,146 | core-agent-system |
+| 5 | 140,143 | 139,147 | core-agent-system |
+| 6 | 51,148 | 143 | core-agent-system |
+| 7 | 74,88 | 148 | core-agent-system, extensions |
+| 8 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
 13 [NOT STARTED] — The acceptance criterion "gate-out reports zero format errors and
-14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [NOT STARTED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
-139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
-  └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
+  └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
     └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+      └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line  (see above)
+      └─ 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
+        └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+        └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
       └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
         └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+          └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
           └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
             └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+              └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
+              └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
               └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
               └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 
@@ -467,7 +469,7 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 146
 
 **Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
 
@@ -568,7 +570,7 @@ PROVENANCE. Surfaced 2026-09-01 by gate-out validation during an /orchestrate 50
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 91
+- **Dependencies**: Task 91, Task 146
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 
@@ -851,7 +853,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 128
+- **Dependencies**: Task 88, Task 128
 
 **Description**: Audit every `\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.
 
@@ -2340,7 +2342,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 74
+- **Dependencies**: Task 74, Task 146
 
 **Description**: Close the coverage gap that the latex-extension wiring cannot reach: agents that compile .tex files under a task type OTHER than `latex` currently get no build-guard protection at all, because the extension hook mechanism is keyed on task_type.
 
@@ -2411,7 +2413,7 @@ ACCEPTANCE: a latex preflight hook exists, is executable, is declared in the man
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 130
+- **Dependencies**: Task 130, Task 148
 
 **Description**: Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
 
@@ -2821,7 +2823,7 @@ specifically, since it is the one that defeats clearing.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 143
 
 **Description**: Stop session-scoped orchestration runtime files from accumulating at the specs/ root, and make the existing reap path actually run. Originally scoped as "move the files into a dot-prefixed directory"; widened after a manual cleanup swept 79 stranded files across 5 repos (oldest dated 2026-07-11), because relocation alone hides the clutter without stopping the growth.
 
@@ -2942,7 +2944,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 87
+- **Dependencies**: Task 87, Task 149
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -3300,7 +3302,7 @@ failure.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 88, Task 139
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 NARROWED: roughly half of this task already landed with the handoff-identity work and must not be redone. skill-orchestrate/SKILL.md:2374,2384 now treats in_progress (and null/empty) as OFF-SCHEMA rather than routing it toward failed_tasks, and orchestrate-recover-outcome.sh:233 emits a clean STATUS_IN_PROGRESS verdict. Verified in the source store today.
