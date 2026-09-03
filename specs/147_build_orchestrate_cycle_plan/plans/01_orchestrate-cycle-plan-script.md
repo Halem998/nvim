@@ -1,7 +1,7 @@
 # Implementation Plan: Task #147
 
 - **Task**: 147 - Build orchestrate-cycle-plan.sh: one script that returns the cycle's whole dispatch plan
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16 hours
 - **Dependencies**: 146 (`orchestrate-build-dispatch.sh`, landed)
 - **Research Inputs**: specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md
@@ -126,35 +126,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Script skeleton, CLI surface, and read-only analysis core [NOT STARTED]
+### Phase 1: Script skeleton, CLI surface, and read-only analysis core [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` with its doc
 header, full flag surface, state loading, and WORK items (a) status refresh + session heartbeat,
 (b) all-terminal check, and (c) eligibility — emitting a well-formed (if partly empty) plan JSON.
 
 **Tasks**:
-- [ ] Create the file with `set -euo pipefail` and a doc header modeled on
+- [x] Create the file with `set -euo pipefail` and a doc header modeled on
       `scripts/orchestrate-stage5-gates.sh`: Purpose / Usage / Output field table / Exit codes.
-- [ ] Record in the doc header, as this script's durable home: the full `mt_state_file` field list
+- [x] Record in the doc header, as this script's durable home: the full `mt_state_file` field list
       it reads and mutates, and the bare-vs-suffixed `session_id` invariant (both currently exist
       only as scattered SKILL.md prose).
-- [ ] Parse the flag surface: `--session SID` and `--state-file F` (required), plus optional
+- [x] Parse the flag surface: `--session SID` and `--state-file F` (required), plus optional
       `--invocation-count N`, `--force-phases "..."`, `--clean`, `--lit`, `--hard`, `--fast`,
       `--model M`, `--allow-self-modifying`, `--allow-scope-collision`, `--continue-budget`,
       `--dry-run`, and positional task numbers. Reject `--team`/`--team-size` as unknown flags.
-- [ ] Implement WORK (a): re-read each task's status into `mt_state_file.current_statuses`;
+- [x] Implement WORK (a): re-read each task's status into `mt_state_file.current_statuses`;
       best-effort `task-lock.sh session-heartbeat "$session_id"` (bare form).
-- [ ] Implement WORK (b): all-terminal check over `{completed, abandoned, expanded}` plus
+- [x] Implement WORK (b): all-terminal check over `{completed, abandoned, expanded}` plus
       `failed_tasks` and `deferred_deploy_checkpoint`. `deferred_self_modifying` is deliberately
       NOT part of this check — it is an observation log, not an exclusion set.
-- [ ] Implement WORK (c): eligibility per the dependency-gating model — not terminal/failed, not in
+- [x] Implement WORK (c): eligibility per the dependency-gating model — not terminal/failed, not in
       `deferred_deploy_checkpoint`, all `dependency_graph` predecessors terminal-or-failed. A
       task's own status (including `researching`/`planning`) never removes it from eligibility;
       a failed predecessor yields a `blocked[]` row.
-- [ ] Implement the no-eligible circuit breaker as a `stop` object, not an exit code.
-- [ ] Establish the two-function structure the whole script hangs off: one function computing the
+- [x] Implement the no-eligible circuit breaker as a `stop` object, not an exit code.
+- [x] Establish the two-function structure the whole script hangs off: one function computing the
       complete decision set, a second consuming it. No side effects in the first.
-- [ ] Emit `{cycle, dispatch: [], deferred: [], blocked: [...], stop: ...}` via a single
+- [x] Emit `{cycle, dispatch: [], deferred: [], blocked: [...], stop: ...}` via a single
       `jq -n -c` call as the sole stdout channel.
 
 **Timing**: 1.5 hours
@@ -180,34 +180,34 @@ phase's logic; a flag no phase reads is a spec error to report, not to silently 
 
 ---
 
-### Phase 2: Classification, admission, and verbatim verdict relay [NOT STARTED]
+### Phase 2: Classification, admission, and verbatim verdict relay [COMPLETED]
 
 **Goal**: Add WORK (d) admission and (e) classification, with the four defer gates, their
 consumer-side overrides, defer-not-fail semantics, the idle-overlap advisory, the convergence
 guard, and the degradation path — relaying each verdict's own `reason` string verbatim.
 
 **Tasks**:
-- [ ] Call `orchestrate-triage-classify.sh mt "${eligible_tasks[@]}"`, capture the NDJSON once, and
+- [x] Call `orchestrate-triage-classify.sh mt "${eligible_tasks[@]}"`, capture the NDJSON once, and
       reuse the captured value everywhere downstream — never re-invoke.
-- [ ] On classifier exit 2, fall back to the inline Phase-grouping table applied per task; never
+- [x] On classifier exit 2, fall back to the inline Phase-grouping table applied per task; never
       abort the cycle.
-- [ ] Build `--phase-map` from the captured classification and call
+- [x] Build `--phase-map` from the captured classification and call
       `orchestrate-batch-admit.sh --invocation-count <this cycle's eligible-set size>
       --session-id "$session_id" --phase-map ... "${eligible_tasks[@]}"` on every cycle including
       batch size 1. `--session-id` takes the BARE session id.
-- [ ] Branch on `.decision == "defer"` across `defer_reason` in
+- [x] Branch on `.decision == "defer"` across `defer_reason` in
       `{self_modifying, file_scope_collision, session_active}`, each with its own override check
       (`--allow-self-modifying`; `--allow-scope-collision`, cross-batch only).
-- [ ] Every `deferred[]` row's `reason` is the verdict's own `.reason` field, passed through
+- [x] Every `deferred[]` row's `reason` is the verdict's own `.reason` field, passed through
       unmodified. Construct no reason strings. The designated-candidate tie-breaker is internal to
       the admission script — pass nothing extra for it.
-- [ ] Append to `defer_ledger`, `deferred_self_modifying`, and `idle_overlap_ledger` exactly as
+- [x] Append to `defer_ledger`, `deferred_self_modifying`, and `idle_overlap_ledger` exactly as
       today. These observation logs are never read by any eligibility, admission, circuit-breaker,
       or convergence decision.
-- [ ] Evaluate the idle-overlap advisory on every verdict, independent of the defer filter.
-- [ ] Implement the convergence guard: increment `consecutive_no_dispatch_cycles`, produce a `stop`
+- [x] Evaluate the idle-overlap advisory on every verdict, independent of the defer filter.
+- [x] Implement the convergence guard: increment `consecutive_no_dispatch_cycles`, produce a `stop`
       object after 3.
-- [ ] On admission exit 2 (state unavailable), log loudly to stderr and proceed WITHOUT the check —
+- [x] On admission exit 2 (state unavailable), log loudly to stderr and proceed WITHOUT the check —
       never abort.
 
 **Timing**: 2 hours
@@ -229,29 +229,29 @@ guard, and the degradation path — relaying each verdict's own `reason` string 
 
 ---
 
-### Phase 3: Per-task forced phases, task-directory creation, and agent resolution [NOT STARTED]
+### Phase 3: Per-task forced phases, task-directory creation, and agent resolution [COMPLETED]
 
 **Goal**: Add WORK (f) per-task `force_phases` consumption and (g) task-directory creation, plus
 per-task agent-name resolution for the dispatch rows.
 
 **Tasks**:
-- [ ] Split `--force-phases` on commas into an ordered queue validated against
+- [x] Split `--force-phases` on commas into an ordered queue validated against
       `{research, plan, implement}`; fail loudly on any other token (a corrupted delegation context,
       not a user typo).
-- [ ] Apply forced phases per task in canonical research-then-plan-then-implement order regardless
+- [x] Apply forced phases per task in canonical research-then-plan-then-implement order regardless
       of the typed order, tracking a per-task remaining-forced-phases pointer in `mt_state_file`.
-- [ ] Implement stop-after-last-named semantics per task: once a task's last named forced phase
+- [x] Implement stop-after-last-named semantics per task: once a task's last named forced phase
       completes, that task stops being force-dispatched and falls through to ordinary
       status-derived classification on the next cycle. Never regress a task's status.
-- [ ] Implement WORK (g): when `state.json` has `path: null` or the directory is absent,
+- [x] Implement WORK (g): when `state.json` has `path: null` or the directory is absent,
       `mkdir -p` the task directory and write the `path` field, following
       `skill_validate_input`'s precedent. This MUST happen before any
       `orchestrate-build-dispatch.sh` call for that task, which re-derives its description from
       `state.json` and needs the directory present.
-- [ ] Resolve the per-task `agent` field by SOURCING
+- [x] Resolve the per-task `agent` field by SOURCING
       `.claude/scripts/command-route-agent.sh "$op" "$TASK_TYPE" "$default_agent" "${effort_flag:-}"`
       and reading `$AGENT_NAME`. Never execute it as a subprocess — it exports and never exits.
-- [ ] Cache each task's resolved agent in `mt_state_file` on first resolution rather than
+- [x] Cache each task's resolved agent in `mt_state_file` on first resolution rather than
       re-resolving every cycle, mirroring Stage MT-2's once-per-task intent and avoiding
       mid-invocation routing drift.
 
@@ -275,28 +275,28 @@ per-task agent-name resolution for the dispatch rows.
 
 ---
 
-### Phase 4: Side-effect half — lock, dispatch_seq mint, preflight write, build-dispatch [NOT STARTED]
+### Phase 4: Side-effect half — lock, dispatch_seq mint, preflight write, build-dispatch [COMPLETED]
 
 **Goal**: Add WORK (h) lock acquire with stale-reclaim, (i) the atomic `dispatch_seq` +
 `dispatch_start_ts` write, (j) the preflight status write, and (l) the per-row
 `orchestrate-build-dispatch.sh` call, completing the live path's `dispatch[]` rows.
 
 **Tasks**:
-- [ ] Call `task-lock.sh acquire "$task_num" "$op" "$session_id" "..."` with the BARE session id,
+- [x] Call `task-lock.sh acquire "$task_num" "$op" "$session_id" "..."` with the BARE session id,
       including stale-reclaim. On refusal by a fresh foreign lock, remove the task from this
       cycle's batch and add a `deferred[]` row with a lock-contention reason — never add to
       `failed_tasks`, never emit a `blocked[]` row.
-- [ ] Mint `dispatch_seq` as an atomic read-modify-write incrementing
+- [x] Mint `dispatch_seq` as an atomic read-modify-write incrementing
       `mt_state_file.dispatch_seq_counter`, recording both `dispatch_seq[$t]` and
       `dispatch_start_ts[$t]` in the SAME `jq` write.
-- [ ] Call `skill_preflight_update "$task_num" "$op" "${session_id}_${task_num}"` — the
+- [x] Call `skill_preflight_update "$task_num" "$op" "${session_id}_${task_num}"` — the
       per-task-suffixed form, per the invariant.
-- [ ] Call `orchestrate-build-dispatch.sh "$task_num" "$phase" --session <per the invariant> --seq
+- [x] Call `orchestrate-build-dispatch.sh "$task_num" "$phase" --session <per the invariant> --seq
       <minted> --dispatch-start-ts <stamped> [--clean] [--lit] [--hard] [--fast] [--model M]`,
       capturing `{dispatch_file, model}`.
-- [ ] Apply the session-id invariant at each call site: research and plan dispatches pass
+- [x] Apply the session-id invariant at each call site: research and plan dispatches pass
       `${session_id}_${task_num}` as `--session`; implement dispatches pass the bare `$session_id`.
-- [ ] Populate `dispatch[]` rows as `{task, phase, agent, model, dispatch_file}`. Emit no `team`
+- [x] Populate `dispatch[]` rows as `{task, phase, agent, model, dispatch_file}`. Emit no `team`
       key.
 
 **Timing**: 2 hours
@@ -320,24 +320,24 @@ per-task agent-name resolution for the dispatch rows.
 
 ---
 
-### Phase 5: Budget accounting, infra-failure counters, and the redeploy checkpoint [NOT STARTED]
+### Phase 5: Budget accounting, infra-failure counters, and the redeploy checkpoint [COMPLETED]
 
 **Goal**: Add WORK (k): `MAX_CYCLES_MT` and `MAX_INFRA_FAILURES` accounting, `--continue-budget`
 honoring, and the inter-cycle redeploy-checkpoint decision, all surfacing through the `stop` field.
 
 **Tasks**:
-- [ ] Increment `cycle_count`; produce a `stop` object when `cycle_count >= MAX_CYCLES_MT` unless
+- [x] Increment `cycle_count`; produce a `stop` object when `cycle_count >= MAX_CYCLES_MT` unless
       `--continue-budget` was passed.
-- [ ] Track `infra_failures` against `MAX_INFRA_FAILURES` and produce the corresponding `stop`
+- [x] Track `infra_failures` against `MAX_INFRA_FAILURES` and produce the corresponding `stop`
       object, honoring `--continue-budget` identically.
-- [ ] Every budget exhaustion produces an honest `stop.message` and never a user prompt.
-- [ ] Implement the inter-cycle redeploy checkpoint: expand
+- [x] Every budget exhaustion produces an honest `stop.message` and never a user prompt.
+- [x] Implement the inter-cycle redeploy checkpoint: expand
       `context/reference/orchestrator-critical-paths.json` against `cycle_modified_files`,
       idempotence-guard against `deployed_critical_paths`, run `verify-deploy.sh` before and after
       `deploy-headless.sh`, and record the three-way outcome (success / pre-existing-failure-proceed
       / new-failure-defer) via `deferred_deploy_checkpoint`, `deployed_critical_paths`, and
       `verify_deploy_baseline_notices`.
-- [ ] Keep loop control as DATA: the script sets `stop` and exits 0. It never decides
+- [x] Keep loop control as DATA: the script sets `stop` and exits 0. It never decides
       halt-vs-continue on the caller's behalf and never signals loop control through an exit code.
 
 **Timing**: 1.5 hours
@@ -360,27 +360,27 @@ honoring, and the inter-cycle redeploy-checkpoint decision, all surfacing throug
 
 ---
 
-### Phase 6: `--dry-run` mode and the human table [NOT STARTED]
+### Phase 6: `--dry-run` mode and the human table [COMPLETED]
 
 **Goal**: Add the `--dry-run` short-circuit and its compact human table, derived from the emitted
 JSON object and nothing else.
 
 **Tasks**:
-- [ ] Short-circuit immediately after the decision set is computed (admission, classification,
+- [x] Short-circuit immediately after the decision set is computed (admission, classification,
       forced phases, lock PROBE) and strictly before any side effect: no lock acquire, no
       `dispatch_seq` mint, no preflight status write, no directory creation, no
       `orchestrate-build-dispatch.sh` call, no `mt_state_file` mutation.
-- [ ] Emit the same plan JSON shape, with `dispatch[]` rows carrying `task`/`phase`/`agent` and
+- [x] Emit the same plan JSON shape, with `dispatch[]` rows carrying `task`/`phase`/`agent` and
       `dispatch_file`/`model` as null.
-- [ ] Render the human table by reading back that JSON object only. Add no second computation and
+- [x] Render the human table by reading back that JSON object only. Add no second computation and
       no independent formatting of any decision.
-- [ ] Choose and document the table's columns in the script doc header (the addendum fixes the
+- [x] Choose and document the table's columns in the script doc header (the addendum fixes the
       derivation source, not the layout). Recommended: one section per bucket — dispatch
       (task, phase, agent), deferred (task, reason), blocked (task, reason) — plus the `stop` line.
-- [ ] Every deferred row prints the verdict's own `reason` string verbatim, including the
+- [x] Every deferred row prints the verdict's own `reason` string verbatim, including the
       admission script's ORDERING CONSTRAINT text naming the designated candidate when two or more
       self-modifying candidates are present.
-- [ ] Verify by inspection that neither `runs solo only` nor `re-run it alone` appears anywhere in
+- [x] Verify by inspection that neither `runs solo only` nor `re-run it alone` appears anywhere in
       the file.
 
 **Timing**: 1 hour
@@ -403,30 +403,30 @@ JSON object and nothing else.
 
 ---
 
-### Phase 7: Fixture tests [NOT STARTED]
+### Phase 7: Fixture tests [COMPLETED]
 
 **Goal**: Add `scripts/tests/test-orchestrate-cycle-plan.sh` covering the four acceptance areas plus
 the two named invariants, modeled on the two existing sibling test files.
 
 **Tasks**:
-- [ ] Create the test file following `scripts/tests/test-orchestrate-build-dispatch.sh` and
+- [x] Create the test file following `scripts/tests/test-orchestrate-build-dispatch.sh` and
       `scripts/tests/test-orchestrate-triage-classify.sh` in structure and fixture style.
-- [ ] Eligibility fixture: assert a task in `researching`/`planning` is still eligible
+- [x] Eligibility fixture: assert a task in `researching`/`planning` is still eligible
       (status never gates), and that a failed predecessor produces a `blocked[]` row.
-- [ ] Forced-phases fixture: `--force-phases "research,plan"` for one task among several; assert
+- [x] Forced-phases fixture: `--force-phases "research,plan"` for one task among several; assert
       only that task's named phases are forced, canonical ordering is applied, and the task falls
       through to status-derived classification after its last named phase.
-- [ ] Verdict-relay fixture: 2+ self-modifying candidates; assert the `--dry-run` table's rendered
+- [x] Verdict-relay fixture: 2+ self-modifying candidates; assert the `--dry-run` table's rendered
       defer reason matches the admission script's own `.reason` field, and that the ORDERING
       CONSTRAINT text naming the designated candidate is present.
-- [ ] Negative assertion in the same test: `grep` over the script for `runs solo only` and
+- [x] Negative assertion in the same test: `grep` over the script for `runs solo only` and
       `re-run it alone` must return no matches.
-- [ ] Lock-refusal fixture: two tasks, one pre-locked under a different session id; assert it is
+- [x] Lock-refusal fixture: two tasks, one pre-locked under a different session id; assert it is
       absent from `dispatch[]`, present in `deferred[]`, and absent from `blocked[]`.
-- [ ] Session-id invariant fixture: with a stubbed `orchestrate-build-dispatch.sh` recording argv,
+- [x] Session-id invariant fixture: with a stubbed `orchestrate-build-dispatch.sh` recording argv,
       assert research/plan rows use `${session_id}_${task_num}` and implement rows use the bare
       `$session_id`, and that `task-lock.sh acquire` receives the bare form.
-- [ ] Dry-run no-mutation fixture: checksums of `mt_state_file`, `state.json`, and `.lock/` are
+- [x] Dry-run no-mutation fixture: checksums of `mt_state_file`, `state.json`, and `.lock/` are
       unchanged across a `--dry-run` invocation.
 
 **Timing**: 2 hours

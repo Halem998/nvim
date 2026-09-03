@@ -1,0 +1,882 @@
+#!/usr/bin/env bash
+# orchestrate-cycle-plan.sh — Per-cycle dispatch-plan composer for multi-task /orchestrate.
+#
+# Purpose: absorbs skill-orchestrate/SKILL.md's Stage MT-3 (status refresh, all-terminal check,
+# eligibility, classification, admission) and Stage MT-4's PRE-dispatch half (per-task force-phase
+# consumption, task-directory creation, lock acquire, dispatch_seq mint, preflight status write,
+# and the orchestrate-build-dispatch.sh call) into one script the thin lead calls once per cycle.
+# Everything from "After all Agent tool calls complete" onward (per-task postflight, commits, the
+# handoff/`.return-meta.json` read, and cycle_modified_files accumulation) is NOT this script's
+# job — that is a separate, not-yet-built postflight composer. This script only ever DECIDES and
+# PREPARES a dispatch plan; it never invokes the Agent or Skill tool itself.
+#
+# Two-function structure (mandated design, see the originating plan's Phase 1): a single decision
+# pass computes the WHOLE cycle's plan with no live side effects beyond a read-only lock PROBE;
+# a second, live-only pass applies side effects (directory creation, real lock acquire,
+# dispatch_seq mint, preflight write, the orchestrate-build-dispatch.sh call) and enriches the
+# decision's dispatch rows with real dispatch_file/model values. --dry-run runs ONLY the first
+# pass and renders its output directly — there is exactly one computation of every admission
+# verdict, never two independently-maintained renderings.
+#
+# mt_state_file field list this script reads and/or writes (byte-identical names to
+# skill-orchestrate/SKILL.md's Stage MT-1 initialization list — Stage MT-1 itself is UNCHANGED by
+# this script and remains the field list's canonical initializer for the live path; this script
+# additionally self-initializes any field found missing, via non-destructive `//=`, so it also
+# runs standalone against a freshly-touched or nonexistent file, e.g. for --dry-run or tests):
+#   session_id, task_numbers, max_cycles, cycle_count, failed_tasks, completed_tasks,
+#   current_statuses, task_dirs, research_agents, implement_agents, descriptions, infra_failures,
+#   dispatch_start_ts, dispatch_seq_counter, dispatch_seq, deferred_self_modifying,
+#   deferred_deploy_checkpoint, deployed_critical_paths, consecutive_no_dispatch_cycles,
+#   verify_deploy_baseline_notices, defer_ledger, detected_defects, forward_progress_violated,
+#   idle_overlap_ledger, cycle_modified_files. PLUS ONE genuinely NEW field this script introduces
+#   (per-task force_phases consumption, a feature gap no prior stage closed):
+#   force_phases_remaining (map task_number(string) -> ordered array of not-yet-dispatched forced
+#   phases, canonical research/plan/implement order, popped as each forced phase is dispatched).
+# Stage MT-5 (multi-task postflight/report, untouched by this task) still reads every one of the
+# pre-existing fields above; this script never renames or drops one.
+#
+# Bare-vs-suffixed session_id invariant (load-bearing; get this wrong and the lock layer, the
+# session registry, and a dispatched agent's own heartbeat desync from each other):
+#   - BARE `$session_id` (the `--session` value passed to THIS script): task-lock.sh acquire/
+#     check/heartbeat, orchestrate-batch-admit.sh --session-id, and the IMPLEMENT dispatch's own
+#     --session/context.session_id (general-implementation-agent's per-phase heartbeat presents
+#     this exact value against holder.json).
+#   - SUFFIXED `${session_id}_${task_num}`: skill_preflight_update's session_id argument, and the
+#     RESEARCH/PLAN dispatches' --session/context.session_id.
+#
+# --dry-run design (absorbs the retired orchestrate-dry-run-report.sh — see that script's own
+# retirement in this task): runs the IDENTICAL read-only decision pass (admission, classification,
+# forced phases, a read-only lock PROBE via `task-lock.sh check` — never `acquire`) and prints the
+# SAME plan JSON the live path would emit, with dispatch_file/model forced to null on every
+# dispatch row (nothing was actually built) plus a compact human table derived from that JSON
+# object and nothing else. Mutates nothing: no mt_state_file write, no directory creation, no lock
+# acquire, no dispatch_seq mint, no preflight status write, no orchestrate-build-dispatch.sh call,
+# no deploy-headless.sh/verify-deploy.sh call. Every deferred row's `reason` is the admission or
+# triage verdict's OWN string, relayed verbatim — never reconstructed. This file never asserts, in
+# its own words, that self-modifying work must be isolated to a solo invocation — the two retired
+# phrases making that claim are absent here by construction (grep-enforced by this task's own test
+# suite) and must stay absent from any future edit to this header or its code.
+#
+# Inter-cycle redeploy checkpoint — timing note (a deliberate re-siting, not a behavioral change):
+# the original Stage MT-3 step 7 ran AFTER a cycle's own dispatch + per-task postflight commits,
+# consulting THAT SAME cycle's `cycle_modified_files`. This script runs strictly BEFORE the Agent
+# tool dispatches of ITS OWN cycle (it only decides and prepares them), so it cannot consult a
+# same-cycle `cycle_modified_files` that does not exist yet. This script therefore runs the
+# checkpoint at the START of each invocation instead, consuming `cycle_modified_files` accumulated
+# by the PRIOR cycle's (not-yet-built) postflight composer, then resets the field to `[]` for the
+# new cycle. Read the field's own doc comment at its `//=` initialization site below for the exact
+# mechanism. The checkpoint's own overlap/idempotence/fire/three-way-outcome logic is otherwise
+# byte-for-byte the ported Stage MT-3 step 7 algorithm — see
+# context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy Checkpoint"
+# subsection for the full narrative (referenced here, not restated).
+#
+# MAX_CYCLES_MT budget guard — also re-sited to the TOP of this script (mirroring the original
+# `while cycle_count < MAX_CYCLES_MT` loop CONDITION, which is checked before a loop body runs at
+# all, not after): when the guard trips, this script does NO other work this invocation (no status
+# refresh, no eligibility, no admission) and returns `stop` immediately.
+#
+# Usage:
+#   orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
+#     [--force-phases "research,plan,implement"] [--clean] [--lit] [--hard] [--fast]
+#     [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
+#     [--dry-run] <task_number> [<task_number> ...]
+#
+# `--state-file F` is the CANONICAL specs/state.json (or a fixture copy in tests) — the same
+# STATE_FILE every sibling script (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh)
+# reads. This script separately derives its OWN per-invocation bookkeeping file at the fixed path
+# `<dirname F>/.orchestrator-multi-state-${session_id}.json` (mirroring Stage MT-1's
+# `specs/.orchestrator-multi-state-${session_id}.json` naming exactly when F is specs/state.json).
+# `--team`/`--team-size` are REJECTED as unrecognized flags (usage error, exit 2) — team mode is
+# withdrawn; no `team` key is ever emitted on a dispatch row.
+#
+# Output: a single line of compact JSON on stdout:
+#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file}],
+#    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
+# `model`/`dispatch_file` are `null` on every dispatch row in --dry-run mode (nothing was built),
+# and are the real resolved values in the live path.
+#
+# Exit codes:
+#   0 - a plan was printed on stdout, regardless of its dispatch/deferred/blocked/stop contents
+#       (verdicts are data, not errors — mirrors orchestrate-batch-admit.sh's and
+#       orchestrate-triage-classify.sh's convention).
+#   2 - usage error (missing/invalid flags, zero task_number arguments, a non-integer
+#       task_number, an unrecognized flag including --team/--team-size, an invalid
+#       --force-phases token) or environment error (jq missing, --state-file unreadable).
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
+PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
+. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
+  exit 2
+fi
+
+MAX_INFRA_FAILURES=3
+
+usage() {
+  cat <<'USAGE'
+Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
+         [--force-phases "research,plan,implement"] [--clean] [--lit] [--hard] [--fast]
+         [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
+         [--dry-run] <task_number> [<task_number> ...]
+USAGE
+}
+
+# ─── Flag parsing ──────────────────────────────────────────────────────────────────────────────
+session_id=""
+state_file_arg=""
+invocation_count_override=""
+force_phases_arg=""
+clean_flag="false"
+lit_flag="false"
+hard_mode="false"
+effort_flag=""
+model_flag=""
+allow_self_modifying="false"
+allow_scope_collision="false"
+continue_budget="false"
+dry_run="false"
+task_args=()
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --session) session_id="${2:-}"; shift 2 ;;
+    --state-file) state_file_arg="${2:-}"; shift 2 ;;
+    --invocation-count) invocation_count_override="${2:-}"; shift 2 ;;
+    --force-phases) force_phases_arg="${2:-}"; shift 2 ;;
+    --clean) clean_flag="true"; shift ;;
+    --lit) lit_flag="true"; shift ;;
+    --hard) hard_mode="true"; effort_flag="hard"; shift ;;
+    --fast) effort_flag="fast"; shift ;;
+    --model) model_flag="${2:-}"; shift 2 ;;
+    --allow-self-modifying) allow_self_modifying="true"; shift ;;
+    --allow-scope-collision) allow_scope_collision="true"; shift ;;
+    --continue-budget) continue_budget="true"; shift ;;
+    --dry-run) dry_run="true"; shift ;;
+    --team|--team-size|--team=*|--team-size=*)
+      echo "ERROR: orchestrate-cycle-plan.sh: --team/--team-size are withdrawn — team mode is deleted." >&2
+      exit 2
+      ;;
+    --help|-h) usage; exit 0 ;;
+    --*)
+      echo "ERROR: orchestrate-cycle-plan.sh: unrecognized flag: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+    *)
+      task_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$session_id" ] || [ -z "$state_file_arg" ]; then
+  echo "ERROR: orchestrate-cycle-plan.sh: --session and --state-file are required." >&2
+  usage >&2
+  exit 2
+fi
+
+if [ "${#task_args[@]}" -eq 0 ]; then
+  echo "ERROR: orchestrate-cycle-plan.sh requires at least one <task_number> argument." >&2
+  exit 2
+fi
+
+for arg in "${task_args[@]}"; do
+  case "$arg" in
+    ''|*[!0-9]*)
+      echo "ERROR: orchestrate-cycle-plan.sh: '$arg' is not a non-negative integer task_number." >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ -n "$invocation_count_override" ]; then
+  case "$invocation_count_override" in
+    ''|*[!0-9]*)
+      echo "ERROR: orchestrate-cycle-plan.sh: '--invocation-count $invocation_count_override' is not a non-negative integer." >&2
+      exit 2
+      ;;
+  esac
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "ERROR: orchestrate-cycle-plan.sh: jq is not available." >&2
+  exit 2
+fi
+
+case "$state_file_arg" in
+  /*) STATE_FILE="$state_file_arg" ;;
+  *) STATE_FILE="$PROJECT_ROOT/$state_file_arg" ;;
+esac
+
+if [ ! -f "$STATE_FILE" ]; then
+  echo "ERROR: orchestrate-cycle-plan.sh: state file not found at $STATE_FILE." >&2
+  exit 2
+fi
+
+# Force-phases: split + validate against the closed set, up front (a corrupted delegation
+# context, not a user typo — mirrors single-task Stage 2b's posture exactly).
+declare -a force_phases_list=()
+if [ -n "$force_phases_arg" ]; then
+  IFS=',' read -ra _fp_split <<< "$force_phases_arg"
+  for _fp in "${_fp_split[@]}"; do
+    case "$_fp" in
+      research|plan|implement) force_phases_list+=("$_fp") ;;
+      *)
+        echo "ERROR: orchestrate-cycle-plan.sh: --force-phases contains an invalid entry '${_fp}' (expected one of: research, plan, implement)." >&2
+        exit 2
+        ;;
+    esac
+  done
+fi
+# Canonicalize to research < plan < implement order regardless of typed order.
+canonical_force_phases_json="[]"
+if [ "${#force_phases_list[@]}" -gt 0 ]; then
+  canonical_force_phases_json=$(printf '%s\n' "${force_phases_list[@]}" | jq -R -s -c '
+    split("\n") | map(select(length > 0)) | unique |
+    (["research","plan","implement"]) as $order |
+    [ $order[] as $o | select(. as $x | ($x as $_ | . as $y | [$y] | index($o))) ] as $noop | .
+    ' 2>/dev/null) || canonical_force_phases_json="[]"
+fi
+# The jq above is intentionally simple: dedupe then reorder against the fixed canonical list.
+canonical_force_phases_json=$(jq -n -c --argjson given "$(printf '%s\n' "${force_phases_list[@]:-}" | jq -R -s -c 'split("\n") | map(select(length > 0)) | unique')" '
+  ["research","plan","implement"] | map(select(. as $o | $given | index($o) != null))
+' 2>/dev/null) || canonical_force_phases_json="[]"
+
+# ─── mt_state_file: derived path, in-memory representation, non-destructive defaults ───────────
+mt_state_file="$(dirname "$STATE_FILE")/.orchestrator-multi-state-${session_id}.json"
+
+mt_json="{}"
+if [ "$dry_run" != "true" ] && [ -f "$mt_state_file" ]; then
+  mt_json=$(jq -c '.' "$mt_state_file" 2>/dev/null) || mt_json="{}"
+fi
+
+default_max_cycles=$(( ${#task_args[@]} * 5 ))
+[ "$default_max_cycles" -gt 25 ] && default_max_cycles=25
+
+mt_json=$(jq -c \
+  --arg sid "$session_id" \
+  --argjson tasks "$(printf '%s\n' "${task_args[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0) | tonumber)')" \
+  --argjson max_cycles "$default_max_cycles" \
+  '
+  .session_id //= $sid
+  | .task_numbers //= $tasks
+  | .max_cycles //= $max_cycles
+  | .cycle_count //= 0
+  | .failed_tasks //= []
+  | .completed_tasks //= []
+  | .current_statuses //= {}
+  | .task_dirs //= {}
+  | .research_agents //= {}
+  | .implement_agents //= {}
+  | .descriptions //= {}
+  | .infra_failures //= {}
+  | .dispatch_start_ts //= {}
+  | .dispatch_seq_counter //= 0
+  | .dispatch_seq //= {}
+  | .deferred_self_modifying //= []
+  | .deferred_deploy_checkpoint //= []
+  | .deployed_critical_paths //= []
+  | .consecutive_no_dispatch_cycles //= 0
+  | .verify_deploy_baseline_notices //= []
+  | .defer_ledger //= []
+  | .detected_defects //= []
+  | .forward_progress_violated //= false
+  | .idle_overlap_ledger //= []
+  | .cycle_modified_files //= []
+  | .force_phases_remaining //= {}
+  ' <<<"$mt_json")
+
+mt_save() {
+  [ "$dry_run" = "true" ] && return 0
+  printf '%s\n' "$mt_json" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+}
+mt_get() {
+  local argc="$#"
+  local filter="${!argc}"
+  echo "$mt_json" | jq -r "${@:1:$((argc-1))}" "$filter"
+}
+mt_get_json() {
+  local argc="$#"
+  local filter="${!argc}"
+  echo "$mt_json" | jq -c "${@:1:$((argc-1))}" "$filter"
+}
+# mt_set [jq-flag-args...] <filter> — the LAST argument is always the jq filter; every argument
+# before it is passed through to jq verbatim (--arg/--argjson pairs). Mirrors every other script
+# in this codebase's `jq ... > tmp && mv tmp file` idiom, just against an in-memory variable
+# instead of a file (mt_save is what actually persists it, and is a no-op under --dry-run).
+mt_set() {
+  local argc="$#"
+  local filter="${!argc}"
+  mt_json=$(echo "$mt_json" | jq -c "${@:1:$((argc-1))}" "$filter")
+}
+
+mt_save
+
+max_cycles=$(mt_get '.max_cycles')
+cycle_count=$(mt_get '.cycle_count')
+
+stop_reason=""
+stop_message=""
+declare -a out_dispatch_rows=()   # each element: a compact JSON object
+declare -a out_deferred_rows=()
+declare -a out_blocked_rows=()
+
+emit_and_exit() {
+  local cycle_val="$1"
+  local dispatch_json deferred_json blocked_json stop_json
+  if [ "${#out_dispatch_rows[@]}" -gt 0 ]; then
+    dispatch_json="[$(IFS=,; echo "${out_dispatch_rows[*]}")]"
+  else
+    dispatch_json="[]"
+  fi
+  if [ "${#out_deferred_rows[@]}" -gt 0 ]; then
+    deferred_json="[$(IFS=,; echo "${out_deferred_rows[*]}")]"
+  else
+    deferred_json="[]"
+  fi
+  if [ "${#out_blocked_rows[@]}" -gt 0 ]; then
+    blocked_json="[$(IFS=,; echo "${out_blocked_rows[*]}")]"
+  else
+    blocked_json="[]"
+  fi
+  if [ -n "$stop_reason" ]; then
+    stop_json=$(jq -n -c --arg r "$stop_reason" --arg m "$stop_message" '{reason: $r, message: $m}')
+  else
+    stop_json="null"
+  fi
+  jq -n -c --argjson cycle "$cycle_val" --argjson dispatch "$dispatch_json" \
+    --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
+    '{cycle: $cycle, dispatch: $dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}'
+  exit 0
+}
+
+# ── (k, part 1) Budget guard — the re-sited `while cycle_count < MAX_CYCLES_MT` loop condition ──
+if [ "$cycle_count" -ge "$max_cycles" ] && [ "$continue_budget" != "true" ]; then
+  stop_reason="max_cycles"
+  stop_message="MAX_CYCLES_MT ($max_cycles) reached; pass --continue-budget to authorize continuing past the budget."
+  emit_and_exit "$cycle_count"
+fi
+
+# ── (k, part 2) Inter-cycle redeploy checkpoint — consumes the PRIOR cycle's cycle_modified_files
+# (see the header note on re-siting). Always a no-op today until the future postflight composer
+# starts populating cycle_modified_files; the mechanism is otherwise complete and ready. ─────────
+CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
+cycle_modified_files_json=$(mt_get_json '.cycle_modified_files')
+if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" != "null" ] && [ -f "$CRITICAL_PATHS_FILE" ]; then
+  critical_expanded_json=$(jq -c '
+    (.scope_roots // []) as $roots | (.critical_paths // []) as $paths |
+    [ $roots[] as $r | $paths[] as $p | {path: ($r + "/" + $p.path), label: $p.label} ]
+  ' "$CRITICAL_PATHS_FILE" 2>/dev/null) || critical_expanded_json='[]'
+  deployed_json=$(mt_get_json '.deployed_critical_paths')
+  matched_json=$(jq -n -c --argjson crit "$critical_expanded_json" --argjson mods "$cycle_modified_files_json" \
+    --argjson deployed "$deployed_json" "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
+    [ $crit[] | select(.path as $cp | ($deployed | index($cp)) == null) |
+      select(scopes_overlap_first([.path]; $mods) != null) ] | unique_by(.path)
+  ' 2>/dev/null) || matched_json='[]'
+  matched_count=$(echo "$matched_json" | jq 'length')
+  if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]; then
+    echo "[orchestrate] REDEPLOY CHECKPOINT: this cycle's modified files touched $matched_count orchestrator-critical path(s):" >&2
+    echo "$matched_json" | jq -r '.[] | "  - \(.path) (\(.label))"' >&2
+    if pre_raw=$(bash "$SCRIPT_DIR/verify-deploy.sh" --findings --quiet 2>/dev/null); then :; fi
+    pre_findings=$(printf '%s\n' "$pre_raw" | grep '^FINDING ' | sort -u) || true
+    if bash "$SCRIPT_DIR/deploy-headless.sh" >&2; then
+      if post_raw=$(bash "$SCRIPT_DIR/verify-deploy.sh" --findings --quiet 2>/dev/null); then
+        post_exit=0
+      else
+        post_exit=$?
+      fi
+      post_findings=$(printf '%s\n' "$post_raw" | grep '^FINDING ' | sort -u) || true
+      matched_paths_json=$(echo "$matched_json" | jq -c '[.[].path]')
+      if [ "$post_exit" -eq 0 ]; then
+        mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+        echo "[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean." >&2
+      else
+        new_findings=$(comm -13 <(printf '%s\n' "$pre_findings") <(printf '%s\n' "$post_findings")) || true
+        if [ -z "$new_findings" ]; then
+          echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE - findings predate this redeploy, 0 newly introduced; batch continuing]" >&2
+          echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
+          mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe}')" '.verify_deploy_baseline_notices += [$entry]'
+        else
+          echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline; deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+          mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
+            .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
+          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:"verify-deploy.sh new findings vs. pre-redeploy baseline"}')" '.defer_ledger += [$entry]'
+        fi
+      fi
+    else
+      deploy_exit=$?
+      echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: deploy-headless.sh exited $deploy_exit; deferring remaining tasks. Fix the deploy failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+      mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
+        .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
+      mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson e "$deploy_exit" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("deploy-headless.sh exit " + ($e|tostring))}')" '.defer_ledger += [$entry]'
+    fi
+  fi
+fi
+# Reset for the cycle now starting — the future postflight composer accumulates fresh entries
+# during THIS cycle's own dispatch, to be consulted by the NEXT invocation of this script.
+mt_set '.cycle_modified_files = []'
+mt_save
+
+# ── (a) Status refresh + session heartbeat ───────────────────────────────────────────────────────
+declare -A current_statuses=()
+declare -A project_names=()
+declare -A task_types=()
+declare -A dependency_lists=()
+declare -A infra_failure_counts=()
+declare -A task_descriptions=()
+for t in "${task_args[@]}"; do
+  entry=$(jq -c --argjson n "$t" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null | head -1) || entry=""
+  if [ -z "$entry" ] || [ "$entry" = "null" ]; then
+    current_statuses[$t]=""
+    project_names[$t]=""
+    task_types[$t]="general"
+    dependency_lists[$t]="[]"
+    infra_failure_counts[$t]=0
+    task_descriptions[$t]=""
+    continue
+  fi
+  current_statuses[$t]=$(echo "$entry" | jq -r '.status // ""')
+  project_names[$t]=$(echo "$entry" | jq -r '.project_name // ""')
+  task_types[$t]=$(echo "$entry" | jq -r '.task_type // "general"')
+  dependency_lists[$t]=$(echo "$entry" | jq -c '.dependencies // []')
+  task_descriptions[$t]=$(echo "$entry" | jq -r '.description // ""')
+  infra_failure_counts[$t]=$(mt_get --arg t "$t" '.infra_failures[$t] // 0' 2>/dev/null) || infra_failure_counts[$t]=0
+  mt_set --arg t "$t" --arg s "${current_statuses[$t]}" '.current_statuses[$t] = $s'
+done
+mt_save
+
+if [ "$dry_run" != "true" ]; then
+  bash "$SCRIPT_DIR/task-lock.sh" session-heartbeat "$session_id" 2>/dev/null || true
+fi
+
+is_terminal_status() {
+  case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
+    completed|abandoned|expanded) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+deferred_deploy_checkpoint_json=$(mt_get_json '.deferred_deploy_checkpoint')
+failed_tasks_json=$(mt_get_json '.failed_tasks')
+in_json_array() {
+  # $1 = needle (int), $2 = json array
+  jq -e --argjson n "$1" '. as $arr | ($arr | index($n)) != null' >/dev/null 2>&1 <<<"$2"
+}
+
+# ── (b) All-terminal check ───────────────────────────────────────────────────────────────────────
+all_done=true
+for t in "${task_args[@]}"; do
+  if is_terminal_status "${current_statuses[$t]}"; then continue; fi
+  if in_json_array "$t" "$failed_tasks_json"; then continue; fi
+  if in_json_array "$t" "$deferred_deploy_checkpoint_json"; then continue; fi
+  all_done=false
+  break
+done
+if [ "$all_done" = "true" ]; then
+  stop_reason="all_terminal"
+  stop_message="Every task is terminal, failed, or excluded by the redeploy checkpoint; nothing left to do."
+  emit_and_exit "$cycle_count"
+fi
+
+# ── (c) Eligibility ───────────────────────────────────────────────────────────────────────────────
+declare -a eligible_tasks=()
+for t in "${task_args[@]}"; do
+  if is_terminal_status "${current_statuses[$t]}"; then continue; fi
+  if in_json_array "$t" "$failed_tasks_json"; then continue; fi
+  if in_json_array "$t" "$deferred_deploy_checkpoint_json"; then continue; fi
+
+  deps="${dependency_lists[$t]}"
+  dep_count=$(echo "$deps" | jq 'length')
+  all_preds_done=true
+  has_failed_pred=false
+  if [ "$dep_count" -gt 0 ]; then
+    while IFS= read -r d; do
+      [ -z "$d" ] && continue
+      d_entry=$(jq -c --argjson n "$d" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null | head -1) || d_entry=""
+      d_status=$(echo "${d_entry:-null}" | jq -r '.status // ""' 2>/dev/null) || d_status=""
+      if is_terminal_status "$d_status"; then
+        if [ "$(echo "$d_status" | tr '[:upper:]' '[:lower:]')" != "completed" ]; then
+          has_failed_pred=true
+        fi
+        continue
+      fi
+      if in_json_array "$d" "$failed_tasks_json"; then
+        has_failed_pred=true
+        continue
+      fi
+      all_preds_done=false
+    done < <(echo "$deps" | jq -r '.[]')
+  fi
+
+  if [ "$has_failed_pred" = "true" ]; then
+    mt_set --arg t "$t" '.failed_tasks = ((.failed_tasks + [($t|tonumber)]) | unique)'
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "a predecessor dependency reached a non-completed terminal status or is itself failed; this task can never proceed"}')")
+    continue
+  fi
+  if [ "$all_preds_done" != "true" ]; then
+    continue
+  fi
+
+  # MAX_INFRA_FAILURES accounting (WORK k, flat per task — see
+  # context/patterns/infra-failure-discrimination.md): the counter itself is incremented only by
+  # the (not-yet-built) postflight composer's corroborated-transport-failure detection, so this
+  # is a dormant no-op today; the exclusion mechanism is ready for when it starts populating
+  # infra_failures. --continue-budget authorizes proceeding past it, same as MAX_CYCLES_MT.
+  if [ "${infra_failure_counts[$t]:-0}" -ge "$MAX_INFRA_FAILURES" ] && [ "$continue_budget" != "true" ]; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "${infra_failure_counts[$t]}" --argjson m "$MAX_INFRA_FAILURES" '{task: $t, reason: ("MAX_INFRA_FAILURES reached (" + ($n|tostring) + "/" + ($m|tostring) + " corroborated Agent-tool transport/API failures); pass --continue-budget to authorize continuing")}')")
+    continue
+  fi
+
+  eligible_tasks+=("$t")
+done
+mt_save
+failed_tasks_json=$(mt_get_json '.failed_tasks')
+
+# ── No-eligible circuit breaker ──────────────────────────────────────────────────────────────────
+if [ "${#eligible_tasks[@]}" -eq 0 ]; then
+  any_stuck=false
+  for t in "${task_args[@]}"; do
+    is_terminal_status "${current_statuses[$t]}" && continue
+    in_json_array "$t" "$failed_tasks_json" && continue
+    in_json_array "$t" "$deferred_deploy_checkpoint_json" && continue
+    any_stuck=true
+    break
+  done
+  if [ "$any_stuck" = "true" ]; then
+    stop_reason="no_eligible_stuck"
+    stop_message="No task is eligible this cycle (all remaining tasks are waiting on in-progress predecessors); waiting for next cycle."
+  fi
+  emit_and_exit "$cycle_count"
+fi
+
+# ── (e) Classification (triage-classify.sh, called once, reused for both phase-map and grouping) ──
+if triage_ndjson=$(bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" mt "${eligible_tasks[@]}" 2>&1); then
+  triage_exit=0
+else
+  triage_exit=$?
+fi
+declare -A triage_group=()
+declare -A triage_reason=()
+if [ "$triage_exit" -ne 0 ]; then
+  echo "[orchestrate] WARNING: orchestrate-triage-classify.sh degraded (exit $triage_exit); falling back to the inline Phase-grouping table per task." >&2
+  for t in "${eligible_tasks[@]}"; do
+    st="${current_statuses[$t]}"
+    case "$st" in
+      not_started|researching) triage_group[$t]="research" ;;
+      researched|planning) triage_group[$t]="plan" ;;
+      planned|implementing|partial) triage_group[$t]="implement" ;;
+      blocked) triage_group[$t]="needs_human" ;;
+      *) triage_group[$t]="skip" ;;
+    esac
+    triage_reason[$t]="fallback classification (triage-classify.sh degraded): status ${st:-unknown}"
+  done
+else
+  while IFS= read -r row; do
+    [ -z "$row" ] && continue
+    rt=$(echo "$row" | jq -r '.task_number')
+    triage_group[$rt]=$(echo "$row" | jq -r '.group')
+    triage_reason[$rt]=$(echo "$row" | jq -r '.reason')
+  done <<< "$triage_ndjson"
+fi
+
+# ── (f) Per-task force_phases consumption ────────────────────────────────────────────────────────
+# Lazily seed force_phases_remaining for any task first seen this invocation, from the CLI's
+# uniform --force-phases value (canonicalized above). Idempotent: a task already carrying a
+# (possibly now-shorter) queue from a prior cycle is never reseeded.
+if [ "$(echo "$canonical_force_phases_json" | jq 'length')" -gt 0 ]; then
+  for t in "${eligible_tasks[@]}"; do
+    mt_set --arg t "$t" --argjson q "$canonical_force_phases_json" '.force_phases_remaining[$t] //= $q'
+  done
+fi
+
+declare -A effective_group=()
+declare -A forced_this_cycle=()
+for t in "${eligible_tasks[@]}"; do
+  remaining=$(echo "$mt_json" | jq -c --arg t "$t" '.force_phases_remaining[$t] // []')
+  remaining_len=$(echo "$remaining" | jq 'length')
+  if [ "$remaining_len" -gt 0 ]; then
+    forced_phase=$(echo "$remaining" | jq -r '.[0]')
+    effective_group[$t]="$forced_phase"
+    forced_this_cycle[$t]="true"
+  else
+    effective_group[$t]="${triage_group[$t]:-skip}"
+    forced_this_cycle[$t]="false"
+  fi
+done
+
+# ── (d) Admission: build --phase-map from the (possibly force-overridden) effective group, call
+# orchestrate-batch-admit.sh once for the whole eligible set ────────────────────────────────────
+phase_map_pairs=()
+for t in "${eligible_tasks[@]}"; do
+  g="${effective_group[$t]}"
+  case "$g" in
+    research|plan|implement) phase_map_pairs+=("${t}:${g}") ;;
+  esac
+done
+phase_map_arg=""
+if [ "${#phase_map_pairs[@]}" -gt 0 ]; then
+  phase_map_arg=$(IFS=,; echo "${phase_map_pairs[*]}")
+fi
+
+inv_count="${#eligible_tasks[@]}"
+[ -n "$invocation_count_override" ] && inv_count="$invocation_count_override"
+
+admit_args=(--invocation-count "$inv_count" --session-id "$session_id")
+[ -n "$phase_map_arg" ] && admit_args+=(--phase-map "$phase_map_arg")
+if admit_ndjson=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" "${admit_args[@]}" "${eligible_tasks[@]}" 2>&1); then
+  admit_exit=0
+else
+  admit_exit=$?
+fi
+
+declare -A admit_decision=()
+declare -A admit_defer_reason=()
+declare -A admit_reason=()
+if [ "$admit_exit" -ne 0 ]; then
+  echo "[orchestrate] WARNING: orchestrate-batch-admit.sh degraded (exit $admit_exit); proceeding WITHOUT the cross-batch admission check this cycle." >&2
+  for t in "${eligible_tasks[@]}"; do
+    admit_decision[$t]="admit"
+  done
+else
+  while IFS= read -r row; do
+    [ -z "$row" ] && continue
+    rt=$(echo "$row" | jq -r '.task_number')
+    admit_decision[$rt]=$(echo "$row" | jq -r '.decision')
+    admit_defer_reason[$rt]=$(echo "$row" | jq -r '.defer_reason // ""')
+    admit_reason[$rt]=$(echo "$row" | jq -r '.reason // ""')
+
+    idle_adv=$(echo "$row" | jq -c 'if (.idle_overlap_advisory != null) then .idle_overlap_advisory else null end')
+    if [ "$idle_adv" != "null" ]; then
+      mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson a "$idle_adv" '{task:$t, colliding_task_number:$a.colliding_task_number, colliding_task_status:$a.colliding_task_status, overlapping_path:$a.overlapping_path, cycle:$c}')" '.idle_overlap_ledger += [$entry]'
+    fi
+
+    if [ "${admit_decision[$rt]}" = "defer" ]; then
+      dr="${admit_defer_reason[$rt]}"
+      bypass="false"
+      if [ "$dr" = "self_modifying" ] && [ "$allow_self_modifying" = "true" ]; then
+        bypass="true"
+        echo "[orchestrate] BYPASS: --allow-self-modifying is active. Task #$rt dispatching this cycle anyway per explicit human-intent override." >&2
+      fi
+      if [ "$dr" = "file_scope_collision" ]; then
+        cscope=$(echo "$row" | jq -r '.collision_scope // ""')
+        if [ "$cscope" = "cross_batch" ] && [ "$allow_scope_collision" = "true" ]; then
+          bypass="true"
+          echo "[orchestrate] BYPASS: --allow-scope-collision is active. Task #$rt dispatching this cycle anyway per explicit human-intent override (cross-batch only)." >&2
+        fi
+      fi
+      if [ "$bypass" = "true" ]; then
+        admit_decision[$rt]="admit"
+      else
+        case "$dr" in
+          self_modifying)
+            mt_set --arg t "$rt" '.deferred_self_modifying = ((.deferred_self_modifying + [($t|tonumber)]) | unique)'
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"self_modifying", collision_scope:null, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
+          file_scope_collision)
+            cscope=$(echo "$row" | jq -r '.collision_scope // ""')
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg s "$cscope" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"file_scope_collision", collision_scope:$s, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
+          session_active)
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"session_active", collision_scope:null, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
+        esac
+      fi
+    fi
+  done <<< "$admit_ndjson"
+fi
+mt_save
+
+# ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ───────────────────
+declare -a dispatch_candidates=()
+for t in "${eligible_tasks[@]}"; do
+  g="${effective_group[$t]}"
+  case "$g" in
+    needs_human)
+      mt_set --arg t "$t" '.failed_tasks = ((.failed_tasks + [($t|tonumber)]) | unique)'
+      out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${triage_reason[$t]:-handoff-triage needs_human}" '{task:$t, reason:$r}')")
+      continue
+      ;;
+    skip|terminal|"")
+      continue
+      ;;
+  esac
+  if [ "${admit_decision[$t]:-admit}" = "defer" ]; then
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "${admit_reason[$t]:-file_scope or self-modification admission defer}" '{task:$t, reason:$r}')")
+    continue
+  fi
+  dispatch_candidates+=("$t")
+done
+mt_save
+
+# ── Lock PROBE (read-only; part of the shared decision set — never `acquire` here) ───────────────
+declare -a probed_dispatch=()
+for t in "${dispatch_candidates[@]}"; do
+  if lock_out=$(bash "$SCRIPT_DIR/task-lock.sh" check "$t" 2>/dev/null); then
+    lock_exit=0
+  else
+    lock_exit=$?
+  fi
+  case "$lock_exit" in
+    0|2)
+      probed_dispatch+=("$t")
+      ;;
+    1)
+      holder_session=$(printf '%s' "$lock_out" | grep -oE 'session=[^ ]*' | cut -d= -f2-) || true
+      if [ "$holder_session" = "$session_id" ]; then
+        probed_dispatch+=("$t")
+      else
+        out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "locked by another session; deferring to a later cycle"}')")
+      fi
+      ;;
+    *)
+      # Degraded lock check (exit 3): proceed optimistically — orchestration must still make
+      # forward progress; the real acquire below is the final safety net.
+      probed_dispatch+=("$t")
+      ;;
+  esac
+done
+
+# ── Convergence guard ─────────────────────────────────────────────────────────────────────────────
+if [ "${#probed_dispatch[@]}" -eq 0 ] && [ "${#eligible_tasks[@]}" -gt 0 ]; then
+  new_counter=$(( $(mt_get '.consecutive_no_dispatch_cycles') + 1 ))
+  mt_set --argjson c "$new_counter" '.consecutive_no_dispatch_cycles = $c'
+  mt_save
+  if [ "$new_counter" -ge 3 ]; then
+    stop_reason="convergence_guard"
+    stop_message="$new_counter consecutive cycles with zero dispatched tasks; likely a tie-breaker defect, a deploy_checkpoint exclusion interacting with the batch, or an unexpected file_scope_collision/session_active chain. Pass --allow-self-modifying only if the tie-breaker itself is confirmed broken."
+    emit_and_exit "$cycle_count"
+  fi
+else
+  mt_set '.consecutive_no_dispatch_cycles = 0'
+  mt_save
+fi
+
+# ── Resolve agent per candidate (needed for both dry-run rendering and live dispatch) ────────────
+resolve_agent() {
+  local op="$1" ttype="$2"
+  case "$op" in
+    plan) echo "planner-agent"; return ;;
+  esac
+  local default_agent="general-research-agent"
+  [ "$op" = "implement" ] && default_agent="general-implementation-agent"
+  # shellcheck disable=SC1091
+  source "$SCRIPT_DIR/command-route-agent.sh" "$op" "$ttype" "$default_agent" "${effort_flag:-}"
+  echo "$AGENT_NAME"
+}
+
+if [ "$dry_run" = "true" ]; then
+  for t in "${probed_dispatch[@]}"; do
+    g="${effective_group[$t]}"
+    agent=$(resolve_agent "$g" "${task_types[$t]}")
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null}')")
+  done
+  emit_and_exit "$cycle_count"
+fi
+
+# =====================================================================================================
+# LIVE-ONLY SIDE-EFFECT HALF (never reached under --dry-run)
+# =====================================================================================================
+
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/skill-base.sh"
+cd "$SKILL_REPO_ROOT"
+
+new_cycle_count=$(( cycle_count + 1 ))
+
+for t in "${probed_dispatch[@]}"; do
+  g="${effective_group[$t]}"
+  project_name="${project_names[$t]}"
+  if [ -z "$project_name" ]; then
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "task not found in state.json; cannot resolve project directory"}')")
+    continue
+  fi
+  padded=$(printf "%03d" "$t")
+  task_dir_rel="specs/${padded}_${project_name}"
+  task_dir_abs="${SKILL_REPO_ROOT}/${task_dir_rel}"
+
+  # (g) Task directory creation — the multi-task missing-directory gap. Ordered strictly before
+  # the orchestrate-build-dispatch.sh call, which re-derives state directly from state.json/disk.
+  if [ ! -d "$task_dir_abs" ]; then
+    mkdir -p "$task_dir_abs"
+    echo "[orchestrate] Created missing task directory: $task_dir_rel" >&2
+  fi
+  mt_set --arg t "$t" --arg d "$task_dir_rel" '.task_dirs[$t] = $d'
+
+  # (h) Lock acquire — the real, mutating acquire; final safety net past the read-only probe above.
+  if acquire_out=$(bash "$SCRIPT_DIR/task-lock.sh" acquire "$t" "$g" "$session_id" "/orchestrate (multi-task)" 2>&1); then
+    acquire_exit=0
+  else
+    acquire_exit=$?
+  fi
+  if [ "$acquire_exit" -eq 1 ]; then
+    echo "[orchestrate] WARNING: Task #$t is locked by another session; deferring to a later cycle." >&2
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "locked by another session at acquire time; deferring to a later cycle"}')")
+    continue
+  elif [ "$acquire_exit" -ne 0 ]; then
+    echo "[orchestrate] WARNING: task-lock.sh acquire errored for task #$t (exit $acquire_exit): $acquire_out" >&2
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "task-lock.sh acquire errored; deferring to a later cycle"}')")
+    continue
+  fi
+
+  # (i) dispatch_seq mint + dispatch_start_ts — one atomic multi-state write.
+  task_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
+  task_dispatch_start_ts=$(date -u +%s)
+  mt_set --arg t "$t" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
+    '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq'
+
+  # (f, continued) pop the forced phase now that it is actually being dispatched this cycle.
+  if [ "${forced_this_cycle[$t]:-false}" = "true" ]; then
+    mt_set --arg t "$t" '.force_phases_remaining[$t] = (.force_phases_remaining[$t][1:])'
+  fi
+
+  # Bare-vs-suffixed session_id invariant: research/plan use the suffixed form; implement uses
+  # the bare form (see header comment).
+  dispatch_session="${session_id}_${t}"
+  [ "$g" = "implement" ] && dispatch_session="$session_id"
+
+  # (j) Preflight status write.
+  skill_preflight_update "$t" "$g" "$dispatch_session"
+
+  # (l) orchestrate-build-dispatch.sh — Stage 3.5 Dispatch Prep's sole implementation.
+  build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
+  [ "$clean_flag" = "true" ] && build_args+=(--clean)
+  [ "$lit_flag" = "true" ] && build_args+=(--lit)
+  [ "$hard_mode" = "true" ] && build_args+=(--hard)
+  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+  [ -n "$model_flag" ] && build_args+=(--model "$model_flag")
+  if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>&1); then
+    build_exit=0
+  else
+    build_exit=$?
+  fi
+  if [ "$build_exit" -ne 0 ]; then
+    echo "[orchestrate] WARNING: orchestrate-build-dispatch.sh failed for task #$t (exit $build_exit): $dispatch_json" >&2
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "orchestrate-build-dispatch.sh failed; deferring to a later cycle"}')")
+    continue
+  fi
+  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+  [ -z "$dispatch_model" ] && dispatch_model_json="null" || dispatch_model_json="\"$dispatch_model\""
+
+  agent=$(resolve_agent "$g" "${task_types[$t]}")
+  if [ "$g" = "research" ]; then
+    mt_set --arg t "$t" --arg a "$agent" '.research_agents[$t] = $a'
+  elif [ "$g" = "implement" ]; then
+    mt_set --arg t "$t" --arg a "$agent" '.implement_agents[$t] = $a'
+  fi
+  mt_set --arg t "$t" --arg d "${task_descriptions[$t]:-}" '.descriptions[$t] = $d'
+
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df}')")
+done
+
+mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'
+mt_save
+
+emit_and_exit "$new_cycle_count"

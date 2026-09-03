@@ -1,0 +1,33 @@
+{
+  "phase": 7,
+  "phase_name": "Phases 1-7: script core, admission/classification, force-phases, side-effects, budget/checkpoint, dry-run, fixture tests",
+  "started_at": "2026-09-03T00:00:00Z",
+  "last_updated": "2026-09-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 1: script skeleton, CLI surface, read-only analysis core", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Phase 2: classification, admission, verbatim verdict relay", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Phase 3: per-task forced phases, task-directory creation, agent resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Phase 4: side-effect half (lock, dispatch_seq mint, preflight write, build-dispatch)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Phase 5: budget accounting, infra-failure counters, redeploy checkpoint", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Phase 6: --dry-run mode and human table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Phase 7: fixture tests", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {
+      "approach": "Group 2 forced-phases test originally passed both a forced and an unforced candidate in ONE invocation with a single uniform --force-phases flag, asserting the unforced sibling stayed status-derived",
+      "result": "failed",
+      "reason": "--force-phases is a single CLI string applying uniformly to every positional task_number in one invocation (no per-task selector exists in the CLI surface); both candidates were force-routed to the same phase. Fixed by testing the unforced case as a separate invocation/session instead."
+    }
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "Two-function structure implemented: compute_decision_set logic runs identically for --dry-run and live; only a read-only task-lock.sh check (never acquire) happens in the shared decision pass. --dry-run short-circuits before any side effect (no lock acquire, no dispatch_seq mint, no preflight write, no directory creation, no orchestrate-build-dispatch.sh call, no mt_state_file persistence -- mt_save() is a no-op under --dry-run).",
+      "Design decision (documented in the script's own header): the MAX_CYCLES_MT budget guard and the inter-cycle redeploy checkpoint are re-sited to the TOP of each invocation (mirroring the original while-loop's pre-body condition, and consuming the PRIOR cycle's cycle_modified_files respectively) because this script runs strictly before the Agent-tool dispatches of its own cycle -- see the header's 'Inter-cycle redeploy checkpoint' and 'MAX_CYCLES_MT budget guard' notes.",
+    "force_phases_remaining (new mt_state_file field) is applied uniformly to every task_number given to one invocation, with each task tracking its own remaining-queue POSITION independently -- the CLI has no per-task selector, so uniform application with per-task tracking is the only coherent reading of 'per-task force_phases consumption'.",
+    "MAX_INFRA_FAILURES accounting and the redeploy checkpoint's cycle_modified_files-driven overlap check are both dormant no-ops today (nothing populates infra_failures or cycle_modified_files yet -- that is the separate, not-yet-built postflight composer's job), but the full mechanism (exclusion, three-way outcome, idempotence guard) is implemented and ready.",
+    "Verified manually end-to-end (eligibility, forced phases, verdict relay incl. ORDERING CONSTRAINT text, lock refusal, session-id invariant, dry-run no-mutation) before writing the automated fixture suite; all 22 assertions in scripts/tests/test-orchestrate-cycle-plan.sh pass standalone.",
+    "shellcheck clean on both orchestrate-cycle-plan.sh and its test file (only info-level SC1091/SC2016/SC2329, all expected false positives matching sibling scripts' own shellcheck output)."
+  ],
+  "deviations": []
+}
