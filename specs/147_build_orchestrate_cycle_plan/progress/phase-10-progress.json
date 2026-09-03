@@ -1,0 +1,62 @@
+{
+  "phase": 10,
+  "phase_name": "Live 3-task parity run and full gate set",
+  "started_at": "2026-09-03T13:20:00Z",
+  "last_updated": "2026-09-03T14:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Capture a pre-change baseline decision set for a real 3-task candidate",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run orchestrate-cycle-plan.sh --dry-run over the same 3-task set/state.json",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Compare dispatch rows task-by-task against baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Diff post-run mt_state_file key set against pre-change baseline key set",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run full gate set (bash -n/shellcheck, run-all.sh, every lint script, verify-deploy.sh)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Deploy source store and re-run verify-deploy.sh to confirm new script lands and retired one is gone",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Record parity result, bytes removed, gate outcomes in implementation summary",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.5",
+      "description": "Every scripts/lint/*.sh exits 0; verify-deploy.sh exits 0 before and after deploy",
+      "type": "altered",
+      "reason": "4 pre-existing, out-of-scope defects surfaced by the full gate run, none introduced by or in this task's file_scope: (1) lint-state-writer-boundary.sh flags test-force-phases.sh (last touched by an unrelated task) for hand-rolled state.json writes; (2) doc-lint (check-extension-docs.sh) flags index-entries.json line_count drift on patterns/postflight-control.md and schemas/state-schema.json, both last touched by unrelated tasks; (3) validate-state.sh --deep reports the same abandon_reason(12)/blocks_note(3) schema-drift FAILs already documented as pre-existing in CLAUDE.md task history; (4) whole-tree orphan detection reports one ghost index-entries.json declaration, a manifest-wiring gap independent of the content edit this task made. See the phase's Reasoned Exclusions record for evidence.",
+      "annotation": "*(deviation: altered \u2014 4 pre-existing, out-of-scope gate failures documented as Reasoned Exclusions rather than fixed)*"
+    }
+  ]
+}

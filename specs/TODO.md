@@ -11,11 +11,10 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,22,29,39,43,44,45,89,91,127,134,137,139,147 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,136,140,143 | 29,91,139,147 | core-agent-system, extensions |
-| 3 | 51,148 | 143 | core-agent-system |
-| 4 | 74,88 | 148 | core-agent-system, extensions |
-| 5 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
+| 1 | 13,22,29,39,43,44,45,89,91,127,134,137,139,143 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,136,140,148 | 29,91,139,143 | core-agent-system, extensions |
+| 3 | 74,88 | 148 | core-agent-system, extensions |
+| 4 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -32,15 +31,14 @@ next_project_number: 151
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-147 [PLANNED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
-  └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
-    └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-    └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-      └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-        └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
-        └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-        └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-        └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+  └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+  └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+    └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+      └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
+      └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+      └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+      └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 
 ### Extensions
 
@@ -150,12 +148,13 @@ Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so
 ---
 
 ### 147. Build orchestrate-cycle-plan.sh: one script returns the cycle dispatch plan
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 146
 - **Research**: [147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md]
 - **Plan**: [147_build_orchestrate_cycle_plan/plans/01_orchestrate-cycle-plan-script.md]
+- **Summary**: [147_build_orchestrate_cycle_plan/summaries/01_orchestrate-cycle-plan-script-summary.md]
 
 **Description**: Build orchestrate-cycle-plan.sh: one script that returns the cycle's whole dispatch plan, replacing the lead's inline pre-dispatch work. Stage A.3 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

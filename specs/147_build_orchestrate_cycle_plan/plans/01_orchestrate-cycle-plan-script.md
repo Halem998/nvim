@@ -1,7 +1,7 @@
 # Implementation Plan: Task #147
 
 - **Task**: 147 - Build orchestrate-cycle-plan.sh: one script that returns the cycle's whole dispatch plan
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 16 hours
 - **Dependencies**: 146 (`orchestrate-build-dispatch.sh`, landed)
 - **Research Inputs**: specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md
@@ -564,27 +564,47 @@ re-measuring both regions; report the actual removed byte count, not this estima
 
 ---
 
-### Phase 10: Live 3-task parity run and full gate set [NOT STARTED]
+### Phase 10: Live 3-task parity run and full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Demonstrate that the new script's dispatch rows match the decisions the pre-change engine
 makes for the same state, and that the full gate set is green.
 
 **Tasks**:
-- [ ] Capture a pre-change baseline: for a real 3-task candidate set, record the decisions the
+- [x] Capture a pre-change baseline: for a real 3-task candidate set, record the decisions the
       pre-change engine would make (from the git-stashed or previous-commit SKILL.md path, or from
       the retired dry-run script's output captured before Phase 8 deletes it — capture this early
-      if needed).
-- [ ] Run `orchestrate-cycle-plan.sh --dry-run` over the same 3-task set and the same `state.json`.
-- [ ] Compare dispatch rows task-by-task: same tasks, same phases, same agents; deferrals carry the
-      same verdict reasons.
-- [ ] Diff the post-run `mt_state_file` key set against the pre-change baseline key set; every
-      field Stage MT-5 reads must still be present.
-- [ ] Run the full gate set: `bash -n` and `shellcheck` on all changed shell files,
-      `scripts/tests/run-all.sh`, every `scripts/lint/*.sh`, and `verify-deploy.sh`.
-- [ ] Deploy the source store and re-run `verify-deploy.sh` to confirm the new script lands in
-      `.claude/scripts/` and the retired one is gone.
-- [ ] Record in the implementation summary: parity result, bytes removed from SKILL.md, and gate
-      outcomes.
+      if needed). *(completed: ran the pre-commit orchestrate-dry-run-report.sh (git blob at
+      31580c0d4^, the commit immediately before Phase 1-7's own commit) against real candidates
+      #13/#29/#43 and the live specs/state.json)*
+- [x] Run `orchestrate-cycle-plan.sh --dry-run` over the same 3-task set and the same `state.json`.
+      *(completed)*
+- [x] Compare dispatch rows task-by-task: same tasks, same phases, same agents; deferrals carry the
+      same verdict reasons. *(completed: identical admitted set {#13,#43} -> research/
+      general-research-agent, identical deferred set {#29} colliding on the same path with the
+      same task #22; the two engines' deferral TEXT differs because the old reporter reconstructed
+      its own wording while the new script relays orchestrate-batch-admit.sh's `reason` field
+      byte-for-byte — confirmed by calling that script directly, matching this task's own
+      verbatim-relay design constraint. This is a documented improvement, not a divergence.)*
+- [x] Diff the post-run `mt_state_file` key set against the pre-change baseline key set; every
+      field Stage MT-5 reads must still be present. *(completed: ran the LIVE (non-dry-run) path
+      in a sandboxed copy of the real specs/ tree (mirroring the Phase 7 fixture suite's sandbox
+      shape) against the same 3 candidates; the resulting mt_state_file carries all 25
+      pre-existing fields plus the one new `force_phases_remaining` field. The sole pre-existing
+      field absent, `waves`, is confirmed — by the old SKILL.md's own Stage MT-5 read-list and its
+      "replaces the deleted command's former reuse of a pre-computed `waves`" comment — to be a
+      field Stage MT-5 never read even before this task.)*
+- [x] Run the full gate set: `bash -n` and `shellcheck` on all changed shell files,
+      `scripts/tests/run-all.sh`, every `scripts/lint/*.sh`, and `verify-deploy.sh`. *(completed:
+      bash -n and shellcheck clean (info-level only) on every changed shell file; run-all.sh 64/64
+      passed; 4 of 9 lint/*.sh and verify-deploy.sh gates surfaced pre-existing, out-of-scope
+      findings — see Reasoned Exclusions below)*
+- [x] Deploy the source store and re-run `verify-deploy.sh` to confirm the new script lands in
+      `.claude/scripts/` and the retired one is gone. *(completed: deploy-headless.sh resynced 6
+      extensions; `.claude/scripts/orchestrate-cycle-plan.sh` present, `orchestrate-dry-run-report.sh`
+      absent, gate 5 content-hash parity green; the before/after verify-deploy.sh runs report the
+      identical 26 pass / 4 fail split)*
+- [x] Record in the implementation summary: parity result, bytes removed from SKILL.md, and gate
+      outcomes. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -600,6 +620,22 @@ makes for the same state, and that the full gate set is green.
 - `scripts/tests/run-all.sh` green.
 - Every `scripts/lint/*.sh` exits 0.
 - `verify-deploy.sh` exits 0 both before and after `deploy-headless.sh`.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `lint-state-writer-boundary.sh` exits 0 | Flags 4 hand-rolled `specs/state.json` writes, all in `scripts/tests/test-force-phases.sh` — a file outside this task's `file_scope` and untouched by any of this task's 9 prior commits. | `git log --oneline -3 -- agent-system/extensions/core/scripts/tests/test-force-phases.sh` shows its last commit is `c7c133a4e task 126 phase 7: ...`, and `lint-state-writer-boundary.sh` itself is byte-identical between the pre-task commit (`831c9e10d`) and HEAD (`diff` exit 0). |
+| `check-extension-docs.sh` (doc-lint, run inside `verify-deploy.sh` gate 3) reports 0 findings | Flags `index-entries.json` `line_count` drift on two entries, `patterns/postflight-control.md` (declared 318, actual 405) and `schemas/state-schema.json` (declared 267, actual 271) — neither file is in this task's `file_scope`, and this task's own `git diff` of `index-entries.json` touches only the `batch-orchestration-guardrails.md` entry (correctly updated 923 -> 928, matching that file's real line count). | `git log --oneline -3` on each flagged file shows last commits `c4e75d9bf task 72 ...` and `ae2986612 task 20 phase 1 ...` respectively (both unrelated, pre-existing); `git diff -- agent-system/extensions/core/index-entries.json` shows exactly 2 changed lines, both on the `batch-orchestration-guardrails.md` entry. |
+| `validate-state.sh --deep specs/state.json` exits 0 | Reports the same `abandon_reason` (12 projects) / `blocks_note` (3 projects) unknown-field FAILs already named as pre-existing schema drift, unrelated to `file_scope`, in this project's own recorded history. | `bash .claude/scripts/validate-state.sh --deep specs/state.json` output: `Unknown entry field: abandon_reason (on project_number(s): 141,94,53,46,31,42,64,73,100,115,132,138)` and `Unknown entry field: blocks_note (on project_number(s): 106,107,109)` — exact 12/3 counts matching project #91's own description text in `specs/state.json`. |
+| `verify-deploy.sh` whole-tree orphan detection (gate 13) reports 0 findings | Reports one ghost `index-entries.json` declaration — a manifest-wiring classification gap in `find_orphans`'s declared-set computation, independent of file content. This task only edited an existing entry's `line_count` value; it made no change to any manifest's `provides.*` declarations or to how `index-entries.json` itself is classified as declared/undeclared. | `nvim --headless` invocation of `manager.find_orphans` (the same call `verify-deploy.sh` gate 13 makes) reports the identical single finding both before and after this task's deploy; the before/after `verify-deploy.sh` runs report the same 26-pass/4-fail split byte-for-byte. |
+
+Every item this task's own acceptance bar controls — dispatch-row parity, `mt_state_file` field
+coverage, the six shell files this task changed (`bash -n`/shellcheck clean), the full
+`scripts/tests/run-all.sh` suite (64/64), and the deploy-target confirmation (new script present,
+retired script absent, content-hash parity) — is fully green with no exclusion. The four excluded
+checks are gates over the WHOLE repository, not over this task's `file_scope`, and each is traced
+above to a specific unrelated commit or a pre-documented condition that predates this task.
 
 ---
 
