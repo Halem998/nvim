@@ -1,0 +1,34 @@
+{
+  "task_number": 149,
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788399440_184d69_149",
+  "dispatch_seq": 1,
+  "findings_count": 24,
+  "summary": "Enumerated every team-mode site across agent-system/extensions/** (source store) plus .claude/**, .opencode/**, and .memory/** for boundary clarity. Team mode is almost entirely one contiguous block in skill-orchestrate/SKILL.md (Stage 3.6+3.6a, lines 952-1262, 19,508 bytes/311 lines) plus ~13 scattered references (Stage 1 team_size_eff derivation, 5 team_mode dispatch forks, 1 MT-1 diagnostics block). synthesis-agent has exactly one caller (Stage 3.6a) and is safe to delete outright along with two team-exclusive context docs (team-metadata-extension.md, team-orchestration.md) and their index-entries.json/manifest.json registrations. Documented full per-file site tables for commands/orchestrate.md, scripts/parse-command-args.sh, merge-sources/claudemd.md, and a dozen context/docs files, plus an extension-agent carve-out sweep (cslib, lean) and a false-positive table (founder team_size metrics, generic 'teammate' handoff vocabulary in handoff-artifact.md/progress-file.md, general-implementation-agent.md's unrelated own Stage 3.6 heading). Flagged .opencode/** and .memory/** as out-of-scope survivors under the literal acceptance grep, with justification (separate freeze/deletion task lineage; inert historical memory).",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
+      "summary": "Full site-by-site inventory of team-mode references across the source store, with deletion/edit dispositions, a false-positive table, and an out-of-scope boundary discussion for .opencode/** and .memory/**."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When grepping a codebase for a feature to delete, watch for string-overload false positives: generic vocabulary reused by an unrelated subsystem (e.g. 'teammate' meaning 'successor agent in a context-exhaustion handoff' vs. 'parallel team-mode worker'), coincidental numbering (another file's own '### Stage 3.6' heading unrelated to the target stage), and domain-specific reuse of the same field name in an unrelated extension (e.g. 'team_size' as a startup headcount metric in a pitch-deck generator vs. an orchestrator's parallel-agent count). Build an explicit false-positive table before editing, not just a deletion list.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["grep", "false-positive", "deletion-task", "codebase-search", "refactoring"]
+    },
+    {
+      "content": "In this repo, .claude/** is a deploy mirror of agent-system/extensions/core/** (and other extensions), regenerated on deploy — never a separate edit target. .opencode/** is a separate, legacy system with its own freeze/deletion task lineage (independent of the current /orchestrate consolidation), and .memory/** holds historical, inert memory records. A repo-wide grep for a feature being deleted will hit all four locations; only agent-system/extensions/** is ever the edit target, and the other three need per-hit justification rather than editing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["source-store", "deploy-mirror", "opencode", "memory-vault", "scope-boundary"]
+    }
+  ],
+  "next_steps": "Run /plan 149 to create implementation plan"
+}

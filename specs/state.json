@@ -2405,7 +2405,7 @@
       "project_number": 149,
       "project_name": "delete_team_mode",
       "title": "Delete team mode: fan-out stages, --team flags, synthesis wiring, docs and tests",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Delete team mode from the agent system. Decided 2026-09-02 (specs/PATH.md, Decisions): team mode costs ~5x per dispatch, its teammate metadata-ownership defect was never fixed, and it has been used rarely; under the thin-lead design it would have cost a dedicated fan-out script to keep. It is removed outright rather than ported. Stage A.0b of specs/PATH.md. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nWORK (enumerate every site by grep before editing; the list below is the known set, not a whitelist).\n(1) skills/skill-orchestrate/SKILL.md: delete Stage 3.6 (Team Fan-Out) and Stage 3.6a (Teammate-Plan Builder), together ~19,400 B, and every `team_mode` / `team_size` / `team_size_explicit` / `teammate` reference in Stage 1, Stage MT-1 (the accepted-and-ignored notice), Stage 4 dispatch sites, and the Context References.\n(2) commands/orchestrate.md: remove the `--team` and `--team-size` Options rows, the team lines in Constraints, and the delegation-context keys `team_mode`, `team_size`, `team_size_explicit`.\n(3) scripts/parse-command-args.sh: remove `--team` / `--team-size` parsing and the TEAM_MODE / TEAM_SIZE / TEAM_SIZE_EXPLICIT exports; keep every other export byte-identical (this script is shared by every command -- run its tests).\n(4) agents/synthesis-agent.md: determine its remaining callers by grep. If team mode was its only caller, delete it and its manifest/index-entries registrations; if the reviser path or anything else still dispatches it, keep it and record why.\n(5) merge-sources/claudemd.md: remove the \"Team Mode\" paragraph, the `--team` rows in the cost table and composability bullets, and the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` note; regenerate and confirm CLAUDE.md no longer mentions team mode.\n(6) context/ and docs/: rules/artifact-formats.md's \"Team Mode\" naming subsection and example, context/standards/git-staging-scope.md's team staging template, context/patterns/* and docs/architecture/* team references, the team-mode contract tests under scripts/tests (delete, do not skip), and index-entries.json entries for any deleted file.\n(7) The `{NN}_{letter}-findings.md` artifact convention becomes historical: leave existing artifacts on disk; remove the convention from the format docs.\n(8) hooks/subagent-postflight.sh is NOT deleted: its marker-correlation defect is independent of team mode and remains its own task.\n\nMUST NOT: remove `synthesis-agent` while a live caller exists; change any non-team export of parse-command-args.sh; touch the extension agents beyond removing team-mode carve-outs that reference the deleted stages.\n\nACCEPTANCE: a repo-wide grep (excluding specs/**) for `team_mode|team_size|--team|teammate|skill-team|Stage 3.6` returns zero hits, or each survivor is individually justified; parse-command-args.sh tests green; a two-task /orchestrate runs end to end; full gate run green; byte count removed from SKILL.md and orchestrate.md reported.\n\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\nREFERENCE: specs/PATH.md, \"One engine, batch of one\" and \"Decisions\".",
@@ -2423,10 +2423,17 @@
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/index-entries.json"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
+          "type": "report",
+          "summary": "Full site-by-site inventory of team-mode references across the source store, with deletion/edit dispositions, a false-positive table, and an out-of-scope boundary discussion."
+        }
+      ],
       "next_artifact_number": 1,
       "created": "2026-09-02T20:46:49Z",
-      "last_updated": "2026-09-02T20:46:49Z"
+      "last_updated": "2026-09-03T01:48:25Z",
+      "session_id": "sess_1788399440_184d69_149"
     },
     {
       "project_number": 150,
