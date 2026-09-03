@@ -107,15 +107,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Document the new failure mode in SKILL.md Error Handling [NOT STARTED]
+### Phase 2: Document the new failure mode in SKILL.md Error Handling [COMPLETED]
 
 **Goal**: The Error Handling section shows the ahead-of-remote failure exactly as a user will see it, adjacent to the existing "Behind Remote" entry.
 
 **Tasks**:
-- [ ] Add a `### Ahead of Remote (Not Fully Pushed)` subsection immediately after the existing `### Behind Remote` subsection.
-- [ ] Fill the fenced example with the literal output of a failing run: the `=== Validating Git State ===` header, then the exact `echo` strings added in Phase 1 with `$ahead` and `$current_branch` rendered as concrete values (use the real incident's count and a plausible branch name, mirroring how "Behind Remote" uses a concrete `3 commit(s)`).
-- [ ] Diff the example strings against the Phase 1 `echo` lines character-for-character; any divergence is a defect in this phase, not an acceptable paraphrase.
-- [ ] Confirm the surrounding Error Handling entries (`Dirty Working Tree`, `Behind Remote`, `Tag Already Exists`, the version/changelog entries) are unmodified.
+- [x] Add a `### Ahead of Remote (Not Fully Pushed)` subsection immediately after the existing `### Behind Remote` subsection. *(completed)*
+- [x] Fill the fenced example with the literal output of a failing run: the `=== Validating Git State ===` header, then the exact `echo` strings added in Phase 1 with `$ahead` and `$current_branch` rendered as concrete values (use the real incident's count and a plausible branch name, mirroring how "Behind Remote" uses a concrete `3 commit(s)`). *(completed)*
+- [x] Diff the example strings against the Phase 1 `echo` lines character-for-character; any divergence is a defect in this phase, not an acceptable paraphrase. *(completed)*
+- [x] Confirm the surrounding Error Handling entries (`Dirty Working Tree`, `Behind Remote`, `Tag Already Exists`, the version/changelog entries) are unmodified. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -132,15 +132,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Sync commands/tag.md with the new requirement [NOT STARTED]
+### Phase 3: Sync commands/tag.md with the new requirement [COMPLETED]
 
 **Goal**: The command doc states the fully-pushed requirement so it cannot silently contradict the skill.
 
 **Tasks**:
-- [ ] Update Workflow item 1 to name all three Step 2 conditions: clean working tree, branch fully pushed, up-to-date with remote.
-- [ ] Add a Requirements bullet for the new gate, explaining *why* (a consuming repo's release preflight requires the tagged commit to be reachable from `origin/<branch>`), in the same explanatory style as the existing version/changelog bullets.
-- [ ] Leave the flag table unchanged and confirm it -- no flag was added (research decision 5).
-- [ ] Leave the Warning, Examples, and Agent Restrictions sections unchanged.
+- [x] Update Workflow item 1 to name all three Step 2 conditions: clean working tree, branch fully pushed, up-to-date with remote. *(completed)*
+- [x] Add a Requirements bullet for the new gate, explaining *why* (a consuming repo's release preflight requires the tagged commit to be reachable from `origin/<branch>`), in the same explanatory style as the existing version/changelog bullets. *(completed)*
+- [x] Leave the flag table unchanged and confirm it -- no flag was added (research decision 5). *(completed)*
+- [x] Leave the Warning, Examples, and Agent Restrictions sections unchanged. *(completed)*
 
 **Timing**: 0.25 hours
 

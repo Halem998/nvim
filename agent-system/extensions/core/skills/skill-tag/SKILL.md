@@ -602,6 +602,20 @@ Error: Local branch is 3 commit(s) behind remote.
 Resolution: Pull latest changes with 'git pull' before tagging.
 ```
 
+### Ahead of Remote (Not Fully Pushed)
+
+```
+=== Validating Git State ===
+
+Error: Local branch is 36 commit(s) ahead of remote (not fully pushed).
+
+A tag created now would point at a commit absent from origin/main. A
+consuming repo's release preflight (git merge-base --is-ancestor) rejects such a tag
+*after* it has already been pushed, requiring a delete-and-re-push to recover.
+
+Resolution: Push the branch with 'git push origin main' before tagging.
+```
+
 ### Tag Already Exists
 
 ```

@@ -49,7 +49,7 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run] [--skip-version-
 
 ## Workflow
 
-1. **Validate Git State**: Check for clean working tree and up-to-date branch
+1. **Validate Git State**: Check for clean working tree, branch fully pushed (no unpushed commits), and up-to-date with remote
 2. **Compute Version**: Calculate new version based on increment type
 3. **Validate Version Consistency**: Compare declared package version against computed tag; fail on mismatch
 4. **Validate Changelog Entry**: Require a non-empty `## [VERSION]` section in a discovered CHANGELOG; fail if present-but-missing
@@ -66,6 +66,9 @@ argument-hint: "[--patch|--minor|--major] [--force] [--dry-run] [--skip-version-
 - Clean working tree (no uncommitted changes)
 - On a branch (not detached HEAD)
 - Up-to-date with remote
+- Branch fully pushed (no commits ahead of `origin/<branch>`) — a consuming repo's release
+  preflight requires the tagged commit to be reachable from `origin/<branch>`; tagging an
+  unpushed commit would produce a tag that fails that check only after it has already been pushed
 - No existing tag with computed version
 - Declared package version (if any manifest declares one) matches the computed tag version — a
   repo with no manifest satisfies this requirement vacuously
