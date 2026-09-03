@@ -1,0 +1,28 @@
+{
+  "phase": 9,
+  "phase_name": "Collapse SKILL.md and relocate the displaced prose",
+  "started_at": "2026-09-03T01:00:00Z",
+  "last_updated": "2026-09-03T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-edit byte size of the target region", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace Stage MT-3 steps 1-4.5 with a single orchestrate-cycle-plan.sh call", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Replace MT-4's pre-dispatch half with a loop of at most ten lines", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Relocate displaced explanatory prose to docs/architecture/orchestrate-state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Leave Stage MT-1/MT-2/MT-5 untouched; confirm mt_state_file fields still written", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Report bytes removed from SKILL.md", "status": "done", "files_touched": []},
+    {"id": 7, "description": "No task-number citations outside specs/** in edited deliverables", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": [
+    "Region measurement: Stage MT-3 (lines 2685-3132, 35,169 B) + Stage MT-4's pre-dispatch half (lines 3133-3358, 18,688 B) = 53,857 B total (matches the plan's Scope Hypothesis exactly, no drift). Replaced with an 8,652 B region (2685 through the unchanged 'After all Agent tool calls complete' boundary at the new line 2799) -- 45,205 B removed from the region. Whole-file delta: 271,733 B -> 225,553 B = 46,180 B removed (the extra ~975 B beyond the region figure comes from a necessary correction to Stage MT-1's now-stale force_phases bullet, below).",
+    "Boundary verified byte-exact: 'After all Agent tool calls complete, read handoffs and run per-task postflight for each dispatched task:' is untouched and immediately follows the new content with no duplication and no gap.",
+    "Necessary out-of-region correction (Stage MT-1, otherwise left untouched): Stage MT-1's own force_phases bullet asserted 'Multi-task mode has no per-task phase-forcing consumption today... this value never gates a Stage MT-4 dispatch fork' and emitted a NOTICE claiming --research/--plan/--implement are 'accepted and ignored in multi-task mode' -- both became FALSE the moment Stage MT-3's new call threads --force-phases through to orchestrate-cycle-plan.sh. Leaving this bullet unedited would have left the document self-contradicting and would have printed an actively misleading notice to operators on every --force-phases invocation. Corrected the bullet only (no other Stage MT-1 content touched) and removed the now-false notice.",
+    "Found and fixed three more stale 'accepted and ignored in multi-task mode' claims discovered by a repo-wide grep after the SKILL.md edit: agent-system/extensions/core/merge-sources/claudemd.md (two spots -- the /orchestrate command table row and the Multi-task syntax paragraph) and commands/orchestrate.md's Constraints section. All three now describe the closed gap.",
+    "MT-4's collapsed dispatch loop measured at exactly 9 lines (echo|jq|while through done), within the plan's 'at most ten lines' bar; the field-mapping prose (prompt/context templates) was moved above the code block as two short reference lines rather than inline comments, keeping the loop itself lean.",
+    "Relocated prose: docs/architecture/orchestrate-state-machine.md's pre-existing 'MT Mode' ASCII diagram and surrounding narrative already described this exact loop -- rather than duplicating the collapsed region's full byte content there (which would contradict the whole point of the collapse), annotated each diagram step with which surface now owns it (script vs. SKILL.md) and added an explanatory paragraph pointing to orchestrate-cycle-plan.sh's own header as the executable source of truth. That doc's Dependency Gating Model / Commit Granularity / Exit Conditions / Example Flow sections describe unchanged BEHAVIOR and needed no edits.",
+    "scripts/lint/lint-postflight-boundary.sh and scripts/lint/lint-contract-compliance.sh both exit 0 after the edit."
+  ],
+  "deviations": []
+}

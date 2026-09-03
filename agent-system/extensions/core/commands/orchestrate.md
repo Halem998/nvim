@@ -22,9 +22,10 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 ## Constraints
 
 - Multi-task mode uses dependency-aware wave dispatch.
-- `--research`/`--plan`/`--implement` (phase-forcing flags): accepted and ignored today in
-  multi-task mode, with a loud notice — **per-task in the batch engine once the feature-port
-  task lands**, not partially wired now.
+- `--research`/`--plan`/`--implement` (phase-forcing flags): honored uniformly across every
+  task_number in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`
+  — each task tracks its own remaining-forced-phases position independently, falling through to
+  ordinary status-derived classification once its own forced sequence is exhausted.
 - No confirmation gates between lifecycle phases.
 - Terminates on success, `MAX_CYCLES` exceeded, `MAX_INFRA_FAILURES` exceeded (repeated Agent-tool
   transport/API failures — distinct from work-budget exhaustion), or an unrecoverable blocker.

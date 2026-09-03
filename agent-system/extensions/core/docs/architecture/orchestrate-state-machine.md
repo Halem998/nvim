@@ -333,6 +333,21 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 
 ### Lifecycle-Cycling Loop (Stage MT-3)
 
+**Relocated (task building `scripts/orchestrate-cycle-plan.sh`)**: steps 1-5 below, plus the
+`cycle_count++`/`MAX_CYCLES_MT` accounting and the inter-cycle redeploy checkpoint formerly
+described as step 8, are no longer inline SKILL.md prose/jq — they are one call to
+`scripts/orchestrate-cycle-plan.sh`, made once per cycle by the lead (Stage MT-3's own SKILL.md
+text is now that one call plus a loop of at most ten lines composing the batched Agent-tool
+message from the script's `dispatch[]` rows). This diagram states the CONCEPTUAL loop shape,
+unchanged in behavior; the EXECUTABLE source of truth for steps 1-5/8 is that script's own header
+comment (mt_state_file field list, the bare-vs-suffixed `session_id` invariant, the `--dry-run`
+design, and the re-sited budget-guard/redeploy-checkpoint timing note — the script runs strictly
+BEFORE its own cycle's Agent dispatches, so its budget guard sits at the TOP of each invocation
+and its redeploy checkpoint consumes the PRIOR cycle's `cycle_modified_files` rather than the
+current one). Steps 6-7 (read handoffs, per-task postflight) remain SKILL.md's own job, starting
+at Stage MT-4's `**After all Agent tool calls complete**` marker — untouched by that task, and the
+separate concern of a not-yet-built postflight composer (see that task's own scope).
+
 ```
 ┌──────────────────────────────────────────────────┐
 │         MT Lifecycle-Cycling While Loop          │
@@ -340,12 +355,14 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 │  ┌─────────────────────────────────────────┐     │
 │  │ 1. Refresh statuses from state.json     │     │
 │  │    for every task in task_numbers[]     │     │
+│  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 2. All-terminal check                   │     │
 │  │    all tasks in {completed, abandoned,  │     │─── YES ──► EXIT (success)
 │  │    expanded, failed_tasks}?             │     │
+│  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │ NO                         │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -356,26 +373,31 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 │  │    (eligibility is not status-gated on  │     │
 │  │    an in-flight string -- see Dependency│     │
 │  │    Gating Model below)                  │     │
+│  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 4. No-eligible circuit breaker          │     │
 │  │    eligible_tasks[] is empty?           │     │─── YES ──► EXIT (partial)
+│  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │ NO                         │
 │  ┌──────────────────▼──────────────────────┐     │
-│  │ 5. Phase-aware dispatch (Stage MT-4)    │     │
-│  │    Group eligible_tasks by needed phase:│     │
-│  │    research_tasks / plan_tasks /        │     │
-│  │    implement_tasks                      │     │
+│  │ 5. Phase-aware dispatch decision         │     │
+│  │    (classification, admission, forced   │     │
+│  │    phases, lock probe, dispatch-file     │     │
+│  │    build) -- returns dispatch[] rows     │     │
+│  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  │    ─────────────────────────────────    │     │
-│  │    Issue ALL Agent calls in ONE message │     │
-│  │    (concurrent parallel execution)      │     │
+│  │    Lead issues ALL Agent calls named by │     │
+│  │    dispatch[] in ONE message (concurrent│     │
+│  │    parallel execution) [SKILL.md]       │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 6. Read handoffs for every dispatched   │     │
 │  │    task (after ALL Agents complete)     │     │
+│  │    [SKILL.md Stage MT-4, unchanged]     │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -383,11 +405,14 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 │  │    skill_postflight_update + artifact   │     │
 │  │    linking + per-task scoped commit +   │     │
 │  │    multi-state update                   │     │
+│  │    [SKILL.md Stage MT-4, unchanged]     │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
-│  │ 8. cycle_count++                        │     │
-│  │    MAX_CYCLES_MT guard                  │     │─── HIT ──► EXIT (partial)
+│  │ 8. cycle_count++ / MAX_CYCLES_MT guard  │     │─── HIT ──► EXIT (partial)
+│  │    + inter-cycle redeploy checkpoint    │     │       (via `stop` on the
+│  │    [scripts/orchestrate-cycle-plan.sh,  │     │        NEXT cycle's call)
+│  │     at the TOP of the next invocation]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │                     └──────────────────────────► │

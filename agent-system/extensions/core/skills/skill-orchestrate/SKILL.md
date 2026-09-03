@@ -2448,11 +2448,12 @@ Read from delegation context:
   for every per-task dispatch this batch makes, and reserved for later conditional
   state-machine branches (churn/three-strikes counters, the burnout circuit breaker) that read
   this same boolean rather than re-deriving it.
-- `force_phases` (default `""`) — read here for DIAGNOSTICS ONLY. Multi-task mode has no
-  per-task phase-forcing consumption today (deferred — see Phase 7's filed defect in this
-  stage's originating plan); this value never gates a Stage MT-4 dispatch fork. When
-  `force_phases` is non-empty, emit one notice per batch, once, here:
-  `echo "[orchestrate] NOTICE: --research/--plan/--implement (force_phases=${force_phases}) are accepted and ignored in multi-task mode — no per-task phase forcing will occur" >&2`.
+- `force_phases` (default `""`) — read here and threaded, unmodified, into Stage MT-3's own call
+  to `scripts/orchestrate-cycle-plan.sh` as `--force-phases`, which owns the actual per-task
+  consumption (canonical ordering, per-task stop-after-last-named semantics, and
+  `force_phases_remaining` tracking in `mt_state_file`) — closing the former multi-task
+  phase-forcing gap this bullet used to describe as diagnostics-only. No notice is emitted here
+  any more; `orchestrate-cycle-plan.sh`'s own dispatch rows are the record of what was forced.
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, inside
 `commands/orchestrate.md`'s compact STAGE 0 multi-task block (Pre-Dispatch Review call, retained
@@ -2684,462 +2685,84 @@ done
 
 ### Stage MT-3: Lifecycle-Cycling Loop
 
-Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
+**Collapsed (was Stage MT-3 steps 1-4.5, ~35 KB of inline jq/prose)**: status refresh, session
+heartbeat, the all-terminal check, eligibility, classification, admission (with the four defer
+gates and their consumer-side overrides), the designated-candidate self-modification tie-breaker,
+the convergence guard, the idle cross-batch overlap advisory, per-task `force_phases`
+consumption, missing-task-directory creation, the read-only lock probe, budget accounting
+(`MAX_CYCLES_MT`/`MAX_INFRA_FAILURES`), and the inter-cycle redeploy checkpoint are now ONE call
+to `scripts/orchestrate-cycle-plan.sh`, made once per cycle. The full behavioral contract for
+every one of those mechanisms is unchanged and is documented, once, in that script's own header
+comment and in `docs/architecture/orchestrate-state-machine.md`'s "MT Mode" section (relocated
+prose pointer) — neither is restated here.
 
-1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`. Alongside this refresh, heartbeat the batch's in-flight
-   session registry entry (keyed on the bare `session_id` Stage MT-1 registered) — a new USE of
-   this existing per-cycle checkpoint, not an invented one; Stage MT-4's per-task lock
-   acquire/release brackets a single dispatch and has no equivalent per-cycle lock heartbeat to
-   sit beside, so this loop-top status refresh is the correct per-cycle site for the batch-level
-   heartbeat instead. Best-effort and non-blocking:
-   ```bash
-   bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null || true
-   ```
+```bash
+force_phases_args=()
+[ -n "${force_phases:-}" ] && force_phases_args=(--force-phases "$force_phases")
+model_args=()
+[ -n "${model_flag:-}" ] && model_args=(--model "$model_flag")
+plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
+  --session "$session_id" --state-file specs/state.json \
+  "${force_phases_args[@]}" "${model_args[@]}" \
+  $( [ "${clean_flag:-false}" = "true" ] && echo --clean ) \
+  $( [ "${lit_flag:-false}" = "true" ] && echo --lit ) \
+  $( [ "${hard_mode:-false}" = "true" ] && echo --hard ) \
+  $( [ "${effort_flag:-}" = "fast" ] && echo --fast ) \
+  $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \
+  $( [ "${allow_scope_collision:-false}" = "true" ] && echo --allow-scope-collision ) \
+  $( [ "${continue_budget:-false}" = "true" ] && echo --continue-budget ) \
+  "${task_numbers[@]}")
+stop_json=$(echo "$plan_json" | jq -c '.stop')
+```
 
-2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}`, in
-   `failed_tasks`, OR in `deferred_deploy_checkpoint` — break loop (exit success or partial). A
-   task in `deferred_deploy_checkpoint` is deliberately, permanently excluded for the remainder of
-   the invocation, so this check treats it the same as a terminal/failed task for the purpose of
-   deciding whether the loop has anything left to do — see Stage MT-3 step 7's population of
-   `deferred_deploy_checkpoint` below. `deferred_self_modifying` is DELIBERATELY ABSENT from this
-   check as of the narrowed same-cycle scope: a task recorded there still has real work pending
-   (it is only deferred for cycles where it is actually co-dispatched with a colliding sibling),
-   so it must not be treated as "nothing left to do" merely because the observation log carries
-   its number.
+`continue_budget` (default `false`) — read here from delegation context (multi-task's own
+threading of this field was previously unwired; single-task's Stage 2 already reads it) —
+authorizes continuing past an exhausted `MAX_CYCLES_MT`/`MAX_INFRA_FAILURES` budget, honored
+identically to the single-task engine's own `--continue-budget` contract.
 
-3. **Build eligible_tasks**: For each task, include it if ALL of the following are true:
-   - Status is NOT `{completed, abandoned, expanded}` and NOT in `failed_tasks`
-   - Task number is NOT in `deferred_deploy_checkpoint` (populated by Stage MT-3 step 7 below;
-     this remains a genuine, invocation-scoped eligibility EXCLUSION — unlike
-     `deferred_self_modifying`, which as of the narrowing is no longer an exclusion here at all
-     — and is what makes the redeploy-checkpoint deferral converge rather than re-qualifying the
-     task next cycle)
-   - **Eligibility is NOT status-gated on an in-flight string (REMOVED the former `{researching,
-     planning}` exclusion here).** A task's own status among `{not_started, researched, planned,
-     implementing, partial, researching, planning}` never by itself removes it from
-     `eligible_tasks` — eligibility depends only on locks, `dependencies[]`, and file_scope
-     overlap, all of which are already enforced downstream: Stage MT-4's per-task
-     `task-lock.sh acquire` defers (never excludes) a task whose lock is held FRESH by a genuinely
-     different session (exit 1 -> removed from this cycle's batch, never added to `failed_tasks`);
-     a stale foreign lock is reclaimed with a warning. `task-lock.sh cmd_acquire` never reads
-     `.status` — the lock layer, not the status string, has always been the real concurrency
-     arbiter. A task stranded in `researching`/`planning` by a dead prior session's stale lock is
-     therefore no longer silently skipped forever: it becomes eligible, the classifier (Stage MT-3
-     step 4.5 below) routes it to the phase its status names, and Stage MT-4's lock acquire
-     reclaims the stale lock and dispatches it.
-   - All predecessors from `dependency_graph[task_num]` are in terminal state or `failed_tasks`
-   
-   If a predecessor is in `failed_tasks`: mark this task in `failed_tasks` with status `blocked` and skip it.
-   If a predecessor is still in-progress: skip this task (wait for next cycle).
-
-4. **No-eligible circuit breaker**: If `eligible_tasks` is empty AND at least one task remains
-   that is NOT terminal, NOT in `failed_tasks`, and NOT in `deferred_deploy_checkpoint` — log
-   warning with list of stuck tasks and break loop (exit partial). (If every remaining
-   non-eligible task is accounted for by step 2's All-terminal check instead — i.e. every task is
-   terminal, failed, or deferred-by-redeploy-checkpoint — step 2 has already broken the loop
-   before this step runs, so this circuit breaker's "stuck tasks" framing is reserved for
-   genuinely stuck tasks, never for a redeploy-checkpoint-deferred one.) As of the narrowed
-   same-cycle scope, this PRE-admission check no longer reserves any special case for
-   self-modifying candidates: they are ordinary members of `eligible_tasks` at this point (step 3
-   above no longer excludes them), and are only removed from the dispatch batch by step 4.5's
-   POST-admission filtering below — the scenario where step 4.5 empties an otherwise non-empty
-   `eligible_tasks` is a distinct, later concern handled by the new convergence guard at the end
-   of step 4.5, not by this circuit breaker.
-
-4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: this step IS Tier 1
-   (auto-sequence) of the four-tier conflict-response ladder for `/orchestrate` — see
-   `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section for the full
-   ladder and how this multi-cycle re-sequencing compares to plain multi-task `/research`'s,
-   `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent. No behavioral change here; this
-   is a cross-reference only.
-
-   **Classifier call — relocated here (was formerly invoked a second time, later, at Stage
-   MT-4)**: before the admission call below, call the shared handoff-triage classifier ONCE for
-   this cycle, over `eligible_tasks`, so the admission call can pass a `--phase-map` built from
-   the SAME rule the read-only dry-run report reads, rather than a second,
-   independently-maintained copy of it:
-   ```bash
-   mt_classify_ndjson=$(bash .claude/scripts/orchestrate-triage-classify.sh mt "${eligible_tasks[@]}")
-   ```
-   Capture `$mt_classify_ndjson` in this cycle's working state and carry it FORWARD into Stage
-   MT-4 below — it is safe to reuse without re-invoking: nothing writes `specs/state.json`
-   between this site and Stage MT-4's dispatch-bucket filtering within the same cycle, and no
-   other step in between reads classifier output that would need a fresher read. Stage MT-4 no
-   longer calls the classifier itself; see that stage's note.
-
-   Build `--phase-map` from `$mt_classify_ndjson` — one `task_number:group` pair per candidate,
-   comma-joined (the admission script only acts on the `research`/`plan` values; any other group
-   value present is harmless, since the admission script ignores an unrecognized group):
-   ```bash
-   phase_map_arg=$(echo "$mt_classify_ndjson" | jq -r '"\(.task_number):\(.group)"' | paste -sd, -)
-   ```
-
-   Before dispatching
-   `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
-   single task, since a cross-batch collision exists at batch size 1 — call the admission
-   script, passing `--invocation-count` set to THIS CYCLE'S actual co-dispatch count,
-   `${#eligible_tasks[@]}`, `--session-id "$session_id"` (D6, session-registry contention
-   input) — the SAME bare `session_id` Stage MT-1 registered via `session-register` above, so
-   this call's self-exclusion actually matches the batch's own registry entry rather than seeing
-   it as foreign and deferring every candidate against itself — and `--phase-map "$phase_map_arg"`
-   (the designated-candidate tie-breaker inside the admission script itself needs no argument; it
-   is computed unconditionally from the co-dispatch set every call):
-   ```bash
-   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" --phase-map "$phase_map_arg" "${eligible_tasks[@]}"
-   ```
-   This is the corrected contract (narrowed from an earlier version of this step that passed this
-   invocation's full validated-candidate count): the self-modification defer trigger fires
-   against candidates actually co-dispatched THIS wave/cycle, not against the invocation's full
-   candidate set. Step 3's eligibility rule already guarantees a `dependencies[]`-edge-connected
-   pair can never share an `eligible_tasks` batch — a successor is never eligible until its
-   predecessor leaves the non-terminal set — so a whole-invocation count fired against pairs that
-   could never actually co-occur; that was a pure false positive, not a safety margin. The
-   remaining strictness is real, not vestigial: a self-modifying candidate genuinely sharing a
-   cycle with an un-edge-connected sibling still defers, and that residual strictness is grounded
-   in the standing verification-gap hazard (hazard 1 in
-   `context/patterns/batch-orchestration-guardrails.md` — a fix to orchestrator machinery is
-   verified only against a scratch deploy-tree copy, never the live system) — not in the two
-   hazards this dependency chain already retired.
-   This compares each eligible task's `file_scope` against every non-terminal task in a single
-   `specs/state.json` read — the comparison set is every non-terminal task in state, not merely
-   this invocation's own `task_numbers` set. This is still not a repo-wide filesystem scan: no
-   globbing, no second read, just one read of
-   `specs/state.json` per cycle. The predicate itself is the shared directory-prefix overlap
-   algorithm in `.claude/context/patterns/file-footprint-overlap.md` (referenced by path — not
-   restated here); the verdict schema is published in
-   `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
-
-   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v5
-   — every defer verdict carries this REQUIRED discriminator; checking `collision_scope` without
-   checking `defer_reason` first would misread a self-modifying defer as an ordinary in-batch
-   collision, since both verdicts carry a `reason` string):
-
-   - **`self_modifying`** (the candidate's own `file_scope` names an orchestrator-critical path):
-     **consumer-side override check first** — if `allow_self_modifying == true` for this
-     invocation, do NOT act on this defer verdict: dispatch the candidate this cycle anyway,
-     exactly as if it had admitted. The verdict itself is unaffected by the flag — it is still
-     emitted, still carries `self_modifying: true` and `defer_reason: "self_modifying"`, and
-     `orchestrate-batch-admit.sh` is NEVER passed the flag; the bypass is entirely a decision made
-     here, at the consumer, about whether to act on a verdict the script always computes
-     honestly. Log a loud, distinct bypass notice whether or not the gate would otherwise have
-     fired, so a transcript reader can always tell the override was active this invocation:
-     ```
-     [orchestrate] BYPASS: --allow-self-modifying is active. Task #{task_number} has file_scope
-       naming orchestrator-critical path {critical_path} ({critical_label}); dispatching this
-       cycle anyway per explicit human-intent override.
-     ```
-     Otherwise (no override): remove the candidate from this cycle's dispatch batch and append it
-     to the `mt_state_file.deferred_self_modifying` OBSERVATION LOG (task numbers the gate has
-     deferred at least once this invocation — see Stage MT-1's schema definition above; this log
-     is no longer an eligibility-exclusion set, so recording an append here does NOT by itself
-     keep the task out of a later cycle's `eligible_tasks` — see step 3's convergence rationale
-     for what actually clears the defer). The task is never added to `failed_tasks` and never
-     status-mutated. **Log the verdict's own `reason` string directly** (do not reconstruct or
-     paraphrase it) — as of the designated-candidate tie-breaker, `reason` already names the
-     designated candidate this task is deferring in favor of and states plainly that this is a
-     one-cycle ORDERING CONSTRAINT resolving in sequence, never an instruction to isolate the
-     dispatch:
-     ```
-     [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
-       path {critical_path} ({critical_label}). {verdict.reason}
-     ```
-     (`{verdict.reason}` already ends with the `--allow-self-modifying` override mention, so no
-     separate override line is appended here.)
-     Additionally (no-override path only — a bypassed defer dispatches and must NOT be ledgered as
-     a defer), append to `mt_state_file.defer_ledger`:
-     `{"task": task_number, "defer_reason": "self_modifying", "collision_scope": null, "cycle": cycle_count, "detail": "matched critical path {critical_path} ({critical_label})"}`.
-   - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching
-     below, byte-for-byte. Both branches share the same removal semantics: a deferred task is
-     removed from **this cycle's** dispatch batch and is never added to `failed_tasks` (never
-     added to `deferred_self_modifying` — that set is exclusively for the `self_modifying` branch
-     above). Self-clearing differs by scope, and the two must not be conflated — see each bullet
-     below for its own claim.
-     - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
-       from this cycle's dispatch batch and log the existing warning. This scope self-clears
-       within this invocation: the deferred task becomes eligible again on a later cycle, once the
-       colliding in-batch task leaves `eligible_tasks` by terminating or failing (a task no longer
-       leaves `eligible_tasks` merely by transitioning to an in-flight status —
-       `researching`/`planning` — now that eligibility is no longer status-gated; see Stage MT-3
-       step 3). This claim is TRUE and is load-bearing for the convergence argument elsewhere in
-       this file:
-       ```
-       [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
-         dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
-         concurrent edits to the same files.
-       ```
-       Additionally, append to `mt_state_file.defer_ledger`:
-       `{"task": Y, "defer_reason": "file_scope_collision", "collision_scope": "in_batch", "cycle": cycle_count, "detail": "colliding in-batch task #{X}"}`.
-     - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
-       **consumer-side override check first** — if `allow_scope_collision == true` for this
-       invocation, do NOT act on this defer verdict: dispatch the candidate this cycle anyway,
-       exactly as if it had admitted. The verdict itself is unaffected by the flag — it is still
-       emitted, still carries `defer_reason: "file_scope_collision"` and
-       `collision_scope: "cross_batch"`, and `orchestrate-batch-admit.sh` is NEVER passed the
-       flag; the bypass is entirely a decision made here, at the consumer, about whether to act on
-       a verdict the script always computes honestly. Per D1, this override is
-       **cross-batch-only**: it is checked ONLY in this `cross_batch` sub-branch — the `in_batch`
-       branch above is NEVER bypassed by `allow_scope_collision`, regardless of whether it is
-       active, and has no override check of its own. Log a loud, distinct bypass notice whether or
-       not the gate would otherwise have fired, so a transcript reader can always tell the
-       override was active this invocation. On the bypass path, do NOT append to
-       `mt_state_file.defer_ledger` — a bypassed defer dispatches and must not be ledgered as a
-       defer:
-       ```
-       [orchestrate] BYPASS: --allow-scope-collision is active. Task #{task_number} has
-         overlapping file_scope with out-of-batch task #{colliding_task_number} (status:
-         {colliding_task_status}); dispatching this cycle anyway per explicit human-intent
-         override (cross-batch only).
-       ```
-       Otherwise (no override): remove the candidate from this cycle's dispatch batch and log a
-       **distinct** warning naming the out-of-batch task and its `colliding_task_status`. This
-       scope does NOT self-clear within this invocation: the excluded candidate does NOT
-       automatically become eligible again this run — the colliding task is outside
-       `task_numbers` and this loop has no mechanism to advance it. A human resolves batch
-       composition, or a future invocation re-evaluates once the colliding task's status
-       independently changes:
-       ```
-       [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
-         #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
-         invocation's task_numbers. Excluding #{task_number} from this cycle — batch
-         composition needs human review -- suggest adding #{suggested_predecessor} as a
-         dependencies[] entry on #{suggested_dependent} to serialize them. Pass
-         --allow-scope-collision for deliberate human-intent bypass (cross-batch only).
-       ```
-       Ordering rule for `suggested_predecessor`/`suggested_dependent` (the higher task number
-       becomes the dependent, the lower becomes the predecessor): identical to, and sourced from,
-       `orchestrate-predispatch-review.sh`'s Class D finding (jq computation and rendered string)
-       — the two surfaces are one mechanism, printed at two moments (upstream Step 1.5 review, and
-       here at the moment of exclusion).
-       Additionally (no-override path only), append to `mt_state_file.defer_ledger`:
-       `{"task": task_number, "defer_reason": "file_scope_collision", "collision_scope": "cross_batch", "cycle": cycle_count, "detail": "colliding out-of-batch task #{colliding_task_number} (status: {colliding_task_status})"}`.
-   - **`session_active`** (NEW in v4, reached only when the state.json collision scan above found
-     no hit): a live registered session's own unioned `file_scope` overlaps the candidate's.
-     Same "defer, not fail" cycle semantics as the two branches above — remove the candidate from
-     this cycle's dispatch batch, never add it to `failed_tasks`, never add it to
-     `deferred_self_modifying` (that set is exclusive to the `self_modifying` branch), eligible
-     again on a later cycle once the contending session releases or goes stale. Log a distinct
-     warning naming the contending session, the task it covers, and its liveness reason:
-     ```
-     [orchestrate] WARNING: Task #{task_number} has file_scope overlapping live registered
-       session {session_id}'s (liveness: {session_liveness_reason}) covered task
-       #{colliding_task_number} at {overlapping_path}. Deferring #{task_number} to a later
-       cycle — it becomes eligible again once that session releases or its registry entry
-       goes stale.
-     ```
-     Additionally, append to `mt_state_file.defer_ledger`:
-     `{"task": task_number, "defer_reason": "session_active", "collision_scope": null, "cycle": cycle_count, "detail": "contending session {session_id} (liveness: {session_liveness_reason}) covers task #{colliding_task_number} at {overlapping_path}"}`.
-
-   **Decision record**: base mode does NOT gain a `territory` dispatch key. Its multi-task
-   dispatch is genuinely concurrent by construction — the Stage MT-4 BATCHING RULE requires every
-   cycle's dispatch batch to be issued as `Agent` tool calls in a single message, so multiple
-   agents run concurrently, each with its own `task_dir`, `handoff_path`, and declared
-   `file_scope`. A per-dispatch `owned_files` declaration would restate `file_scope` at a second
-   grain without adding any detection capability that `file_scope` deferral does not already
-   provide for the cross-task file-conflict case it covers.
-
-   **Asymmetry decision (recorded, "recorded not acted on" style, mirroring the hard engine's
-   record so the two visibly agree)**: the residual gap is recorded as OPEN, not as covered. The
-   `file_scope_collision` and `session_active` branches immediately above operate at ADMISSION
-   TIME ONLY — they compare tasks being admitted this cycle against each other and against
-   currently-registered live sessions. They are structurally blind to a woken predecessor from an
-   EARLIER cycle that already reported but is still live (a self-armed watcher/monitor, or an
-   operator resume). That case is not covered by `file_scope` deferral and is not closed by this
-   decision. What DOES apply to base mode is the observation half of the contract — the
-   STOP-and-report duty on foreign commits, foreign uncommitted modifications, or a running build
-   the agent did not start, wired into the base implementation agent independent of any territory
-   dispatch key. See `context/patterns/dispatch-report-not-termination.md`.
-
-   **Convergence guard (post-admission empty-dispatch-batch check)**: removing the permanent
-   `deferred_self_modifying` exclusion set (this step now only appends to an observation log, per
-   Stage MT-1's schema definition) opens a narrow non-convergence mode the old permanent exclusion
-   incidentally prevented: `eligible_tasks` can be non-empty every cycle while every member of it
-   is deferred by this step's `self_modifying` branch, so the actual dispatch batch is empty and
-   nothing runs, cycle after cycle, until `MAX_CYCLES_MT`. **Two independent convergence
-   arguments this guard backs up (not replaces)**:
-   1. A same-cycle self-mod defer clears on its own once its co-dispatched sibling leaves
-      `eligible_tasks` by terminating or failing (a task no longer leaves `eligible_tasks` merely
-      by transitioning to an in-flight status — `researching`/`planning` — now that eligibility is
-      no longer status-gated; see Stage MT-3 step 3) — which the existing per-cycle loop already
-      guarantees for any ordinary case, because the sibling is itself being dispatched and
-      processed each cycle.
-   2. **Second, independent, per-cycle exit condition that depends on no status transition at
-      all**: the designated-candidate tie-breaker inside `orchestrate-batch-admit.sh` admits
-      exactly one self-modifying candidate — the lowest task number — on EVERY cycle, regardless
-      of how many self-modifying candidates are co-dispatched. This is what actually BOUNDS the
-      multiple-self-modifying case: N self-modifying candidates converge to full dispatch in at
-      most N cycles by construction, materially stronger than argument 1, which depended on a
-      status transition that (pre-tie-breaker) was the only thing standing between this guard and
-      `MAX_CYCLES_MT`.
-
-   The guard exists only to BOUND the case where NEITHER natural-clearing mechanism converges in
-   time (e.g. a tie-breaker defect, or two self-modifying candidates that keep mutually
-   re-qualifying each other as the "colliding sibling" under argument 1 alone). Mechanism:
-   maintain `mt_state_file.consecutive_no_dispatch_cycles` (integer, starts at 0). After this
-   step's filtering, if the resulting dispatch batch is empty AND `eligible_tasks` (pre-filter) was
-   non-empty, increment the counter; on ANY cycle where at least one task actually dispatches,
-   reset it to 0. If the counter reaches a small bound (3), break the loop with `partial` status
-   and a named diagnostic — rather than silently spinning to `MAX_CYCLES_MT`. **Diagnostic wording
-   updated for the designated-candidate tie-breaker (mechanism and 3-cycle bound both unchanged
-   above)**: a mutually-colliding self-modifying set is no longer a reachable cause of this guard
-   tripping — the tie-breaker always admits exactly one self-modifying candidate per cycle, so N
-   self-modifying candidates converge in at most N cycles by construction. The diagnostic instead
-   names the causes that remain reachable — e.g. "self-modification gate produced N consecutive
-   cycles with zero dispatched tasks; likely a tie-breaker defect (verify
-   \$designated_sm_candidate is actually admitting each cycle), a deploy_checkpoint exclusion
-   interacting with the batch, or an unexpected file_scope_collision/session_active chain; pass
-   --allow-self-modifying only if the tie-breaker itself is confirmed broken" — never an
-   instruction to re-run anything solo.
-
-   **Interaction with the task-lock acquire step (Stage MT-4)**: admission runs **before** lock
-   acquisition and is a distinct gate — admission compares declared scopes of ALL non-terminal
-   tasks in `specs/state.json`, while the lock compares only against currently-held locks.
-   Neither replaces the other; both run.
-
-   **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable
-   (missing `jq` or an unreadable `specs/state.json`). In that case, log a loud warning and
-   proceed without the check — orchestration cannot function at all under that condition
-   regardless of this check, so proceeding is not a silent weakening of the gate.
-
-   **Idle cross-batch overlap advisory** (`idle_overlap_advisory`, NEW in v5): run
-   `jq -e '.idle_overlap_advisory'` on **every** verdict this cycle — `admit` verdicts included,
-   not only `defer` verdicts. Since v5, a `cross_batch` overlap against an out-of-batch task
-   carrying NO execution evidence no longer defers at all; the predicate admits the candidate and
-   attaches this field instead of silently dropping the suppressed overlap. This check runs
-   OUTSIDE and INDEPENDENTLY of the `.decision == "defer"` filter above — do not nest it inside
-   that filter, or every advisory on an `admit` verdict (the common case post-v5) is silently
-   skipped. When present, print a distinct ADVISORY line — never folded into an existing WARNING's
-   text, because the advisory may name a *different* colliding task than the verdict's own
-   subject, so the two lines must stay visually and semantically separate. This fires IN ADDITION
-   to any `session_active` or `file_scope_collision` WARNING already logged for the same verdict:
-   ```
-   [orchestrate] ADVISORY: Task #{task_number} has file_scope overlapping IDLE (status:
-     {colliding_task_status}) out-of-batch task #{colliding_task_number} at {overlapping_path};
-     not blocking because no execution evidence exists. Add a dependencies[] edge between
-     #{task_number} and #{colliding_task_number} if ordering matters.
-   ```
-   Additionally, append to `mt_state_file.idle_overlap_ledger` (Stage MT-1's schema definition
-   above — an admit-side observation log, never an admission gate):
-   `{"task": task_number, "colliding_task_number": colliding_task_number, "colliding_task_status": colliding_task_status, "overlapping_path": overlapping_path, "cycle": cycle_count}`.
-   This feeds Stage MT-5's `### Admitted (idle overlap advisory)` reporting; it is independent of
-   `defer_ledger` and appended regardless of the verdict's own `decision`.
-
-   This stage is the sole implementation of this check — `orchestrate.md` no longer carries any
-   parallel wave-schedule version of it, having deleted its former illustrative Kahn's-algorithm
-   block; here it applies per-cycle to `eligible_tasks` since Multi-Task Mode dispatches
-   cycle-by-cycle rather than wave-by-wave. If this proves too aggressive in practice, it can be relaxed to warn-only by
-   editing this step (see Rollback/Contingency in
-   `specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
-
-5. **Dispatch** (Stage MT-4) — see below.
-
-6. **Increment cycle_count**, update `mt_state_file.cycle_count`. If `cycle_count >= MAX_CYCLES_MT`: log partial status and break.
-
-7. **Inter-cycle redeploy checkpoint.** Full contract (trigger, `modified_files` rationale,
-   rejected alternatives, failure contract, sequencing, idempotence guard, concurrency) is
-   recorded once, authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
-   `### The Inter-Cycle Redeploy Checkpoint` subsection — referenced here, not restated.
-
-   **Sequencing guarantee, stated up front**: every task dispatched this cycle already had its
-   own scoped commit attempted at Stage MT-4 step 5.5, unconditionally, before this step runs.
-   Committed-then-redeployed, in that order, is guaranteed by existing step ordering, not by new
-   synchronization.
-
-   - **Overlap computation**: expand `context/reference/orchestrator-critical-paths.json` using
-     the same `scope_roots x critical_paths` jq expression `orchestrate-batch-admit.sh` already
-     performs (reuse it; do not re-derive it here), and intersect against this cycle's
-     `cycle_modified_files` (accumulated at Stage MT-4 step 5.5 below) using the directory-prefix
-     overlap predicate in `context/patterns/file-footprint-overlap.md` (referenced by path, never
-     restated).
-   - **Idempotence guard**: subtract `mt_state_file.deployed_critical_paths` from the overlap set.
-     If the remainder is empty, skip the checkpoint this cycle at zero further cost and continue
-     to the next cycle. Without this guard, a task sitting in `implementing` across several cycles
-     would re-report the same `modified_files` and re-fire the checkpoint every cycle. This
-     idempotence mechanism is unaffected by the self-modification narrowing elsewhere in this
-     document — `deployed_critical_paths` is its own accumulating set, distinct from both
-     `deferred_self_modifying` and `deferred_deploy_checkpoint`.
-   - **Fire**: if the remainder is non-empty, log a loud notice naming every matched critical path
-     and its label. Immediately before running `deploy-headless.sh`, capture the pre-redeploy
-     baseline:
-     ```bash
-     PRE_RAW=$(bash .claude/scripts/verify-deploy.sh --findings --quiet)
-     PRE_EXIT=$?
-     PRE_FINDINGS=$(printf '%s\n' "$PRE_RAW" | grep '^FINDING ' | sort -u)
-     ```
-     (capturing `verify-deploy.sh`'s own exit code requires it to be the LAST command in its
-     command substitution — `$?` after a piped substitution like
-     `x=$(cmd | grep ... | sort -u)` reports `sort -u`'s exit status, not `cmd`'s, since the
-     pipeline runs inside the substitution's own subshell and does not update the parent shell's
-     `PIPESTATUS`. The filtering is therefore a separate second step over the already-captured
-     text.)
-     Then run, in order, from the repo root:
-     ```bash
-     bash .claude/scripts/deploy-headless.sh
-     ```
-   - **`deploy-headless.sh` failure branch — stated BEFORE any baseline logic.** Non-zero exit
-     (1 or 2) → defer unconditionally, exactly as today, with NO baseline consultation
-     whatsoever — the pre-redeploy capture taken above is simply discarded, unread, in this
-     branch. Log a loud warning naming
-     the exit code, then add every task in `task_numbers` that is not terminal and not in
-     `failed_tasks` to `mt_state_file.deferred_deploy_checkpoint`. As of the narrowing, membership
-     in the `deferred_self_modifying` OBSERVATION LOG is no longer a reason to skip a task here —
-     that log does not confer any exclusion of its own, so a task recorded in it that is otherwise
-     eligible and non-terminal is exactly the kind of task this permanent exclusion is meant to
-     catch. Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include
-     the operator remedy in the warning: fix the deploy failure, redeploy manually, then re-run
-     `/orchestrate` on the remaining task numbers. Append to `mt_state_file.defer_ledger`:
-     `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "deploy-headless.sh exit {exit_code}"}`.
-   - **On `deploy-headless.sh` success**, capture the post-redeploy baseline at the same call site
-     the plain `verify-deploy.sh` call occupied before this baseline mechanism existed:
-     ```bash
-     POST_RAW=$(bash .claude/scripts/verify-deploy.sh --findings --quiet)
-     POST_EXIT=$?
-     POST_FINDINGS=$(printf '%s\n' "$POST_RAW" | grep '^FINDING ' | sort -u)
-     ```
-   - **Success path (`POST_EXIT == 0`)**: unchanged — record the matched paths into
-     `mt_state_file.deployed_critical_paths`, log the deployed artifact count and a `verify-deploy`
-     pass, and continue to the next cycle. `PRE_FINDINGS` is unused in this branch.
-   - **`POST_EXIT` non-zero**: compute the set difference
-     `NEW_FINDINGS=$(comm -13 <(printf '%s\n' "$PRE_FINDINGS") <(printf '%s\n' "$POST_FINDINGS"))`,
-     then branch on whether it is empty:
-     - **`NEW_FINDINGS` empty → the third state.** Every finding `verify-deploy.sh` reports
-       post-redeploy already existed in the pre-redeploy baseline — a pre-existing failure, not one
-       this redeploy introduced. Log the banner
-       `[PRE-EXISTING VERIFY-DEPLOY FAILURE - N finding(s) predate this redeploy, 0 newly introduced; batch continuing]`
-       and the machine marker
-       `<!-- verify-deploy-baseline pre={pre_count} post={post_count} new=0 proceeded=true -->`
-       (symmetric exit-2 case: if `POST_EXIT == 2`, the banner instead reads "could not run,
-       before or after this redeploy — pre-existing condition"). Record the matched paths into
-       `mt_state_file.deployed_critical_paths`, exactly as the success path does — the redeploy
-       mechanically succeeded; only the standing lint state is unhealthy, and without this the
-       idempotence guard would re-fire the checkpoint every cycle on the same paths purely because
-       a pre-existing failure is still present. Do NOT add any task to
-       `deferred_deploy_checkpoint`. Do NOT append to `defer_ledger` — its contract scopes it to
-       defer/exclusion events, and the third state excludes nothing. Append one entry to
-       `mt_state_file.verify_deploy_baseline_notices`:
-       `{"cycle": cycle_count, "gate": "verify-deploy.sh", "pre_findings": pre_count, "post_findings": post_count, "new_findings": 0, "post_exit": POST_EXIT}`.
-       Continue to the next cycle.
-     - **`NEW_FINDINGS` non-empty → the existing failure path, unchanged in shape.** Log a loud
-       warning naming the gate and its exit code, then add every task in `task_numbers` that is not
-       terminal and not in `failed_tasks` to `mt_state_file.deferred_deploy_checkpoint`. Never add
-       to `failed_tasks`. Never status-mutate. Never abort the invocation. Include the operator
-       remedy in the warning: fix the deploy/verify failure, redeploy manually, then re-run
-       `/orchestrate` on the remaining task numbers. Append to `mt_state_file.defer_ledger`, its
-       `detail` field enriched to name the new findings — count first, then finding text as token
-       budget allows:
-       `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "verify-deploy.sh exit {POST_EXIT} ({n} new finding(s) vs. pre-redeploy baseline: {finding}; {finding})"}`.
-   - Already-dispatched-and-committed tasks from prior cycles are unaffected by any path — their
-     commits landed at step 5.5 before this step ran.
+**If `stop_json` is non-null**: log `.reason`/`.message` to the transcript and exit the
+lifecycle-cycling loop — `all_terminal` is a success exit; `max_cycles`, `no_eligible_stuck`,
+`max_infra_failures`, and `convergence_guard` are partial exits. Proceed to Stage MT-5. **If
+`stop_json` is null**: continue to Stage MT-4's dispatch composition below, using this cycle's
+`plan_json.dispatch[]` rows.
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 
-**Dispatch prep is per-task, not per-batch**: each of the three dispatch loops below calls
-`scripts/orchestrate-build-dispatch.sh` once INSIDE its own loop body, for each task
-individually — never hoisted above the loop and computed once for the whole batch. Different
-tasks in the same batch can carry different `task_type`/`description` values, so a single
-hoisted call would silently reuse one task's memory/literature context for every sibling in the
-batch.
+**Dispatch composition (collapsed from three separate per-phase loops to one, ≤10-line loop over
+`plan_json.dispatch[]`)**: each row already carries `task`, `phase`, `agent`, `model`, and
+`dispatch_file` — `scripts/orchestrate-cycle-plan.sh` already ran Stage 3.5 Dispatch Prep
+(`orchestrate-build-dispatch.sh`) for every row, so the dispatch file itself names every input,
+output path, and contract this dispatch carries (description, artifact round, research
+artifact/plan path/continuation, memory/literature context, hard-mode contracts). The Agent
+tool's own `context` argument therefore only needs the bootstrap fields a dispatched agent's
+harness reads directly, before or independent of reading that file:
 
-> **BATCHING RULE**: ALL Agent tool calls for the current cycle's dispatch batch MUST be issued in a SINGLE orchestrator message with multiple tool-use content blocks. Do NOT issue calls across multiple messages — Claude Code processes all calls in a single message concurrently; multiple messages force sequential execution.
+Prompt for every row: `"You are dispatched by /orchestrate for task $t, phase $phase. Read
+$dispatch_file first and execute it exactly; it names every input, output path and contract."`
+Context for every row: `{ task_number: t, orchestrator_mode: true, session_id: ctx_sid, task_dir:
+task_dir_abs, handoff_path: "${task_dir_abs}/.orchestrator-handoff.json", dispatch_seq }`.
+
+```bash
+mt_state_file="specs/.orchestrator-multi-state-${session_id}.json"
+echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
+  t=$(jq -r .task <<<"$row"); phase=$(jq -r .phase <<<"$row"); agent=$(jq -r .agent <<<"$row")
+  model=$(jq -r '.model // empty' <<<"$row"); dispatch_file=$(jq -r .dispatch_file <<<"$row")
+  task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")"
+  dispatch_seq=$(jq -r --arg t "$t" '.dispatch_seq[$t]' "$mt_state_file")
+  ctx_sid="$session_id"; [ "$phase" != "implement" ] && ctx_sid="${session_id}_${t}"
+  # Invoke Agent tool: subagent_type = agent (model, if non-empty, as the Agent tool's `model`
+  # parameter); prompt and context per the two field mappings named just above.
+done
+```
+
+**BATCHING RULE** (unchanged): ALL Agent tool calls composed by the loop above MUST be issued in a
+SINGLE orchestrator message with multiple tool-use content blocks — Claude Code processes all
+calls in a single message concurrently; multiple messages force sequential execution.
+
+Log every `plan_json.deferred[]` and `plan_json.blocked[]` row's `reason` verbatim to the
+transcript — informational only, no further action required (a deferred task becomes eligible
+again on a later cycle per the admission gate's own defer-not-fail semantics; a blocked task's
+`failed_tasks` membership was already recorded by `orchestrate-cycle-plan.sh`).
 
 > **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches. Per-task postflight (below) now includes a scoped git commit (step 5.5); these commits serialize naturally in program order because postflight is a sequential loop within this same orchestrator turn, so the `specs/.commit-lock/` mutex is needed only against a concurrently-running separate dispatch, never against this loop's own iterations.
 
@@ -3147,10 +2770,10 @@ batch.
 Stage 5's `append_detected_defect` helper, targeting `$mt_state_file` instead of the loop guard
 (an MT run has no loop guard) and scoped to each task's own `$task_num` /
 `${session_id}_${task_num}`. It matches the same `jq ... > "${mt_state_file}.tmp" && mv ...`
-idiom the existing `defer_ledger` appends in Stages MT-3/MT-4 use, so the two read as the same
-kind of write. The full contract — entry shape, unconditional-append rule, notice format,
-MUST-NOTs — is defined ONCE in Stage MT-1's `detected_defects` declaration and is not restated
-here.
+idiom `scripts/orchestrate-cycle-plan.sh` itself uses for its own `defer_ledger`/`idle_overlap_ledger`
+appends, so the two read as the same kind of write. The full contract — entry shape,
+unconditional-append rule, notice format, MUST-NOTs — is defined ONCE in Stage MT-1's
+`detected_defects` declaration and is not restated here.
 
 **These MT sites serve `/orchestrate --hard` batches too.** Exactly as Stage MT-1 already records
 for `defer_ledger`, multi-task mode has no separate hard-mode MT-stage implementation — hard-mode
@@ -3172,189 +2795,6 @@ append_detected_defect_mt() {  # task_num, class, attributed_path, site, detail,
   echo "[orchestrate] Task #${1}: [system-defect:auto] queued for postflight summary — defect_class=$2 attributed_path=$3 detecting_site=$4" >&2
 }
 ```
-
-**Classifier output — REUSED, not re-invoked**: Stage MT-3 step 4.5 already called the shared
-handoff-triage classifier once this cycle (to build `--phase-map` for the admission call) and
-captured its output as `$mt_classify_ndjson`. This stage reuses that SAME captured NDJSON for
-grouping rather than calling `orchestrate-triage-classify.sh` a second time — nothing writes
-`specs/state.json` between the two sites within one cycle, so a second read would return
-identical output at the cost of a second subprocess invocation. Do not re-invoke the classifier
-here.
-
-`jq`-filter `$mt_classify_ndjson` by `.group` into this stage's dispatch buckets: `.group ==
-"research"` -> `research_tasks`, `.group == "plan"` -> `plan_tasks`, `.group == "implement"` ->
-`implement_tasks`, `.group == "needs_human"` -> `failed_tasks` (mark blocked), and `.group ==
-"skip"` or `.group == "terminal"` -> skip (no dispatch). This same captured NDJSON supplies the
-pre-dispatch `blockers`/`continuation_context` read for `partial` tasks that the table below
-previously only asserted without a spelled-out mechanism — its precedence is **continuation >
-blockers > neither** (a task with a valid continuation always dispatches to implement even if
-stale blockers are also present; only absence of continuation falls through to the blockers
-check).
-
-**Degradation path**: exit 2 from `orchestrate-triage-classify.sh` at Stage MT-3 step 4.5's call
-site (this stage no longer calls it) means state is unavailable (missing `jq`, or an unreadable
-`specs/state.json`). `$mt_classify_ndjson` is empty in that case. When empty, log a loud warning
-here and fall back to the Phase grouping table below, applied inline per task, rather than
-silently skipping dispatch for the whole cycle — orchestration must still make forward progress
-when the classifier itself cannot run.
-
-**Phase grouping** (documentation of the rule the classifier script transcribes, retained here as
-a byte-identical reference table — `scripts/orchestrate-triage-classify.sh` is the executable
-source of truth, and THREE artifacts — this table, the classifier script's own header verdict
-table, and single-task Stage 4's `partial` sub-state prose above — MUST be changed together,
-never independently, and must always agree) — classify each eligible task by its current status:
-
-| Task status | Group | Agent |
-|-------------|-------|-------|
-| `not_started`, `researching` | research_tasks | `research_agents[task_num]` |
-| `researched`, `planning` | plan_tasks | `planner-agent` |
-| `planned`, `implementing` | implement_tasks | `implement_agents[task_num]` |
-| `partial` with continuation | implement_tasks | `implement_agents[task_num]` |
-| `partial` with blockers | failed_tasks (mark blocked) | — |
-| `partial` with no handoff | implement_tasks | `implement_agents[task_num]` |
-| `blocked`, discharged (all `dependencies[]` completed, no handoff blockers) | the group `previous_status` names (research_tasks/plan_tasks/implement_tasks) | the corresponding agent |
-| `blocked`, dependency outstanding or empty `dependencies[]` | skip | — |
-| `blocked`, dependency abandoned/expanded, handoff blockers present, or `previous_status` missing | failed_tasks (mark blocked) | — |
-| `unknown` | skip | — |
-
-`researching` folds into the SAME group as `not_started`, and `planning` folds into the SAME
-group as `researched` — this is the eligibility-not-status-gated convergence: a task stranded in
-`researching`/`planning` by a dead prior session's stale lock is no longer routed to `skip`
-merely for carrying an in-flight status string; it re-dispatches to the phase its status names.
-`unknown` (any status string that is none of the classifier's recognized rows) keeps the old
-`skip` behavior unchanged.
-
-`blocked` is NARROWED, not unconditionally folded into `skip`: a `blocked` task that is
-DISCHARGED — its `dependencies[]` all reached `status: "completed"` and its handoff carries no
-blockers — now converges with single-task Stage 4 on the SAME `previous_status`-routed group for
-BOTH engines, rather than diverging. The row that still diverges from single-task Stage 4 (which
-always escalates a `blocked` task to `needs_human`/escalation) is narrower than before: only the
-NON-discharged case (a dependency still outstanding, or empty `dependencies[]`) still folds into
-`skip` here — and that narrower divergence remains intentional, documented, not an oversight
-(Decision 1, narrowed by this task): a batch invocation skips a still-blocked task so its
-siblings can proceed, whereas the single-task engine has no siblings and so escalates to a human
-instead. A dependency stuck at a non-completed terminal status (`abandoned`/`expanded`) or a
-handoff carrying unresolved blockers routes to `failed_tasks` (mark blocked) instead, consistent
-with this stage's existing `needs_human` -> `failed_tasks` filter above, since both engines agree
-`needs_human` for those sub-cases. See the `#### State: blocked` handler above and
-`scripts/orchestrate-triage-classify.sh`'s header table and justification paragraph for the full
-six-branch discriminator between the discharged case (converged), the narrowed non-discharged
-divergence (still documented), and the now-removed `partial` divergence (converged previously).
-
-**Task-lock acquire (per-task, before dispatch)**: Multi-task dispatch bypasses the single-task
-gate scripts entirely (`command-gate-in.sh`/`command-gate-out.sh` are never sourced here), so
-this stage acquires/releases the lock itself. See `.claude/context/patterns/task-lock.md` for the
-full contract. For each task across `research_tasks + plan_tasks + implement_tasks` (before
-building the single dispatch message):
-
-```bash
-bash .claude/scripts/task-lock.sh acquire "$task_num" "$op" "$session_id" "/orchestrate (multi-task)"
-```
-
-**Invariant**: the bare `$session_id` is used here deliberately — it MUST equal the value Stage
-MT-1 passed to `session-register` and Stage MT-3 passes to `orchestrate-batch-admit.sh
---session-id`, because `session_contention()`'s self-exclusion is an exact string match on
-`session_id`. A per-task-suffixed value (`${session_id}_${task_num}`) would make the batch's own
-union-`file_scope` registration read as a foreign live session, refusing every lock acquire in
-the batch against its own registration.
-
-where `$op` is `research`/`plan`/`implement` matching the task's group. If `acquire` refuses
-(exit 1 — a fresh lock held by a genuinely different session; same-session re-entry, including a
-prior cycle of this SAME multi-task run, never refuses), remove that task from this cycle's
-dispatch batch (do NOT add it to `failed_tasks` — it becomes eligible again next cycle, mirroring
-the wave-split check's defer-not-fail behavior in Stage MT-3 step 4.5) and log:
-
-```
-[orchestrate] WARNING: Task #{task_num} is locked by another session; deferring to a later cycle.
-```
-
-**Dispatch all groups in ONE message**: the preflight calls below run per task, immediately
-before that task's Agent dispatch is composed into the single batched message — they are not a
-separate round-trip and do not violate the BATCHING RULE above. `update-task-status.sh` is
-idempotent, so calling it once per task per cycle is always safe, including repeated
-continuation-resume cycles.
-
-Minting `dispatch_seq` for a batch dispatch (Defect A, applies to all three loops below):
-increment the SAME batch-scoped `dispatch_seq_counter` and record the minted value into
-`dispatch_seq[$t]`, in the same jq write that records `dispatch_start_ts[$t]` — one atomic
-read-modify-write per task, so two tasks dispatched in the same batched message never collide on
-the counter:
-```bash
-task_dispatch_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$mt_state_file")
-task_dispatch_start_ts=$(date -u +%s)
-jq --arg t "$task_num" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
-  '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq' \
-  "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
-```
-
-For each task in `research_tasks`:
-- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
-- `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
-  Dispatch Prep's sole implementation; the script re-derives this task's description directly
-  from `specs/state.json`, so no separate per-task description read is needed here any more):
-  ```bash
-  build_args=(--session "${session_id}_${task_num}" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
-  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
-  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
-  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
-  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
-  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
-  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" research "${build_args[@]}")
-  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
-  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
-  ```
-- Invoke Agent tool: `subagent_type = research_agents[task_num]` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase research. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
-
-For each task in `plan_tasks`:
-- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
-- Read `research_artifact` path from `state.json` artifacts (type=report)
-- `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
-  Dispatch Prep's sole implementation; the script re-derives this task's description directly
-  from `specs/state.json`, so no separate per-task description read is needed here any more):
-  ```bash
-  build_args=(--session "${session_id}_${task_num}" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
-  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
-  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
-  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
-  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
-  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
-  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" plan "${build_args[@]}")
-  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
-  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
-  ```
-- Invoke Agent tool: `subagent_type = "planner-agent"` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase plan. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
-
-For each task in `implement_tasks`:
-- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
-- Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
-- Read `plan_path` from `task_dir/plans/` (latest .md)
-- Read `continuation` from `task_dir/.orchestrator-handoff.json`, resolving **either** accepted
-  form — nested `continuation_context.handoff_path` or flat top-level `continuation_path` (same
-  dual-form rule as `scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate and the
-  single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
-  `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
-- `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
-  Dispatch Prep's sole implementation; the script re-derives this task's description and its own
-  continuation pointer directly from `specs/state.json`/`task_dir/.orchestrator-handoff.json`, so
-  no separate per-task description read is needed here — the `continuation` bash variable above
-  is still resolved separately because the agent's `context` JSON below also needs it directly):
-  ```bash
-  build_args=(--session "$session_id" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
-  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
-  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
-  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
-  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
-  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
-  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" implement "${build_args[@]}")
-  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
-  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
-  ```
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task; note this is also why `--session "$session_id"` above, not the per-task-suffixed form, is passed to the dispatch-build script for this loop only)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 

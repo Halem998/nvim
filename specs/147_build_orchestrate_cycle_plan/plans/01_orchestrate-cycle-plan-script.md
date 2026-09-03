@@ -514,29 +514,29 @@ that the region moved.
 
 ---
 
-### Phase 9: Collapse SKILL.md and relocate the displaced prose [NOT STARTED]
+### Phase 9: Collapse SKILL.md and relocate the displaced prose [COMPLETED]
 
 **Goal**: Replace Stage MT-3 and MT-4's pre-dispatch half with one `orchestrate-cycle-plan.sh` call
 plus a loop of at most ten lines, relocating the displaced prose to
 `docs/architecture/orchestrate-state-machine.md`.
 
 **Tasks**:
-- [ ] Capture the byte size of the target region before editing (`sed -n` over the measured line
+- [x] Capture the byte size of the target region before editing (`sed -n` over the measured line
       range piped to `wc -c`) so the removal figure is a real diff, not an estimate.
-- [ ] Replace Stage MT-3 steps 1-4.5 with a single call to `orchestrate-cycle-plan.sh` passing the
+- [x] Replace Stage MT-3 steps 1-4.5 with a single call to `orchestrate-cycle-plan.sh` passing the
       session, state file, flags, and task numbers, and reading `stop`/`dispatch`/`deferred`/
       `blocked` from the returned JSON.
-- [ ] Replace MT-4's pre-dispatch half with a loop of at most ten lines that composes the batched
+- [x] Replace MT-4's pre-dispatch half with a loop of at most ten lines that composes the batched
       Agent-tool message from `dispatch[]` rows. Everything from "After all Agent tool calls
       complete" onward stays untouched (it belongs to the separate postflight script task).
-- [ ] Relocate the displaced explanatory prose to
+- [x] Relocate the displaced explanatory prose to
       `docs/architecture/orchestrate-state-machine.md`, which the lead never loads. Create the file
       if absent; otherwise append a clearly headed section.
-- [ ] Leave Stage MT-1, MT-2, and MT-5 untouched; confirm every `mt_state_file` field they read is
+- [x] Leave Stage MT-1, MT-2, and MT-5 untouched; confirm every `mt_state_file` field they read is
       still written by the new script.
-- [ ] Report bytes removed from SKILL.md (before-size minus after-size for the region, plus the
+- [x] Report bytes removed from SKILL.md (before-size minus after-size for the region, plus the
       whole-file delta).
-- [ ] Reference durable anchors only (script names, stage names, section headings) in every edited
+- [x] Reference durable anchors only (script names, stage names, section headings) in every edited
       deliverable — no task-number citations outside `specs/**`.
 
 **Timing**: 1.5 hours
