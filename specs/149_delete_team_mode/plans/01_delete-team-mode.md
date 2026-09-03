@@ -1,7 +1,7 @@
 # Implementation Plan: Task #149
 
 - **Task**: 149 - Delete team mode: fan-out stages, --team flags, synthesis wiring, docs and tests
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 125 (delete base lifecycle skills) -- landed
 - **Research Inputs**: specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md
