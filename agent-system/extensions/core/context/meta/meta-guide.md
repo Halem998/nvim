@@ -235,7 +235,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 3. **No memory integration**: Unlike `/research`, `/plan`, and `/implement` (which call `memory-retrieve.sh` to inject relevant memories), `/meta` does not retrieve memories. Past decisions, patterns, and anti-patterns from the memory vault are not available during the interview.
 
-4. **No effort/model flags**: `/meta` does not support `--fast`, `--hard`, `--team`, `--haiku`, `--sonnet`, `--opus`, or `--fable` flags. It always runs in its default mode.
+4. **No effort/model flags**: `/meta` does not support `--fast`, `--hard`, `--haiku`, `--sonnet`, `--opus`, or `--fable` flags. It always runs in its default mode.
 
 5. **DetectDomainType is vestigial**: Stage 2.5 classifies tasks as "meta" vs "general" based on keywords, but since `/meta` is inherently about `.claude/` changes, the result is almost always "meta."
 

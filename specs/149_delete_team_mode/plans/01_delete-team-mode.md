@@ -359,46 +359,48 @@ registrations are one objective.
 
 ---
 
-### Phase 5: Core context, rules, and docs prose sweep [NOT STARTED]
+### Phase 5: Core context, rules, and docs prose sweep [COMPLETED]
 
 **Goal**: Every remaining core-side prose reference to team mode is removed or reworded, and the
 `{NN}_{letter}-findings.md` convention is gone from the format docs.
 
 **Tasks**:
-- [ ] `rules/artifact-formats.md`: delete the "Team Mode (parallel teammates)" naming subsection,
+- [x] `rules/artifact-formats.md`: delete the "Team Mode (parallel teammates)" naming subsection,
       the Team Mode example flow block, and any letter-suffix language in the Key Principle
-- [ ] `context/reference/state-management-schema.md`: delete the "Team Mode Naming" subsection
+- [x] `context/reference/state-management-schema.md`: delete the "Team Mode Naming" subsection
       documenting `{NN}_{letter}-findings.md`
-- [ ] `context/reference/skill-agent-mapping.md`: delete the `## Team Mode` section and the
+- [x] `context/reference/skill-agent-mapping.md`: delete the `## Team Mode` section and the
       later "see Team Mode section above" cross-reference sentence
-- [ ] `context/standards/git-staging-scope.md`: reword the illustrative
+- [x] `context/standards/git-staging-scope.md`: reword the illustrative
       `complete team research (${team_size} teammates)` commit-message example to a non-team
       example, and fix the follow-on sentence contrasting against "the team-research example
       above"
-- [ ] `rules/git-workflow.md`: reword the "the proven `--team` staging convention" phrase in the
+- [x] `rules/git-workflow.md`: reword the "the proven `--team` staging convention" phrase in the
       Commit Scope pointer
-- [ ] `context/patterns/skill-lifecycle.md`: delete the "Multi-task vs. team mode (orthogonal
+- [x] `context/patterns/skill-lifecycle.md`: delete the "Multi-task vs. team mode (orthogonal
       dimensions)" paragraph
-- [ ] `context/patterns/skill-self-execution-fallback.md`: close-read, then rewrite the
+- [x] `context/patterns/skill-self-execution-fallback.md`: close-read, then rewrite the
       "surviving analog" framing (team fan-out is no longer a surviving analog); the historical
       "now-retired per-mode team skills" mention may stay as-is
-- [ ] `context/meta/meta-guide.md`: drop `--team` from the `/meta` flag-exclusion list
-- [ ] `docs/fork-patterns.md`: delete the two team table rows and the whole
+- [x] `context/meta/meta-guide.md`: drop `--team` from the `/meta` flag-exclusion list
+- [x] `docs/fork-patterns.md`: delete the two team table rows and the whole
       `## Team-Mode Optimization Opportunity (Future Work)` section
-- [ ] `docs/guides/creating-commands.md`: drop `TEAM_MODE, TEAM_SIZE` from the `# Exports:`
+- [x] `docs/guides/creating-commands.md`: drop `TEAM_MODE, TEAM_SIZE` from the `# Exports:`
       comment and `--team` from the flags-list sentence
-- [ ] `docs/templates/command-template.md`: delete the `--team` Options row and update the
+- [x] `docs/templates/command-template.md`: delete the `--team` Options row and update the
       `# Exports:` comment (critical -- this scaffold would reintroduce the flag in future work)
-- [ ] `hooks/wezterm-task-number.sh`: swap the illustrative `--team` flag name in the strip
+- [x] `hooks/wezterm-task-number.sh`: swap the illustrative `--team` flag name in the strip
       comment (cosmetic; the mechanism strips any `--flag`)
-- [ ] Re-verify (do not blind-edit): `docs/architecture/handoff-schema.md` and
+- [x] Re-verify (do not blind-edit): `docs/architecture/handoff-schema.md` and
       `scripts/orchestrate-recover-outcome.sh` -- the report found no direct `[Tt]eam` hit;
       edit only if a genuine Stage-3.6-specific line is found, otherwise record as false positive
-- [ ] Re-verify `scripts/lint/lint-postflight-boundary.sh`'s
+- [x] Re-verify `scripts/lint/lint-postflight-boundary.sh`'s
       `Spawn teammates using Agent tool|Agent tool for team coordination` regex clause: if it now
       matches zero files, record it as dead code from the prior lifecycle-skills cleanup and
-      leave it (out of scope), or note it as a follow-up
-- [ ] Confirm untouched: `context/formats/handoff-artifact.md`, `context/formats/progress-file.md`
+      leave it (out of scope), or note it as a follow-up *(completed: confirmed zero-match —
+      `grep -rl` for both alternatives returns nothing repo-wide. Recorded as dead code, left
+      untouched, out of scope per the plan's own disjunction)*
+- [x] Confirm untouched: `context/formats/handoff-artifact.md`, `context/formats/progress-file.md`
       (generic "successor teammate" vocabulary -- false positives)
 
 **Timing**: 1.5 hours

@@ -44,16 +44,10 @@ All artifact types share a single sequence number per task within a "round" of w
 - **Plan**: Uses current round (`next_artifact_number - 1`)
 - **Summary**: Uses current round (`next_artifact_number - 1`)
 
-**Single-Agent Mode**: `{NN}_{slug}.md`
+**Format**: `{NN}_{slug}.md`
 - Example: `01_initial-research.md`, `01_implementation-plan.md`, `01_execution-summary.md`
 
-**Team Mode** (parallel teammates):
-- Teammate findings: `{NN}_{letter}-findings.md`
-  - Example: `01_teammate-a-findings.md`, `01_teammate-b-findings.md`
-- Synthesis artifact: `{NN}_{slug}.md` (same number, no letter)
-  - Example: `01_team-research.md`
-
-**Key Principle**: All artifacts from the same research round share the same base number. Letter suffixes distinguish parallel work within a round.
+**Key Principle**: All artifacts from the same research round share the same base number.
 
 **Example Flow**:
 ```
@@ -65,19 +59,6 @@ Round 1:
 Round 2 (after blocker/revision):
   /research 309  -> creates 02_report.md (next_artifact_number becomes 3)
   /plan 309      -> creates 02_plan.md (uses round 2)
-```
-
-**Team Mode Example**:
-```
-/orchestrate 309 --team
-  -> 01_teammate-a-findings.md
-  -> 01_teammate-b-findings.md
-  -> 01_teammate-c-findings.md
-  -> 01_team-research.md (synthesis)
-  -> next_artifact_number becomes 2
-
-/plan 309
-  -> 01_implementation-plan.md (uses round 1)
 ```
 
 ## Phase Status Markers (phase-heading scope)

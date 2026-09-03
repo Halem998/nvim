@@ -141,14 +141,14 @@ git add \
   "specs/${padded_num}_${project_name}/.return-meta.json" \
   "specs/TODO.md" \
   "specs/state.json"
-git commit -m "task ${task_number}: complete team research (${team_size} teammates)
+git commit -m "task ${task_number}: complete research
 
 Session: ${session_id}
 "
 ```
 
 For `implement`, extend the same pattern with the plan path, `modified_files`, and the canonical
-exclusion set (this template stages the whole task directory, unlike the team-research example
+exclusion set (this template stages the whole task directory, unlike the research example
 above, so the exclusions are required here). **This inline template is illustrative of the
 overall staging shape only — it is NOT the sanctioned implementation.**
 `agent-system/extensions/core/scripts/git-commit-scoped.sh` is the sanctioned implementation

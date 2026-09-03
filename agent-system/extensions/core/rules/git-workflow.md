@@ -69,7 +69,7 @@ the atomic-batch carve-out, the staging-reuse mechanism, and the message-convent
 ## Commit Scope
 
 See `.claude/context/standards/git-staging-scope.md` for the authoritative per-operation
-commit-scope contract (`research`/`plan`/`implement` staging rules, the proven `--team` staging
+commit-scope contract (`research`/`plan`/`implement` staging rules, the proven scoped-staging
 template, and the fail-safe under-stage-not-over-stage direction).
 
 ## Git Safety

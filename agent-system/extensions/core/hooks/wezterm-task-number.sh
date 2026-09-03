@@ -45,7 +45,7 @@ SHOULD_CLEAR=0
 # Tier 1a: research, plan, implement, revise, spawn + task spec (supports multi-task syntax)
 if [[ "$PROMPT" =~ ^[[:space:]]*/?(research|plan|implement|revise|spawn|orchestrate)[[:space:]]+([0-9][0-9,' '-]*) ]]; then
     TASK_SPEC="${BASH_REMATCH[2]}"
-    TASK_SPEC="${TASK_SPEC%%--*}"       # strip from first "--" (removes flags like --team)
+    TASK_SPEC="${TASK_SPEC%%--*}"       # strip from first "--" (removes flags like --hard)
     while [[ "$TASK_SPEC" =~ [[:space:],]$ ]]; do
         TASK_SPEC="${TASK_SPEC%[[:space:],]}"   # strip trailing space/comma
     done

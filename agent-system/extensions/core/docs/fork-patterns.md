@@ -72,8 +72,6 @@ When `CLAUDE_CODE_FORK_SUBAGENT=1` and `subagent_type` is omitted:
 |----------|------------------|-------|
 | Fresh agent (`subagent_type` specified) | Full cost | No cache sharing |
 | Forked agent (no `subagent_type`) | ~10% of fresh | ~90% reduction via cache |
-| Team mode with 3 teammates | 3x fresh (no fork) | Each teammate is fresh |
-| Team mode with FORK_SUBAGENT | ~1.2x fresh | Teammates 2-N share cache |
 
 ### Why core skills don't benefit today
 
@@ -149,23 +147,6 @@ Prompt: simple task instructions (no structured context JSON required)
 | `agent:` frontmatter | Works with or without `context: fork`; `skill-meta` uses `agent:` alone |
 
 ---
-
-## Team-Mode Optimization Opportunity (Future Work)
-
-`skill-orchestrate`'s Stage 3.6/3.6a team fan-out spawns multiple teammates via Agent tool calls
-without specifying `subagent_type`. This means they ARE eligible for
-`CLAUDE_CODE_FORK_SUBAGENT=1` cache sharing.
-
-**Potential impact**: With `FORK_SUBAGENT=1`, teammates 2-N could inherit the parent's prompt
-cache, reducing per-teammate input token cost by ~90%. For a 3-teammate team, total input cost
-would be ~1.2x instead of ~3x.
-
-**Current status**: Not yet implemented; tracked as a follow-up optimization.
-
-**What's needed**:
-- Verify teammate spawning dispatch order for maximum cache overlap
-- Update team orchestration metadata to report estimated cache savings
-- Reconsider default `team_size=2` given reduced per-teammate cost
 
 ---
 

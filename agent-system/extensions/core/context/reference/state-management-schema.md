@@ -159,11 +159,6 @@ Round 2 (after blocker):
   /implement 309 -> reads 3, uses (3-1)=2, creates 02_summary.md
 ```
 
-**Team Mode Naming**:
-- Teammate artifacts use `{NN}_{letter}-findings.md` pattern (e.g., `01_teammate-a-findings.md`)
-- Synthesis artifacts use `{NN}_{slug}.md` pattern (same number, no letter)
-- All artifacts from the same research round share the same base number
-
 **Backward Compatibility**:
 When `next_artifact_number` is missing (legacy tasks), skills fall back to directory scanning:
 ```bash

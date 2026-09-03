@@ -49,18 +49,6 @@ These skills cannot be invoked by agents:
 |-------|---------|
 | skill-tag | Semantic version tagging for deployment |
 
-## Team Mode
-
-`--team` is exclusively an `/orchestrate` flag, served by `skill-orchestrate`'s Stage 3.6/3.6a
-team fan-out — it spawns multiple parallel teammates for a research or plan phase (and parallel
-phase execution for implement) and synthesizes their output via `synthesis-agent`. `/research`,
-`/plan`, and `/implement` no longer accept `--team`; each is single-agent only. Requires
-`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable.
-
-**Graceful Degradation**: If team mode unavailable, falls back to single-agent mode.
-
-**Cost Note**: Team mode uses ~5x tokens compared to single-agent. Default team_size=3 (Primary + Alternatives + Critic). Use `--fast` for 2 or `--hard` for 4.
-
 ## Task-Type-Based Routing
 
 Skills are selected based on task language:
@@ -134,9 +122,6 @@ yes         no
 │ skill     │ │ by language│
 └───────────┘ └────────────┘
 ```
-
-Parallel multi-agent execution (`--team`) is a separate routing path on `/orchestrate` only,
-served by `skill-orchestrate`'s Stage 3.6/3.6a team fan-out — see the "Team Mode" section above.
 
 ## Extension Skill Loading
 

@@ -9,11 +9,11 @@ shell logic with a fixed input/output contract. Before this block existed, some 
 Stage 5b at all: the report found that a skill whose degraded path re-delegates wholesale to a
 different skill instead of writing return metadata itself produces **no** `.return-meta.json` of
 its own — the exact defect class this block exists to close. (The original finding was the
-now-retired per-mode team skills' own "Stage 4a: Fallback to Single Agent" path. The surviving
-analog, `skill-orchestrate`'s Stage 3.6 team fan-out, avoids the defect by design: its own
-`fanout_degraded=true` path falls back to the SAME single-agent Agent-tool dispatch each
-non-team cycle already uses, not to a different skill, so the dispatched agent still writes its
-own metadata.) Every instruction below is DIRECT and EXECUTABLE prose — there is no bash fence
+now-retired per-mode team skills' own "Stage 4a: Fallback to Single Agent" path.
+`skill-orchestrate`'s own team fan-out mechanism, which once avoided the same defect by falling
+back to its single-agent Agent-tool dispatch rather than to a different skill, has since been
+deleted in its entirety; no successor mechanism currently reproduces this exact
+defect-avoidance shape.) Every instruction below is DIRECT and EXECUTABLE prose — there is no bash fence
 to keep pseudocode out of, but the same "no vague hand-waving" bar applies: an importing skill
 must be able to follow this block's steps literally.
 
@@ -46,8 +46,8 @@ This write obligation is not optional and is not satisfied by the re-delegated a
 `.return-meta.json` write in a wholesale-redelegation fallback — if this skill's fallback
 re-delegates the ENTIRE operation to another skill/agent (rather than performing the work itself),
 the re-delegated agent's metadata write already satisfies this obligation and this stage is a
-no-op; if instead this skill's fallback performs SOME OF the work itself (e.g. a team skill
-degrading to a single teammate it drives directly, rather than invoking a separate skill), THIS
+no-op; if instead this skill's fallback performs SOME OF the work itself (e.g. degrading to a
+single sub-dispatch it drives directly, rather than invoking a separate skill), THIS
 skill must write `.return-meta.json` itself, because no other agent will.
 
 If you DID use the Agent tool (the skill's normal Stage 5), skip this stage entirely — the

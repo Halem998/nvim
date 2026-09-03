@@ -20,7 +20,6 @@ model: sonnet
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--team` | Enable multi-agent parallel execution | false |
 | `--fast` | Low-effort mode | false |
 | `--hard` | High-effort mode | false |
 
@@ -30,7 +29,7 @@ model: sonnet
 
 ```bash
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
-# Exports: TASK_NUMBERS, REMAINING_ARGS, TEAM_MODE, TEAM_SIZE,
+# Exports: TASK_NUMBERS, REMAINING_ARGS,
 #          EFFORT_FLAG, MODEL_FLAG, CLEAN_FLAG, FORCE_FLAG, FOCUS_PROMPT
 ```
 

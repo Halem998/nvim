@@ -264,11 +264,6 @@ inline git commit. Multiple parallel instances may write to `state.json` concurr
 acceptable because every write is scoped to a specific `project_number` via
 `select(.project_number == $num)`, so no instance touches another task's fields.
 
-**Multi-task vs. team mode** (orthogonal dimensions): multi-task dispatches one agent instance
-per task, within `/orchestrate`'s own Stage MT loop. Team mode (`--team`) is `skill-orchestrate`'s
-internal Stage 3.6/3.6a fan-out, spawning multiple agents for a single task. The two dimensions
-compose independently within `/orchestrate` itself.
-
 ---
 
 ## Postflight Boundary Restrictions
