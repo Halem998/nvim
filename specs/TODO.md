@@ -31,7 +31,7 @@ next_project_number: 151
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
-149 [PLANNED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
+149 [IMPLEMENTING] — Delete team mode from the agent system. Decided 2026-09-02 (specs
   └─ 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
   └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
     └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
@@ -99,7 +99,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 149. Delete team mode: fan-out stages, --team flags, synthesis wiring, docs and tests
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 125

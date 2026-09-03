@@ -1097,7 +1097,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 688,
+      "line_count": 667,
       "keywords": [
         "patterns",
         "multi-task",
@@ -1164,7 +1164,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 321,
+      "line_count": 316,
       "keywords": [
         "patterns",
         "skill",
@@ -1336,7 +1336,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Mapping of skills to agents",
-      "line_count": 160,
+      "line_count": 145,
       "keywords": [
         "reference",
         "skill",
@@ -1358,7 +1358,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 519,
+      "line_count": 515,
       "keywords": [
         "reference",
         "state",
@@ -2573,7 +2573,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 206,
+      "line_count": 203,
       "keywords": [
         "patterns",
         "file-scope",
@@ -2752,7 +2752,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context-protective lead pattern: orchestrators route and delegate, never read full artifacts",
-      "line_count": 264,
+      "line_count": 265,
       "keywords": [
         "context-budget",
         "lead-agent",

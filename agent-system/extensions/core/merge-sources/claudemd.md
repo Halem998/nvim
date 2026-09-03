@@ -113,7 +113,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 
-**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`). Each task is processed through the full lifecycle using dependency-aware wave dispatch. Flags like `--research`/`--plan`/`--implement` and `--team` are single-task only — accepted and ignored (with a notice) in multi-task mode. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
+**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`). Each task is processed through the full lifecycle using dependency-aware wave dispatch. Flags like `--research`/`--plan`/`--implement` are single-task only — accepted and ignored (with a notice) in multi-task mode. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
 
 ### Utility Scripts
 
@@ -151,7 +151,6 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-refresh | (direct execution) |
 | skill-todo | (direct execution) |
 | skill-tag | (user-only) |
-| skill-orchestrate (internal, Stage 3.6a synthesis step) | synthesis-agent |
 | skill-reviser | reviser-agent |
 | skill-spawn | spawn-agent |
 | skill-orchestrate | (direct execution) |
@@ -166,14 +165,6 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 **User-Only Skills**: Skills marked as "user-only" cannot be invoked by agents. These are for human-controlled operations like deployment (`skill-tag`).
 
 **Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-{domain}-research -> {domain}-research-agent). Extension task types use bare values (e.g., `python`) or compound values (e.g., `present:grant`) for sub-routing.
-
-**Team Mode**: `--team` is exclusively an `/orchestrate` flag (single-task mode only), served by
-`skill-orchestrate`'s Stage 3.6/3.6a team fan-out — it spawns multiple parallel teammates for a
-research or plan phase (and parallel phase execution for implement) and synthesizes their output.
-Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to
-single-agent if unavailable.
-
-**Note**: Team mode uses ~5x tokens compared to single-agent. Default team_size=3 (Primary + Alternatives + Critic). Use `--fast` for 2 or `--hard` for 4.
 
 ## Hard Mode (`--hard`)
 
@@ -208,12 +199,9 @@ Use `--hard` when one or more of the following apply:
 |------|----------------|
 | Standard | 1x |
 | `--hard` | ~3-5x |
-| `--team` | ~5x |
-| `--hard --team` | ~15-25x |
 
 ### Composability
 
-- `--hard` works with `--team`: `skill-orchestrate`'s team fan-out injects hard-mode contracts into each teammate
 - `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
   composable with `--fable`, e.g. `--hard --fable`)
 - `--hard` works with extension routing: extensions declare `routing_hard` in their manifest
