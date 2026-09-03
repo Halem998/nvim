@@ -169,30 +169,30 @@ over.
 
 ---
 
-### Phase 2: Add Report Skeleton to lean-research-agent.md [NOT STARTED]
+### Phase 2: Add Report Skeleton to lean-research-agent.md [COMPLETED]
 
 **Goal**: Give `lean-research-agent.md` a report-writing stage it currently lacks entirely,
 carrying a skeleton that covers all eight `REPORT_METADATA` fields and all five
 `REPORT_SECTIONS`.
 
 **Tasks**:
-- [ ] Add `@.claude/context/formats/report-format.md` to the `## Context References` block
-      (currently lists only `return-metadata-file.md`).
-- [ ] Insert a new stage heading `## Stage 1: Create Research Report` between `## Stage 0:
+- [x] Add `@.claude/context/formats/report-format.md` to the `## Context References` block
+      (currently lists only `return-metadata-file.md`). *(completed: added)*
+- [x] Insert a new stage heading `## Stage 1: Create Research Report` between `## Stage 0:
       Initialize Early Metadata` and `## Write Final Metadata`, matching the file's existing `##`
-      stage-heading depth (this file uses `##` for stages, unlike the hard agents' `###`).
-- [ ] Under it, add the path-construction note (`specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`,
+      stage-heading depth (this file uses `##` for stages, unlike the hard agents' `###`). *(completed: inserted)*
+- [x] Under it, add the path-construction note (`specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`,
       `{NN}` from `artifact_number`) and a fenced markdown skeleton modelled on the Phase 1
       copy source from `general-research-agent.md`, carrying all eight `**Field**:` metadata
       lines and `## Executive Summary`, `## Context & Scope`, `## Findings`,
       `## Decisions`, `## Recommendations` (or `### Recommendations` nested under Findings, as
-      the copy source does -- the validator's prefix match accepts either) as literal headings.
-- [ ] Fold the existing `## Tactic Survey Results` template (currently a free-standing block at
+      the copy source does -- the validator's prefix match accepts either) as literal headings. *(completed: done, nested ### Recommendations under Findings)*
+- [x] Fold the existing `## Tactic Survey Results` template (currently a free-standing block at
       :199) into the skeleton as an additional section, citing `SUMMARY_SECTIONS`-style
       "required minimum, not exhaustive whitelist" semantics so it is clearly additive, and leave
-      the original protocol prose (`### Tactic Discovery Survey Protocol`) in place.
-- [ ] Add a one-line cross-reference naming `general-research-agent.md`'s
-      `### Stage 6: Create Research Report` as the canonical copy source for this skeleton.
+      the original protocol prose (`### Tactic Discovery Survey Protocol`) in place. *(completed: done, original prose untouched)*
+- [x] Add a one-line cross-reference naming `general-research-agent.md`'s
+      `### Stage 6: Create Research Report` as the canonical copy source for this skeleton. *(completed: done)*
 
 **Timing**: 0.75 hours
 

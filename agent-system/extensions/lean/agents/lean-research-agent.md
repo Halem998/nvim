@@ -24,6 +24,9 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
   status vocabulary (always load before writing final metadata)
+- `@.claude/context/formats/report-format.md` - Report metadata/section requirements and the
+  "Example Skeleton" this agent's own inline skeleton (Stage 1 below) is modelled on (always load
+  before writing the research report)
 
 ## Agent Metadata
 
@@ -232,6 +235,79 @@ Include a "Tactic Survey Results" section in the research report:
      }
    }
    ```
+
+## Stage 1: Create Research Report
+
+**Path Construction**:
+- Use `artifact_number` from delegation context for `{NN}` prefix
+- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
+
+**This block is the authoritative shape of a research report.** It already conforms to
+`report-format.md`'s required metadata fields and sections. The metadata header below is
+mandatory and MUST NOT be abbreviated, reordered, or partially omitted — every bullet is a field
+the validator checks by name. Copy source: `general-research-agent.md`'s
+`### Stage 6: Create Research Report`.
+
+```markdown
+# Research Report: Task #{N}
+
+**Task**: {id} - {title}
+**Started**: {ISO8601}
+**Completed**: {ISO8601}
+**Effort**: {estimate}
+**Dependencies**: {list or None}
+**Sources/Inputs**: - Codebase, Mathlib search tools (leansearch/loogle/leanfinder/state_search), lean-lsp MCP, literature source (if applicable)
+**Artifacts**: - path to this report
+**Standards**: report-format.md, subagent-return.md
+
+## Executive Summary
+- Key finding 1
+- Key finding 2
+- Recommended approach
+
+## Context & Scope
+{What was researched, constraints}
+
+## Findings
+### Codebase Patterns
+- {Existing Lean/Mathlib patterns discovered}
+
+### External Resources
+- {Mathlib declarations, documentation, tactic references}
+
+### Recommendations
+- {Implementation approaches, including whether a sorry-free path exists}
+
+## Decisions
+- {Explicit decisions made during research}
+
+## Risks & Mitigations
+- {Potential issues and solutions}
+
+## Tactic Survey Results
+- {Additional section beyond REPORT_SECTIONS' required minimum -- see
+  `SUMMARY_SECTIONS_OPTIONAL`-style "required minimum, not exhaustive whitelist" semantics in
+  `validate-artifact.sh`: extra sections are accepted by design, never penalized}
+
+| Goal | Tactic | Result | Premises/Config |
+|------|--------|--------|-----------------|
+| {goal description} | simp | success | [lemma1, lemma2] |
+| {goal description} | omega | fail | N/A |
+| {goal description} | aesop | success | default premises |
+
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
+
+## Appendix
+- Search queries used
+- References to documentation
+```
+
+Populate `## Tactic Survey Results` per the "Tactic Discovery Survey Protocol" (Step 5) above
+when tactic candidates were investigated; when the protocol was not invoked for this task, write
+`- Not applicable (no tactic survey performed)` rather than omitting the section.
 
 ## Write Final Metadata
 

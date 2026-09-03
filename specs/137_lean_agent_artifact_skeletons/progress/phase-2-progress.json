@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Add Report Skeleton to lean-research-agent.md",
+  "started_at": "2026-09-03T00:05:00Z",
+  "last_updated": "2026-09-03T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add report-format.md to Context References", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"]},
+    {"id": 2, "description": "Insert Stage 1: Create Research Report heading between Stage 0 and Write Final Metadata", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"]},
+    {"id": 3, "description": "Add path-construction note and full fenced skeleton (8 metadata fields, 5 sections)", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"], "note": "Verified via scoped grep: all 8 REPORT_METADATA fields and 5 REPORT_SECTIONS present inside the fenced block."},
+    {"id": 4, "description": "Fold existing Tactic Survey Results template into skeleton as additional section", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"], "note": "Original protocol prose at Step 5 left in place; grep -c '^## Tactic Survey Results' = 2 (one in protocol prose context, one in skeleton)."},
+    {"id": 5, "description": "Add copy-source cross-reference naming general-research-agent.md Stage 6", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
