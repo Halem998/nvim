@@ -1,0 +1,17 @@
+{
+  "status": "implemented",
+  "summary": "All 8 phases of team-mode deletion are complete. Phase 8's acceptance sweep found zero unjustified acceptance-grep survivors, measured byte removal of 24,225 bytes (SKILL.md) and 1,910 bytes (orchestrate.md), a green full test suite, and a full gate run whose 3 failures all match the documented pre-existing baseline.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/149_delete_team_mode/summaries/01_delete-team-mode-summary.md",
+      "summary": "All 8 phases completed: team mode deleted from the source store; Phase 7 verified already-landed; Phase 8 acceptance sweep executed and green."
+    }
+  ],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": [],
+  "continuation_path": null,
+  "plan_markers_verified": true,
+  "dispatch_seq": 4
+}

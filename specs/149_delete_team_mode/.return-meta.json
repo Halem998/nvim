@@ -1,15 +1,64 @@
 {
-  "schema_version": "1.0",
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 149,
-  "session_id": "sess_1788399440_184d69",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "status": "implemented",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/149_delete_team_mode/plans/01_delete-team-mode.md",
-      "summary": "8-phase plan to delete team mode from the source store."
+      "type": "summary",
+      "path": "specs/149_delete_team_mode/summaries/01_delete-team-mode-summary.md",
+      "summary": "All 8 phases completed: team mode deleted from the source store, Phase 7 verified as already-landed, Phase 8 acceptance sweep (grep reconciliation, measured byte report, full test suite, full gate, diff review, orchestrate-mechanics smoke) executed and green with no new findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted team mode outright from the agent system source store across all 8 planned phases: Stage 3.6/3.6a fan-out excised from skill-orchestrate, the --team/--team-size flag surface removed end to end, synthesis-agent and its exclusive docs deleted with registrations, a 20-file prose sweep completed, merge-sources/claudemd.md and the deployed CLAUDE.md verified team-free, and the Phase 8 acceptance criteria (zero unjustified acceptance-grep survivors, measured byte removal of 24,225 bytes from SKILL.md and 1,910 bytes from orchestrate.md, full test suite and gate run with only pre-existing unrelated failures, and an orchestrate-mechanics smoke check) all demonstrated."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/synthesis-agent.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/formats/team-metadata-extension.md",
+    "agent-system/extensions/core/context/meta/meta-guide.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/patterns/skill-self-execution-fallback.md",
+    "agent-system/extensions/core/context/patterns/team-orchestration.md",
+    "agent-system/extensions/core/context/reference/skill-agent-mapping.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/docs/guides/creating-commands.md",
+    "agent-system/extensions/core/docs/templates/command-template.md",
+    "agent-system/extensions/core/hooks/wezterm-task-number.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+    "agent-system/extensions/cslib/context/project/cslib/domain/hard-mode-selection.md",
+    "agent-system/extensions/cslib/index-entries.json",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/literature/merge-sources/claudemd.md",
+    "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When deleting an experimental feature gated behind a numbered stage in a skill's SKILL.md (e.g. 'Stage 3.6'), expect the acceptance grep for the stage number to also hit unrelated agent files that happen to use the same numeral for their own internal stage sequence (e.g. an agent's own 'Stage 3.6: Observation Duty' or 'Stage 3.6: Handoff on Context Pressure'), plus every cross-file prose pointer into those agents' own stages. Treat this as one coherent false-positive class ('numbered-stage collision') rather than auditing each pointer individually as a new site.",
+      "category": "PATTERN",
+      "source_artifact": "specs/149_delete_team_mode/summaries/01_delete-team-mode-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["acceptance-grep", "false-positive", "numbered-stage", "deletion-task", "SKILL.md"]
+    },
+    {
+      "content": "When a large deletion/removal task's implementation dispatch is itself running inside an active /orchestrate cycle for the same task, a plan step calling for a live end-to-end /orchestrate smoke test on OTHER tasks should not be executed literally -- it risks session/task-lock contention with the running cycle. Prefer the plan's own dry-run-equivalent escape valve when offered: a parser-level or dispatch-args-level static smoke check (source the shared arg parser under `set -u` with representative multi-task/flag arguments; grep the dispatch-args strings for the removed tokens) plus corroborating green coverage from the existing automated test suite's orchestrate-mechanics tests.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/149_delete_team_mode/summaries/01_delete-team-mode-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["orchestrate", "smoke-test", "dry-run", "nested-dispatch", "safety"]
     }
   ],
   "metadata": {
@@ -17,7 +66,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }
