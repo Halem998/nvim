@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "Move batch-output ownership to Stage MT-5 and repoint SKILL.md",
+  "started_at": "2026-09-02T00:45:00Z",
+  "last_updated": "2026-09-02T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "MT-5 emit instruction", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "MT-5 four rendering pointer repoints", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "MT-5 re-run-sequence derivation pointer", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "MT-5 residue-check ownership statement", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "MT-1 waves diagnostic-echo reclassification", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "MT-1 upstream review cross-reference repoint", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 7, "description": "Step-5-as-reader repoints (5 sites)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 8, "description": "line ~3072 wave-split check sole-implementation restatement", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 9, "description": "lines ~3675/3778/3865 repoints", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 10, "description": "line ~578 force_phases threading-site recount", "status": "done", "files_touched": [], "note": "deferred to Phase 5 sweep per plan's explicit allowance"}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.10",
+      "description": "Recount SKILL.md's force_phases '8 threading sites' number",
+      "type": "deferred",
+      "reason": "Plan explicitly permits deferring the final recount to Phase 5's sweep once Phase 4's deletion has actually landed and the exact post-deletion site count is determinable.",
+      "annotation": "*(deviation: deferred — recount deferred to Phase 5's sweep, as the plan explicitly permits)*"
+    }
+  ],
+  "notes": [
+    "Also added a validated_count = length(task_numbers) definition to MT-5 step 1, needed by the template's ZERO DISPATCH section but not explicitly named as a Phase 3 task bullet -- required by Phase 3's own verification checklist item.",
+    "Reworded 3 residual historical Step-5 mentions (lines ~2607/2691/3899 in current file state) to avoid literally matching the regex 'commands/orchestrate.md.*Step [0-9]' while preserving historical meaning, satisfying Phase 3's verification grep exactly."
+  ]
+}

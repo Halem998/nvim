@@ -2465,15 +2465,20 @@ skill_orchestrate_merge_return_meta "$meta_file" "$detected_defects" "partial" \
 ## Multi-Task Mode
 
 Entered when `multi_task_mode=true` in the delegation context (detected in Stage 0).
-All single-task stages (1-8) are skipped. The skill receives a pre-computed wave schedule
-from `orchestrate.md` and manages all tasks in a single orchestrator instance.
+All single-task stages (1-8) are skipped. The skill receives the intra-batch dependency graph
+from `orchestrate.md`'s compact STAGE 0 multi-task block and manages all tasks in a single
+orchestrator instance.
 
 ### Stage MT-1: Parse Multi-Task Context
 
 Read from delegation context:
 - `task_numbers` — array of task numbers to manage
 - `dependency_graph` — map of task_number -> [predecessor_task_numbers]
-- `waves` — pre-computed topological wave schedule
+- `waves` — **diagnostic echo, recorded not consumed**: a single row containing all validated
+  tasks (`[[t1, t2, ...]]`). Nothing reads this field — eligibility is re-derived fresh every
+  cycle at Stage MT-3 step 4.5 from current task statuses plus `dependency_graph`, never from a
+  pre-computed wave schedule. The key is kept required only because `mt_state_file` below still
+  carries it; do not reintroduce wave-based dispatch logic on account of its presence.
 - `session_id`, `lit_flag`, `allow_self_modifying` (default: "false") — consumer-side opt-in
   bypass of the self-modification admission gate; never passed to `orchestrate-batch-admit.sh`
   itself (see Stage MT-3 step 4.5's `self_modifying` branch below)
@@ -2503,18 +2508,19 @@ Read from delegation context:
   `force_phases` is non-empty, emit one notice per batch, once, here:
   `echo "[orchestrate] NOTICE: --research/--plan/--implement (force_phases=${force_phases}) are accepted and ignored in multi-task mode — no per-task phase forcing will occur" >&2`.
 
-**Upstream review cross-reference**: raw dependency review already happened upstream, at
-`commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was
-even built — Step 1.5 runs `scripts/orchestrate-predispatch-review.sh` against the FULL raw
-`dependencies[]` on every candidate, warning loudly on every out-of-batch or nonexistent edge
-Step 2/3 is about to narrow away. The `dependency_graph` this stage receives has therefore
+**Upstream review cross-reference**: raw dependency review already happened upstream, inside
+`commands/orchestrate.md`'s compact STAGE 0 multi-task block (Pre-Dispatch Review call, retained
+as a one-line advisory invocation), before `dependency_graph` above was even built — that call
+runs `scripts/orchestrate-predispatch-review.sh` against the FULL raw `dependencies[]` on every
+candidate, warning loudly on every out-of-batch or nonexistent edge STAGE 0's own dependency-graph
+build is about to narrow away. The `dependency_graph` this stage receives has therefore
 already been reviewed within that review stage's own stated limits: it is advisory-loud, never
 blocking, and it does not itself exclude an out-of-batch predecessor from this stage's
 eligibility check below (Stage MT-3 step 3) — see
 `context/patterns/batch-orchestration-guardrails.md`'s Non-Negotiable 3 and Open Design Fork for
 the current status of that residual gap. No code change was needed here: this stage receives an
-already-built `dependency_graph` from the command's Step 2/3 output rather than rebuilding any
-part of it itself.
+already-built `dependency_graph` from STAGE 0's own output rather than rebuilding any part of it
+itself.
 
 Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 5, 25)`,
 `MAX_INFRA_FAILURES = 3` (flat **per task**, not scaled by `task_count` — matching single-task
@@ -2597,7 +2603,8 @@ subsection):
   `{"cycle": <int>, "gate": "verify-deploy.sh", "pre_findings": <int>, "post_findings": <int>, "new_findings": 0, "post_exit": <int>}`.
   It carries the same MUST NOT as `defer_ledger` immediately below: never read by any eligibility
   check, all-terminal check, circuit breaker, convergence guard, or admission branch. It is
-  written for reporting only, read at Stage MT-5 and by `commands/orchestrate.md` Step 5. It is
+  written for reporting only, read and rendered at Stage MT-5, which now owns the consolidated-
+  output emission formerly credited to the command's now-deleted MULTI-TASK DISPATCH section. It is
   NOT a defer/exclusion set — the third state excludes nothing — and is never merged into
   `defer_ledger`, whose own contract scopes it to defer/exclusion events.
 
@@ -2609,8 +2616,8 @@ subsection):
   entries of the form
   `{"task": <int>, "defer_reason": <string>, "collision_scope": <string|null>, "cycle": <int>, "detail": <string>}`.
   **MUST NOT**: the ledger is never read by any eligibility check, all-terminal check, circuit
-  breaker, convergence guard, or admission branch. It is written for reporting and read only at
-  Stage MT-5 and by `commands/orchestrate.md` Step 5. It is not a fifth admission gate and must
+  breaker, convergence guard, or admission branch. It is written for reporting and read and
+  rendered only at Stage MT-5. It is not a fifth admission gate and must
   never become one. `defer_ledger` is ADDITIVE to `deferred_self_modifying` and
   `deferred_deploy_checkpoint`, not a replacement: a self-modifying defer appends to BOTH the
   existing observation log and the ledger, and the two existing fields keep their current
@@ -2647,8 +2654,8 @@ subsection):
   mechanism surfaces detections; it creates no task and adds no interactive step.
 
   **MUST NOT**: the log is never read by any eligibility check, all-terminal check, circuit
-  breaker, convergence guard, or admission branch. It is written for reporting and read only at
-  Stage MT-5 and by `commands/orchestrate.md`. It is not an admission gate and must never become
+  breaker, convergence guard, or admission branch. It is written for reporting and read and
+  rendered only at Stage MT-5. It is not an admission gate and must never become
   one. It is likewise never consulted by `exit_status` branch selection: a batch that succeeded
   and also observed a defect is still a successful batch.
 
@@ -2667,7 +2674,7 @@ subsection):
   Follows `defer_ledger`'s exact shape and MUST NOT: never read by any eligibility check,
   all-terminal check, circuit breaker, convergence guard, or admission branch — the candidates it
   names were ADMITTED, not deferred, so this log excludes nothing. It is written for reporting
-  only, read at Stage MT-5 and by `commands/orchestrate.md` Step 5. It is never merged into
+  only, read and rendered only at Stage MT-5. It is never merged into
   `defer_ledger` — that log's `defer_reason` vocabulary is load-bearing for admission reporting,
   and an advisory has no `defer_reason` at all.
 
@@ -2680,9 +2687,10 @@ file, both before and after the merge, with no separate hard-mode edit ever need
 file's own `dispatch_start_ts` shell variable occurrences belonged to its single-task, non-MT
 infra-failure-discrimination logic — a same-named but unrelated local variable, not this
 `mt_state_file` field; this distinction is recorded here only because it is no longer directly
-verifiable against the deleted source.) `commands/orchestrate.md` Step 5's three-branch resolution
-still degrades explicitly (an explicit "not evaluable" notice, never a silent skip) for any future
-MT path variant that might lack the field, but no such variant exists today.
+verifiable against the deleted source.) Stage MT-5's three-branch resolution (formerly credited
+to the command's now-deleted MULTI-TASK DISPATCH section, before batch-output ownership moved
+here) still degrades explicitly (an explicit "not evaluable" notice, never a silent skip) for any
+future MT path variant that might lack the field, but no such variant exists today.
 
 ### Stage MT-2: Build Per-Task Routing Table
 
@@ -3069,10 +3077,10 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    This feeds Stage MT-5's `### Admitted (idle overlap advisory)` reporting; it is independent of
    `defer_ledger` and appended regardless of the verdict's own `decision`.
 
-   This mirrors the same check documented in `orchestrate.md` Step 3 for the pre-computed wave
-   schedule — both now describe a script call, not an inline loop; here it applies per-cycle to
-   `eligible_tasks` since Multi-Task Mode dispatches cycle-by-cycle rather than strictly
-   wave-by-wave. If this proves too aggressive in practice, it can be relaxed to warn-only by
+   This stage is the sole implementation of this check — `orchestrate.md` no longer carries any
+   parallel wave-schedule version of it, having deleted its former illustrative Kahn's-algorithm
+   block; here it applies per-cycle to `eligible_tasks` since Multi-Task Mode dispatches
+   cycle-by-cycle rather than wave-by-wave. If this proves too aggressive in practice, it can be relaxed to warn-only by
    editing this step (see Rollback/Contingency in
    `specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
 
@@ -3672,8 +3680,8 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    - Otherwise: set `current_statuses[task_num] = fresh_status`.
 5.5. **Per-task scoped commit.** MT mode issues one commit per task per phase transition here,
      inside this same per-task loop iteration — never a single combined end-of-batch commit (see
-     `commands/orchestrate.md` Step 5's "Commit Reconciliation" note for why the batch commit was
-     retired). This step reuses the exact single-task `CHECKPOINT 3` staging template — `task_dir`,
+     `docs/architecture/orchestrate-state-machine.md`'s `### Commit Granularity` section for why
+     the batch commit was retired). This step reuses the exact single-task `CHECKPOINT 3` staging template — `task_dir`,
      that task's own `.return-meta.json`, and `dispatch_status` are all already in scope from steps
      1-2 above, so no new state is introduced:
 
@@ -3768,14 +3776,18 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
    `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`, `idle_overlap_ledger`,
    `verify_deploy_baseline_notices`, `detected_defects`, `current_statuses`, `cycles_used`,
-   counts. `current_statuses`
+   counts. `validated_count = length(task_numbers)` — `task_numbers` already IS the validated set
+   (STAGE 0's compact multi-task block filters out not-found and terminal candidates before
+   invoking this skill), so no separate recomputation is needed; used by the template's
+   `### ZERO DISPATCH` section below. `current_statuses`
    (refreshed every cycle by Stage MT-3 step 1) is what step 3 below consults to determine, per
    task in `deferred_self_modifying`, whether it reached a terminal state by loop exit.
 2. **Compute the forward-progress invariant** (full contract in
    `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
    subsection — referenced here, not restated): set `forward_progress_violated = true` when
    `task_numbers` is non-empty AND `dispatch_start_ts` is an empty object at loop exit; otherwise
-   `false`. Write it back to `mt_state_file` so `commands/orchestrate.md` Step 5 can read it. This
+   `false`. Write it back to `mt_state_file` so step 4 below can read it when rendering the
+   consolidated output. This
    is cause-agnostic by construction — it is true regardless of which `defer_reason` produced the
    zero-dispatch outcome (`self_modifying`, `file_scope_collision`, or `deploy_checkpoint`).
 3. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
@@ -3847,33 +3859,53 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    Whenever `verify_deploy_baseline_notices` is non-empty, it MUST be reported as its own
    **distinct** category — never folded into the `deferred_deploy_checkpoint` reporting above, and
    never omitted merely because the batch otherwise succeeded (see
-   `commands/orchestrate.md`'s `### Pre-Existing Deploy-Verify Failures (Not Deferred)` section for
-   the actual rendering — this stage only supplies the data). This is the third
+   `context/patterns/orchestrate-batch-results-template.md`'s own
+   `### Pre-Existing Deploy-Verify Failures (Not Deferred)` section for
+   the actual rendering). This is the third
    operator-visible state and must be announced just as loudly as an outright failure, on a
    `"partial"` batch or an `"implemented"` one alike.
 
    Whenever `detected_defects` is non-empty, it MUST likewise be reported as its own **distinct**
    category — never folded into any defer category, never merged with
    `verify_deploy_baseline_notices`, and never omitted merely because the batch otherwise
-   succeeded (see `commands/orchestrate.md`'s `### System Defects Detected` section for the
-   actual rendering — this stage only supplies the data). Its operator remedy is different again
+   succeeded (see `context/patterns/orchestrate-batch-results-template.md`'s own
+   `### System Defects Detected` section for the
+   actual rendering). Its operator remedy is different again
    from every category above: the fix belongs in the named source-store path under
    `agent-system/extensions/**`, not in any task's own work.
 
    **Additive requirement**: when `forward_progress_violated` is true, the consolidated summary
    MUST additionally lead with the zero-dispatch banner and enumerate every `defer_ledger` entry
-   with its `defer_reason` (see `commands/orchestrate.md` Step 5 for the actual rendering — this
-   stage only supplies the data). This is additive to, and does not replace, the
+   with its `defer_reason` (see `context/patterns/orchestrate-batch-results-template.md`'s own
+   `### ZERO DISPATCH` section for the actual rendering). This is additive to, and does not replace, the
    `deferred_self_modifying` and `deferred_deploy_checkpoint` reporting instructions above.
+
+   **Re-run sequence derivation**: the `### ZERO DISPATCH` section's own "Re-run sequence
+   (dependency order; printed, not executed)" already specifies the rendering — order the
+   deferred/excluded task numbers predecessor-first using `dependency_graph`, ascending within a
+   tier, one `/orchestrate {N}` line per task; printed for the operator to run, never executed
+   automatically. This replaces the deleted command's former reuse of a pre-computed `waves`
+   array — this stage derives the order directly from `dependency_graph` instead.
 
    Whenever `idle_overlap_ledger` is non-empty, it MUST likewise be reported as its own
    **distinct** category — never folded into any Deferred section (its entries are ADMITS, not
    exclusions), never omitted merely because the batch otherwise succeeded (see
-   `commands/orchestrate.md`'s consolidated-output template, `### Admitted (idle overlap
-   advisory)` section, for the actual rendering — this stage only supplies the data). It has no
+   `context/patterns/orchestrate-batch-results-template.md`'s own `### Admitted (idle overlap
+   advisory)` section, for the actual rendering). It has no
    bearing on `exit_status` — an admitted-with-advisory task is a normal admit and is never
    consulted by branch selection above, exactly like `detected_defects` and
    `verify_deploy_baseline_notices`.
+
+   **Emit the consolidated output now**: READ `context/patterns/orchestrate-batch-results-template.md`
+   and emit the batch results using that template exactly; its per-section rendering conditions
+   are contract, not commentary. This is the one instruction whose absence would silently drop
+   all multi-task batch output, now that the command's former MULTI-TASK DISPATCH invocation of
+   this same template has been deleted — this stage is now the template's sole caller.
+
+   **Residue check**: after emitting the consolidated output, run the non-blocking residue check
+   documented in `docs/architecture/orchestrate-state-machine.md`'s `### Commit Granularity`
+   section (`git status --porcelain -- specs/`) — WARN-ONLY, never commits. This stage is the site
+   that runs it; the command no longer does.
 5. Write `specs/.return-meta-multi-${session_id}.json`:
 ```bash
 jq -n \

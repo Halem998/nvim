@@ -361,7 +361,7 @@ treat the grep, not the inventory, as the checklist; record any site the researc
 
 ---
 
-### Phase 3: Move batch-output ownership to Stage MT-5 and repoint SKILL.md [NOT STARTED]
+### Phase 3: Move batch-output ownership to Stage MT-5 and repoint SKILL.md [COMPLETED]
 
 **Goal**: Make `skill-orchestrate` self-sufficient for multi-task reporting before the command's
 Step 5 disappears, and repoint SKILL.md's 14+ Step-number references. Bounded to pointer repoints
@@ -369,42 +369,42 @@ plus two one-line ownership statements — no relocated content.
 
 **Tasks**:
 
-- [ ] Stage MT-5 step 4: add the single emit instruction — "READ
+- [x] Stage MT-5 step 4: add the single emit instruction — "READ
       `context/patterns/orchestrate-batch-results-template.md` and emit the batch results using
       that template exactly; its per-section rendering conditions are contract, not commentary."
-      This is the one line whose absence would silently delete all batch output.
-- [ ] Stage MT-5 step 4: repoint the four "see `commands/orchestrate.md`'s `### X` section for
+      This is the one line whose absence would silently delete all batch output. *(completed)*
+- [x] Stage MT-5 step 4: repoint the four "see `commands/orchestrate.md`'s `### X` section for
       the actual rendering" pointers (Pre-Existing Deploy-Verify Failures, System Defects
       Detected, the ZERO DISPATCH / `defer_ledger` additive requirement, Admitted (idle overlap
-      advisory)) at the template file's own identically-named `###` sections.
-- [ ] Stage MT-5: add the re-run-sequence derivation in one sentence — order the deferred/excluded
+      advisory)) at the template file's own identically-named `###` sections. *(completed)*
+- [x] Stage MT-5: add the re-run-sequence derivation in one sentence — order the deferred/excluded
       task numbers predecessor-first using `dependency_graph`, ascending within a tier, one
       `/orchestrate {N}` line per task; printed, never executed. This replaces the deleted Step
       5's "reuse the `waves` array computed at Step 3". Check first whether the template's own
       `### ZERO DISPATCH` section ("Re-run sequence (dependency order; printed, not executed)")
-      already suffices; if it does, add only a pointer, not a restatement.
-- [ ] Stage MT-5: name Stage MT-5 as the site that now runs the residue check (relocated in
+      already suffices; if it does, add only a pointer, not a restatement. *(completed)*
+- [x] Stage MT-5: name Stage MT-5 as the site that now runs the residue check (relocated in
       Phase 1), or state that the check is documented in `orchestrate-state-machine.md`'s
-      `### Commit Granularity` and is advisory — pick one and be explicit.
-- [ ] Stage MT-1: update the `waves` bullet to describe it as a **diagnostic echo** — recorded
+      `### Commit Granularity` and is advisory — pick one and be explicit. *(completed)*
+- [x] Stage MT-1: update the `waves` bullet to describe it as a **diagnostic echo** — recorded
       into `mt_state_file`, read by nothing, with eligibility re-derived fresh every cycle at
-      Stage MT-3 step 4.5. Keep the key required.
-- [ ] Stage MT-1 lines ~2507/2516: the "Upstream review cross-reference" paragraph currently
+      Stage MT-3 step 4.5. Keep the key required. *(completed)*
+- [x] Stage MT-1 lines ~2507/2516: the "Upstream review cross-reference" paragraph currently
       depends on "the command's Step 1.5 (Pre-Dispatch Review)" and "Step 2/3 output". Repoint to
       STAGE 0's delegation-context builder; state that the pre-dispatch review call has moved
       into (or been retired from) STAGE 0 consistent with Phase 4's decision, and keep the
-      Non-Negotiable 3 residual-gap pointer intact.
-- [ ] Lines ~2600, 2613, 2651, 2670, 2683: "Step 5" cited as reader of MT state fields
+      Non-Negotiable 3 residual-gap pointer intact. *(completed)*
+- [x] Lines ~2600, 2613, 2651, 2670, 2683: "Step 5" cited as reader of MT state fields
       (`forward_progress_violated` and friends) — repoint to Stage MT-5, which is the real
-      reader after this change.
-- [ ] Line ~3072: "orchestrate.md Step 3" as origin of the mirrored wave-split check — restate as
+      reader after this change. *(completed)*
+- [x] Line ~3072: "orchestrate.md Step 3" as origin of the mirrored wave-split check — restate as
       Stage MT-3 step 4.5 being the sole implementation, with the contract documented in
-      `context/patterns/batch-orchestration-guardrails.md`.
-- [ ] Lines ~3675, 3778, 3865: "so `commands/orchestrate.md` Step 5 can read it" — repoint to
-      Stage MT-5.
+      `context/patterns/batch-orchestration-guardrails.md`. *(completed)*
+- [x] Lines ~3675, 3778, 3865: "so `commands/orchestrate.md` Step 5 can read it" — repoint to
+      Stage MT-5. *(completed)*
 - [ ] Line ~578: the `force_phases` "8 threading sites" count includes the deleted Step 4 site.
       Recount after Phase 4 and correct the number (defer the final recount to Phase 5's sweep if
-      the exact post-deletion count is not yet determinable).
+      the exact post-deletion count is not yet determinable). *(deviation: deferred — recount deferred to Phase 5's sweep, as the plan explicitly permits)*
 
 **Timing**: 1.75 hours
 
