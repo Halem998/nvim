@@ -1,7 +1,7 @@
 # Implementation Plan: Task #145
 
 - **Task**: 145 - Slim `commands/orchestrate.md` to the flag table and the dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: 149 (team-mode deletion — already landed; baseline is post-deletion)
 - **Research Inputs**: `specs/145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md`

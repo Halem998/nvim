@@ -2305,7 +2305,7 @@
       "project_number": 145,
       "project_name": "slim_orchestrate_command",
       "title": "Slim commands/orchestrate.md to flags and dispatch; delete the illustrative multi-task block",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Slim commands/orchestrate.md to the flag table and the dispatch, deleting the multi-task block its own text labels illustrative. Stage A.1 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md (never .claude/**).\n\nMEASURED (2026-09-02). The file is 46,874 B (~12k tokens), loaded on every /orchestrate. Its `### MULTI-TASK DISPATCH` section is 28,393 B (60% of the file) and states at its own \"Runtime wave-split check\" paragraph that it is \"illustrative of the CONTRACT skill-orchestrate fulfills, not code this file itself runs\" -- the real loop is skill-orchestrate/SKILL.md Stage MT-3. The STAGE 0 section (4,923 B) narrates flag threading that the Options table already states. The consolidated-output template in Step 5 is likewise never executed by this file.\n\nWORK.\n(1) Delete `### MULTI-TASK DISPATCH` (Steps 1-5) in full. Where it carries contract text not stated elsewhere (the BATCHING RULE, the wave-split defense-in-depth note, the commit-reconciliation rule), move that text to docs/architecture/orchestrate-state-machine.md, which is documentation the lead never loads -- do not relocate it into SKILL.md.\n(2) Reduce STAGE 0 to: source parse-command-args.sh, the dry-run short-circuit, the single-vs-multi branch, and the Skill delegation context block. The per-flag threading prose collapses into the Options table.\n(3) Add `--hard` to the Options table. It is parsed and stripped by scripts/parse-command-args.sh (grep `--hard`) and consumed by the engine (`hard_mode`, 63 references in SKILL.md) but is absent from the table today -- undocumented, not removed. Document cost and composability in one row.\n(4) Keep unchanged: Arguments, Constraints (update the two \"single-task only\" lines to say \"per-task in the batch engine once the feature-port task lands\"), Anti-Bypass Constraint, CHECKPOINT 1-3, Output, Error Handling.\n(5) grep SKILL.md, docs/, context/ for references to the deleted section's step numbers (\"Step 4.5\", \"MT-3 step 4.5 mirror\", \"commands/orchestrate.md's MT-3\") and repoint each to the state-machine doc or delete the reference.\nTarget: <= 8,000 B.\n\nMUST NOT: change any flag's semantics, the delegation-context keys the skill reads, the checkpoint order, or the dry-run prohibition block.\n\nACCEPTANCE: before/after byte counts recorded in the summary; every flag parse-command-args.sh exports is documented in the Options table; a single-number and a two-number /orchestrate --dry-run each still produce the report; full gate run green.\n\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\nREFERENCE: specs/PATH.md, \"Stage A -- Thin lead\" and \"Where things stand\".\n=== ADDENDUM 2026-09-02 ===\nTeam mode is deleted by this task's predecessor, so the `--team`/`--team-size` rows are already gone when this task runs; do not re-add them. The dry-run short-circuit stays pointed at orchestrate-dry-run-report.sh for now -- the cycle-plan task repoints it when it retires that script.",
@@ -2326,12 +2326,18 @@
           "path": "specs/145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md",
           "type": "plan",
           "summary": "7-phase plan slimming orchestrate.md to <=8KB; relocates batch-output ownership to MT-5 before deleting Step 5."
+        },
+        {
+          "path": "specs/145_slim_orchestrate_command/summaries/01_slim-orchestrate-command-summary.md",
+          "type": "summary",
+          "summary": "orchestrate.md slimmed 44,953 -> 18,687 B (58.4%); batch-output ownership moved to MT-5; 8KB target missed and reported honestly."
         }
       ],
       "next_artifact_number": 1,
       "created": "2026-09-02T20:34:57Z",
-      "last_updated": "2026-09-03T04:00:53Z",
-      "session_id": "sess_1788399440_184d69_145"
+      "last_updated": "2026-09-03T05:02:45Z",
+      "session_id": "sess_1788399440_184d69_145",
+      "completion_summary": "Slimmed commands/orchestrate.md from 44,953 B/790 lines to 18,687 B/384 lines (58.4% reduction) by deleting the MULTI-TASK DISPATCH block, moving batch-output ownership to skill-orchestrate Stage MT-5, relocating two orphaned contract units to orchestrate-state-machine.md, repointing ~25+ cross-references, and adding the missing --hard Options row. The 8,000 B target was not met (measured 18,687 B); the summary documents the honest root-cause breakdown -- no semantic was cut to approach the number."
     },
     {
       "project_number": 146,

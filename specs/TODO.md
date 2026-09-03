@@ -11,13 +11,12 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,22,29,39,43,44,45,89,91,127,134,137,145 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,146 | 29,145 | core-agent-system, extensions |
-| 3 | 136,139,147 | 91,146 | core-agent-system |
-| 4 | 140,143 | 139,147 | core-agent-system |
-| 5 | 51,148 | 143 | core-agent-system |
-| 6 | 74,88 | 148 | core-agent-system, extensions |
-| 7 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
+| 1 | 13,22,29,39,43,44,45,89,91,127,134,137,146 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,136,139,147 | 29,91,146 | core-agent-system, extensions |
+| 3 | 140,143 | 139,147 | core-agent-system |
+| 4 | 51,148 | 143 | core-agent-system |
+| 5 | 74,88 | 148 | core-agent-system, extensions |
+| 6 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -31,21 +30,20 @@ next_project_number: 151
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
-145 [PLANNED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
-  └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
-    └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line  (see above)
-    └─ 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
-      └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-      └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-    └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
-      └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
-        └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-        └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-          └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-            └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
-            └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-            └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-            └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+  └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line  (see above)
+  └─ 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
+    └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+    └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
+  └─ 147 [NOT STARTED] — Build orchestrate-cycle-plan.sh: one script that returns the cycl
+    └─ 143 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+      └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+      └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+        └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+          └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
+          └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+          └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+          └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 
 ### Extensions
 
@@ -205,12 +203,13 @@ REFERENCE: specs/PATH.md, "Target design: the thin lead".
 ---
 
 ### 145. Slim commands/orchestrate.md to flags and dispatch; delete the illustrative multi-task block
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 149
 - **Research**: [145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md]
 - **Plan**: [145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md]
+- **Summary**: [145_slim_orchestrate_command/summaries/01_slim-orchestrate-command-summary.md]
 
 **Description**: Slim commands/orchestrate.md to the flag table and the dispatch, deleting the multi-task block its own text labels illustrative. Stage A.1 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md (never .claude/**).
 
