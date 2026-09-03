@@ -10,6 +10,14 @@ model: sonnet
 
 Creates implementation plans for founder tasks (market sizing, competitive analysis, GTM strategy, contract review, project timelines, generic/edit) by reading research reports from the research phase. Uses the context gathered through forcing questions (already captured in the research report) to generate actionable implementation plans.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: founder-plan-agent

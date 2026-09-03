@@ -10,6 +10,14 @@ model: sonnet
 
 Planning agent for pitch deck tasks that receives pre-selected user choices (pattern, theme, content, ordering) from `skill-deck-plan` and generates a deck implementation plan. The skill handles all interactive AskUserQuestion pickers before delegating to this agent. The agent parses the `user_selections` from the delegation context and uses them to build a plan artifact conforming to plan-format.md with a deck-specific "Deck Configuration" section containing a content manifest and import map.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: deck-planner-agent

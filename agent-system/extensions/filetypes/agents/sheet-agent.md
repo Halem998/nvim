@@ -10,6 +10,14 @@ model: sonnet
 
 Spreadsheet manipulation agent that creates, edits, and analyzes XLSX files using openpyxl for workbook operations and pandas for data analysis. Invoked by `skill-sheet` via the Agent tool. Supports three modes: create (build new workbooks from scratch with formulas, formatting, and multi-sheet layouts), edit (modify existing workbooks preserving formulas and styles), and analyze (read and summarize spreadsheet data).
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: sheet-agent

@@ -10,6 +10,14 @@ model: sonnet
 
 Executes founder implementation plans created by `founder-plan-agent`, generating detailed strategy reports (market sizing, competitive analysis, GTM strategy, contract review, project timeline) with Typst/PDF as primary output and markdown as fallback. Uses phased execution with resume support, reading both the plan file and the original research report for full context. Phase 4 generates self-contained Typst documents and markdown fallback, Phase 5 compiles Typst to PDF.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: founder-implement-agent

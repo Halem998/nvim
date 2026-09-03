@@ -10,6 +10,14 @@ model: sonnet
 
 Pitch deck research agent that synthesizes input materials (files, prompts, task references) into a slide-mapped research report. Unlike other founder research agents that rely on interactive forcing questions, this agent primarily reads and analyzes existing materials, mapping extracted content to the 10-slide YC pitch deck structure. Minimal follow-up questions are asked only for critical missing information.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: deck-research-agent

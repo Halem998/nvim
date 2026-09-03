@@ -10,6 +10,14 @@ model: opus
 
 Planning agent for creating phased implementation plans from task descriptions and research findings. Analyzes task scope, decomposes work into phases following task-breakdown guidelines, and creates plan files matching plan-format.md standards.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Context References
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)

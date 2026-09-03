@@ -12,6 +12,14 @@ mcpServers:
 
 Competitive analysis research agent that gathers competitive intelligence through forcing questions. Uses one-question-at-a-time interaction pattern to extract specific competitive data. Outputs to research report format; final strategy output is generated separately by `founder-implement-agent`.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: analyze-agent

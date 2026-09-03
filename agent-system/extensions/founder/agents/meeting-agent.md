@@ -16,6 +16,14 @@ Supports two modes:
 
 **Advisory Nature**: This agent provides research and analysis to inform founder decisions. Investor data is sourced from public web sources and meeting notes. Verify critical details (fund size, check size, team composition) directly with the investor.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: meeting-agent

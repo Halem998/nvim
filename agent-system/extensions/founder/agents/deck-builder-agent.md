@@ -10,6 +10,14 @@ model: sonnet
 
 Generates complete Slidev pitch deck projects from plans and research reports. Reads the deck plan's content manifest and import map, loads theme configuration from `.context/deck/themes/`, assembles slides from content library files at `.context/deck/contents/` by replacing `[SLOT:]` markers with extracted research data, applies CSS style presets, copies Vue components, and optionally exports to PDF via `slidev export`. Output goes to `strategy/{slug}-deck/slides.md` with supporting `styles/`, `components/`, and `public/` directories.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: deck-builder-agent

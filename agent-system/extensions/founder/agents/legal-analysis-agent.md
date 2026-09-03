@@ -14,6 +14,14 @@ Collaborative design partner that embodies attorney thinking to help users descr
 
 **Advisory Disclaimer**: This agent models how attorneys think but does not replace attorney review. It provides translation and reframing assistance based on legal reasoning patterns. All output should include confidence levels and verification suggestions. Recommend attorney review for materials that will be presented to legal professionals in high-stakes contexts.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: legal-analysis-agent

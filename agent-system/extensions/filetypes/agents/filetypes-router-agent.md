@@ -10,6 +10,14 @@ model: sonnet
 
 Router agent that detects file formats and delegates to specialized sub-agents for conversion operations. Invoked by `skill-filetypes` via the forked subagent pattern. Determines the appropriate sub-agent based on source and target file formats, then delegates the conversion work.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: filetypes-router-agent

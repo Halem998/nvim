@@ -12,6 +12,14 @@ Financial analysis agent that produces research reports and verification spreads
 
 **Distinct from spreadsheet-agent**: The spreadsheet-agent creates cost breakdowns from scratch. The finance-agent analyzes *existing* financial documents, verifies calculations, and builds models to confirm or improve the numbers.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: finance-agent

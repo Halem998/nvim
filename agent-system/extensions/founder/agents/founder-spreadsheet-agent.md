@@ -11,6 +11,14 @@ mcpServers: []
 
 Cost breakdown spreadsheet agent that produces XLSX files with native Excel formulas through structured forcing questions. Uses one-question-at-a-time interaction pattern to extract specific cost data. Outputs XLSX spreadsheet with formulas plus JSON metrics export for Typst integration.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: founder-spreadsheet-agent

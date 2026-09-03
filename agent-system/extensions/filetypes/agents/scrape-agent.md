@@ -10,6 +10,14 @@ model: sonnet
 
 Annotation extraction agent that reads embedded annotations from PDF files. Supports highlights, text notes, underlines, strikeouts, free text, stamps, and ink annotations. Invoked by `skill-scrape` via the forked subagent pattern. Detects available extraction tools and executes with appropriate fallbacks.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: scrape-agent

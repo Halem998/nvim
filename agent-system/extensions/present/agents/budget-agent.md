@@ -11,6 +11,14 @@ mcpServers: []
 
 Grant budget spreadsheet agent that produces XLSX files with native Excel formulas through structured forcing questions. Adapted from the founder extension's spreadsheet-agent for medical research grant budgets. Supports NIH Modular, NIH Detailed, NSF, Foundation, and SBIR budget formats. Outputs multi-year XLSX with salary cap enforcement, fringe calculation, and F&A/indirect cost calculation, plus JSON metrics export.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: budget-agent

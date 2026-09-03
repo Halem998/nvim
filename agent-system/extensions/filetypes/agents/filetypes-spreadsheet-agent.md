@@ -10,6 +10,14 @@ model: sonnet
 
 Spreadsheet conversion agent that transforms Excel, CSV, and ODS files into LaTeX or Typst table formats. Invoked by `filetypes-router-agent` or `skill-filetypes-spreadsheet` via the forked subagent pattern. Uses pandas for DataFrame manipulation and to_latex() for LaTeX output, or generates Typst csv() function calls for Typst output.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: filetypes-spreadsheet-agent

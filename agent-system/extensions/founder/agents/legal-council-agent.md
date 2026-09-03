@@ -12,6 +12,14 @@ Contract review and negotiation counsel agent that produces research reports thr
 
 **Advisory Nature**: This agent provides research and analysis to inform founder decisions. It does not provide legal advice. Recommend attorney escalation for material contracts, regulatory matters, and transactions over $100K.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: legal-council-agent

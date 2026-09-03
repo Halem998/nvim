@@ -22,6 +22,14 @@ is using per-phase dispatch mode (H1) with sorry inventory tracking.
 **IMPORTANT**: This agent is self-contained. Do NOT @-reference lean-implementation-agent.
 All lean-specific sections are included inline below.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Context References
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)

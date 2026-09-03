@@ -493,31 +493,31 @@ Confirm with `grep -n "Run \*\*Stage 3.5" SKILL.md` before editing; the post-edi
 
 ---
 
-### Phase 8: Routing-driven agent-contract sweep [NOT STARTED]
+### Phase 8: Routing-driven agent-contract sweep [COMPLETED]
 
 **Goal**: Give every agent `skill-orchestrate` can dispatch through a Stage-3.5-backed site a short
 "Dispatch file" section, and report the negatives explicitly.
 
 **Tasks**:
-- [ ] Enumerate dispatchable agents by walking every `agent-system/extensions/*/manifest.json`'s
+- [x] Enumerate dispatchable agents by walking every `agent-system/extensions/*/manifest.json`'s *(completed: resolved via command-route-agent.sh/manifest-routing-lib.sh with ROUTE_MANIFEST_ROOT=agent-system (source-store mode); 62 unique agents resolved)*
       `routing_agents` and `routing_agents_hard` blocks, resolving through
       `scripts/lib/manifest-routing-lib.sh`'s own functions (mirroring Stage 1b / MT-2). Do not
       iterate the ~65 `agents/*.md` files blindly. Handle compound task types (e.g. `present:grant`)
       through the library rather than a grep.
-- [ ] For each resolved research / plan / implement agent, add a short **Dispatch file** section:
+- [x] For each resolved research / plan / implement agent, add a short **Dispatch file** section: *(completed: all 62 files updated, verified via git diff --name-only against the resolved-set file list (identical, no scope creep))*
       read the dispatch file named in the prompt first; treat it as the authoritative dispatch
       context; it names every input, output path, and contract; plus a one-line pointer to
       `context/standards/user-decision-contract.md`. Do not restate the user-decision contract.
-- [ ] Confirm the three core agents are covered: `general-research-agent`, `planner-agent`,
+- [x] Confirm the three core agents are covered: `general-research-agent`, `planner-agent`, *(completed)*
       `general-implementation-agent`.
-- [ ] Produce the sweep report as a table: extension, task_type, resolved research/plan/implement
+- [x] Produce the sweep report as a table: extension, task_type, resolved research/plan/implement *(completed: see progress/phase-8-progress.json notes and the task summary)*
       agent, section added (yes/no), and reason for any "no".
-- [ ] Report explicit negatives: extensions with no `routing_agents` block; task types routing to
+- [x] Report explicit negatives: extensions with no `routing_agents` block; task types routing to *(completed)*
       the three core agents (already covered, not a separate edit); and the agents
       `skill-orchestrate` dispatches only through auxiliary, non-Stage-3.5 sites —
       `reviser-agent`, `spawn-agent`, `code-reviewer-agent`, `meta-builder-agent` — which are named
       as out-of-scope negatives, not silently omitted.
-- [ ] Run `scripts/lint/lint-agent-contracts.sh` and confirm every edited contract still passes
+- [x] Run `scripts/lint/lint-agent-contracts.sh` and confirm every edited contract still passes *(completed)*
       (including Check F's `.return-meta.json` artifacts-template requirement).
 
 **Timing**: 1.5 hours

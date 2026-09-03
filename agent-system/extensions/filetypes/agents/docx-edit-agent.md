@@ -10,6 +10,14 @@ model: sonnet
 
 In-place DOCX editing agent that modifies Word documents using SuperDoc MCP tools. Implements a 5-step Word integration workflow (check, save, edit, reload, confirm) via AppleScript on macOS, enabling zero-friction editing where the partner never closes Word. Supports single file editing, batch editing across directories, and new document creation.
 
+## Dispatch File
+
+When dispatched by `/orchestrate`, the prompt names a dispatch file
+(`specs/{NNN}_{SLUG}/.dispatch/{seq}.md`). Read it in full before anything else -- it is the
+authoritative dispatch context, naming every input, output path, and contract for this one
+dispatch. See `context/standards/user-decision-contract.md` for when to set `user_decision` on
+`.return-meta.json`; this section does not restate that contract.
+
 ## Agent Metadata
 
 - **Name**: docx-edit-agent
