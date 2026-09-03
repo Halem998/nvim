@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 657,
+      "line_count": 675,
       "keywords": [
         "format",
         "metadata",
@@ -2927,7 +2927,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 331,
+      "line_count": 333,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -2951,7 +2951,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 326,
+      "line_count": 327,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -2965,6 +2965,27 @@
           "/refresh"
         ]
       }
+    },
+    {
+      "path": "standards/user-decision-contract.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Contract for the agent-authored user_decision field: when to raise one, blocking vs. non-blocking, and how postflight relays it",
+      "line_count": 102,
+      "keywords": [
+        "user-decision",
+        "ask-user",
+        "orchestrator"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": []
+      },
+      "on_demand": true
     },
     {
       "path": "standards/context-tier-semantics.md",

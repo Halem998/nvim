@@ -197,24 +197,24 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Register `.dispatch/` across every runtime-file surface [NOT STARTED]
+### Phase 2: Register `.dispatch/` across every runtime-file surface [COMPLETED]
 
 **Goal**: Make `.dispatch/` a recognized ephemeral runtime-file class everywhere before the script
 first writes into it, so no dispatch file can ever be staged or committed.
 
 **Tasks**:
-- [ ] Add a row for `.dispatch/{seq}.md` to `context/standards/orchestrator-runtime-files.md`'s
+- [x] Add a row for `.dispatch/{seq}.md` to `context/standards/orchestrator-runtime-files.md`'s *(completed)*
       class table: **Ephemeral** disposition, directory class (like `.lock/`), with a one-line note
       that it is the only per-task ephemeral entry that accumulates rather than being a singleton,
       and that its disposition is bulk `rm -rf` at loop termination (see Phase 9).
-- [ ] Add `**/.dispatch/` to the repo-root `.gitignore` ephemeral block, adjacent to `**/.lock/`.
-- [ ] Add `":(exclude)${task_dir}/.dispatch/"` to **every** `ephemeral_excludes` array in
+- [x] Add `**/.dispatch/` to the repo-root `.gitignore` ephemeral block, adjacent to `**/.lock/`. *(completed)*
+- [x] Add `":(exclude)${task_dir}/.dispatch/"` to **every** `ephemeral_excludes` array in *(completed: 3 array literals found and updated -- 2 in git-staging-scope.md, 1 candidate_excludes in git-commit-scoped.sh)*
       `context/standards/git-staging-scope.md`.
-- [ ] Add a probe entry inside the directory to
+- [x] Add a probe entry inside the directory to *(completed)*
       `scripts/check-runtime-file-tracking.sh`'s `EPHEMERAL_PROBES` array, following the
       `${PROBE_DIR}/.lock/holder.json` pattern (e.g. `${PROBE_DIR}/.dispatch/1.md`) — the probe must
       be a file *inside* the directory, since `git check-ignore` is tested per path.
-- [ ] Re-run the tracking check and confirm the new probe reports OK.
+- [x] Re-run the tracking check and confirm the new probe reports OK. *(completed)*
 
 **Timing**: 1 hour
 

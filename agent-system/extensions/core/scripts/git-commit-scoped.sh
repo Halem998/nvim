@@ -153,6 +153,7 @@ for p in "${pathspecs[@]}"; do
         "${task_dir}/.orchestrator-churn-state.json"
         "${task_dir}/.drift-inspection.json"
         "${task_dir}/.lock/"
+        "${task_dir}/.dispatch/"
       )
       for eph in "${candidate_excludes[@]}"; do
         if git check-ignore -q -- "$eph"; then

@@ -30,6 +30,7 @@
 # see that same standard's "Untracking Already-Committed Ephemeral Files" section before ever
 # adding either back here.
 **/.lock/
+**/.dispatch/
 **/.orchestrator-loop-guard
 **/.continuation-loop-guard
 **/.orchestrator-churn-state.json

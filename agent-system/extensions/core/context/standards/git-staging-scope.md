@@ -27,6 +27,7 @@ ephemeral_excludes=(
   ":(exclude)${task_dir}/.orchestrator-churn-state.json"
   ":(exclude)${task_dir}/.drift-inspection.json"
   ":(exclude)${task_dir}/.lock/"
+  ":(exclude)${task_dir}/.dispatch/"
 )
 ```
 
@@ -167,6 +168,7 @@ ephemeral_excludes=(
   ":(exclude)${task_dir}/.orchestrator-churn-state.json"
   ":(exclude)${task_dir}/.drift-inspection.json"
   ":(exclude)${task_dir}/.lock/"
+  ":(exclude)${task_dir}/.dispatch/"
 )
 stage_paths=(
   "${task_dir}/"

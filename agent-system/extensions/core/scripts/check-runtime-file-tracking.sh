@@ -36,6 +36,7 @@ declare -a EPHEMERAL_PROBES=(
   "${PROBE_DIR}/.orchestrator-churn-state.json"
   "${PROBE_DIR}/.drift-inspection.json"
   "${PROBE_DIR}/.lock/holder.json"
+  "${PROBE_DIR}/.dispatch/1.md"
   "${PROBE_DIR}/.continuation-loop-guard"
   "${PROBE_DIR}/.postflight-loop-guard"
   "specs/.orchestrator-multi-state-sess_0000000000_probe.json"
