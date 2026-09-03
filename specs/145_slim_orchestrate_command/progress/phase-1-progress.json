@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline measurement and contract-text relocation",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record baseline byte/line count", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Widen file_scope (optional)", "status": "done", "files_touched": [], "note": "skipped deliberately"},
+    {"id": 3, "description": "Add Batch Size Cap (MAX_TASKS) section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Append Exit-Path Coverage table to Commit Granularity", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Append residue-check bash block", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "Reword line-424 self-reference", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Optionally widen the task's file_scope",
+      "type": "skipped",
+      "reason": "Excursion advisory is expected/benign per the plan's own risk table; not required for correctness.",
+      "annotation": "*(deviation: skipped — the excursion advisory is expected and benign per the plan's own risk table; accepted rather than widening scope)*"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #145
 
 - **Task**: 145 - Slim `commands/orchestrate.md` to the flag table and the dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: 149 (team-mode deletion — already landed; baseline is post-deletion)
 - **Research Inputs**: `specs/145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md`
@@ -230,7 +230,7 @@ concurrently or sequentially.
 
 ---
 
-### Phase 1: Baseline measurement and contract-text relocation [NOT STARTED]
+### Phase 1: Baseline measurement and contract-text relocation [COMPLETED]
 
 **Goal**: Record the before-state precisely, and land the two genuinely-orphaned pieces of
 contract text in `docs/architecture/orchestrate-state-machine.md` so that Phase 2's repoints have
@@ -238,29 +238,29 @@ a real target and Phase 4's deletion loses nothing. Purely additive — no delet
 
 **Tasks**:
 
-- [ ] Record baseline: `wc -c -l agent-system/extensions/core/commands/orchestrate.md` and the
+- [x] Record baseline: `wc -c -l agent-system/extensions/core/commands/orchestrate.md` and the *(completed: 44,953 B / 790 lines)*
       per-section byte table (reuse the research's method: section boundaries from
       `grep -n '^#'`). Write the numbers into the eventual summary's before-column.
 - [ ] Optionally widen the task's `file_scope` to cover the files this plan touches, via the
-      sanctioned `--file-scope-add` path, so the excursion advisory reflects intent.
-- [ ] In `orchestrate-state-machine.md`, under `## MT Mode: Multi-Task Orchestration` and before
+      sanctioned `--file-scope-add` path, so the excursion advisory reflects intent. *(deviation: skipped — the excursion advisory is expected and benign per the plan's own risk table; accepted rather than widening scope)*
+- [x] In `orchestrate-state-machine.md`, under `## MT Mode: Multi-Task Orchestration` and before
       `### Dependency Gating Model`, add a `### Batch Size Cap (MAX_TASKS)` section stating:
       `MAX_TASKS = 8`; a request exceeding it is **trimmed to the first 8 tasks** with the
       warning `Batching is not yet supported. Running with first N tasks only.`; batching proper
       is not yet supported. Include the bash guard verbatim from the deleted Step 4 so the
-      wording and the trim semantics are preserved exactly.
-- [ ] In `orchestrate-state-machine.md`'s existing `### Commit Granularity` section, append the
+      wording and the trim semantics are preserved exactly. *(completed)*
+- [x] In `orchestrate-state-machine.md`'s existing `### Commit Granularity` section, append the
       **Exit-Path Coverage** table verbatim from the deleted Step 5 (all six outcome rows:
       `completed`, `failed`, `blocked`, partial, deferred-self-modifying,
-      deferred-by-redeploy-checkpoint), preserving every cross-reference inside its cells.
-- [ ] In the same `### Commit Granularity` section, append the **residue check** bash block
+      deferred-by-redeploy-checkpoint), preserving every cross-reference inside its cells. *(completed)*
+- [x] In the same `### Commit Granularity` section, append the **residue check** bash block
       verbatim (`git status --porcelain -- specs/`, WARN-ONLY, never commits) together with the
       one-sentence statement that it warns and never commits, and name Stage MT-5 as the site
-      that now runs it (the command no longer does).
-- [ ] Reword `orchestrate-state-machine.md:424`'s self-reference so this document describes
+      that now runs it (the command no longer does). *(completed)*
+- [x] Reword `orchestrate-state-machine.md:424`'s self-reference so this document describes
       itself as the source of truth for commit granularity rather than pointing at
-      `commands/orchestrate.md` Step 5.
-- [ ] Do **not** relocate the wave-split defense-in-depth note.
+      `commands/orchestrate.md` Step 5. *(completed)*
+- [x] Do **not** relocate the wave-split defense-in-depth note. *(completed: left in place, near-verbatim coverage already exists in multi-task-operations.md)*
 
 **Timing**: 1.25 hours
 

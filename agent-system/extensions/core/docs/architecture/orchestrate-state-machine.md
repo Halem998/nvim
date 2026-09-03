@@ -395,6 +395,23 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 └──────────────────────────────────────────────────┘
 ```
 
+### Batch Size Cap (MAX_TASKS)
+
+Before entering multi-task dispatch, the batch size is capped at `MAX_TASKS=8`. A request
+exceeding it is **trimmed to the first 8 tasks**, with a loud warning that batching proper is not
+yet supported:
+
+```bash
+task_count=${#validated_tasks[@]}
+MAX_TASKS=8
+if [ "$task_count" -gt "$MAX_TASKS" ]; then
+  echo "[orchestrate] WARNING: $task_count tasks exceeds MAX_TASKS=$MAX_TASKS."
+  echo "Batching is not yet supported. Running with first $MAX_TASKS tasks only."
+  validated_tasks=("${validated_tasks[@]:0:$MAX_TASKS}")
+  # Recalculate waves for the trimmed task list
+fi
+```
+
 ### Dependency Gating Model
 
 Tasks progress through lifecycle phases independently. A task becomes eligible when:
@@ -421,13 +438,37 @@ If a predecessor is still in-progress (e.g., `researched`, `planned`), the depen
 
 One commit per task per phase transition, issued inside Stage MT-4's per-task postflight loop
 (step 5.5) — never a combined end-of-batch commit. MT mode used to fire exactly one commit at the
-very end of `commands/orchestrate.md`'s Step 5, folding every task's diff and index rows into a
-single, unrevertable commit; that batch commit is retired, and each task's own change is committed
+very end of a combined batch step, folding every task's diff and index rows into a single,
+unrevertable commit; that batch commit is retired, and each task's own change is committed
 the moment its own phase transition lands, at the same granularity a solo `/implement` run
 produces. All commits route through the shared `git-commit-scoped.sh` helper, preserving
 path-scoped staging, the `specs/.commit-lock/` commit mutex, and automatic ephemeral-runtime-file
 exclusion — see `context/standards/git-staging-scope.md`'s "Multi-Task Application" subsection for
-the full per-task scope contract.
+the full per-task scope contract. This section is the source of truth for MT commit granularity.
+
+**Exit-path coverage** — every MT terminal outcome and where its commit is issued:
+
+| Outcome | Commit issued where |
+|---------|---------------------|
+| `completed` | Stage MT-4 step 5.5, at the task's own postflight iteration (message: complete research/plan/implementation, per that task's `dispatch_status`) |
+| `failed` | Stage MT-4 step 5.5 still runs for a failed dispatch; artifacts and status changes it produced are real and committed |
+| `blocked` | Stage MT-4 step 5.5 still runs; same reasoning as `failed` |
+| Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Stage MT-4 step 5.5 runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
+| Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
+| Deferred-by-redeploy-checkpoint (a task excluded for the remainder of the invocation because the inter-cycle redeploy checkpoint's deploy/verify gate failed) | Never dispatched and never status-mutated for the rest of this invocation; distinct operator remedy from deferred-self-modifying — see `### The Inter-Cycle Redeploy Checkpoint` in `context/patterns/batch-orchestration-guardrails.md` |
+
+**Residue check** (non-blocking, run by Stage MT-5 after the lifecycle-cycling loop exits): warns
+only, and never commits — a blanket commit here would recreate exactly the entanglement per-task
+commits were introduced to remove.
+
+```bash
+residue=$(git status --porcelain -- specs/ 2>/dev/null)
+if [ -n "$residue" ]; then
+  echo "[orchestrate] WARNING: uncommitted residue under specs/ after batch completion:" >&2
+  echo "$residue" >&2
+  echo "[orchestrate] Per-task commits are issued inside the skill's per-task postflight; review and commit manually." >&2
+fi
+```
 
 ### Exit Conditions
 

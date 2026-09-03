@@ -1,29 +1,11 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 145,
-  "session_id": "sess_1788399440_184d69_145",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md",
-      "summary": "7-phase plan to slim commands/orchestrate.md from 44,953 B toward <=8,000 B: relocate two orphaned contract units, move batch-output ownership to Stage MT-5, delete MULTI-TASK DISPATCH, install a compact STAGE 0 dispatch core, document --hard, and repoint 25+ cross-references."
-    }
-  ],
+  "session_id": "sess_1788399440_184d69",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "metadata": {
-    "phase_count": 7,
-    "estimated_hours": 7.5,
-    "dependency_waves": 6
-  },
-  "memory_candidates": [
-    {
-      "content": "When a command hands a downstream engine a pre-computed schedule (wave table, ordering, plan array), verify who actually READS it before treating its deletion as a behavioral regression. In the /orchestrate batch path, commands/orchestrate.md computed a Kahn's-algorithm `waves[]` array (~200 lines) that skill-orchestrate wrote into its state file and never read: the sole admission gate (Stage MT-3 step 4.5) re-derives eligible tasks fresh every cycle from current statuses plus the dependency graph. Only `dependency_graph` was load-bearing, and it was itself just a narrowed read of state.json `dependencies[]`. The general pattern: in a cycling engine that re-evaluates eligibility per cycle, any precomputed static schedule is vestigial by construction. The distinguishing test is a repo-wide grep for readers of the field, not a reading of the producing code's apparent importance.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["vestigial-precomputation", "wave-schedule", "cycling-engine", "dependency-graph", "deletion-safety", "consumer-grep"]
-    }
-  ],
-  "next_steps": "Run /implement 145 to execute the plan"
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }
