@@ -1,7 +1,7 @@
 # Implementation Plan: Task #137
 
 - **Task**: 137 - Lean agent artifact skeletons
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (task 136 is a sequencing risk, not a blocker -- see Risks)
 - **Research Inputs**: specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md
@@ -124,27 +124,27 @@ carries no write conflict.
 
 ---
 
-### Phase 1: Re-transcribe Validator Contract and Capture Copy Sources [NOT STARTED]
+### Phase 1: Re-transcribe Validator Contract and Capture Copy Sources [COMPLETED]
 
 **Goal**: Establish, at implementation time rather than research time, the exact required-field
 and required-section lists the skeletons must satisfy, and pin the two canonical copy sources.
 This gates every subsequent phase against task 136 drift.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/validate-artifact.sh` lines 15-45 and transcribe
+- [x] Read `agent-system/extensions/core/scripts/validate-artifact.sh` lines 15-45 and transcribe
       `REPORT_METADATA`, `REPORT_SECTIONS`, `SUMMARY_METADATA`, `SUMMARY_SECTIONS`,
-      `SUMMARY_SECTIONS_OPTIONAL` verbatim into the phase progress record.
-- [ ] Diff the transcription against the five lists recorded in this plan's Research Integration
+      `SUMMARY_SECTIONS_OPTIONAL` verbatim into the phase progress record. *(completed: verbatim match, no drift)*
+- [x] Diff the transcription against the five lists recorded in this plan's Research Integration
       section. If any list differs, STOP and record the delta -- every downstream phase's skeleton
-      content changes with it.
-- [ ] Read `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+      content changes with it. *(completed: no drift vs Research Integration section)*
+- [x] Read `agent-system/extensions/core/agents/general-implementation-agent.md`'s
       `### Stage 6: Create Implementation Summary` block and record the exact bracketed-Status
-      vocabulary sentence and the fenced skeleton verbatim.
-- [ ] Read `agent-system/extensions/core/agents/general-research-agent.md`'s
-      `### Stage 6: Create Research Report` block and record its fenced skeleton verbatim.
-- [ ] Cross-check both against `agent-system/extensions/core/context/formats/summary-format.md`
+      vocabulary sentence and the fenced skeleton verbatim. *(completed: recorded from lines 465-529)*
+- [x] Read `agent-system/extensions/core/agents/general-research-agent.md`'s
+      `### Stage 6: Create Research Report` block and record its fenced skeleton verbatim. *(completed: recorded from lines 267-321)*
+- [x] Cross-check both against `agent-system/extensions/core/context/formats/summary-format.md`
       and `report-format.md` "Example Skeleton" sections; note any divergence between the
-      reference agent and the prose spec (the spec wins on a conflict).
+      reference agent and the prose spec (the spec wins on a conflict). *(completed: no divergence found)*
 
 **Timing**: 0.5 hours
 

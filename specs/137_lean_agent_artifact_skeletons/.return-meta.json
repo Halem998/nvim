@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
-      "summary": "7-phase, 5-hour plan to add or amend validator-conforming inline report/summary skeletons in 8 lean- and formal-extension agent files, then redeploy and demonstrate zero-error, zero-auto-repair validation on a real lean dispatch."
-    }
-  ],
-  "next_steps": "Run /implement 137 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2, 3, 5], [4], [6], [7]],
-  "memory_candidates": [
-    {
-      "content": "Agents are dispatched with only their own definition file loaded, so a terminus-writing agent (one that authors a report/summary/plan artifact) must carry a FULL inline skeleton in its own file -- linking the format doc in Context References is not sufficient, and neither is referring to a 'base' skeleton in a sibling agent file. This is why general-implementation-agent.md and general-research-agent.md each inline their own complete skeleton rather than cross-referencing one another, and why lean/formal agents that only linked the format doc produced non-conforming artifacts. Corollary for authoring: put the required-field/-section checks INSIDE the fenced skeleton block, since validate-artifact.sh's whole-file `grep -qF \"**Field**:\"` will happily match agent-authoring prose (e.g. a Context References bullet) that never reaches the produced artifact.",
-      "category": "PATTERN",
-      "source_artifact": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["agent-authoring", "inline-skeleton", "artifact-format", "validate-artifact", "extension-agents", "dispatch-isolation"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788456363_df3984_137",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1788456363_df3984",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
