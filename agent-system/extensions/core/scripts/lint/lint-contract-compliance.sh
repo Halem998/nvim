@@ -118,29 +118,50 @@ log_info() {
 }
 
 # ---------------------------------------------------------------------------
-# Check A: Hard-mode contract injection references (skill-orchestrate/SKILL.md)
+# Check A: Hard-mode contract injection references (scripts/orchestrate-build-dispatch.sh)
 # The three standalone hard agents were deleted; the hard-mode contract set they used to
-# @-reference now lives in skill-orchestrate/SKILL.md's Stage 3.5 Dispatch Prep
-# `<hard-mode-contracts>` injection block, whose per-phase `core_contracts` case arms name the
-# same contracts the deleted agents formerly declared.
+# @-reference used to live inline in skill-orchestrate/SKILL.md's Stage 3.5 Dispatch Prep
+# `<hard-mode-contracts>` injection block. That whole procedure -- including this exact
+# per-phase `core_contracts` case statement -- was subsequently extracted into
+# scripts/orchestrate-build-dispatch.sh (the sole implementation of Stage 3.5 Dispatch Prep;
+# SKILL.md itself no longer contains a `case "$phase" in` core_contracts arm at all), so this
+# check now reads the script instead of the skill.
 # ---------------------------------------------------------------------------
 check_a_hard_agent_contract_references() {
   echo ""
-  echo "--- Check A: Hard-mode contract injection references (skill-orchestrate/SKILL.md) ---"
+  echo "--- Check A: Hard-mode contract injection references (scripts/orchestrate-build-dispatch.sh) ---"
 
-  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
+  local orchestrate_skill="$CORE_ROOT/scripts/orchestrate-build-dispatch.sh"
   if [[ ! -f "$orchestrate_skill" ]]; then
-    log_fail "skill-orchestrate/SKILL.md not found"
+    log_fail "scripts/orchestrate-build-dispatch.sh not found"
     return
   fi
 
   log_info "Checking $orchestrate_skill"
 
+  # orchestrate-build-dispatch.sh contains THREE `case "$phase" in` statements (phase-argument
+  # validation, artifact-round mode selection, and the core_contracts block this check actually
+  # wants) -- unlike SKILL.md's former single occurrence, a bare `/case "\$phase" in/,/^esac/`
+  # range would silently capture the wrong one (or, since only the core_contracts case's closing
+  # `esac` is indented rather than column-0, run all the way to EOF). Anchor precisely instead:
+  # from the hard-mode gate that guards the core_contracts case down to that case's own
+  # (indented) closing `esac`.
   local case_block
-  case_block=$(awk '/case "\$phase" in/,/^esac/' "$orchestrate_skill")
+  local start_line end_line
+  start_line=$(grep -n 'if \[ "\$hard_mode" = "true" \]; then' "$orchestrate_skill" | head -1 | cut -d: -f1)
+  if [[ -z "$start_line" ]]; then
+    log_fail "scripts/orchestrate-build-dispatch.sh: hard_mode gate not found"
+    return
+  fi
+  end_line=$(awk -v s="$start_line" 'NR > s && /^  esac$/ { print NR; exit }' "$orchestrate_skill")
+  if [[ -z "$end_line" ]]; then
+    log_fail "scripts/orchestrate-build-dispatch.sh: core_contracts case statement not found"
+    return
+  fi
+  case_block=$(sed -n "${start_line},${end_line}p" "$orchestrate_skill")
 
   if [[ -z "$case_block" ]]; then
-    log_fail "skill-orchestrate: core_contracts case statement not found"
+    log_fail "scripts/orchestrate-build-dispatch.sh: core_contracts case statement not found"
     return
   fi
 
@@ -148,42 +169,42 @@ check_a_hard_agent_contract_references() {
   local research_arm
   research_arm=$(echo "$case_block" | awk '/research\)/,/;;/')
   if echo "$research_arm" | grep -qF "anti-analysis.md"; then
-    log_pass "skill-orchestrate research phase: references anti-analysis contract"
+    log_pass "orchestrate-build-dispatch.sh: research phase: references anti-analysis contract"
   else
-    log_fail "skill-orchestrate research phase: missing anti-analysis.md reference"
+    log_fail "orchestrate-build-dispatch.sh: research phase: missing anti-analysis.md reference"
   fi
   if echo "$research_arm" | grep -qF "reference-grounding.md"; then
-    log_pass "skill-orchestrate research phase: references reference-grounding contract"
+    log_pass "orchestrate-build-dispatch.sh: research phase: references reference-grounding contract"
   else
-    log_fail "skill-orchestrate research phase: missing reference-grounding.md reference"
+    log_fail "orchestrate-build-dispatch.sh: research phase: missing reference-grounding.md reference"
   fi
 
   # plan phase requires: reference-grounding
   local plan_arm
   plan_arm=$(echo "$case_block" | awk '/plan\)/,/;;/')
   if echo "$plan_arm" | grep -qF "reference-grounding.md"; then
-    log_pass "skill-orchestrate plan phase: references reference-grounding contract"
+    log_pass "orchestrate-build-dispatch.sh: plan phase: references reference-grounding contract"
   else
-    log_fail "skill-orchestrate plan phase: missing reference-grounding.md reference"
+    log_fail "orchestrate-build-dispatch.sh: plan phase: missing reference-grounding.md reference"
   fi
 
   # implement phase requires: anti-analysis, wrap-up, territory (territory conditional on $territory)
   local implement_arm
   implement_arm=$(echo "$case_block" | awk '/implement\)/,/esac/')
   if echo "$implement_arm" | grep -qF "anti-analysis.md"; then
-    log_pass "skill-orchestrate implement phase: references anti-analysis contract"
+    log_pass "orchestrate-build-dispatch.sh: implement phase: references anti-analysis contract"
   else
-    log_fail "skill-orchestrate implement phase: missing anti-analysis.md reference"
+    log_fail "orchestrate-build-dispatch.sh: implement phase: missing anti-analysis.md reference"
   fi
   if echo "$implement_arm" | grep -qF "wrap-up.md"; then
-    log_pass "skill-orchestrate implement phase: references wrap-up contract"
+    log_pass "orchestrate-build-dispatch.sh: implement phase: references wrap-up contract"
   else
-    log_fail "skill-orchestrate implement phase: missing wrap-up.md reference"
+    log_fail "orchestrate-build-dispatch.sh: implement phase: missing wrap-up.md reference"
   fi
   if echo "$implement_arm" | grep -qF "territory.md"; then
-    log_pass "skill-orchestrate implement phase: references territory contract (conditional)"
+    log_pass "orchestrate-build-dispatch.sh: implement phase: references territory contract (conditional)"
   else
-    log_fail "skill-orchestrate implement phase: missing territory.md reference"
+    log_fail "orchestrate-build-dispatch.sh: implement phase: missing territory.md reference"
   fi
 }
 

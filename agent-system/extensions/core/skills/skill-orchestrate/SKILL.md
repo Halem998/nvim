@@ -1403,6 +1403,7 @@ elif [ "$last_skeleton" = "true" ]; then
   hard_orchestrate_propagate_completion "$task_number" "$TASK_TYPE" "$TASK_DIR" "${dispatch_start_ts:-9999999999}"
 
   rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note.
+  rm -rf "${TASK_DIR}/.dispatch/"  # loop-termination-only cleanup — see orchestrator-runtime-files.md.
   EXIT (success)
 
 else
@@ -1703,6 +1704,7 @@ echo "[orchestrate] Task $task_number completed successfully."
 # must exclude the guard itself rather than rely on this rm to keep it out of history. See
 # context/standards/orchestrator-runtime-files.md.
 rm -f "$loop_guard_file"
+rm -rf "${TASK_DIR}/.dispatch/"  # loop-termination-only cleanup — see orchestrator-runtime-files.md.
 EXIT (success)
 ```
 
@@ -2348,6 +2350,10 @@ detected_defects=$(jq -c '.detected_defects // []' "$loop_guard_file" 2>/dev/nul
 rm -f "$loop_guard_file"
 # Clean up drift inspection artifact if present
 rm -f "${TASK_DIR}/.drift-inspection.json"
+# Clean up accumulated per-dispatch context files — loop-termination-only, see
+# orchestrator-runtime-files.md (the one per-task ephemeral entry that accumulates rather than
+# being a singleton, so it is swept in bulk here rather than rm -f'd per dispatch).
+rm -rf "${TASK_DIR}/.dispatch/"
 echo "[orchestrate] Task $task_number: orchestration complete."
 echo "Final status: $current_status | Cycles used: $cycle_count/$MAX_CYCLES"
 ```
@@ -3920,6 +3926,18 @@ The top-level `status` field keeps its existing closed vocabulary (`"implemented
    not alter `exit_status`, `forward_progress_violated`, or any other computation above:
    ```bash
    bash .claude/scripts/task-lock.sh session-release "$session_id" 2>/dev/null || true
+   ```
+7. **Per-task `.dispatch/` cleanup (the MT-5 equivalent of the single-task loop-termination `rm
+   -rf "${TASK_DIR}/.dispatch/"` sites)**: for every task in `completed_tasks` ONLY — never for a
+   task in `failed_tasks` or still non-terminal at loop exit, mirroring the single-task asymmetry
+   that `.dispatch/` persists across a `[PARTIAL]`/timeout exit and is swept only at genuine
+   full completion — resolve that task's `project_name` from `specs/state.json` and remove its
+   accumulated per-dispatch context directory. Best-effort and non-blocking:
+   ```bash
+   for tn in $(echo "$completed_tasks" | jq -r '.[]'); do
+     pn=$(jq -r --argjson n "$tn" '.active_projects[] | select(.project_number == $n) | .project_name // empty' specs/state.json)
+     [ -n "$pn" ] && rm -rf "specs/$(printf '%03d' "$tn")_${pn}/.dispatch/"
+   done
    ```
 
 ---

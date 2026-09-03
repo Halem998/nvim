@@ -1,0 +1,71 @@
+{
+  "phase": 9,
+  "phase_name": ".dispatch/ cleanup wiring, acceptance measurement, full gate run",
+  "started_at": "2026-09-03T01:15:00Z",
+  "last_updated": "2026-09-03T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add .dispatch/ cleanup at every loop-termination site + new per-task MT-5 equivalent", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Acceptance: prompt-byte measurement (real 3-task cycle)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Acceptance: parity test result reported", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Acceptance: sweep table attached", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Acceptance: user_decision end-to-end demonstrated", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Full gate run, every result reported", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 7, "description": "Confirm no .claude/** hand-authored", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.1",
+      "description": "Scope Hypothesis assumed one existing MT-5 per-task cleanup equivalent",
+      "type": "altered",
+      "reason": "Live inspection of Stage MT-5 found NO existing per-task file-cleanup step at all (it only removes the shared mt_state_file/session registry entry, never touches any individual task's directory). Added a new step 7 to Stage MT-5 that iterates completed_tasks only (mirroring the single-task asymmetry: .dispatch/ persists across a partial/failed/still-non-terminal exit, swept only at genuine per-task completion) and removes that task's .dispatch/ directory.",
+      "annotation": "*(completed: 3 sites found (lines ~1405, ~1701, ~2348 pre-edit); no existing MT-5 per-task equivalent existed -- added a new per-task cleanup step (step 7) iterating completed_tasks only)*"
+    },
+    {
+      "task_id": "9.6",
+      "description": "lint-contract-compliance.sh's Check A hard-coded an assumption that skill-orchestrate/SKILL.md contains the core_contracts case statement",
+      "type": "altered",
+      "reason": "That case statement was moved to orchestrate-build-dispatch.sh in Phase 3. Updated Check A to read the script instead, and to anchor precisely on the hard_mode-gated case block (the script has THREE case \"$phase\" in statements -- phase-arg validation, artifact-round mode, and core_contracts -- unlike SKILL.md's former single occurrence, so a naive same-shaped awk range would have captured the wrong block or run to EOF).",
+      "annotation": "n/a -- lint fix, not a plan checklist deviation; recorded in acceptance/full-gate-run notes"
+    }
+  ],
+  "acceptance_prompt_byte_measurement": {
+    "method": "3 real open tasks from specs/state.json (143, 142, 45), a realistic hard-mode composite (description + hard_contracts_block for implement phase [218B] + effort_note [60B], one task given a real memory-retrieve.sh match [1243B] to avoid an idealized all-zero-memory scenario)",
+    "before_per_task": {"143": 7486, "142": 7458, "45": 1178},
+    "before_total_bytes": 16122,
+    "after_per_task_pointer_prompt_bytes": {"143": 244, "142": 238, "45": 237},
+    "after_total_bytes": 719,
+    "reduction_pct": 95.54,
+    "target_pct": 90,
+    "meets_target": true,
+    "note": "A plain base-mode-only (no --hard, no memory match) measurement on the same 3 tasks -- description text alone -- gives before_total=14101, after_total=719, reduction=94.9%, also comfortably above target. Both variants reported for transparency; the after-side pointer prompt bytes are flag-independent by construction (they never grow with --hard/--lit/memory content), which is exactly the mechanism producing the reduction."
+  },
+  "acceptance_parity": {
+    "result": "PASS",
+    "fields_compared": "description, task_type, artifact round (number+padded+output_dir), phase-specific path (report for plan / plan+continuation for implement), handoff_path, dispatch_seq, dispatch_start_ts, territory (when supplied), memory block (present/absent per --clean), lit block (present/absent per --lit, all 6 directive branches), effort_note (per --fast/--hard), hard_contracts_block (per --hard, including territory.md conditional append), user-decision contract reference (always), model (empty vs pass-through, never literal null)",
+    "suite": "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh, 49 assertions, all passing",
+    "regression_bite_confirmed": "manually removed the implement-phase plan_path gatherer, suite dropped to 48/1, restored to 49/0"
+  },
+  "acceptance_user_decision_e2e": {
+    "method": "Simulated (no live Agent-tool dispatch available to this implementer): wrote a sample .return-meta.json with user_decision set (as a research agent's own Stage 7 write would), validated it with validate-return-meta.sh (PASS, 8/8), then applied a read-modify-write merge onto metadata.{orchestrator_postflight_ran,phases_completed,phases_total} (simulating skill-orchestrate's own later-writer postflight merge per return-metadata-file.md's Multiple Sequential Writers contract), re-validated (PASS, 8/8), and confirmed user_decision is byte-identical before and after the later write.",
+    "result": "MATCH -- user_decision survived the later writer's read-modify-write untouched"
+  },
+  "full_gate_run": {
+    "run_all_sh": "62 passed, 0 failed on the deployed tree (multiple runs); one FAIL (test-four-tier-conflict.sh case 6, a timing budget check) observed on a later full-repo re-run under this session's own heavy background load (uptime load average 4-5) -- pre-existing, unrelated to this task (git diff against task-lock.sh and the test file itself is empty; the most recent commit touching that file is literally titled 'resolve test-four-tier-conflict.sh flake')",
+    "verify_deploy_sh": "FAIL -- 4 of 30 checks failed: (1) doc-lint, 3 pre-existing index-entries.json line-count drifts unrelated to this task's files (patterns/postflight-control.md, schemas/state-schema.json, project/literature/patterns/zotero-item-creation.md); (2) tests/run-all.sh, the pre-existing flake above; (3) validate-state.sh --deep, pre-existing unknown-field schema drift on unrelated task entries (abandon_reason, blocks_note) dating to commits before this task; (4) lint-state-writer-boundary.sh, 4 pre-existing hand-rolled state.json writes in test-force-phases.sh, a file this task never touched",
+    "check_runtime_file_tracking_sh": "PASS -- all three checks passed, including the new .dispatch/ probe",
+    "check_task_references_sh": "PASS -- 0 unexempted occurrences across all 4 scanned trees",
+    "lint_agent_contracts_sh": "PASS",
+    "lint_routing_wiring_sh": "PASS",
+    "lint_contract_compliance_sh": "PASS (after fixing Check A's stale SKILL.md-only anchor -- see deviations)",
+    "lint_postflight_boundary_sh": "PASS",
+    "lint_scoped_commit_boundary_sh": "PASS",
+    "lint_task_lookup_adoption_sh": "PASS",
+    "lint_lifecycle_status_var_sh": "PASS",
+    "lint_branch_gated_sections_sh": "PASS",
+    "lint_state_writer_boundary_sh": "FAIL -- pre-existing, unrelated (see verify_deploy_sh note)"
+  },
+  "no_claude_hand_authored": "confirmed via git log --stat across every commit this task made (none touch .claude/**) and git status --short .claude/ (empty)"
+}
