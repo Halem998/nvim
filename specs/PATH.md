@@ -15,12 +15,20 @@ successors, three stale `file_scope` entries removed, `TODO.md` regenerated.*
 demand; the dry-run report retired into the cycle-plan script) — 149 and 150 created, 145/147/148/
 88/72 revised, 141 abandoned into 147. A "Validation to run" section added.*
 
+*Fourth pass, 2026-09-03: Batch 1 (125, 144, 20, 113, 27, 72) and Stage A steps A.0-A.3 (149, 145,
+146, 147) all landed and archived — five of Stage A's nine tasks are now complete. Sizes
+re-measured by execution, not inherited: `SKILL.md` 293,977 B → 225,553 B (146/147's 46,180 B
+Stage MT-3/MT-4 collapse), `commands/orchestrate.md` 46,874 B → 19,104 B (145's slim), eager
+CLAUDE.md-chain load unchanged at 62,985 B (~15.7k tokens; Stage A has not touched CLAUDE.md/rules
+yet). **143 is next**: its dependency (147) is satisfied and it is the sole remaining gate on 148.
+No new decisions this pass — see the updated tables below for the full status sweep.*
+
 **Goal (two halves, in priority order)**
 
 1. `/orchestrate` is the only lifecycle entry point, driven by flags. **Done** in shape:
    `/research`, `/plan`, `/implement` are deleted (124); hard mode and team mode are folded into
-   the single engine (117-123); phase forcing works in single-task mode (126). Two deletion tasks
-   remain (125, 127).
+   the single engine (117-123); phase forcing works in single-task mode (126); team mode is
+   deleted (149). One deletion task remains (127 — 125 landed 2026-09-03).
 2. The orchestrator is **token-cheap by construction**: it delegates, reads back compact verdicts,
    asks the user only when a decision is genuinely the user's, and otherwise carries almost
    nothing in context. **Not done.** The consolidation moved logic *into* the engine file without
@@ -29,7 +37,7 @@ demand; the dry-run report retired into the cycle-plan script) — 149 and 150 c
 
 ---
 
-## Where things stand (measured 2026-09-02, not inherited)
+## Where things stand (measured 2026-09-02, baseline before Stage A)
 
 | Surface | Size | Loaded when |
 |---|---|---|
@@ -38,9 +46,23 @@ demand; the dry-run report retired into the cycle-plan script) — 149 and 150 c
 | CLAUDE.md chain + eager rules (`measure-eager-context.sh`) | 63,973 B (~16k tokens) | every session |
 | **Total before the first dispatch** | **~405 KB, ~100k tokens** | |
 
-The engine file has **grown 56%** (188 KB → 294 KB) since task 88 was filed against it, because
+The engine file had **grown 56%** (188 KB → 294 KB) since task 88 was filed against it, because
 117-123 merged the hard-mode residue and the team fan-out into it. Task 88's "~83.5k baseline" is
-stale; the honest figure is ~100k.
+stale; the honest figure at that point was ~100k.
+
+**Re-measured 2026-09-03, after A.0-A.3 landed (125, 149, 145, 146, 147):**
+
+| Surface | 2026-09-02 | 2026-09-03 | Change | Target |
+|---|---|---|---|---|
+| `skills/skill-orchestrate/SKILL.md` | 293,977 B | **225,553 B (~56k tokens)** | -68,424 B (-23%) | ≤ 20,000 B |
+| `commands/orchestrate.md` | 46,874 B | **19,104 B (~4.8k tokens)** | -27,770 B (-59%) | ≤ 8,000 B |
+| CLAUDE.md chain + eager rules | 63,973 B | 62,985 B (~15.7k tokens) | -988 B (noise; untouched by Stage A) | ≤ 25k tokens total |
+| **Total before the first dispatch** | ~405 KB, ~100k tokens | **~308 KB, ~77k tokens** | **-97 KB, -23k tokens** | ≤ 25k tokens |
+
+Both files are well past the halfway mark toward their per-file ceilings but still far above
+them: 143, 148, and 88 (which deletes the entire single-task engine, ~183 KB of the remaining
+225,553 B) carry the rest of the reduction. `measure-eager-context.sh --check` confirms no
+volatile-file hits; `verify-deploy.sh` was not re-run this pass (see Validation to run below).
 
 **Inside the engine** (section split verified fence-safe; zero headings inside code fences):
 
@@ -195,12 +217,12 @@ designated-candidate slot: they serialize one per cycle whether batched or not. 
 
 | # | Task | State | What lands | Saving |
 |---|---|---|---|---|
-| A.0 | **125** delete base lifecycle skills | planned | Pure deletion; its plan's Phase 7 also sweeps `orchestrate.md`, so it must precede A.1 | dead surface |
-| A.0b | **149** delete team mode | created | Stages 3.6/3.6a, the `--team`/`--team-size` flags and parser exports, `synthesis-agent` if it has no other caller, the CLAUDE.md merge-source text, the team artifact convention, and the team tests. Precedes 145 so the command file is slimmed against the final flag set | ~19 KB out of the engine now; retires 72's Part A |
-| A.1 | **145** slim `commands/orchestrate.md` | created | Delete the illustrative `### MULTI-TASK DISPATCH` block and the consolidated-output template; keep Arguments, Options (add the undocumented `--hard`), STAGE 0 parse + dispatch, checkpoints. Target ≤ 8 KB | ~10k tokens/invocation, zero risk |
-| A.2 | **146** `orchestrate-build-dispatch.sh` + pointer prompts + user-decision contract | created | Stage 3.5 becomes a script writing `.dispatch/{seq}.md`; all eight dispatch sites send a fixed pointer prompt; agent contracts gain "read your dispatch file first" and the `user_decision` contract; threads the artifact round | the per-cycle authored-prompt cost, immediately, on both engines |
-| A.3 | **147** `orchestrate-cycle-plan.sh` | created | MT-3 steps 1-4.5 and MT-4's per-task preflight/mint collapse into one script returning the dispatch plan; consumes `force_phases` per task; creates missing task dirs; gains `--dry-run` and retires `orchestrate-dry-run-report.sh` (absorbs 141's verification bar) | MT-3 (35 KB) + half of MT-4 leave the engine; one fewer critical-path script |
-| A.4 | **143** `orchestrate-cycle-postflight.sh` | revised (widened) | 143's two gates are the seed; the script also absorbs recovery (now seq-checked), corroboration, writer-contract-aware recording, `user_decision` relay, status clamp, artifact link + round advance, excursion advisory, scoped commit, MT-state update, lock release | remainder of MT-4 + MT-5 (56 KB) leave the engine; 53, 138, 100 close |
+| A.0 | **125** delete base lifecycle skills | **completed 2026-09-03** | Pure deletion; its plan's Phase 7 also swept `orchestrate.md`, so it preceded A.1 | dead surface |
+| A.0b | **149** delete team mode | **completed 2026-09-03** | Stages 3.6/3.6a, the `--team`/`--team-size` flags and parser exports, `synthesis-agent` if it has no other caller, the CLAUDE.md merge-source text, the team artifact convention, and the team tests. Preceded 145 so the command file was slimmed against the final flag set | ~19 KB out of the engine; retires 72's Part A |
+| A.1 | **145** slim `commands/orchestrate.md` | **completed 2026-09-03** | Deleted the illustrative `### MULTI-TASK DISPATCH` block and the consolidated-output template; kept Arguments, Options (added the undocumented `--hard`), STAGE 0 parse + dispatch, checkpoints. 46,874 B → 19,104 B (target ≤ 8 KB not yet reached) | ~7k tokens/invocation, zero risk |
+| A.2 | **146** `orchestrate-build-dispatch.sh` + pointer prompts + user-decision contract | **completed 2026-09-03** | Stage 3.5 became a script writing `.dispatch/{seq}.md`; all eight dispatch sites send a fixed pointer prompt; agent contracts gained "read your dispatch file first" and the `user_decision` contract; threads the artifact round | the per-cycle authored-prompt cost, on both engines |
+| A.3 | **147** `orchestrate-cycle-plan.sh` | **completed 2026-09-03** | MT-3 steps 1-4.5 and MT-4's per-task preflight/mint collapsed into one script returning the dispatch plan; consumes `force_phases` per task; creates missing task dirs; gained `--dry-run` and retired `orchestrate-dry-run-report.sh` (absorbed 141's verification bar). SKILL.md's MT-3/MT-4 pre-dispatch region: 271,733 B → 225,553 B (-46,180 B) | MT-3 (35 KB) + half of MT-4 left the engine; one fewer critical-path script |
+| A.4 | **143** `orchestrate-cycle-postflight.sh` | **revised (widened); unblocked — deps [147] satisfied, next to run** | 143's two gates are the seed; the script also absorbs recovery (now seq-checked), corroboration, writer-contract-aware recording, `user_decision` relay, status clamp, artifact link + round advance, excursion advisory, scoped commit, MT-state update, lock release | remainder of MT-4 + MT-5 (56 KB) leave the engine; 53, 138, 100 close |
 | A.5 | **148** port single-task-only features into the one engine | created, revised | Hard-mode counters into `orchestrate-churn.sh` (kept in full by decision); one loop-guard counter; drift/blocker dispatches as next-cycle rows; a single task number routed through the batch path behind a flag. Team item withdrawn | prerequisite for A.6 |
 | A.6 | **88** delete the single-task engine; rewrite `SKILL.md` as the four-move loop | revised (replaced) | Stages 1-8 deleted; MT-1..5 replaced by the loop above; narration moved to `docs/architecture/`; `## MUST NOT` reduced to a list; ≤ 20 KB. The original mode-gating premise (single-task is the hot path) is inverted by the default use and is dropped | **~70k tokens/invocation** |
 | A.7 | **142** orchestrator context budget: measure and lock | revised (narrowed) | Baseline captured (numbers above), re-measured after each landing; per-file ceilings for the two orchestrator files and an eager-load ceiling wired into verify-deploy (absorbs 42); a 3-task batch's per-cycle growth measured and recorded | prevents regrowth |
@@ -209,6 +231,9 @@ designated-candidate slot: they serialize one per cycle whether batched or not. 
 **Dependency chain, applied in `state.json`**: 149←[125]; 145←[149]; 146←[145]; 147←[146];
 143←[147]; 148←[143]; 88←[148]; 142←[88]; 150←[88]. 88's former edges [87, 127] are dropped;
 127 no longer gates it. 142 and 150 can run in the same cycle (disjoint scopes).
+
+**Chain progress, 2026-09-03**: 125 → 149 → 145 → 146 → 147 are done, in that order, exactly as
+filed. 143 is unblocked now; 148, 88, 142, 150 remain behind it.
 
 **Why A.2 before A.3.** The dispatch-file builder is independent of the loop rewrite and lands
 the per-cycle saving on the engine *as it exists today*. If Stage A stalls after A.2, multi-task
@@ -229,13 +254,13 @@ alongside one Stage A member.
 | # | Task | Op | Note |
 |---|---|---|---|
 | B.1 | **141** relay admission verdict in dry-run report | abandoned → 147 | The report is retired; `orchestrate-cycle-plan.sh --dry-run` renders the live verdict once, and 141's verification bar (relay the ORDERING CONSTRAINT text; the stale "runs solo only" strings appear nowhere) is carried into 147 verbatim |
-| B.2 | **144** narrow coarse `file_scope` declarations | revised (addendum) | The three stale `general-implementation-hard-agent.md` scopes (76, 136, 139) are already removed at the state level; 144 verifies none remain and records the "scope unknown before research" convention. 88's `context/patterns/` entry was replaced with its rewrite; 44's `core/context/` root is the widest coarse declaration left |
+| B.2 | **144** narrow coarse `file_scope` declarations | **completed 2026-09-03** | The three stale `general-implementation-hard-agent.md` scopes (76, 136, 139) were removed at the state level; 144 verified none remain and recorded the "scope unknown before research" convention. 88's `context/patterns/` entry was replaced with its rewrite; 44's `core/context/` root is the widest coarse declaration left |
 | B.3 | **139 → 140** forbid concurrent-writer history rewrites; hook predicate | keep | The motivating incident was a five-agent batch. Directly proportional to batch width |
-| B.4 | **14** implementation agents: no fan-out, terminal status, marker/commit sync | keep | Agent-contract side only. Serialize after 139 (both edit `general-implementation-agent.md`) and not alongside 146 (same file) |
-| B.5 | **20** `/todo` phantom build_errors + `MAX_ARG_STRLEN` archive failure | keep | The second defect is data-loss class and arrives at ~15-25 archived tasks; the backlog is about to shed that many |
-| B.6 | **51** runtime files out of `specs/` root; wire reap into `/todo` | keep | Coordinate with 147/143, which own the multi-state file's writer; land after 143 or declare the new path in 147 |
+| B.4 | **14** implementation agents: no fan-out, terminal status, marker/commit sync | keep | Agent-contract side only. Serialize after 139 (both edit `general-implementation-agent.md`) and not alongside 146 (same file; 146 is now done, so this constraint is moot going forward) |
+| B.5 | **20** `/todo` phantom build_errors + `MAX_ARG_STRLEN` archive failure | **completed 2026-09-03** | The second defect is data-loss class; this run's own archival (55 tasks in one call) exercised the `MAX_ARG_STRLEN` path directly (`state-write.sh --argjson` failed at 55 tasks' worth of JSON, worked via `--argjson-file`) — live confirmation the fix's scope was real |
+| B.6 | **51** runtime files out of `specs/` root; wire reap into `/todo` | keep | Coordinate with 143, which now owns the multi-state file's writer (147 is done); land after 143 or declare the new path there |
 | B.7 | **91 → 136** plan Status-line diagnosis; producer-side ownership boundary | keep | Independent of the engine |
-| B.8 | **72** subagent-postflight marker correlation | narrowed (Part A moot with team mode gone; no deps) | The `head -1` arbitrary-marker pick in `hooks/subagent-postflight.sh` bites concurrent single-task sessions too: a foreign stop can burn another session's continuation budget or delete its marker. Independent; batchable |
+| B.8 | **72** subagent-postflight marker correlation | **completed 2026-09-03** | The `head -1` arbitrary-marker pick in `hooks/subagent-postflight.sh` bit concurrent single-task sessions too: a foreign stop could burn another session's continuation budget or delete its marker. Landed independent of Stage A |
 | B.9 | **13** gate-out auto-repair reporting | keep | Independent; low |
 | B.10 | **129** `\b` grep audit | keep | Independent; low. Depends on 128 (done); eligible |
 
@@ -257,7 +282,7 @@ Kept as filed; sequenced by whatever batch has room. None are on the path.
 
 | Task | Note |
 |---|---|
-| **113** briefing SIGPIPE crash | Hard crash of `--lit` in repo mode; cheap; run early in any batch |
+| **113** briefing SIGPIPE crash | **Completed 2026-09-03.** Hard crash of `--lit` in repo mode |
 | **74 → 75 / 76** LaTeX build guard | 76's scope must drop the deleted `-hard` agent file; 76 also touches `skill-base.sh` (critical path) |
 | **137** lean agent artifact skeletons | Extension-side; produces validator-clean artifacts |
 | **134** `/tag` reachability gate | Small; user-only skill |
@@ -265,7 +290,7 @@ Kept as filed; sequenced by whatever batch has room. None are on the path.
 | **43** email safety context decision | Extension-internal |
 | **39** Zotero metadata resolution | Literature; planned |
 | **45** `<leader>al` global update | Neovim Lua UI |
-| **27** delete dead `.opencode` router | Pure deletion; cheap |
+| **27** delete dead `.opencode` router | **Completed 2026-09-03.** |
 | **22** `.opencode` freeze: silence spam, record policy | Stranded at `[RESEARCHING]` with no task directory; safe to re-dispatch |
 
 ---
@@ -314,30 +339,26 @@ mode's Part A of 72, which is dropped with the feature by decision.
 
 ## Recommended batches
 
-**Batch 1 — clear the deck (one invocation, dependency-ordered):**
+**Batch 1 — clear the deck.** `/orchestrate 125, 144, 20, 113, 27, 72` — **done, 2026-09-03.**
+All six archived. The report's stale "runs solo only" wording is moot now (147 retired the
+report entirely; `--dry-run` reads live off `orchestrate-cycle-plan.sh`).
+
+**Batch 2 — Stage A as one chain.** `/orchestrate 149, 145, 146, 147, 143, 148, 88, 142, 150` —
+**first four done** (149, 145, 146, 147), **2026-09-03**. Remaining:
 
 ```
-/orchestrate 125, 144, 20, 113, 27, 72
+/orchestrate 143, 148, 88, 142, 150
 ```
 
-One self-modifying member (125, via its `orchestrate.md` sweep); the rest are free. If you run
-`--dry-run` first, read the raw admission verdict rather than the report's prose: the report
-still carries the stale "runs solo only" wording until 147 retires it.
+Still total order by design (each touches `SKILL.md` or another critical path) until the last
+two, which can share a cycle; five cycles minimum from here. Pair each cycle with one free Stage
+B/D task if wanted (139 → 140, 91 → 136, 51, 13, 129, 137, 134) — the ones already batchable in
+Stage B/D that are done (144, 20, 72, 113, 27) are out of the pool now.
 
-**Batch 2 — Stage A as one chain:**
-
-```
-/orchestrate 149, 145, 146, 147, 143, 148, 88, 142, 150
-```
-
-Total order by design (every member touches `SKILL.md` or another critical path) until the last
-two, which can share a cycle; eight cycles minimum. Pair each cycle with one free Stage B/D task
-if wanted (139 → 140, 91 → 136, 51, 13, 129, 137, 134). Or hand both batches to one invocation —
-the chain sequences itself.
-
-**Do not** run 44 alongside anything touching `core/context/` until 144 narrows its scope. **Do
-not** run 14 alongside 146 or 149 (all edit agent or engine files). **Do not** run 76 alongside a
-Stage A member (it touches `skill-base.sh`).
+**Lifted 2026-09-03**: the "don't run 44 alongside `core/context/`" constraint — 144 narrowed
+44's `file_scope` (one of 9 flagged projects it fixed) before archiving. The "don't run 14
+alongside 146 or 149" constraint is moot the same way: both are done. **Still standing**: **do
+not** run 76 alongside a Stage A member (it touches `skill-base.sh`).
 
 ---
 
@@ -381,9 +402,18 @@ After each Stage A landing, in this repo:
   example `/orchestrate 13, 129`, and read the consolidated output for anything the lead did
   that a script should have.
 
+**Done, 2026-09-03**: `measure-eager-context.sh --check` re-run — 62,985 B (~15.7k tokens), no
+volatile-file hits, essentially flat against baseline (expected; Stage A hasn't touched
+CLAUDE.md/rules yet). **Not done this pass**: the full `verify-deploy.sh` run and the real
+two-task Stage B/D batch through the changed engine — both still open, and worth doing before or
+alongside 143.
+
 After 146 (dispatch files): open one generated `specs/NNN_slug/.dispatch/*.md` and confirm it
 carries the description, the artifact round, the plan/report path, and the user-decision
-contract, since the agents now see nothing else.
+contract, since the agents now see nothing else. **Done, 2026-09-03**: spot-checked
+`specs/archive/147_build_orchestrate_cycle_plan/.dispatch/7.md` — carries Identity, Description
+(with the addendum), Artifact Round, and a Plan section; confirms the contract holds on a real
+dispatch, not just 146's own tests.
 
 After 88 (engine rewrite), before declaring Stage A done:
 
@@ -403,17 +433,27 @@ planner's questions as its focus.
 
 ## Observations, unfiled
 
-- `--hard` undocumented in `orchestrate.md`'s Options table while parsed and consumed (fold into
-  NEW-F).
+- ~~`--hard` undocumented in `orchestrate.md`'s Options table~~ **Resolved by 145, 2026-09-03**:
+  `orchestrate.md:46` now documents it in the Options table.
 - cslib and lean manifests still declare four `routing_hard`/`routing_agents_hard` keys each. 121
   deliberately left lean's untouched and only pruned cslib's dead pairs; 127 owns the rest.
 - The 240 MB `literature-pyenv/` virtualenv remains untracked and un-ignored in the source store
-  (carried forward from the prior survey; one `.gitignore` line).
-- Task 22 sits at `[RESEARCHING]` with no `specs/022_*` directory; the multi-task path has no
-  `mkdir -p` (prior survey's observation, still true). 147 creates missing directories.
+  (carried forward from the prior survey; one `.gitignore` line; still shows in `git status` as
+  of 2026-09-03).
+- ~~Task 22 sits at `[RESEARCHING]` with no `specs/022_*` directory; the multi-task path has no
+  `mkdir -p`~~ **Resolved by 147, 2026-09-03**: `orchestrate-cycle-plan.sh` now creates missing
+  task directories. 22 itself is still un-dispatched and should pick this up on its next run.
 - The write-time task-reference hook fires on scratch files outside the repo tree (it blocked a
   throwaway script in the session scratchpad for containing "task 147"). Harmless, but its path
   filter could exempt `/tmp/**`.
+- **New, from 147's Phase 10 Reasoned Exclusions (2026-09-03)**: 4 pre-existing `verify-deploy.sh`
+  findings remain open, none introduced by 147 and each outside its `file_scope`:
+  `test-force-phases.sh` hand-rolled state writes; `index-entries.json` `line_count` drift on
+  `patterns/postflight-control.md` and `schemas/state-schema.json`; one ghost `index-entries.json`
+  declaration surfaced by whole-tree orphan detection. (The `abandon_reason`/`blocks_note`
+  schema-drift FAILs are the same class as the bullet below and already tracked there.) Each
+  traces to a different, already-completed task's commit; worth a task scoped to the owning file
+  rather than folding into whichever task next touches `verify-deploy.sh`.
 - `validate-state.sh` fails on two fields its own writers produce: `abandon_reason` (every
   abandoned task since 31, including the four abandoned today) and `blocks_note` (106, 107,
   109). Same class as the `blockers` mismatch the prior survey recorded. Either add all three to
@@ -437,16 +477,17 @@ planner's questions as its focus.
 
 ## Progress
 
-*As of 2026-09-02.*
+*As of 2026-09-03.*
 
 | Stage | Tasks | State |
 |---|---|---|
-| Consolidation (116 → 117-127, 135) | 117-124, 126, 128, 130-131, 133, 135 ☑ · **125, 127 ☐** | shape done; two deletions left |
-| A — thin lead | 125 → 149 → 145 → 146 → 147 → 143 → 148 → 88 → [142, 150] | **☐ critical path**; ~100k → ≤25k tokens eager, per-cycle authored text → ~1 KB/task, one fewer dispatch per specification-shaped task |
-| B — wide-batch correctness | 144, 139→140, 14, 20, 51, 91→136, 72, 13, 129 (141 absorbed) | ☐ batchable |
-| C — other budgets | 44, 89 (42 absorbed) | ☐ low |
-| D — extensions/repo | 113, 74→75/76, 137, 134, 29→30, 43, 39, 45, 27, 22 | ☐ independent |
+| Consolidation (116 → 117-127, 135) | 117-126, 128, 130-131, 133, 135 ☑ · **127 ☐** | shape done; one deletion left |
+| A — thin lead | 125 ☑ → 149 ☑ → 145 ☑ → 146 ☑ → 147 ☑ → **143 ☐ (next, unblocked)** → 148 ☐ → 88 ☐ → [142 ☐, 150 ☐] | **5/9 done**; ~405 KB/~100k tokens → ~308 KB/~77k tokens eager so far, target ≤25k tokens; per-cycle authored text now ~0 for the planning half (147), postflight half still pending (143) |
+| B — wide-batch correctness | 144 ☑, 20 ☑, 72 ☑, 139→140 ☐, 14 ☐, 51 ☐, 91→136 ☐, 13 ☐, 129 ☐ (141 absorbed) | 3/9 done; rest batchable |
+| C — other budgets | 44 ☐, 89 ☐ (42 absorbed) | ☐ low; 44 unblocked by 144's narrowing |
+| D — extensions/repo | 113 ☑, 27 ☑, 74→75/76 ☐, 137 ☐, 134 ☐, 29→30 ☐, 43 ☐, 39 ☐, 45 ☐, 22 ☐ | 2/10 done; independent |
 | E — optional | Workflow spike, lazy-reference diet | after A |
 
-**Critical path now**: Stage A, headed by 125. Nothing upstream gates it. A.1 and A.2 each land a
-measurable saving on their own; A.6 is where the file collapses.
+**Critical path now**: Stage A, headed by 143 (147's dependency satisfied 2026-09-03). A.1 and
+A.2 already landed their measurable savings; A.6 (88) is still where the single-task engine — and
+the bulk of the remaining `SKILL.md` bytes — is deleted.
