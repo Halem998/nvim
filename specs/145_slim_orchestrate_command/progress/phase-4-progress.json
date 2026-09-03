@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Delete MULTI-TASK DISPATCH and install the reduced STAGE 0",
+  "started_at": "2026-09-02T01:25:00Z",
+  "last_updated": "2026-09-02T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compose and install replacement STAGE 0 body", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 2, "description": "Decide fate of Step 1.5 Pre-Dispatch Review call", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"], "note": "retained as one-line advisory invocation, per plan default"},
+    {"id": 3, "description": "Delete consolidated-output invocation and superseded narrative", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 4, "description": "Keep executable MAX_TASKS=8 guard in compact block", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"], "note": "kept per plan default"},
+    {"id": 5, "description": "Leave Anti-Bypass/CHECKPOINT 1/STAGE 2/CHECKPOINT 2/CHECKPOINT 3/Output/Error Handling untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Interim byte count after Phase 4: 21,386 B / 405 lines (from 44,953 B / 790 lines baseline).",
+    "Verified byte-identical tail: CHECKPOINT 1 through Error Handling unchanged (diff against git HEAD's pre-Phase-4 version was empty).",
+    "All 12 bash fences in the file pass `bash -n` syntax check.",
+    "Decision recorded: Step 1.5 Pre-Dispatch Review call retained as a one-line advisory invocation inside the compact multi-task block, exactly as the plan's stated default -- it remains the only visibility surface for out-of-batch/nonexistent dependency edges (Non-Negotiable 3)."
+  ]
+}
