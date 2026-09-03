@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
+      "summary": "Confirms all four defects in update-plan-status.sh, locates exact edit sites (lines 62/69/72-77), identifies update-phase-status.sh's line-numbered diagnostic as a reusable precedent, corrects a stale commands/implement.md citation (deleted in ff08eb967), and pinpoints plan-format.md's correct documentation section (lines 343-365, not line 99)."
+    }
+  ],
+  "next_steps": "Run /plan 91 to create the implementation plan",
+  "metadata": {
+    "session_id": "sess_1788456363_df3984_91",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "In this codebase's status-mutation scripts, update-phase-status.sh already implements the canonical line-numbered diagnostic idiom: locate the target line via `grep -n PATTERN file | head -1 | cut -d: -f1`, then on failure print both a stated reason and `\"Line ${n}: $(sed -n \"${n}p\" \"$file\")\"` to quote the offending content verbatim. Any new fail-loudly fix to a sibling status-mutating script (e.g. update-plan-status.sh, update-task-status.sh) should reuse this exact idiom rather than inventing a new diagnostic style, so all consumers of plan-format.md's Status/heading contracts converge on one diagnostic convention.",
+      "category": "PATTERN",
+      "source_artifact": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["update-plan-status.sh", "update-phase-status.sh", "diagnostic", "line-numbered-error", "shell-script-pattern"]
+    },
+    {
+      "content": "commands/implement.md (and research.md/plan.md) were deleted from agent-system/extensions/core/commands/ in commit ff08eb967 (\"task 124 phase 4: delete lifecycle command files and de-register from manifest\") when general/meta/markdown task types moved to route directly through skill-orchestrate's agent dispatch instead of dedicated lifecycle commands. Any older task filing, memory, or doc that cites a specific line in commands/implement.md, research.md, or plan.md as a live call site is citing a file that no longer exists in the current core command set -- verify against `ls agent-system/extensions/core/commands/` before trusting such a citation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["commands/implement.md", "lifecycle-commands", "stale-citation", "skill-orchestrate", "task-124"]
+    }
+  ]
+}
