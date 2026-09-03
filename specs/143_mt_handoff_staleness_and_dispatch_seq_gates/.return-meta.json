@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
+      "summary": "Maps the widened orchestrate-cycle-postflight.sh scope onto existing precedent scripts (orchestrate-stage5-gates.sh, orchestrate-stage5-postflight.sh, orchestrate-recover-outcome.sh), documents the two live dispatch_seq incidents and the spurious-defect case as fixture material, and flags an open design question on per-dispatch writer-contract determination plus a schema gap (.return-meta.json has no dispatch_seq field)."
+    }
+  ],
+  "next_steps": "Run /plan 143 to create the implementation plan for orchestrate-cycle-postflight.sh",
+  "metadata": {
+    "session_id": "sess_1788456363_df3984_143",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system, .return-meta.json currently has no dispatch_seq field — only .orchestrator-handoff.json echoes the orchestrator-minted dispatch_seq. Any task that wants to identity-gate the .return-meta.json recovery path (not just the handoff path) against a stale/resurrected predecessor write needs to add that field to the return-metadata schema and every writer contract first; mtime-only staleness checks are provably insufficient against a git-restored predecessor (observed incident: a dispatch's deleted .return-meta.json and .orchestrator-handoff.json were restored from an old commit by a re-woken agent, with a fresh mtime that fell inside the successor's dispatch window).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dispatch_seq", "return-meta.json", "orchestrate", "staleness gate", "handoff-schema"]
+    },
+    {
+      "content": "orchestrate-cycle-plan.sh (147) and its planned sibling orchestrate-cycle-postflight.sh (143) establish a CLI convention for /orchestrate's new per-cycle scripts: `<script> <task_number> --session SID --state-file F [flags...]`, parsed via a `while [ \"$#\" -gt 0 ]` case-based loop with a `usage()` heredoc and `--help`. New orchestrate cycle scripts should copy this convention rather than the older positional-only style used by orchestrate-stage5-gates.sh/orchestrate-stage5-postflight.sh.",
+      "category": "PATTERN",
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-cycle-plan", "CLI convention", "flag parsing", "orchestrate scripts"]
+    }
+  ]
+}
