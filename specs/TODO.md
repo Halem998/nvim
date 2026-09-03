@@ -31,7 +31,7 @@ next_project_number: 151
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
-145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
+145 [RESEARCHED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
   └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
     └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line  (see above)
     └─ 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
@@ -205,10 +205,11 @@ REFERENCE: specs/PATH.md, "Target design: the thin lead".
 ---
 
 ### 145. Slim commands/orchestrate.md to flags and dispatch; delete the illustrative multi-task block
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 149
+- **Research**: [145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md]
 
 **Description**: Slim commands/orchestrate.md to the flag table and the dispatch, deleting the multi-task block its own text labels illustrative. Stage A.1 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/commands/orchestrate.md (never .claude/**).
 
