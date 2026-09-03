@@ -101,9 +101,25 @@ if [ -n "$remote_sha" ] && [ "$local_sha" != "$remote_sha" ]; then
     echo "Resolution: Pull latest changes with 'git pull' before tagging."
     exit 1
   fi
+
+  # Check if we're ahead (not fully pushed). ahead == 0 here is mathematically identical to
+  # `git merge-base --is-ancestor HEAD origin/$current_branch` -- not a proxy for it -- because
+  # Step 6 always tags HEAD with no commit-ish argument. If /tag ever gains non-HEAD tagging,
+  # this equivalence must be re-derived.
+  ahead=$(git rev-list --count "origin/$current_branch..HEAD" 2>/dev/null || echo "0")
+  if [ "$ahead" -gt 0 ]; then
+    echo "Error: Local branch is $ahead commit(s) ahead of remote (not fully pushed)."
+    echo ""
+    echo "A tag created now would point at a commit absent from origin/$current_branch. A"
+    echo "consuming repo's release preflight (git merge-base --is-ancestor) rejects such a tag"
+    echo "*after* it has already been pushed, requiring a delete-and-re-push to recover."
+    echo ""
+    echo "Resolution: Push the branch with 'git push origin $current_branch' before tagging."
+    exit 1
+  fi
 fi
 
-echo "Git state: OK (clean working tree, up-to-date with remote)"
+echo "Git state: OK (clean working tree, fully pushed, up-to-date with remote)"
 ```
 
 ### Step 3: Compute New Version

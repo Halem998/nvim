@@ -1,7 +1,7 @@
 # Implementation Plan: Task #134
 
 - **Task**: 134 - Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md
@@ -76,17 +76,17 @@ No `roadmap_path` was provided in the dispatch; no ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the ahead-of-remote gate to SKILL.md Step 2 [NOT STARTED]
+### Phase 1: Add the ahead-of-remote gate to SKILL.md Step 2 [COMPLETED]
 
 **Goal**: `/tag` hard-stops with an actionable message when the current branch has commits not present on `origin/$current_branch`.
 
 **Tasks**:
-- [ ] Open `agent-system/extensions/core/skills/skill-tag/SKILL.md` and re-anchor on Step 2's `### Step 2: Validate Git State` heading (do not trust the research report's line numbers).
-- [ ] Inside the existing `if [ -n "$remote_sha" ] && [ "$local_sha" != "$remote_sha" ]; then` guard, immediately after the `behind` block's closing `fi`, add the `ahead` block: `ahead=$(git rev-list --count "origin/$current_branch..HEAD" 2>/dev/null || echo "0")`, then `if [ "$ahead" -gt 0 ]` -> error + `exit 1`.
-- [ ] Write the error body to state all three things: the count (`Local branch is $ahead commit(s) ahead of remote (not fully pushed).`), the consequence (a tag created now points at a commit absent from `origin/$current_branch`; the consuming repo's `git merge-base --is-ancestor` preflight rejects it *after* the push, requiring delete-and-re-push), and the remedy (`Resolution: Push the branch with 'git push origin $current_branch' before tagging.`).
-- [ ] Add the inline comment recording the HEAD-only invariant: the `ahead` count is identical to (not a proxy for) the CI's ancestry predicate *because* Step 6 tags HEAD with no commit-ish, and the equivalence must be re-derived if `/tag` ever gains non-HEAD tagging.
-- [ ] Update the closing success line to `echo "Git state: OK (clean working tree, fully pushed, up-to-date with remote)"`.
-- [ ] Confirm no other Step 2 behavior changed: the dirty-tree check, the detached-HEAD check, the `git fetch ... || true`, and the `behind` check are all untouched.
+- [x] Open `agent-system/extensions/core/skills/skill-tag/SKILL.md` and re-anchor on Step 2's `### Step 2: Validate Git State` heading (do not trust the research report's line numbers). *(completed)*
+- [x] Inside the existing `if [ -n "$remote_sha" ] && [ "$local_sha" != "$remote_sha" ]; then` guard, immediately after the `behind` block's closing `fi`, add the `ahead` block: `ahead=$(git rev-list --count "origin/$current_branch..HEAD" 2>/dev/null || echo "0")`, then `if [ "$ahead" -gt 0 ]` -> error + `exit 1`. *(completed)*
+- [x] Write the error body to state all three things: the count (`Local branch is $ahead commit(s) ahead of remote (not fully pushed).`), the consequence (a tag created now points at a commit absent from `origin/$current_branch`; the consuming repo's `git merge-base --is-ancestor` preflight rejects it *after* the push, requiring delete-and-re-push), and the remedy (`Resolution: Push the branch with 'git push origin $current_branch' before tagging.`). *(completed)*
+- [x] Add the inline comment recording the HEAD-only invariant: the `ahead` count is identical to (not a proxy for) the CI's ancestry predicate *because* Step 6 tags HEAD with no commit-ish, and the equivalence must be re-derived if `/tag` ever gains non-HEAD tagging. *(completed)*
+- [x] Update the closing success line to `echo "Git state: OK (clean working tree, fully pushed, up-to-date with remote)"`. *(completed)*
+- [x] Confirm no other Step 2 behavior changed: the dirty-tree check, the detached-HEAD check, the `git fetch ... || true`, and the `behind` check are all untouched. *(completed)*
 
 **Timing**: 0.5 hours
 
