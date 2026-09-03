@@ -627,33 +627,33 @@ sections instead of asserting a global impossibility.
 
 ---
 
-### Phase 7: Deploy, full gate run, and acceptance evidence [NOT STARTED]
+### Phase 7: Deploy, full gate run, and acceptance evidence [COMPLETED]
 
 **Goal**: Prove the change is deployable and that every acceptance criterion holds, with the
 known pre-existing failures distinguished from anything this task caused.
 
 **Tasks**:
 
-- [ ] Deploy the source store to `.claude/` through the sanctioned deploy path (never by hand-
-      editing `.claude/**`).
-- [ ] Run the full gate set (`verify-deploy.sh` and whatever else the postflight gate set
-      invokes). Record every failure.
-- [ ] Classify each failure against the known pre-existing list: gate3 index-entries `line_count`
+- [x] Deploy the source store to `.claude/` through the sanctioned deploy path (never by hand-
+      editing `.claude/**`). *(completed)*
+- [x] Run the full gate set (`verify-deploy.sh` and whatever else the postflight gate set
+      invokes). Record every failure. *(completed: 3 of 30 checks failed)*
+- [x] Classify each failure against the known pre-existing list: gate3 index-entries `line_count`
       mismatches, gate10 unknown `state.json` entry fields `abandon_reason`/`blocks_note`,
       gate12 state-writer boundary in `test-force-phases.sh`, intermittent gate8 timing flake.
       Anything **not** on that list is caused by this task and must be fixed before the phase
-      closes.
-- [ ] Note that gate3's `line_count` for `commands/orchestrate.md` will legitimately change; if
+      closes. *(completed: all 3 failures match the known pre-existing list exactly -- gate3 doc-lint line_count mismatches (postflight-control.md, state-schema.json, zotero-item-creation.md), gate10 validate-state.sh --deep, gate12 state-writer boundary. Gate8 run-all.sh passed cleanly this run (the intermittent flake did not fire); no new failure class observed.)*
+- [x] Note that gate3's `line_count` for `commands/orchestrate.md` will legitimately change; if
       an index entry records the file's line count, regenerate it rather than leaving a stale
-      value, and distinguish that from the pre-existing gate3 mismatches.
-- [ ] Acceptance evidence, recorded in the summary:
+      value, and distinguish that from the pre-existing gate3 mismatches. *(completed: commands/orchestrate.md carries no index-entries.json line_count entry -- only context/docs files are indexed that way -- so nothing needed regenerating for it. Two OTHER files this task's own edits changed line count for -- patterns/batch-orchestration-guardrails.md and patterns/orchestrate-batch-results-template.md -- were caught and corrected in Phase 5.)*
+- [x] Acceptance evidence, recorded in the summary:
       - before/after byte counts and the percentage reduction;
       - the flag-coverage diff showing every consumed flag is documented;
       - `/orchestrate --dry-run` with a single task number producing the report;
       - `/orchestrate --dry-run` with two task numbers producing the report;
-      - the full gate run's green/known-failure classification.
-- [ ] Confirm no file under `.claude/**` was hand-authored: `git status` shows source-store paths
-      only (`.claude/` is gitignored and regenerated).
+      - the full gate run's green/known-failure classification. *(completed: see summary for the full evidence block)*
+- [x] Confirm no file under `.claude/**` was hand-authored: `git status` shows source-store paths
+      only (`.claude/` is gitignored and regenerated). *(completed: `git status` shows only source-store paths; `.claude/` confirmed gitignored via `git check-ignore .claude/`)*
 
 **Timing**: 1.0 hours
 
