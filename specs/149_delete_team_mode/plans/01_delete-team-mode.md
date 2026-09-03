@@ -178,26 +178,26 @@ figures in the phase notes and proceed against the actual set.
 
 ---
 
-### Phase 2: Remove the `--team` surface from commands/orchestrate.md [NOT STARTED]
+### Phase 2: Remove the `--team` surface from commands/orchestrate.md [COMPLETED]
 
 **Goal**: The `/orchestrate` command definition no longer advertises, parses-through, or threads
 team-mode flags or delegation-context keys.
 
 **Tasks**:
-- [ ] Measure the file's pre-edit `wc -c` for the Phase 8 byte report
-- [ ] Delete the Constraints bullet describing `--team` as single-task-only accepted-and-ignored
-- [ ] Delete the `--team` and `--team-size` Options table rows
-- [ ] Delete the Step 1 parser-thread paragraph describing `TEAM_MODE` and the `team_size_eff`
+- [x] Measure the file's pre-edit `wc -c` for the Phase 8 byte report
+- [x] Delete the Constraints bullet describing `--team` as single-task-only accepted-and-ignored
+- [x] Delete the `--team` and `--team-size` Options table rows
+- [x] Delete the Step 1 parser-thread paragraph describing `TEAM_MODE` and the `team_size_eff`
       derivation
-- [ ] Remove `team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}`
+- [x] Remove `team_mode={TEAM_MODE} team_size={TEAM_SIZE} team_size_explicit={TEAM_SIZE_EXPLICIT}`
       from both dispatch `args:` strings (multi-task and single-task)
-- [ ] Delete the three `team_mode` / `team_size` / `team_size_explicit` keys from both
+- [x] Delete the three `team_mode` / `team_size` / `team_size_explicit` keys from both
       delegation-context JSON blocks
-- [ ] Delete the multi-task diagnostics-only paragraph explaining the three keys are carried for
+- [x] Delete the multi-task diagnostics-only paragraph explaining the three keys are carried for
       diagnostics
-- [ ] Confirm the frontmatter `argument-hint` already excludes `--team` (no action expected)
-- [ ] `grep -cin team` on the file returns 0
-- [ ] Measure and record the post-edit `wc -c` delta
+- [x] Confirm the frontmatter `argument-hint` already excludes `--team` (no action expected)
+- [x] `grep -cin team` on the file returns 0
+- [x] Measure and record the post-edit `wc -c` delta
 
 **Timing**: 45 minutes
 
