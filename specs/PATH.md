@@ -23,6 +23,17 @@ CLAUDE.md-chain load unchanged at 62,985 B (~15.7k tokens; Stage A has not touch
 yet). **143 is next**: its dependency (147) is satisfied and it is the sole remaining gate on 148.
 No new decisions this pass — see the updated tables below for the full status sweep.*
 
+*Fourth pass, addendum (same day): "143 is next, unblocked" was true on paper and **false in
+practice** — a dry run showed 143 silently absent from the dispatch plan. `orchestrate-cycle-plan.sh`
+resolved `dependencies[]` against `active_projects` only, so this morning's archival made every
+COMPLETED predecessor unresolvable, and an unresolvable predecessor read as "still in flight". Five
+tasks (143, 127, 139, 44, 89) were permanently un-dispatchable, and none of them surfaced in
+`blocked[]` — they vanished from the plan, leaving only the aggregate `no_eligible_stuck` message.
+Fixed directly in the source store (archive-aware `lookup_project`; dangling edges now reported in
+`blocked[]`), with 9 regression assertions verified to fail against the pre-change script. All five
+now dispatch. Standing rule 3 earned its keep again: the paper status was wrong and only execution
+caught it.*
+
 **Goal (two halves, in priority order)**
 
 1. `/orchestrate` is the only lifecycle entry point, driven by flags. **Done** in shape:
@@ -446,6 +457,15 @@ planner's questions as its focus.
 - The write-time task-reference hook fires on scratch files outside the repo tree (it blocked a
   throwaway script in the session scratchpad for containing "task 147"). Harmless, but its path
   filter could exempt `/tmp/**`.
+- **Archived-dependency resolution (found and FIXED 2026-09-03, out of band)**: eligibility
+  resolved `dependencies[]` against `active_projects` only, so archival silently made dependent
+  tasks permanently un-dispatchable — and dropped them from the plan entirely rather than
+  reporting them. Fixed in `orchestrate-cycle-plan.sh` (archive-aware lookup + dangling edges
+  reported in `blocked[]`), Group 7 regression tests added. **Worth auditing whether the same
+  active-only resolution exists elsewhere** — `orchestrate-batch-admit.sh` and
+  `orchestrate-triage-classify.sh` each bind their own `$all` from `active_projects`, and the
+  not-yet-built postflight composer (143) will need the same archive awareness. A candidate task
+  for whoever picks up 143.
 - **New, from 147's Phase 10 Reasoned Exclusions (2026-09-03)**: 4 pre-existing `verify-deploy.sh`
   findings remain open, none introduced by 147 and each outside its `file_scope`:
   `test-force-phases.sh` hand-rolled state writes; `index-entries.json` `line_count` drift on
