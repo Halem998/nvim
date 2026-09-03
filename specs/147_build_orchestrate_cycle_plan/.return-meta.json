@@ -1,40 +1,20 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 147,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1788411861_6cba1b_147",
-  "dispatch_seq": 4,
-  "findings_count": 12,
+  "dispatch_seq": 5,
+  "phase_count": 10,
+  "estimated_hours": 16,
+  "dependency_waves": [[1], [2], [3], [4], [5], [6], [7, 8], [9], [10]],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md",
-      "summary": "Scopes orchestrate-cycle-plan.sh: maps Stage MT-3 steps 1-4.5 and Stage MT-4's pre-dispatch half to the new script, catalogs the stable downstream contracts (batch-admit v5, triage-classify v1, build-dispatch, command-route-agent.sh sourcing), the mt_state_file schema to preserve, the dry-run retirement mechanics (manifest.json, orchestrator-critical-paths.json, commands/orchestrate.md repoint, forbidden verbatim-relay strings), and the two genuinely new pieces (per-task force_phases consumption, missing task-directory creation)."
+      "type": "plan",
+      "path": "specs/147_build_orchestrate_cycle_plan/plans/01_orchestrate-cycle-plan-script.md",
+      "summary": "10-phase plan (16h) authoring scripts/orchestrate-cycle-plan.sh in the source store, adding per-task force_phases and task-dir creation, folding in --dry-run, retiring orchestrate-dry-run-report.sh across 11 call sites, and collapsing SKILL.md Stage MT-3 plus MT-4's pre-dispatch half."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Orchestrator helper scripts (orchestrate-stage5-gates.sh, orchestrate-stage5-postflight.sh) follow a shared convention: doc header with Usage/Output-field-table/Exit-codes, positional args, set -euo pipefail, and exactly one `jq -n -c '{...}'` JSON object on stdout as the sole return channel. The script may perform real writes (state.json, locks, status transitions) but must never decide orchestrator LOOP CONTROL (halt/continue, cycle_count) -- that decision stays with the caller reading the returned JSON. New orchestrator scripts should follow this shape rather than inventing a new one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "compact-json-pattern", "loop-control", "script-contract", "stage5-gates"]
-    },
-    {
-      "content": "In skill-orchestrate/SKILL.md's multi-task Stage MT-4, the bare $session_id (not ${session_id}_${task_num}) MUST be used for task-lock.sh acquire, orchestrate-batch-admit.sh --session-id, and the implement-loop's dispatch/agent-context session_id -- because session_contention()'s self-exclusion and general-implementation-agent's per-phase task-lock.sh heartbeat do exact string matches against this value. The per-task-suffixed form is used only for skill_preflight_update and the research/plan loops' dispatch-build --session/context.session_id. Mixing these up desyncs the heartbeat from the acquired lock or makes a batch's own session registration look foreign to itself.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["session_id", "task-lock", "orchestrate", "multi-task", "invariant"]
-    },
-    {
-      "content": "command-route-agent.sh must be SOURCED (source .claude/scripts/command-route-agent.sh \"$op\" \"$TASK_TYPE\" \"$default_agent\" \"${effort_flag:-}\"), not executed as a subprocess -- it exports AGENT_NAME into the caller's shell and never calls exit. Any new orchestrator script that needs to resolve a per-task agent name should source it directly rather than depending on a precomputed routing-table file, since resolution itself is cheap (jq/case lookups, no filesystem walk).",
-      "category": "CONFIG",
-      "source_artifact": "specs/147_build_orchestrate_cycle_plan/reports/01_orchestrate-cycle-plan-script.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["command-route-agent", "agent-resolution", "sourced-script", "orchestrate"]
-    }
-  ],
-  "next_steps": "Run /plan 147 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /implement 147 to execute the plan"
 }
