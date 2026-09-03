@@ -1,0 +1,28 @@
+{
+  "phase": 6,
+  "phase_name": "Extension team-mode carve-outs",
+  "started_at": "2026-09-02T00:55:00Z",
+  "last_updated": "2026-09-02T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove carve-outs from the 5 declared extension files", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+      "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+      "agent-system/extensions/cslib/context/project/cslib/domain/hard-mode-selection.md",
+      "agent-system/extensions/literature/merge-sources/claudemd.md",
+      "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"
+    ]},
+    {"id": 2, "description": "Confirm untouched false-positive set", "status": "done", "files_touched": [], "note": "cslib-implementation-hard-agent.md has zero team references; founder-implement-agent.md and project-agent.md use team_size as headcount metric; email-to-memory-preferences.md has a historical citation. All confirmed untouched."},
+    {"id": 3, "description": "Fix undocumented core-file carve-out gaps found via repo-wide grep", "status": "done", "files_touched": [
+      "agent-system/extensions/core/agents/general-research-agent.md",
+      "agent-system/extensions/core/agents/planner-agent.md",
+      "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
+    ], "note": "Not in the plan's file list or Non-Goals false-positive set; general-research-agent.md and planner-agent.md carried the identical teammate_letter carve-out pattern the two extension hard-research-agents had, and file-footprint-overlap.md referenced the now-deleted Stage 3.6a by name."},
+    {"id": 4, "description": "lint-agent-contracts.sh verification", "status": "done", "files_touched": [], "note": "101 passed, 0 failed, 0 warnings, including all edited agent files."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "6.6", "description": "Extension team-mode carve-outs scope", "type": "altered", "reason": "Three additional core files (general-research-agent.md, planner-agent.md, file-footprint-overlap.md) exhibited the identical carve-out pattern and were fixed in this phase despite being outside its declared 5-file extension scope."}
+  ]
+}

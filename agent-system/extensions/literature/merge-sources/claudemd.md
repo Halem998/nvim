@@ -82,7 +82,7 @@ The two flags are independent:
 
 ### Composability
 
-- `--lit` works with `--team`, `--hard`, `--fast`, and model flags
+- `--lit` works with `--hard`, `--fast`, and model flags
 - `--lit` is threaded through all dispatch contexts in skill-orchestrate
 - Per-invocation only: no sticky state in state.json
 

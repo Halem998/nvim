@@ -191,8 +191,7 @@ any substantive work. Use `agent_type: "cslib-research-hard-agent"`.
 
 Extract standard delegation fields. Agent-specific fields:
 - `focus_prompt` - Optional specific focus area for research
-- `teammate_letter` - Optional letter for team mode
-- Report path: single-agent `{NN}_{slug}.md`, team mode `{NN}_teammate-{letter}-findings.md`
+- Report path: `{NN}_{slug}.md`
 
 ### Stage 1.5: Reference Grounding Tier Selection
 

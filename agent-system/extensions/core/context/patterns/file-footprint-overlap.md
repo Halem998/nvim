@@ -89,11 +89,8 @@ both source or splice the same file.
   `dependencies[]` edge on overlap.
 - **Phase-level (retired)**: this level's caller, `infer_from_file_overlap(phase, phases)`, lived
   only in the now-deleted per-mode team-implement skill's own Stage 5, and had no other caller.
-  `skill-orchestrate`'s Stage 3.6a team fan-out, which now serves parallel phase execution, does
-  not run file-overlap inference at all — it derives teammate waves from the plan's own
-  **Dependency Analysis** table, falling back to per-phase **Depends on**: fields. No successor
-  application of this algorithm exists at the phase level; a plan's declared dependencies are now
-  the sole mechanism deciding which phases may run in parallel.
+  No successor application of this algorithm exists at the phase level; a plan's declared
+  dependencies are the sole mechanism deciding which phases may run in parallel.
 - **Lock-acquisition-level**: `.claude/scripts/task-lock.sh`'s `cmd_acquire`, via the shared
   `scopes_overlap()` function sourced from `lib/file-scope-overlap.sh` (lazily, on first use —
   see `task-lock.md` for why this sourcing is deferred rather than unconditional), checks the

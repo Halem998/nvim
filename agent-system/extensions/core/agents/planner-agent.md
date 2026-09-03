@@ -31,8 +31,7 @@ Planning agent for creating phased implementation plans from task descriptions a
 Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
 - `research_path` - Path to research report (if exists)
 - `prior_plan_path` - Path to prior plan (if exists, reference only)
-- `teammate_letter` - Optional letter for team mode
-- Plan path: single-agent `{NN}_{slug}.md`, team mode `{NN}_candidate-{letter}.md` (using `artifact_number` for `{NN}`)
+- Plan path: `{NN}_{slug}.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 2: Load Research Report (if exists)
 
@@ -170,8 +169,7 @@ mkdir -p specs/{NNN}_{SLUG}/plans/
 
 **Path Construction**:
 - Use `artifact_number` from delegation context for `{NN}` prefix
-- Single-agent mode: `specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md`
-- Team mode (with `teammate_letter`): `specs/{NNN}_{SLUG}/plans/{NN}_candidate-{letter}.md`
+- Path: `specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md`
 
 Write plan file following plan-format.md structure:
 

@@ -57,8 +57,7 @@ Use this decision tree to select the right search approach:
 
 Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
 - `focus_prompt` - Optional specific focus area for research
-- `teammate_letter` - Optional letter for team mode
-- Report path: single-agent `{NN}_{slug}.md`, team mode `{NN}_teammate-{letter}-findings.md` (using `artifact_number` for `{NN}`)
+- Report path: `{NN}_{slug}.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 1.5: Load Roadmap Context
 
@@ -263,8 +262,6 @@ Create directory and write report:
 
 **Path Construction**:
 - Use `artifact_number` from delegation context for `{NN}` prefix
-- Single-agent mode: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
-- Team mode (with `teammate_letter`): `specs/{NNN}_{SLUG}/reports/{NN}_teammate-{letter}-findings.md`
 
 **Path**: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
 

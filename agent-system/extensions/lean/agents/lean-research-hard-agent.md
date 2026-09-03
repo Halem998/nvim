@@ -153,7 +153,6 @@ any substantive work. Use `agent_type: "lean-research-hard-agent"` and
 
 Extract standard delegation fields. Agent-specific fields:
 - `focus_prompt` - Optional specific focus area for research
-- `teammate_letter` - Optional letter for team mode
 
 **Divergence audit mode (H5)**: If `focus_prompt` contains "divergence" or "audit", activate H5:
 - Output a divergence table: (target, churn count, last-attempted approach, failure reason)
@@ -254,8 +253,7 @@ Review findings and emit 0-3 structured memory candidates for novel, reusable le
 
 **Path Construction**:
 - Use `artifact_number` from delegation context for `{NN}` prefix
-- Single-agent: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
-- Team mode (with `teammate_letter`): `specs/{NNN}_{SLUG}/reports/{NN}_teammate-{letter}-findings.md`
+- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
 
 **Required additional sections** (not in base report):
 - `## Adversarial Self-Verification`

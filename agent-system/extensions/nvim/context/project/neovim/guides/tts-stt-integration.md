@@ -96,7 +96,7 @@ TTS fires in two categories:
    trigger `tts-notify.sh` with no args, which speaks "Tab N" to alert the user that input is needed.
 
 The Stop hook does NOT trigger TTS. This eliminates random "Tab N" announcements during
-`--team` mode and mid-workflow orchestrator pauses.
+mid-workflow orchestrator pauses.
 
 ### Lifecycle Vocabulary
 

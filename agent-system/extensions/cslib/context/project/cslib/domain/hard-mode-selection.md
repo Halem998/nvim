@@ -42,6 +42,3 @@ conflict matrix used when H7 territory contracts partition parallel work.
 
 `--hard` multiplies token cost roughly 3-5x over the standard cslib skills. Reserve it for
 formally complex or previously-deflected tasks; it is not a default quality upgrade.
-
-Composing `--hard --team` compounds both multipliers (~15-25x) and should be reserved for tasks
-that satisfy criterion 5 (genuinely parallel proof obligations) as well as one of criteria 1-4.

@@ -432,27 +432,39 @@ enumeration; treat any file not in the report's table as a new site requiring it
 
 ---
 
-### Phase 6: Extension team-mode carve-outs [NOT STARTED]
+### Phase 6: Extension team-mode carve-outs [COMPLETED]
 
 **Goal**: The five affected extension files carry no reference to the deleted stages or the
 `--team` flag.
 
 **Tasks**:
-- [ ] `cslib/agents/cslib-research-hard-agent.md`: remove the `teammate_letter` field and the
+- [x] `cslib/agents/cslib-research-hard-agent.md`: remove the `teammate_letter` field and the
       `{NN}_teammate-{letter}-findings.md` report-path branch, leaving the single-agent path
       unconditional
-- [ ] `lean/agents/lean-research-hard-agent.md`: same carve-out removal at both sites
-- [ ] `cslib/context/project/cslib/domain/hard-mode-selection.md`: remove the
+- [x] `lean/agents/lean-research-hard-agent.md`: same carve-out removal at both sites
+- [x] `cslib/context/project/cslib/domain/hard-mode-selection.md`: remove the
       `--hard --team` compounding sentence (or reword to `--hard` alone)
-- [ ] `literature/merge-sources/claudemd.md`: drop `--team` from the `--lit` composability list
-- [ ] `nvim/context/project/neovim/guides/tts-stt-integration.md`: drop "`--team` mode and" from
+- [x] `literature/merge-sources/claudemd.md`: drop `--team` from the `--lit` composability list
+- [x] `nvim/context/project/neovim/guides/tts-stt-integration.md`: drop "`--team` mode and" from
       the announcement-suppression sentence
-- [ ] Confirm untouched: `cslib/agents/cslib-implementation-hard-agent.md` (no team reference),
+- [x] Confirm untouched: `cslib/agents/cslib-implementation-hard-agent.md` (no team reference),
       `founder/agents/founder-implement-agent.md` and `founder/agents/project-agent.md`
       (startup headcount metric -- false positives),
       `email/context/project/email/design/email-to-memory-preferences.md` (historical citation of
       a real on-disk artifact filename -- leave per WORK item 7)
-- [ ] `bash scripts/lint/lint-agent-contracts.sh` green on the two edited agent files
+- [x] `bash scripts/lint/lint-agent-contracts.sh` green on the two edited agent files
+- [x] Additionally fixed two undocumented core-file carve-out sites surfaced by a repo-wide
+      (not extension-scoped) grep: `core/agents/general-research-agent.md` and
+      `core/agents/planner-agent.md` both carried the identical `teammate_letter` /
+      `{NN}_teammate-{letter}-findings.md` / `{NN}_candidate-{letter}.md` carve-out pattern this
+      phase exists to remove, in neither the plan's file lists nor the Non-Goals false-positive
+      set. Removed on the same terms as the two extension hard-research-agents above.
+      `core/context/patterns/file-footprint-overlap.md` also referenced the now-deleted Stage
+      3.6a by name ("which now serves parallel phase execution") and was corrected to state
+      plainly that no successor exists at the phase level *(deviation: altered — three
+      additional core files fixed beyond this phase's declared 5-extension-file scope, because
+      they exhibit the exact carve-out pattern this phase targets and were undocumented gaps in
+      the report/plan)*
 
 **Timing**: 30 minutes
 
