@@ -230,9 +230,47 @@ fi
 # read instead of N) and outside lint-task-lookup-adoption.sh's narrow-full-record-lookup pattern
 # (which is anchored on the literal ".active_projects[]" substring appearing per-call).
 all_projects_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) || all_projects_json='[]'
+
+# Companion read of the ARCHIVE, resolved as STATE_FILE's sibling exactly the way
+# roadmap-integration.sh resolves it (`${STATE_PATH%state.json}archive/state.json`), so a fixture
+# state.json in a temp dir with no sibling archive degrades to an empty array rather than erroring.
+#
+# WHY THIS EXISTS: /todo moves every terminal task out of `.active_projects` and into the archive.
+# An active task whose `dependencies[]` names an archived predecessor therefore had that
+# dependency resolve to NOTHING — and the eligibility loop below reads an unresolvable dependency
+# as "predecessor still in flight", so the task silently became permanently un-dispatchable. It
+# did not even surface in `blocked[]`; it vanished from the plan, leaving only the aggregate
+# `no_eligible_stuck` stop message. A COMPLETED dependency read as an UNFINISHED one purely
+# because it had been archived. Both lookup_project call sites (the candidate's own status
+# refresh, and dependency resolution) need the archive to see a terminal predecessor at all.
+#
+# Status normalization: archive membership IS terminality — /todo only ever archives
+# completed/abandoned/expanded tasks, plus `orphan_archived` recovery entries it writes for
+# already-finished task directories that lost their state entry. The real status is preserved
+# verbatim for completed/abandoned/expanded so the eligibility loop's completed-vs-failed
+# predecessor distinction still works; any other archive-only status (`orphan_archived`) maps to
+# "completed", since an orphan recovery is applied to finished work and there is no in-flight
+# orphan to wait on.
+archive_state_file="${STATE_FILE%state.json}archive/state.json"
+if [ -f "$archive_state_file" ]; then
+  archived_projects_json=$(jq -c '
+    [ ((.completed_projects // [])[], ((.archived_projects // [])[])) |
+      .status = (if (.status | IN("completed", "abandoned", "expanded")) then .status else "completed" end) ]
+  ' "$archive_state_file" 2>/dev/null) || archived_projects_json='[]'
+else
+  archived_projects_json='[]'
+fi
+
 lookup_project() {
   # Usage: lookup_project <project_number> — echoes the matching record (or nothing).
-  echo "$all_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1
+  # Active projects win; the archive is consulted only when the number is absent from them, so a
+  # task that somehow appears in both is still governed by its live entry.
+  local found
+  found=$(echo "$all_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1)
+  if [ -z "$found" ]; then
+    found=$(echo "$archived_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1)
+  fi
+  echo "$found"
 }
 
 # Force-phases: split + validate against the closed set, up front (a corrupted delegation
@@ -547,6 +585,7 @@ for t in "${task_args[@]}"; do
   dep_count=$(echo "$deps" | jq 'length')
   all_preds_done=true
   has_failed_pred=false
+  dangling_preds=""
   if [ "$dep_count" -gt 0 ]; then
     while IFS= read -r d; do
       [ -z "$d" ] && continue
@@ -562,6 +601,15 @@ for t in "${task_args[@]}"; do
         has_failed_pred=true
         continue
       fi
+      # A dependency that resolves in NEITHER active_projects NOR the archive is dangling: the
+      # number names no task this repo knows about (a hand-edited dependencies[], a vault
+      # renumber, a deleted task). Never let it masquerade as "predecessor still in flight" and
+      # drop the task silently — that is exactly how the archived-dependency defect stayed
+      # invisible. Report it in blocked[] with the offending numbers named.
+      if [ -z "$d_entry" ]; then
+        dangling_preds="${dangling_preds:+${dangling_preds},}${d}"
+        continue
+      fi
       all_preds_done=false
     done < <(echo "$deps" | jq -r '.[]')
   fi
@@ -569,6 +617,10 @@ for t in "${task_args[@]}"; do
   if [ "$has_failed_pred" = "true" ]; then
     mt_set --arg t "$t" '.failed_tasks = ((.failed_tasks + [($t|tonumber)]) | unique)'
     out_blocked_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "a predecessor dependency reached a non-completed terminal status or is itself failed; this task can never proceed"}')")
+    continue
+  fi
+  if [ -n "$dangling_preds" ]; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg d "$dangling_preds" '{task: $t, reason: ("dependencies[] names task(s) " + $d + " that resolve in neither active_projects nor the archive; fix or drop the dangling edge before this task can be dispatched")}')")
     continue
   fi
   if [ "$all_preds_done" != "true" ]; then

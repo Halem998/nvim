@@ -391,6 +391,80 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 7: Dependency resolution spans the ARCHIVE -- regression guard
+#
+# The defect this group exists to prevent: archival (which moves every terminal project out of
+# `.active_projects` and into the sibling archive) made a COMPLETED predecessor unresolvable, and
+# an unresolvable predecessor was read as "still in flight". Every dependent candidate therefore
+# became permanently un-dispatchable -- and, worse, was dropped SILENTLY: absent from dispatch,
+# from deferred, and from blocked alike, visible only as the aggregate `no_eligible_stuck` stop
+# message. These three cases pin the resolution semantics (archived-completed satisfies;
+# archived-abandoned still blocks) and the reporting rule (a genuinely unresolvable edge is named
+# in blocked[], never dropped).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 7: dependency resolution spans the archive (archived predecessor is not 'in flight')"
+mkdir -p "$WORKDIR/specs/archive"
+cat > "$WORKDIR/specs/archive/state.json" <<'EOF'
+{
+  "completed_projects": [
+    {"project_number": 700, "project_name": "g7_archived_done", "status": "completed"},
+    {"project_number": 702, "project_name": "g7_archived_orphan", "status": "orphan_archived"}
+  ],
+  "archived_projects": [
+    {"project_number": 701, "project_name": "g7_archived_dropped", "status": "abandoned"}
+  ]
+}
+EOF
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 710, "project_name": "g7_after_completed", "task_type": "general", "status": "not_started", "description": "predecessor was archived as completed", "dependencies": [700], "file_scope": []},
+    {"project_number": 711, "project_name": "g7_after_abandoned", "task_type": "general", "status": "not_started", "description": "predecessor was archived as abandoned", "dependencies": [701], "file_scope": []},
+    {"project_number": 712, "project_name": "g7_dangling", "task_type": "general", "status": "not_started", "description": "predecessor exists nowhere at all", "dependencies": [9999], "file_scope": []},
+    {"project_number": 713, "project_name": "g7_after_orphan", "task_type": "general", "status": "not_started", "description": "predecessor was archived by orphan recovery", "dependencies": [702], "file_scope": []}
+  ]
+}
+EOF
+run_sut --session g7_sess --dry-run -- 710 711 712 713
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "archive-deps: SUT exits 0"
+else
+  fail "archive-deps: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 710)) | length')" = "1" ]; then
+  pass "archive-deps: candidate #710 dispatches -- an archived COMPLETED predecessor is satisfied, not in-flight"
+else
+  fail "archive-deps: candidate #710 did not dispatch; archived completed predecessor read as unsatisfied (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.blocked | map(select(.task == 711)) | length')" = "1" ]; then
+  pass "archive-deps: candidate #711 is blocked -- an archived ABANDONED predecessor still blocks"
+else
+  fail "archive-deps: candidate #711 was not blocked (stdout: $LAST_STDOUT)"
+fi
+g7_dangling_reason=$(jqf '.blocked | map(select(.task == 712)) | .[0].reason // ""')
+if [ "$(jqf '.blocked | map(select(.task == 712)) | length')" = "1" ] && \
+   [[ "$g7_dangling_reason" == *9999* ]]; then
+  pass "archive-deps: candidate #712's dangling edge is reported in blocked[] and names the number"
+else
+  fail "archive-deps: candidate #712's dangling dependency was not reported in blocked[] (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 713)) | length')" = "1" ]; then
+  pass "archive-deps: candidate #713 dispatches -- an orphan_archived predecessor is terminal, not in-flight"
+else
+  fail "archive-deps: candidate #713 did not dispatch (stdout: $LAST_STDOUT)"
+fi
+for n in 710 711 712 713; do
+  in_dispatch=$(jqf ".dispatch | map(select(.task == $n)) | length")
+  in_deferred=$(jqf ".deferred | map(select(.task == $n)) | length")
+  in_blocked=$(jqf ".blocked | map(select(.task == $n)) | length")
+  if [ "$((in_dispatch + in_deferred + in_blocked))" -ge 1 ]; then
+    pass "archive-deps: candidate #$n is accounted for in exactly one bucket (never silently dropped)"
+  else
+    fail "archive-deps: candidate #$n vanished from the plan entirely -- the silent-drop regression (stdout: $LAST_STDOUT)"
+  fi
+done
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then
