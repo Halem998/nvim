@@ -26,7 +26,7 @@ next_project_number: 151
 91 [PLANNED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-134 [PLANNING] — Close the third and last uncovered gate in the /tag release prefl
+134 [PLANNED] — Close the third and last uncovered gate in the /tag release prefl
 137 [PLANNING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -396,11 +396,12 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 ---
 
 ### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md]
+- **Plan**: [134_tag_branch_reachability_gate/plans/01_tag-branch-reachability-gate.md]
 
 **Description**: Close the third and last uncovered gate in the /tag release preflight: a tag created from a branch with unpushed commits points at a commit absent from origin/<branch>, so a consuming repo's release.yml preflight rejects it -- AFTER the tag has already been pushed, requiring a delete-and-re-push to recover.
 
