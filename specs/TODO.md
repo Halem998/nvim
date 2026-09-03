@@ -20,18 +20,18 @@ next_project_number: 151
 
 ### Core Agent System
 
-13 [RESEARCHED] — The acceptance criterion "gate-out reports zero format errors and
+13 [PLANNING] — The acceptance criterion "gate-out reports zero format errors and
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-91 [RESEARCHED] — update-plan-status.sh reports every non-conforming plan Status li
+91 [PLANNING] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-134 [RESEARCHED] — Close the third and last uncovered gate in the /tag release prefl
-137 [RESEARCHED] — The lean extension's research and implementation agents have no a
+134 [PLANNING] — Close the third and last uncovered gate in the /tag release prefl
+137 [PLANNING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-143 [RESEARCHED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+143 [PLANNED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
   └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
     └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
@@ -118,11 +118,12 @@ Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so
 ---
 
 ### 143. Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 147
 - **Research**: [143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md]
+- **Plan**: [143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md]
 
 **Description**: === REVISED 2026-09-02 (thin-lead path: widened into the per-task postflight script) ===
 SUPERSEDING SCOPE. The two gates below are the seed of scripts/orchestrate-cycle-postflight.sh, Stage A.4 of specs/PATH.md: ONE script that performs everything the lead does after an agent returns, for both engines, returning one JSON line. This absorbs three sibling tasks whose work is the same script (each abandoned with a pointer here): the expected-handoff-absence recording-order defect, the multi-task artifact-round advance, and the aggregator file_scope excursion advisory.
@@ -289,7 +290,7 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 ---
 
 ### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -395,7 +396,7 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 ---
 
 ### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -514,7 +515,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1004,7 +1005,7 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

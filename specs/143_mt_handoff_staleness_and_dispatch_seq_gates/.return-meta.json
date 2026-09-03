@@ -1,34 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
-      "summary": "Maps the widened orchestrate-cycle-postflight.sh scope onto existing precedent scripts (orchestrate-stage5-gates.sh, orchestrate-stage5-postflight.sh, orchestrate-recover-outcome.sh), documents the two live dispatch_seq incidents and the spurious-defect case as fixture material, and flags an open design question on per-dispatch writer-contract determination plus a schema gap (.return-meta.json has no dispatch_seq field)."
+      "type": "plan",
+      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
+      "summary": "7-phase plan to build orchestrate-cycle-postflight.sh (both-engine per-task postflight with the ported mtime and dispatch_seq gates), resolving the writer-contract and return-meta dispatch_seq schema questions research left open."
     }
   ],
-  "next_steps": "Run /plan 143 to create the implementation plan for orchestrate-cycle-postflight.sh",
+  "next_steps": "Run /implement 143 to execute the plan",
   "metadata": {
     "session_id": "sess_1788456363_df3984_143",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 11,
+    "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's agent-system, .return-meta.json currently has no dispatch_seq field — only .orchestrator-handoff.json echoes the orchestrator-minted dispatch_seq. Any task that wants to identity-gate the .return-meta.json recovery path (not just the handoff path) against a stale/resurrected predecessor write needs to add that field to the return-metadata schema and every writer contract first; mtime-only staleness checks are provably insufficient against a git-restored predecessor (observed incident: a dispatch's deleted .return-meta.json and .orchestrator-handoff.json were restored from an old commit by a re-woken agent, with a fresh mtime that fell inside the successor's dispatch window).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["dispatch_seq", "return-meta.json", "orchestrate", "staleness gate", "handoff-schema"]
-    },
-    {
-      "content": "orchestrate-cycle-plan.sh (147) and its planned sibling orchestrate-cycle-postflight.sh (143) establish a CLI convention for /orchestrate's new per-cycle scripts: `<script> <task_number> --session SID --state-file F [flags...]`, parsed via a `while [ \"$#\" -gt 0 ]` case-based loop with a `usage()` heredoc and `--help`. New orchestrate cycle scripts should copy this convention rather than the older positional-only style used by orchestrate-stage5-gates.sh/orchestrate-stage5-postflight.sh.",
+      "content": "When a detection gate gains a suppression predicate (e.g. 'do not record a missing-artifact defect when this dispatch's writer was contractually not expected to produce one'), the fail-direction for an UNRECOGNIZED input must be chosen explicitly and paired with a loud named WARN, not left implicit. In this repo's orchestrator, an agent name absent from the contractual-handoff-writer allowlist is treated as a NON-writer (suppress the defect) because the overwhelming default is non-writers and recording-on-unknown reproduces exactly the spurious-defect bug the suppression exists to fix; the WARN naming the unrecognized agent is what keeps the allowlist gap visible instead of silent. Critically, the suppression is narrowed to the ABSENT case only -- a present-but-stale or present-but-identity-mismatched artifact still records unconditionally, so fail-open on the suppression predicate never widens into fail-open on the gate itself.",
       "category": "PATTERN",
-      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-cycle-plan", "CLI convention", "flag parsing", "orchestrate scripts"]
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["suppression predicate", "fail-direction", "allowlist staleness", "defect recording", "handoff writer contract"]
     }
   ]
 }
