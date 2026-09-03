@@ -1,0 +1,18 @@
+{
+  "phase": 7,
+  "phase_name": "merge-sources/claudemd.md, deploy, and CLAUDE.md regeneration",
+  "started_at": "2026-09-02T19:20:00Z",
+  "last_updated": "2026-09-02T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove team-mode content from merge-sources/claudemd.md (5 sites)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/merge-sources/claudemd.md"
+    ], "note": "Landed by a prior dispatch in commit 81a7eb971 before this dispatch resumed the task; verified zero remaining 'team' hits in the source file."},
+    {"id": 2, "description": "Run deploy to regenerate .claude/** and merged CLAUDE.md", "status": "done", "files_touched": [], "note": "The deployed .claude/CLAUDE.md (mtime 19:39:00) already postdated the source edit (mtime 19:26:29) from the prior dispatch. Re-ran deploy-headless.sh in this dispatch as an idempotent resync confirmation (6 extensions resynced, no drift)."},
+    {"id": 3, "description": "Verify zero team hits in deployed CLAUDE.md and confirm deleted files absent from deploy tree", "status": "done", "files_touched": [], "note": "grep -in team .claude/CLAUDE.md: zero hits. .claude/agents/synthesis-agent.md, .claude/context/patterns/team-orchestration.md, .claude/context/formats/team-metadata-extension.md: all confirmed absent."},
+    {"id": 4, "description": "Run the four deploy tests", "status": "done", "files_touched": [], "note": "test-deploy-freshness.sh (21 passed), test-deploy-propagation.sh (4 passed), test-deploy-verify-wiring.sh (9 passed), test-deploy-orphans.sh (5 passed). All green."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
