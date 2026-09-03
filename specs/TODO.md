@@ -27,7 +27,7 @@ next_project_number: 151
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 134 [PLANNED] — Close the third and last uncovered gate in the /tag release prefl
-137 [PLANNING] — The lean extension's research and implementation agents have no a
+137 [PLANNED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
@@ -290,11 +290,12 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 ---
 
 ### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md]
+- **Plan**: [137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md]
 
 **Description**: The lean extension's research and implementation agents have no artifact skeletons, so the artifacts they author fail validate-artifact.sh on required sections that their general-* counterparts get right by construction. Observed on a real completed task, not inferred.
 

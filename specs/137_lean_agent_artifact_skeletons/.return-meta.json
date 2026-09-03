@@ -1,34 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md",
-      "summary": "Characterizes the lean-extension summary/report skeleton gaps (plain agents have no write stage at all; hard agents have a stage but no inline skeleton) and a new, independently-found defect in all four formal-extension research agents (skeleton present but missing 5 of 8 REPORT_METADATA fields and the Decisions section), with per-file recommendations modelled on general-implementation-agent.md and general-research-agent.md."
+      "type": "plan",
+      "path": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
+      "summary": "7-phase, 5-hour plan to add or amend validator-conforming inline report/summary skeletons in 8 lean- and formal-extension agent files, then redeploy and demonstrate zero-error, zero-auto-repair validation on a real lean dispatch."
     }
   ],
-  "next_steps": "Run /plan 137 to create implementation plan",
-  "findings_count": 6,
+  "next_steps": "Run /implement 137 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 5,
+  "dependency_waves": [[1], [2, 3, 5], [4], [6], [7]],
   "memory_candidates": [
     {
-      "content": "When sweeping agent files for artifact-skeleton conformance, don't stop at 'does a report-format/summary-format reference exist' -- an agent can reference the format doc in Context References AND have a named write stage, yet the stage's inline skeleton can still be missing required metadata fields or sections (seen in all four extensions/formal/agents/*-research-agent.md files: skeleton present, but missing Effort/Dependencies/Sources-Inputs/Artifacts/Standards and the Decisions section). Check the fenced skeleton block itself against validate-artifact.sh's REPORT_METADATA/REPORT_SECTIONS arrays field-by-field, not just presence of a skeleton.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md",
+      "content": "Agents are dispatched with only their own definition file loaded, so a terminus-writing agent (one that authors a report/summary/plan artifact) must carry a FULL inline skeleton in its own file -- linking the format doc in Context References is not sufficient, and neither is referring to a 'base' skeleton in a sibling agent file. This is why general-implementation-agent.md and general-research-agent.md each inline their own complete skeleton rather than cross-referencing one another, and why lean/formal agents that only linked the format doc produced non-conforming artifacts. Corollary for authoring: put the required-field/-section checks INSIDE the fenced skeleton block, since validate-artifact.sh's whole-file `grep -qF \"**Field**:\"` will happily match agent-authoring prose (e.g. a Context References bullet) that never reaches the produced artifact.",
+      "category": "PATTERN",
+      "source_artifact": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
       "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact", "agent-skeleton", "report-format", "summary-format", "sweep"]
-    },
-    {
-      "content": "validate-artifact.sh's section check is `grep -qE \"^##+ ${section}\"` (prefix match, any heading depth) and its metadata check is `grep -qF \"**${field}**:\"` (literal substring anywhere in the file). This means a required section can be satisfied by a nested ### heading elsewhere in the document (e.g. '### Recommendations' under '## Findings' satisfies the 'Recommendations' requirement), and a metadata field can be satisfied by text that appears outside the intended metadata block (e.g. a Context References bullet reading '**Standards**: ...' inside the agent-authoring prose, not the artifact skeleton) -- so a naive file-wide grep for a field name inside an *agent definition* file (as opposed to the artifact it produces) can give a false-positive 'has this field' read.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["validate-artifact", "grep", "prefix-match", "metadata-check", "false-positive"]
+      "suggested_keywords": ["agent-authoring", "inline-skeleton", "artifact-format", "validate-artifact", "extension-agents", "dispatch-isolation"]
     }
   ],
   "metadata": {
     "session_id": "sess_1788456363_df3984_137",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   }
 }
