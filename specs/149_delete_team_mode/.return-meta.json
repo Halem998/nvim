@@ -1,34 +1,28 @@
 {
+  "schema_version": "1.0",
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 149,
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "session_id": "sess_1788399440_184d69_149",
-  "dispatch_seq": 1,
-  "findings_count": 24,
-  "summary": "Enumerated every team-mode site across agent-system/extensions/** (source store) plus .claude/**, .opencode/**, and .memory/** for boundary clarity. Team mode is almost entirely one contiguous block in skill-orchestrate/SKILL.md (Stage 3.6+3.6a, lines 952-1262, 19,508 bytes/311 lines) plus ~13 scattered references (Stage 1 team_size_eff derivation, 5 team_mode dispatch forks, 1 MT-1 diagnostics block). synthesis-agent has exactly one caller (Stage 3.6a) and is safe to delete outright along with two team-exclusive context docs (team-metadata-extension.md, team-orchestration.md) and their index-entries.json/manifest.json registrations. Documented full per-file site tables for commands/orchestrate.md, scripts/parse-command-args.sh, merge-sources/claudemd.md, and a dozen context/docs files, plus an extension-agent carve-out sweep (cslib, lean) and a false-positive table (founder team_size metrics, generic 'teammate' handoff vocabulary in handoff-artifact.md/progress-file.md, general-implementation-agent.md's unrelated own Stage 3.6 heading). Flagged .opencode/** and .memory/** as out-of-scope survivors under the literal acceptance grep, with justification (separate freeze/deletion task lineage; inert historical memory).",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
-      "summary": "Full site-by-site inventory of team-mode references across the source store, with deletion/edit dispositions, a false-positive table, and an out-of-scope boundary discussion for .opencode/** and .memory/**."
+      "type": "plan",
+      "path": "specs/149_delete_team_mode/plans/01_delete-team-mode.md",
+      "summary": "8-phase plan to delete team mode from the source store, ordered consumer-before-producer so the orchestrator stays deployable at every phase boundary."
     }
   ],
+  "phase_count": 8,
+  "estimated_hours": 7,
+  "dependency_waves": [[1], [2, 4, 6], [3, 5], [7], [8]],
   "memory_candidates": [
     {
-      "content": "When grepping a codebase for a feature to delete, watch for string-overload false positives: generic vocabulary reused by an unrelated subsystem (e.g. 'teammate' meaning 'successor agent in a context-exhaustion handoff' vs. 'parallel team-mode worker'), coincidental numbering (another file's own '### Stage 3.6' heading unrelated to the target stage), and domain-specific reuse of the same field name in an unrelated extension (e.g. 'team_size' as a startup headcount metric in a pitch-deck generator vs. an orchestrator's parallel-agent count). Build an explicit false-positive table before editing, not just a deletion list.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["grep", "false-positive", "deletion-task", "codebase-search", "refactoring"]
-    },
-    {
-      "content": "In this repo, .claude/** is a deploy mirror of agent-system/extensions/core/** (and other extensions), regenerated on deploy — never a separate edit target. .opencode/** is a separate, legacy system with its own freeze/deletion task lineage (independent of the current /orchestrate consolidation), and .memory/** holds historical, inert memory records. A repo-wide grep for a feature being deleted will hit all four locations; only agent-system/extensions/** is ever the edit target, and the other three need per-hit justification rather than editing.",
+      "content": "When deleting a cross-cutting feature flag from a self-hosting agent system (the orchestrator being edited is the one executing the work), order phases consumer-before-producer: strip the readers (skill dispatch forks, command delegation-context keys) before the producer (the shared arg parser's exports). A parser that still exports a name nobody reads is inert; a reader whose producer vanished is broken. Give the shared parser its own single phase with Commit Mode atomic-batch so its parse blocks and export line can never be half-edited across a boundary, and defer the deploy/regeneration step to one late phase so the running deployment changes once rather than once per phase.",
       "category": "PATTERN",
-      "source_artifact": "specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["source-store", "deploy-mirror", "opencode", "memory-vault", "scope-boundary"]
+      "source_artifact": "specs/149_delete_team_mode/plans/01_delete-team-mode.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["feature-deletion", "phase-sequencing", "self-modifying-orchestrator", "atomic-batch", "shared-parser", "consumer-before-producer"]
     }
   ],
-  "next_steps": "Run /plan 149 to create implementation plan"
+  "next_steps": "Run /implement 149 to execute the plan"
 }
