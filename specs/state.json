@@ -420,7 +420,7 @@
     {
       "project_number": 91,
       "project_name": "fail_loudly_on_nonconforming_plan_status_line",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -433,13 +433,18 @@
       ],
       "created": "2026-08-24T18:42:08Z",
       "title": "Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy",
-      "last_updated": "2026-09-03T17:37:00Z",
+      "last_updated": "2026-09-03T17:43:36Z",
       "session_id": "sess_1788456363_df3984_91",
       "artifacts": [
         {
           "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ]
     },
