@@ -1,28 +1,23 @@
 {
   "schema_version": "1.0",
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 149,
-  "session_id": "sess_1788399440_184d69_149",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "session_id": "sess_1788399440_184d69",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/149_delete_team_mode/plans/01_delete-team-mode.md",
-      "summary": "8-phase plan to delete team mode from the source store, ordered consumer-before-producer so the orchestrator stays deployable at every phase boundary."
+      "summary": "8-phase plan to delete team mode from the source store."
     }
   ],
-  "phase_count": 8,
-  "estimated_hours": 7,
-  "dependency_waves": [[1], [2, 4, 6], [3, 5], [7], [8]],
-  "memory_candidates": [
-    {
-      "content": "When deleting a cross-cutting feature flag from a self-hosting agent system (the orchestrator being edited is the one executing the work), order phases consumer-before-producer: strip the readers (skill dispatch forks, command delegation-context keys) before the producer (the shared arg parser's exports). A parser that still exports a name nobody reads is inert; a reader whose producer vanished is broken. Give the shared parser its own single phase with Commit Mode atomic-batch so its parse blocks and export line can never be half-edited across a boundary, and defer the deploy/regeneration step to one late phase so the running deployment changes once rather than once per phase.",
-      "category": "PATTERN",
-      "source_artifact": "specs/149_delete_team_mode/plans/01_delete-team-mode.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["feature-deletion", "phase-sequencing", "self-modifying-orchestrator", "atomic-batch", "shared-parser", "consumer-before-producer"]
-    }
-  ],
-  "next_steps": "Run /implement 149 to execute the plan"
+  "metadata": {
+    "session_id": "sess_1788399440_184d69",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

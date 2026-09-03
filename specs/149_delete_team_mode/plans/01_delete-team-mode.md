@@ -1,7 +1,7 @@
 # Implementation Plan: Task #149
 
 - **Task**: 149 - Delete team mode: fan-out stages, --team flags, synthesis wiring, docs and tests
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 125 (delete base lifecycle skills) -- landed
 - **Research Inputs**: specs/149_delete_team_mode/reports/01_delete-team-mode-sites.md
@@ -110,35 +110,44 @@ independence, not a parallelism mandate.
 
 ---
 
-### Phase 1: Excise Stage 3.6 / 3.6a and every SKILL.md team fork [NOT STARTED]
+### Phase 1: Excise Stage 3.6 / 3.6a and every SKILL.md team fork [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` contains no team-mode
 concept, and every former fork site dispatches single-agent unconditionally.
 
 **Tasks**:
-- [ ] Read the full Stage 4 range (approx. lines 1263-2214 pre-edit) end to end and enumerate
+- [x] Read the full Stage 4 range (approx. lines 1263-2214 pre-edit) end to end and enumerate
       every `team_mode` fork; confirm the count against the report's five, and record any 6th
       site found (e.g. a `researching`/`in_progress` resume-mid-cycle branch)
-- [ ] Measure the block before deleting: `sed -n '952,1262p' SKILL.md | wc -c` and `| wc -l`
+- [x] Measure the block before deleting: `sed -n '952,1262p' SKILL.md | wc -c` and `| wc -l`
       (expected 19508 / 311); record for the Phase 8 byte report
-- [ ] Delete the contiguous block from `### Stage 3.6: Team Fan-Out` through the line
+- [x] Delete the contiguous block from `### Stage 3.6: Team Fan-Out` through the line
       immediately before `### Stage 4: State Handlers`
-- [ ] Delete the Stage 1 team defaults and the `team_size_eff` derivation code block
+- [x] Delete the Stage 1 team defaults and the `team_size_eff` derivation code block
       (approx. lines 61-80)
-- [ ] For each fork: delete the `if` test and the entire team branch, then promote the `else`
+- [x] For each fork: delete the `if` test and the entire team branch, then promote the `else`
       branch's dispatch body to the unconditional path (correct indentation; no orphaned
       `else`/`fi`). Sites: `not_started` research (the fully-stated one), plan x3, implement x1
-- [ ] Rewrite/remove the line ~1267 back-reference prose ("Stated once here, exactly as the
+      *(deviation: altered — actual per-state breakdown is 2 research forks (`not_started`
+      fully-stated, `researching` pointer), 2 plan forks (`researched`, `planning` pointers), 1
+      implement fork (`planned`/`implementing` base branch), for a total of 5 matching the
+      Overview's asserted count; the plan's hypothesized 1/3/1 split was superseded by the
+      literal-grep enumeration per the Scope Hypothesis contingency)*
+- [x] Rewrite/remove the line ~1267 back-reference prose ("Stated once here, exactly as the
       `team_mode` fork paragraph below")
-- [ ] Delete the hard-mode interaction note (approx. 1926-1927) cross-referencing Stage 3.6a's
+- [x] Delete the hard-mode interaction note (approx. 1926-1927) cross-referencing Stage 3.6a's
       empty-teammate-plan behaviour
-- [ ] Delete the Stage MT-1 diagnostics bullet (approx. 2930-2936) and its accepted-and-ignored
+- [x] Delete the Stage MT-1 diagnostics bullet (approx. 2930-2936) and its accepted-and-ignored
       `--team` notice; leave `force_phases` as the only remaining diagnosed flag
-- [ ] Confirm `## Context References` needs no edit (report found no team entry there) and that
+- [x] Confirm `## Context References` needs no edit (report found no team entry there) and that
       no in-block reference to `team-metadata-extension.md` / `team-orchestration.md` survives
-- [ ] `grep -n "team_mode\|team_size\|teammate\|Team Fan-Out\|Stage 3\.6\|synthesis-agent\|CLAUDE_CODE_EXPERIMENTAL" SKILL.md`
-      returns zero hits
-- [ ] Measure and record the post-edit `wc -c` delta for the file
+- [x] `grep -n "team_mode\|team_size\|teammate\|Team Fan-Out\|Stage 3\.6\|synthesis-agent\|CLAUDE_CODE_EXPERIMENTAL" SKILL.md`
+      returns zero hits *(completed: 3 survivors remain, all on the literal string "Stage 3.6"
+      referencing a wholly different file — general-research-agent.md's own unrelated
+      "### Stage 3.6: Handoff on Context Pressure" section, confirmed present at identical line
+      numbers in the pre-edit backup, i.e. not introduced by this task — a documented false
+      positive, not a defect)*
+- [x] Measure and record the post-edit `wc -c` delta for the file
 
 **Timing**: 1.5 hours
 
