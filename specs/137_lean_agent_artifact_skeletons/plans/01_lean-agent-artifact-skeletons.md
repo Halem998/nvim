@@ -217,32 +217,32 @@ carrying a skeleton that covers all eight `REPORT_METADATA` fields and all five
 
 ---
 
-### Phase 3: Add Summary Skeleton to lean-implementation-agent.md [NOT STARTED]
+### Phase 3: Add Summary Skeleton to lean-implementation-agent.md [COMPLETED]
 
 **Goal**: Give `lean-implementation-agent.md` a summary-writing stage it currently lacks
 entirely, carrying a skeleton covering all six `SUMMARY_METADATA` fields, all six
 `SUMMARY_SECTIONS`, and the explicit bracketed-Status vocabulary sentence.
 
 **Tasks**:
-- [ ] Add `@.claude/context/formats/summary-format.md` to the `## Context References` block.
-- [ ] Insert a new stage heading `## Create Implementation Summary` immediately before
-      `## Final Verification Stage (MANDATORY)` (:149), at the file's existing `##` stage depth.
-- [ ] Add the path-construction note (`specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`,
-      `{NN}` from `artifact_number`).
-- [ ] Copy the mandatory-header framing sentence and the bracketed-Status vocabulary sentence
+- [x] Add `@.claude/context/formats/summary-format.md` to the `## Context References` block. *(completed: added)*
+- [x] Insert a new stage heading `## Create Implementation Summary` immediately before
+      `## Final Verification Stage (MANDATORY)` (:149), at the file's existing `##` stage depth. *(completed: inserted)*
+- [x] Add the path-construction note (`specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`,
+      `{NN}` from `artifact_number`). *(completed: done)*
+- [x] Copy the mandatory-header framing sentence and the bracketed-Status vocabulary sentence
       verbatim from the Phase 1 copy source: `**Status**: [COMPLETED]` when every plan phase is
       done, `**Status**: [IN PROGRESS]` on a partial run, `**Status**: [BLOCKED]` when blocked,
-      naming `summary-format.md` as the vocabulary's home.
-- [ ] Add the fenced markdown skeleton with all six `SUMMARY_METADATA` bullets and the six
+      naming `summary-format.md` as the vocabulary's home. *(completed: done, verbatim)*
+- [x] Add the fenced markdown skeleton with all six `SUMMARY_METADATA` bullets and the six
       required `##` section headings (`Overview`, `What Changed`, `Decisions`, `Impacts`,
       `Follow-ups`, `References`), plus `## Plan Deviations` and `## Verification` as the copy
-      source carries them.
-- [ ] Place the lean-specific content (theorems/lemmas proved, sorry inventory, `lake build`
+      source carries them. *(completed: done)*
+- [x] Place the lean-specific content (theorems/lemmas proved, sorry inventory, `lake build`
       result) inside `## What Changed` and `## Verification` rather than as new top-level
       sections, so the six required headings stay intact and the existing `### Recording
-      Verification Results` stage (:223) has a documented destination for its output.
-- [ ] Add a one-line cross-reference naming `general-implementation-agent.md`'s
-      `### Stage 6: Create Implementation Summary` as the canonical copy source.
+      Verification Results` stage (:223) has a documented destination for its output. *(completed: done)*
+- [x] Add a one-line cross-reference naming `general-implementation-agent.md`'s
+      `### Stage 6: Create Implementation Summary` as the canonical copy source. *(completed: done)*
 
 **Timing**: 0.75 hours
 

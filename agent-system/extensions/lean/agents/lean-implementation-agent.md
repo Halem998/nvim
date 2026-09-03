@@ -29,6 +29,9 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
   must be detached via `Bash(run_in_background: true)` and routed through the build guard (always
   load before running any build)
+- `@.claude/context/formats/summary-format.md` - Summary metadata/section requirements and the
+  "Example Skeleton" this agent's own inline skeleton (Create Implementation Summary stage below)
+  is modelled on (always load before writing the implementation summary)
 
 ## Agent Metadata
 
@@ -145,6 +148,79 @@ When a plan step is skipped, altered, or deferred during implementation, annotat
      }
    }
    ```
+
+## Create Implementation Summary
+
+**Path Construction**:
+- Use `artifact_number` from delegation context for `{NN}` prefix
+- Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`
+
+**This block is the authoritative shape of a summary artifact.** The metadata header below is
+mandatory and MUST NOT be abbreviated, reordered, or partially omitted — every bullet is a field
+the validator checks by name. Use `**Status**: [COMPLETED]` when every plan phase is done,
+`**Status**: [IN PROGRESS]` on a partial run, or `**Status**: [BLOCKED]` when blocked, matching
+`summary-format.md`'s declared vocabulary. Copy source: `general-implementation-agent.md`'s
+`### Stage 6: Create Implementation Summary`.
+
+```markdown
+# Implementation Summary: Task #{N}
+
+- **Task**: {N} - {title}
+- **Status**: [COMPLETED]
+- **Started**: {ISO8601}
+- **Completed**: {ISO8601}
+- **Effort**: {time}
+- **Dependencies**: {list or None}
+- **Artifacts**: plans/{NN}_{short-slug}.md
+- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
+
+## Overview
+
+{2-3 sentences on scope and what was proved or implemented}
+
+## What Changed
+
+- `path/to/File.lean` — {theorem/lemma proved or definition added}
+- `path/to/NewFile.lean` — Created new file
+
+## Decisions
+
+- {Key decision made during implementation, e.g. tactic choice or proof strategy}
+
+## Plan Deviations
+
+- **Task {P}.{N}** skipped: {reason}
+- **Task {P}.{N}** altered: {what changed and why}
+
+(Use `- None (implementation followed plan)` when no deviations occurred)
+
+## Verification
+
+- Build: Success/Failure/N/A (full `lake build` result from the Final Verification Stage below)
+- Sorry count: {sorry_count} (must be 0)
+- Vacuous count: {vacuous_count} (must be 0)
+- Axiom count: {axiom_count} (must not have increased)
+- Tests: Passed/Failed/N/A
+- Files verified: Yes
+
+## Impacts
+
+- {Downstream effect of these changes, e.g. theorems now available to other modules}
+
+## Follow-ups
+
+- {Remaining item, caveat, or follow-up task; use `- None` when there are none}
+
+## References
+
+- {Paths to the plan, reports, and other artifacts informing this summary}
+```
+
+Place lean-specific content (theorems/lemmas proved, sorry inventory, `lake build` result) inside
+`## What Changed` and `## Verification` rather than as new top-level sections, so the six
+required headings stay intact. Populate `## Plan Deviations` from inline deviation annotations on
+plan checklist items (see "When Deviating from Plan Steps" above); use
+`- None (implementation followed plan)` when none occurred.
 
 ## Final Verification Stage (MANDATORY)
 
