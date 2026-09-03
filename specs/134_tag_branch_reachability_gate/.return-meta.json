@@ -1,36 +1,33 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#134) closing the tag-reachability gap in skill-tag, the third and last uncovered gate in the release preflight.",
+  "status": "researched",
+  "task_number": 134,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788456363_df3984_134",
+  "dispatch_seq": 4,
+  "findings_count": 6,
+  "next_steps": "Run /plan 134 to create implementation plan",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #134 added to TODO.md under topic core-agent-system"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #134 entry added to active_projects; next_project_number advanced to 135"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/134_tag_branch_reachability_gate/",
-      "summary": "Task directory created"
+      "type": "report",
+      "path": "specs/134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md",
+      "summary": "Resolves all five dispatch design questions for the /tag branch-reachability gate: REFUSE (not auto-push), placed in Step 2, using the ahead rev-list count (proven mathematically equivalent to the CI's merge-base predicate since /tag always tags HEAD), no override flag, plus a documented non-goal for the never-pushed-branch edge case."
     }
   ],
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/state.json"
-  ],
-  "metadata": {
-    "session_id": "sess_1788278886_735ae0",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1
-  },
-  "next_steps": "Run /research 134 to begin research on the tag-reachability gate"
+  "memory_candidates": [
+    {
+      "content": "When a shell skill always operates on HEAD with no commit-ish argument (verified by grep for the git command's argument list), a symmetric 'ahead' rev-list count (git rev-list --count origin/branch..HEAD) is not a proxy/approximation for a CI ancestry gate (git merge-base --is-ancestor HEAD origin/branch) -- it is mathematically identical to it. Prefer the cheap rev-list count (reusable, gives an integer for messaging) over an extra merge-base call, but record the HEAD-only invariant explicitly since it's what makes the equivalence hold.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "merge-base", "rev-list", "ancestry-check", "ci-preflight"]
+    },
+    {
+      "content": "Design pattern for deciding whether a validation gate needs a --skip-* override flag: grant an override only when the failure can reflect a legitimate judgment call the operator is entitled to make differently (e.g. a version/changelog mismatch during an unusual release). Refuse to add an override when the only remedy is a single safe, no-judgment command and bypassing it would directly reproduce the exact incident the gate exists to prevent (e.g. pushing a branch before tagging it) -- an override flag there just hands back the footgun.",
+      "category": "PATTERN",
+      "source_artifact": "specs/134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["override-flag", "validation-gate", "skip-flag", "cli-design", "release-safety"]
+    }
+  ]
 }
