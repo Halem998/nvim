@@ -407,27 +407,27 @@ would have interpolated, and that the continuation-pointer resolution cannot dri
 
 ---
 
-### Phase 6: Replace the 8 single-task Stage 4 dispatch sites [NOT STARTED]
+### Phase 6: Replace the 8 single-task Stage 4 dispatch sites [COMPLETED]
 
 **Goal**: Reduce each single-task dispatch site to one script call plus the fixed pointer prompt.
 
 **Tasks**:
-- [ ] For each of the 8 single-task `Run **Stage 3.5**` occurrences (`not_started`, `researching`,
+- [x] For each of the 8 single-task `Run **Stage 3.5**` occurrences (`not_started`, `researching`, *(completed)*
       `researched`, `planning`, `planned/implementing` hard branch, `planned/implementing` base
       branch, `partial` continuation-available, `partial` no-continuation): replace the Stage 3.5
       invocation and all inline prompt construction with a single call to
       `orchestrate-build-dispatch.sh`, threading the already-minted `dispatch_seq`, the stamped
       window timestamp, the resolved flags, and (hard branch only) `--territory`.
-- [ ] Parse `{dispatch_file, model}` from the script's one-line JSON and use `model` for the Agent
+- [x] Parse `{dispatch_file, model}` from the script's one-line JSON and use `model` for the Agent *(completed)*
       call's model selection exactly as `model_flag` is used today.
-- [ ] Set every site's prompt to the fixed pointer form: `You are dispatched by /orchestrate for
+- [x] Set every site's prompt to the fixed pointer form: `You are dispatched by /orchestrate for *(completed: hard branch also appends phase_mission_block, which is genuinely per-cycle content the script does not gather (next_phase/phases_completed/phases_total) -- see Phase 6 progress deviations)*
       task {N}, phase {phase}. Read {dispatch_file} first and execute it exactly; it names every
       input, output path and contract.` No description, briefing, memory block, contract text, or
       plan path appears in the lead's prompt at any site.
-- [ ] Leave each site's `delegation_context` / `context` JSON object semantics unchanged except for
+- [x] Leave each site's `delegation_context` / `context` JSON object semantics unchanged except for *(completed)*
       removing fields now carried by the dispatch file; do not add the four Stage 3.5 blocks to it
       (they were never in it).
-- [ ] Do not touch the auxiliary dispatches (H4 re-verification x2, Stage 5a fork and reviser,
+- [x] Do not touch the auxiliary dispatches (H4 re-verification x2, Stage 5a fork and reviser, *(completed)*
       Stage 5b audit, Stage 6 fork/reviser/re-implement) — they keep inline prompts.
 
 **Timing**: 1.5 hours

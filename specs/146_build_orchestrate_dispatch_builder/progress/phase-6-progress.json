@@ -1,0 +1,32 @@
+{
+  "phase": 6,
+  "phase_name": "Replace the 8 single-task Stage 4 dispatch sites",
+  "started_at": "2026-09-02T23:10:00Z",
+  "last_updated": "2026-09-02T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace all 8 single-task Run **Stage 3.5** occurrences with orchestrate-build-dispatch.sh call", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Parse {dispatch_file, model} JSON, use model for Agent call", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Fixed pointer prompt at every site", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "context JSON objects left unchanged", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Auxiliary dispatches untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Hard branch (planned/implementing per-phase H1 dispatch) prompt: plan says 'No description, briefing, memory block, contract text, or plan path appears in the lead's prompt at any site.'",
+      "type": "altered",
+      "reason": "This one site's phase_mission_block (mission line: 'Implement phase N only', 'PHASES COMPLETED: n of m') is genuinely per-cycle content (next_phase, phases_completed, phases_total) that orchestrate-build-dispatch.sh does not gather -- it was never one of Stage 3.5's four blocks nor one of Phase 4's enumerated per-dispatch gatherers. Dropping it entirely without adding it to the dispatch file would violate the plan's own MUST NOT ('a generated dispatch file must carry every input the current inline recipe would have interpolated' / 'must never change what an agent receives semantically'). Kept it authored inline at this ONE site (already tiny, ~200 bytes) and appended to the fixed pointer prompt, rather than expanding the script's scope to gather it. Every other component (memory/lit/effort/hard-contracts) still moved to the dispatch file exactly like the other 7 sites.",
+      "annotation": "*(completed: hard branch also appends phase_mission_block, which is genuinely per-cycle content the script does not gather (next_phase/phases_completed/phases_total) -- see Phase 6 progress deviations)*"
+    }
+  ],
+  "verification": {
+    "grep_stage35_count": 3,
+    "grep_orchestrate_build_dispatch_count": 16,
+    "prompt_strings_clean": "confirmed via git diff -- every removed prompt line contained $DESCRIPTION/memory_context/lit_context/effort_note/hard_contracts_block interpolation; no such content remains in any of the 8 new prompt strings",
+    "auxiliary_sites_untouched": "confirmed via git diff hunk boundaries -- 9 hunks (site 5's hard branch split into 2 by git diff), all within lines 952-1795, none touching the H4 (~1102/1236), Stage 5a/5b/6 auxiliary dispatch regions",
+    "full_gate_run_all": "62 passed, 0 failed (bash .claude/scripts/tests/run-all.sh)"
+  }
+}

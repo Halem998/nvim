@@ -952,16 +952,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" research "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase research. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1000,16 +1012,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=research` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" research "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase research. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1114,16 +1138,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" plan "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase plan. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1236,16 +1272,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=plan` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" plan "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$PLANNER_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase plan. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1428,16 +1476,27 @@ elif [ -n "$next_phase" ]; then
   dispatch_was_transport_error=false
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`. `territory` (set
-above) is non-empty, so `hard_contracts_block` includes `territory.md`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
+Dispatch Prep's sole implementation). `territory` (set above) is non-empty, so the script's
+`hard_contracts_block` includes `territory.md`:
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts" --hard --territory "$territory")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" implement "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
+
+`phase_mission_block` is genuinely per-cycle content the script does not gather (the specific
+numbered plan-phase and completed/total counts change every cycle) and stays authored inline,
+appended to the fixed pointer prompt below:
 
 ```bash
 # D6: build_hard_mode_phase_mission() carries ONLY the non-duplicated residue of the hard
 # engine's build_hard_mode_prompt_context() — the phase-only mission line, the settled-design
 # preamble instruction (which has no contract file of its own), and the "PHASES COMPLETED: n
 # of m" line. It deliberately does NOT restate anti-analysis, wrap-up, recovery,
-# phase-closure, or pre-edit-gate — Stage 3.5's hard_contracts_block (built above with
+# phase-closure, or pre-edit-gate — the dispatch file's hard_contracts_block (built above with
 # `territory` in scope) already injects all of those as <hard-mode-contracts> entries.
 build_hard_mode_phase_mission() {
   echo "
@@ -1457,9 +1516,9 @@ Invoke the Agent tool:
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Implement phase $next_phase of task $task_number" then append `phase_mission_block`, then `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
-| `context` | `$dispatch_context` (built above) |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement (plan phase $next_phase). Read $dispatch_file first and execute it exactly; it names every input, output path and contract." then append `phase_mission_block` |
+| `context` | `$dispatch_context` (built above, unchanged) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -1542,16 +1601,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" implement "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1624,16 +1695,28 @@ dispatch_was_transport_error=false
 dispatch_seq=$(mint_dispatch_seq)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" implement "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -1690,16 +1773,28 @@ Read plan path:
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 ```
 
-Run **Stage 3.5: Dispatch Prep** with `phase=implement` (see Stage 3.5 above) to produce
-`memory_context`, `lit_context`, `effort_note`, and `hard_contracts_block`.
+Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5 Dispatch Prep's sole implementation):
+
+```bash
+build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
+[ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+[ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+[ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+[ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+[ -n "${focus_prompt:-}" ] && build_args+=(--focus "$focus_prompt")
+dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_number" implement "${build_args[@]}")
+dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+```
 
 Invoke the Agent tool:
 
 | Field | Value |
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
-| `model` | Stage 3.5's `model` output — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
-| `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty), then append `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5, each skipped when empty |
+| `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
+| `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
