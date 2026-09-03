@@ -188,7 +188,7 @@
       "timestamp": "2026-08-10T13:25:58.323Z",
       "type": "test_suite_deployed_mode_failures",
       "severity": "high",
-      "message": "tests/run-all.sh measured live: 25 passed, 8 FAILED, 33 total \u2014 not the 5-suite REPO_ROOT count previously relayed. Two suites (test-skill-base-lifecycle.sh, test-update-task-status.sh) fail with 'deployed scripts tree not found at /home/benjamin/.claude/scripts', proving REPO_ROOT was computed as $HOME: they derive REPO_ROOT via \"$SCRIPT_DIR/../../../../..\" (5 levels), correct for the source-store depth agent-system/extensions/core/scripts/tests/ but wrong for the deployed depth .claude/scripts/tests/ (3 levels). Six further suites fail for unconfirmed reasons: test-common-lib.sh, test-index-entries-schema.sh, test-lint-state-writer-boundary.sh (7/8 \u2014 the suite newly added by the state-writer conversion work, failing in deployed mode though reported 8/8 in source-store context), test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh.",
+      "message": "tests/run-all.sh measured live: 25 passed, 8 FAILED, 33 total — not the 5-suite REPO_ROOT count previously relayed. Two suites (test-skill-base-lifecycle.sh, test-update-task-status.sh) fail with 'deployed scripts tree not found at /home/benjamin/.claude/scripts', proving REPO_ROOT was computed as $HOME: they derive REPO_ROOT via \"$SCRIPT_DIR/../../../../..\" (5 levels), correct for the source-store depth agent-system/extensions/core/scripts/tests/ but wrong for the deployed depth .claude/scripts/tests/ (3 levels). Six further suites fail for unconfirmed reasons: test-common-lib.sh, test-index-entries-schema.sh, test-lint-state-writer-boundary.sh (7/8 — the suite newly added by the state-writer conversion work, failing in deployed mode though reported 8/8 in source-store context), test-loop-guard-staleness.sh, test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh.",
       "context": {
         "session_id": "sess_1786342011_4592c8",
         "command": "/orchestrate"
@@ -273,7 +273,7 @@
         "file": "agent-system/extensions/core/index-entries.json"
       },
       "recovery": {
-        "suggested_action": "Update the three line_count values in agent-system/extensions/core/index-entries.json; note the same class of staleness exists from a prior commit on context-layers.md, batch-orchestration-guardrails.md, file-footprint-overlap.md, orchestrator-critical-paths.json \u2014 a recurring gap suggesting index line_count updates should be automated or lint-gated at implement time",
+        "suggested_action": "Update the three line_count values in agent-system/extensions/core/index-entries.json; note the same class of staleness exists from a prior commit on context-layers.md, batch-orchestration-guardrails.md, file-footprint-overlap.md, orchestrator-critical-paths.json — a recurring gap suggesting index line_count updates should be automated or lint-gated at implement time",
         "auto_recoverable": false
       },
       "fix_status": "unfixed"
@@ -314,6 +314,46 @@
       },
       "recovery": {
         "suggested_action": "Re-dispatch implement; resume from Phase 3. Untracked test-deploy-freshness.sh is partial work deliberately left uncommitted for the resuming agent",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1788403658698_8jHcBN",
+      "timestamp": "2026-09-03T02:47:38.703Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "implement dispatch stopped after phase 6 of 8; return-meta left at in_progress, no handoff written",
+      "context": {
+        "session_id": "sess_1788399440_184d69",
+        "command": "/orchestrate",
+        "task": 149,
+        "phase": 7,
+        "checkpoint": "stage-mt4-handoff-read",
+        "agent": "general-implementation-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch implement next cycle; status stays implementing and resumes at phase 7.",
+        "auto_recoverable": true
+      },
+      "fix_status": "unfixed"
+    },
+    {
+      "id": "err_1788441471659_EowApA",
+      "timestamp": "2026-09-03T13:17:51.663Z",
+      "type": "delegation_interrupted",
+      "severity": "medium",
+      "message": "impl-147 went idle after committing phase 9 of 10; .return-meta.json left at in_progress, no handoff written; phase 10 not started",
+      "context": {
+        "session_id": "sess_1788411861_6cba1b",
+        "command": "/orchestrate",
+        "task": 147,
+        "phase": 10,
+        "checkpoint": "MT-4-postflight",
+        "agent": "general-implementation-agent"
+      },
+      "recovery": {
+        "suggested_action": "Re-dispatch implement; agent resumes from plan phase markers (1-9 COMPLETED, 10 NOT STARTED)",
         "auto_recoverable": true
       },
       "fix_status": "unfixed"
