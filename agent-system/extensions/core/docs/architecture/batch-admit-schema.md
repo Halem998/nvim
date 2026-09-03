@@ -13,8 +13,9 @@ directly; nothing is written to disk.
 EXECUTING admission gate on the MT dispatch path, covering both effort modes now that the
 formerly-separate hard-mode engine's own transcribed copy of this contract has been deleted along
 with that file — see "Version History" below),
-`scripts/orchestrate-dry-run-report.sh` Step 4 (read-only report composer — same call, same
-schema, never a forked copy), and `scripts/orchestrate-predispatch-review.sh` (Classes C and D —
+`scripts/orchestrate-cycle-plan.sh` (both its live dispatch path and its `--dry-run` mode — one
+call, one schema, never a forked copy; this script absorbed and retired the former standalone
+`orchestrate-dry-run-report.sh`), and `scripts/orchestrate-predispatch-review.sh` (Classes C and D —
 a report composer in the same relationship to this schema as the dry-run reporter above: it
 re-presents `defer_reason == "self_modifying"` and `defer_reason == "file_scope_collision" &&
 collision_scope == "cross_batch"` verdicts, adding a declaration-coarseness diagnosis and a
@@ -426,9 +427,9 @@ self-modification check silently and does NOT abort the invocation. Instead:
 - One loud `WARNING:` line goes to stderr naming the missing/unparseable file.
 - The collision scan still runs unaffected — a degraded self-modification check does not
   degrade the rest of admission.
-- `orchestrate-dry-run-report.sh`'s "Checks run" section prints `self-modification: SKIPPED
-  (degraded: ...)` instead of `self-modification: ran`, so a human reading the report sees the
-  degradation directly rather than inferring it from an absent exclusion.
+- `orchestrate-cycle-plan.sh` (live and `--dry-run` alike) relays this exact stderr `WARNING:`
+  line unchanged, so a human reading either surface sees the degradation directly rather than
+  inferring it from an absent exclusion.
 
 ## Degradation (D6, NEW in v4): `--session-id` Omitted, Visible, Never Silent
 

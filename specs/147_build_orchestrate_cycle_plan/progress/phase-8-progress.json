@@ -1,0 +1,38 @@
+{
+  "phase": 8,
+  "phase_name": "Retire orchestrate-dry-run-report.sh and repoint every call site",
+  "started_at": "2026-09-03T00:30:00Z",
+  "last_updated": "2026-09-03T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete orchestrate-dry-run-report.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]},
+    {"id": 2, "description": "manifest.json: swap script and test registry entries", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "orchestrator-critical-paths.json: registry swap", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"]},
+    {"id": 4, "description": "commands/orchestrate.md: repoint dry-run short-circuit", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 5, "description": "lint-task-lookup-adoption.sh: remove allowlist entry; fix the lookup shape in orchestrate-cycle-plan.sh instead of allowlisting it", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh", "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Update descriptive cross-references (common.sh, batch-admit.sh, triage-classify.sh, batch-admit-schema.md, batch-orchestration-guardrails.md, task-lock.md)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lib/common.sh",
+      "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+      "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+      "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+      "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+      "agent-system/extensions/core/context/patterns/task-lock.md"
+    ]},
+    {"id": 7, "description": "Confirm no remaining live reference (grep -rn returns only historical narrative)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Ran lint-task-lookup-adoption.sh after removing the allowlist entry; it flagged 2 hand-rolled '.active_projects[] | select(.project_number == $n)' lookups in orchestrate-cycle-plan.sh",
+      "result": "fixed",
+      "reason": "Refactored to a single upfront `jq -c '.active_projects // []'` read bound to $all_projects_json plus a lookup_project() helper filtering that bound array -- mirrors orchestrate-batch-admit.sh's/orchestrate-triage-classify.sh's own $all-binding idiom and falls outside the lint's literal-substring-anchored pattern. Lint now reports 0 violations."
+    }
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "Found and fixed a real defect while updating orchestrate-triage-classify.sh's cross-reference: orchestrate-cycle-plan.sh's phase-bucketing switch did not defensively exclude the reserved 'exit_partial' triage group value (it would have fallen through into dispatch-candidate treatment). Added an explicit exit_partial arm to the skip/terminal branch, matching the retired script's own defensive posture for this reserved value.",
+    "Added the Phase 6 human-table rendering that Phases 1-7's original implementation pass had omitted: orchestrate-cycle-plan.sh --dry-run now prints the plan JSON on stdout (unchanged, pure single-line JSON in both modes) and a compact human table (Dispatch/Deferred/Blocked/Stop sections, derived from that same JSON object, no second computation) on stderr. Documented the stdout/stderr split in the script's own header. Verified manually and re-ran the full fixture suite (22/22 still pass).",
+    "Corrected two batch-orchestration-guardrails.md passages that would have overstated continuity: the retired script's static, one-shot 'out-of-batch unmet predecessor -> exclude' behavior has NO live equivalent in orchestrate-cycle-plan.sh (which mirrors the live cycling engine's uniform per-cycle defer, exactly as Stage MT-3 step 3 always did) -- reworded to mark that specific behavior as purely historical and the live-path gap as still open, rather than falsely claiming the new script inherited it.",
+    "grep -rn orchestrate-dry-run-report across the source store now returns exactly 4 hits, all confirmed historical narrative (orchestrate-cycle-plan.sh's own retirement note, batch-admit-schema.md's Version History table, batch-orchestration-guardrails.md's now-explicitly-marked-historical precedent citations, and shell-strict-mode.md's historical Phase 7 migration record)."
+  ],
+  "deviations": []
+}

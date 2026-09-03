@@ -83,7 +83,7 @@
 #     scripts/lint/lint-postflight-boundary.sh,
 #     scripts/literature-retrieve.sh, scripts/manage-topics.sh, scripts/memory-harvest.sh,
 #     scripts/memory-retrieve.sh, scripts/orchestrate-batch-admit.sh,
-#     scripts/orchestrate-dry-run-report.sh, scripts/orchestrate-predispatch-review.sh,
+#     scripts/orchestrate-cycle-plan.sh, scripts/orchestrate-predispatch-review.sh,
 #     scripts/orchestrate-triage-classify.sh, scripts/reap-session-runtime-files.sh,
 #     scripts/reconcile-artifacts.sh, scripts/reconcile-task-status.sh,
 #     scripts/state-write.sh, scripts/task-lock.sh, scripts/uninstall-extension.sh,

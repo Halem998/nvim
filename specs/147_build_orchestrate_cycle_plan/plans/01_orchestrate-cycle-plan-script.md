@@ -444,35 +444,35 @@ the two named invariants, modeled on the two existing sibling test files.
 
 ---
 
-### Phase 8: Retire orchestrate-dry-run-report.sh and repoint every call site [NOT STARTED]
+### Phase 8: Retire orchestrate-dry-run-report.sh and repoint every call site [COMPLETED]
 
 **Goal**: Delete the retired script and update every reference so there is exactly one rendering of
 every admission verdict.
 
 **Tasks**:
-- [ ] Delete `agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh`.
-- [ ] `manifest.json`: remove the `orchestrate-dry-run-report.sh` entry from `scripts`; add
+- [x] Delete `agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh`.
+- [x] `manifest.json`: remove the `orchestrate-dry-run-report.sh` entry from `scripts`; add
       `orchestrate-cycle-plan.sh` in its alphabetical slot (between `orchestrate-build-dispatch.sh`
       and `orchestrate-loop-guard-init.sh`); add `tests/test-orchestrate-cycle-plan.sh` to the
       `tests` list alongside its two siblings.
-- [ ] `context/reference/orchestrator-critical-paths.json`: remove the
+- [x] `context/reference/orchestrator-critical-paths.json`: remove the
       `scripts/orchestrate-dry-run-report.sh` entry (label "admission report surface") and add
       `scripts/orchestrate-cycle-plan.sh` labeled for its widened role (cycle dispatch-plan composer:
       admission, classification, lock acquire, status writes, dispatch-seq mint).
-- [ ] `commands/orchestrate.md`: repoint the dry-run short-circuit's two `bash` lines to
+- [x] `commands/orchestrate.md`: repoint the dry-run short-circuit's two `bash` lines to
       `orchestrate-cycle-plan.sh --dry-run [--session "$SESSION_ID"] --state-file specs/state.json
       $TASK_NUMBERS`. Leave the surrounding dry-run prohibition block's prose unchanged apart from
       the script name.
-- [ ] `scripts/lint/lint-task-lookup-adoption.sh`: remove `core/scripts/orchestrate-dry-run-report.sh`
+- [x] `scripts/lint/lint-task-lookup-adoption.sh`: remove `core/scripts/orchestrate-dry-run-report.sh`
       from the offender allowlist; add `core/scripts/orchestrate-cycle-plan.sh` only if the lint
       actually flags it, and prefer fixing the lookup shape over allowlisting.
-- [ ] Update the descriptive cross-references to name `orchestrate-cycle-plan.sh --dry-run`:
+- [x] Update the descriptive cross-references to name `orchestrate-cycle-plan.sh --dry-run`:
       `scripts/lib/common.sh`, `scripts/orchestrate-batch-admit.sh`,
       `scripts/orchestrate-triage-classify.sh`, `docs/architecture/batch-admit-schema.md`,
       `context/patterns/batch-orchestration-guardrails.md`, `context/patterns/task-lock.md`.
       Historical narrative passages describing what the retired script once did may keep its name;
       forward-looking references to a live surface must be repointed.
-- [ ] Confirm no remaining live reference: `grep -rn orchestrate-dry-run-report` over the source
+- [x] Confirm no remaining live reference: `grep -rn orchestrate-dry-run-report` over the source
       store returns only historical narrative (or nothing).
 
 **Timing**: 1.5 hours

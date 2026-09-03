@@ -171,7 +171,7 @@ is nine rows today, not ten.)
 | 5 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
 | 6 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
 | 7 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
-| 8 | `scripts/orchestrate-dry-run-report.sh` | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
+| 8 | `scripts/orchestrate-cycle-plan.sh` (`--dry-run` mode) | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
 | 9 | `scripts/verify-deploy.sh` | Executed directly from Stage MT-3 step 7 on the MT dispatch path (the inter-cycle redeploy checkpoint) | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 6's own "a bug in it defeats the very check meant to catch bugs like it" language |
 
 ### Exclusion Table (explicitly excluded, with evidence)
@@ -249,7 +249,7 @@ this gate:
    - (iii) **The replacement exposure, named as such**: seven of the nine critical paths
      (`scripts/skill-base.sh`, `scripts/task-lock.sh`, `scripts/update-task-status.sh`,
      `scripts/orchestrate-batch-admit.sh`, `scripts/orchestrate-triage-classify.sh`,
-     `scripts/orchestrate-dry-run-report.sh`, `scripts/verify-deploy.sh`) are shell scripts
+     `scripts/orchestrate-cycle-plan.sh`, `scripts/verify-deploy.sh`) are shell scripts
      re-invoked via a fresh `bash .claude/scripts/X.sh` subprocess at every use site, so they
      genuinely re-read on-disk bytes; the remaining two (`skills/skill-orchestrate/SKILL.md`,
      `commands/orchestrate.md`) are read once into the
@@ -864,20 +864,25 @@ auto-expand the batch.** Both options were defer-not-fail-compatible; they diffe
 and this is why exclude wins:
 
 - **Precedent**: two structurally identical situations elsewhere in this codebase already chose
-  exclude-and-warn over auto-expansion — `orchestrate-dry-run-report.sh`'s Step 6 ("Out-of-batch
-  unmet predecessors") and `orchestrate-batch-admit.sh`'s `collision_scope == "cross_batch"`
-  handling. A third, newly-diverging answer for the same shape of problem would be an
-  unjustified inconsistency, not a considered design choice.
+  exclude-and-warn over auto-expansion — the now-retired `orchestrate-dry-run-report.sh`'s Step 6
+  ("Out-of-batch unmet predecessors", a one-shot static report with no next cycle to defer to) and
+  `orchestrate-batch-admit.sh`'s `collision_scope == "cross_batch"` handling (still live). A third,
+  newly-diverging answer for the same shape of problem would be an unjustified inconsistency, not
+  a considered design choice.
 - **Blast radius**: auto-expanding the batch to pull in an out-of-batch predecessor would require
   that predecessor to pass the FULL admission check (self-modification, file_scope collision,
   lock contention, its own predecessors) before the expansion is safe to dispatch alongside —
   strictly more machinery layered onto a path that has had far less production exposure than the
   existing exclude-and-warn precedent.
 
-This resolution is a recorded design decision, not (yet) a live-path behavior change: it applies
-directly to `orchestrate-dry-run-report.sh`'s existing Step 6 exclusion (unchanged by this
-decision) and gives future work a settled answer for closing the live-path gap described under
-Non-Negotiable 3 above — `scripts/orchestrate-predispatch-review.sh` deliberately stays a
+This resolution is a recorded design decision, not (yet) a live-path behavior change: it applied
+to `orchestrate-dry-run-report.sh`'s Step 6 exclusion before that script's retirement, and gives
+future work a settled answer for closing the live-path gap described under Non-Negotiable 3 above
+— the gap is UNCHANGED by that script's retirement: `orchestrate-cycle-plan.sh`'s live and
+`--dry-run` paths alike defer an out-of-batch unmet predecessor to a later cycle exactly as the
+rest of the eligibility model does (see Stage MT-3 step 3's port in that script), never a distinct
+permanent exclusion — closing the gap remains future work.
+`scripts/orchestrate-predispatch-review.sh` deliberately stays a
 report-only REVIEW stage and does not itself implement this exclusion on the live dispatch path
 (see that script's own header for the "never a fifth admission gate" framing). The fork is marked
 resolved here so the reasoning survives for whichever future change implements the live-path

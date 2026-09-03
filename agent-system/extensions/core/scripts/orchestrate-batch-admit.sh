@@ -64,9 +64,9 @@
 #
 # Flag name retained (not renamed): `--invocation-count` keeps its original name even though its
 # documented semantics narrowed from "whole invocation" to "same-cycle co-dispatch count", because
-# two out-of-scope report composers — scripts/orchestrate-dry-run-report.sh and
-# scripts/orchestrate-predispatch-review.sh — pass this flag BY NAME. Renaming it would make an
-# unrecognized `--invocation-count` fall through those callers' argument scans into positional
+# two out-of-scope callers — scripts/orchestrate-cycle-plan.sh (both its live and --dry-run
+# paths) and scripts/orchestrate-predispatch-review.sh — pass this flag BY NAME. Renaming it
+# would make an unrecognized `--invocation-count` fall through those callers' argument scans into positional
 # validation, aborting with exit 2. A `--codispatch-count` alias was considered and rejected: it
 # would add a second flag name to orchestrator-critical machinery for a naming-clarity improvement
 # only, with no behavioral benefit over documenting the narrowed meaning under the existing name.

@@ -6,8 +6,8 @@
 # implement, a human-escalation, a skip, or a terminal no-op). Before this script, that rule
 # existed as two separately-maintained descriptions — the Stage 4 `partial` handler's prose and
 # Stage MT-4's phase-grouping table — which genuinely disagree on one row (see below). This
-# script is the "one code path" both the live dispatch and the read-only dry-run report
-# (`orchestrate-dry-run-report.sh`) call, so the rule cannot drift into two silently-diverging
+# script is the "one code path" both the live dispatch and the read-only `--dry-run` mode of
+# `orchestrate-cycle-plan.sh` call, so the rule cannot drift into two silently-diverging
 # copies again.
 #
 # Two-engine rationale: `/orchestrate` selects between the single-task engine and the multi-task
@@ -139,7 +139,7 @@
 #                                 exit_partial (RESERVED — defined but not currently emitted by any
 #                                 row as of this schema version; retained for schema stability and
 #                                 available to a future row or engine that wants a distinct
-#                                 exit-without-dispatch verdict; see orchestrate-dry-run-report.sh's
+#                                 exit-without-dispatch verdict; see orchestrate-cycle-plan.sh's
 #                                 defensive exclusion arm, which still treats it as an exclusion if
 #                                 it is ever emitted).
 #   handoff_state       string  "absent" (partial or blocked status, no readable handoff file),

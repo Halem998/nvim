@@ -94,18 +94,20 @@ forwarded to `orchestrate-batch-admit.sh`:
 ```bash
 if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
   if [ -n "${SESSION_ID:-}" ]; then
-    bash .claude/scripts/orchestrate-dry-run-report.sh --session "$SESSION_ID" $TASK_NUMBERS
+    bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "$SESSION_ID" --state-file specs/state.json $TASK_NUMBERS
   else
-    bash .claude/scripts/orchestrate-dry-run-report.sh $TASK_NUMBERS
+    bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json $TASK_NUMBERS
   fi
   # STOP HERE.
 fi
 ```
 
-The report uses the SAME read-only admission analysis the live path uses (naming
-`scripts/orchestrate-batch-admit.sh` and `scripts/orchestrate-triage-classify.sh` by path), so
-the printed verdicts match what a live run would actually dispatch. Neither schema is restated
-here — see each script's own header comment.
+`orchestrate-cycle-plan.sh --dry-run` runs the IDENTICAL read-only decision pass the live
+multi-task cycle uses (the same call to `scripts/orchestrate-batch-admit.sh` and
+`scripts/orchestrate-triage-classify.sh`), so the printed verdicts match what a live run would
+actually dispatch — one rendering of every admission verdict, not a second, independently
+maintained one. It prints the plan JSON on stdout and a compact human table on stderr; neither
+schema is restated here — see that script's own header comment.
 
 **Dry-run prohibition block**: in dry-run mode this command MUST NOT continue to multi-task
 dispatch below, MUST NOT reach CHECKPOINT 1 (GATE IN), MUST NOT invoke the Skill or Agent tools,

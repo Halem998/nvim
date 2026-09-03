@@ -39,8 +39,8 @@
       "label": "lock-aware stranded-task promotion/demotion reconciler"
     },
     {
-      "path": "scripts/orchestrate-dry-run-report.sh",
-      "label": "admission report surface"
+      "path": "scripts/orchestrate-cycle-plan.sh",
+      "label": "cycle dispatch-plan composer (admission, classification, lock acquire, status writes, dispatch-seq mint, --dry-run admission report surface)"
     },
     {
       "path": "scripts/verify-deploy.sh",

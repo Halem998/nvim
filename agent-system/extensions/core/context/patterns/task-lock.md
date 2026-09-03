@@ -274,8 +274,8 @@ diagnostic from staleness itself:
   normally for a while, then the holder process went quiet" (`never_heartbeated=false`).
 
 The line PREFIX (`held-fresh`/`held-stale`/`would reap:`/`reaped:`/`SKIP:`) and every exit code
-are unchanged -- this is an appended field only. Both consumers that read `check`'s output today
-(`reconcile-task-status.sh`, `orchestrate-dry-run-report.sh`) capture the whole line as an
+are unchanged -- this is an appended field only. The consumers that read `check`'s output today
+(`reconcile-task-status.sh`, `orchestrate-cycle-plan.sh`) capture the whole line as an
 opaque string for logging/exit-code branching and never do an exact whole-line equality match,
 so the appended field is safe for both without any consumer-side change.
 

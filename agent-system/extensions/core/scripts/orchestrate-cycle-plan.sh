@@ -48,8 +48,14 @@
 # retirement in this task): runs the IDENTICAL read-only decision pass (admission, classification,
 # forced phases, a read-only lock PROBE via `task-lock.sh check` — never `acquire`) and prints the
 # SAME plan JSON the live path would emit, with dispatch_file/model forced to null on every
-# dispatch row (nothing was actually built) plus a compact human table derived from that JSON
-# object and nothing else. Mutates nothing: no mt_state_file write, no directory creation, no lock
+# dispatch row (nothing was actually built), on stdout — plus a compact human table on STDERR,
+# rendered by reading back that SAME already-printed JSON object and nothing else (no second
+# computation, no independent formatting of any decision). stdout stays pure, single-line JSON in
+# BOTH modes, so a machine caller never needs to distinguish dry-run from live output shape; the
+# table exists purely for a human running `/orchestrate --dry-run` at a terminal, where stderr
+# renders inline with stdout. Table sections, in order: `-- Dispatch --` (task, phase, agent),
+# `-- Deferred --` (task, reason), `-- Blocked --` (task, reason), `-- Stop --` (reason: message,
+# or a none-line). Mutates nothing: no mt_state_file write, no directory creation, no lock
 # acquire, no dispatch_seq mint, no preflight status write, no orchestrate-build-dispatch.sh call,
 # no deploy-headless.sh/verify-deploy.sh call. Every deferred row's `reason` is the admission or
 # triage verdict's OWN string, relayed verbatim — never reconstructed. This file never asserts, in
@@ -217,6 +223,18 @@ if [ ! -f "$STATE_FILE" ]; then
   exit 2
 fi
 
+# Single read of STATE_FILE's active_projects array, bound once and reused by every per-candidate
+# lookup below (status refresh, dependency resolution) — mirrors orchestrate-batch-admit.sh's and
+# orchestrate-triage-classify.sh's own `$all`-binding idiom: a lookup against an already-bound
+# array, rather than a fresh `.active_projects[] | select(...)` per call, is both cheaper (one
+# read instead of N) and outside lint-task-lookup-adoption.sh's narrow-full-record-lookup pattern
+# (which is anchored on the literal ".active_projects[]" substring appearing per-call).
+all_projects_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) || all_projects_json='[]'
+lookup_project() {
+  # Usage: lookup_project <project_number> — echoes the matching record (or nothing).
+  echo "$all_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1
+}
+
 # Force-phases: split + validate against the closed set, up front (a corrupted delegation
 # context, not a user typo — mirrors single-task Stage 2b's posture exactly).
 declare -a force_phases_list=()
@@ -348,9 +366,44 @@ emit_and_exit() {
   else
     stop_json="null"
   fi
-  jq -n -c --argjson cycle "$cycle_val" --argjson dispatch "$dispatch_json" \
+  local plan_json
+  plan_json=$(jq -n -c --argjson cycle "$cycle_val" --argjson dispatch "$dispatch_json" \
     --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
-    '{cycle: $cycle, dispatch: $dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}'
+    '{cycle: $cycle, dispatch: $dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
+  printf '%s\n' "$plan_json"
+  # --dry-run human table (STDERR only — stdout stays pure, single-line JSON in both modes, per
+  # this script's own Output contract). Rendered by reading back plan_json ALONE: no second
+  # computation, no independent formatting of any decision (Phase 6's mandate) — every line below
+  # is a `jq -r` projection of the exact object just printed to stdout.
+  if [ "$dry_run" = "true" ]; then
+    {
+      echo "=== /orchestrate --dry-run cycle plan ==="
+      echo ""
+      echo "-- Dispatch --"
+      if [ "$(echo "$plan_json" | jq '.dispatch | length')" -eq 0 ]; then
+        echo "0 dispatched."
+      else
+        echo "$plan_json" | jq -r '.dispatch[] | "#\(.task)  phase=\(.phase)  agent=\(.agent)"'
+      fi
+      echo ""
+      echo "-- Deferred --"
+      if [ "$(echo "$plan_json" | jq '.deferred | length')" -eq 0 ]; then
+        echo "0 deferred."
+      else
+        echo "$plan_json" | jq -r '.deferred[] | "#\(.task)  reason: \(.reason)"'
+      fi
+      echo ""
+      echo "-- Blocked --"
+      if [ "$(echo "$plan_json" | jq '.blocked | length')" -eq 0 ]; then
+        echo "0 blocked."
+      else
+        echo "$plan_json" | jq -r '.blocked[] | "#\(.task)  reason: \(.reason)"'
+      fi
+      echo ""
+      echo "-- Stop --"
+      echo "$plan_json" | jq -r 'if .stop == null then "(none — this cycle would proceed)" else "\(.stop.reason): \(.stop.message)" end'
+    } >&2
+  fi
   exit 0
 }
 
@@ -430,7 +483,7 @@ declare -A dependency_lists=()
 declare -A infra_failure_counts=()
 declare -A task_descriptions=()
 for t in "${task_args[@]}"; do
-  entry=$(jq -c --argjson n "$t" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null | head -1) || entry=""
+  entry=$(lookup_project "$t") || entry=""
   if [ -z "$entry" ] || [ "$entry" = "null" ]; then
     current_statuses[$t]=""
     project_names[$t]=""
@@ -497,7 +550,7 @@ for t in "${task_args[@]}"; do
   if [ "$dep_count" -gt 0 ]; then
     while IFS= read -r d; do
       [ -z "$d" ] && continue
-      d_entry=$(jq -c --argjson n "$d" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null | head -1) || d_entry=""
+      d_entry=$(lookup_project "$d") || d_entry=""
       d_status=$(echo "${d_entry:-null}" | jq -r '.status // ""' 2>/dev/null) || d_status=""
       if is_terminal_status "$d_status"; then
         if [ "$(echo "$d_status" | tr '[:upper:]' '[:lower:]')" != "completed" ]; then
@@ -701,7 +754,11 @@ for t in "${eligible_tasks[@]}"; do
       out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${triage_reason[$t]:-handoff-triage needs_human}" '{task:$t, reason:$r}')")
       continue
       ;;
-    skip|terminal|"")
+    skip|terminal|exit_partial|"")
+      # exit_partial is a reserved verdict value orchestrate-triage-classify.sh defines but does
+      # not currently emit from any row; excluded defensively here so an unexpected future emission
+      # never falls through silently into a phase dispatch (the same defensive posture the retired
+      # orchestrate-dry-run-report.sh applied to this same reserved value).
       continue
       ;;
   esac

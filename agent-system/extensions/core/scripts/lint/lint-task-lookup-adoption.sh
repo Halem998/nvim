@@ -272,7 +272,6 @@ EXCLUDED_FILES=(
 
     # --- scripts/ offenders (pending migration or per-site judgment) -------------------------
     "core/scripts/reconcile-task-status.sh"
-    "core/scripts/orchestrate-dry-run-report.sh"
 
     # --- agents/ offenders: an agent-definition file's own inline verification snippet, not a
     # runtime skill/command bash block sourcing skill-base.sh or command-gate-in.sh -------------
