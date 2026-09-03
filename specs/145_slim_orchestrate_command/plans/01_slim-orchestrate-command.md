@@ -436,7 +436,7 @@ treat that grep as the checklist. Any site not covered by the bullets above must
 
 ---
 
-### Phase 4: Delete MULTI-TASK DISPATCH and install the reduced STAGE 0 [NOT STARTED]
+### Phase 4: Delete MULTI-TASK DISPATCH and install the reduced STAGE 0 [COMPLETED]
 
 **Goal**: The core edit. Delete `### MULTI-TASK DISPATCH` (Steps 1-5, lines 131-634) and replace
 STAGE 0's narration with the compact parse + dry-run + branch + delegation-context builder — in
@@ -445,7 +445,7 @@ invocation site.
 
 **Tasks**:
 
-- [ ] Compose the replacement STAGE 0 body (single edit, replacing lines ~59-634):
+- [x] Compose the replacement STAGE 0 body (single edit, replacing lines ~59-634):
       1. the `source .claude/scripts/parse-command-args.sh "$ARGUMENTS"` fence, with the exports
          comment retained and the six paragraphs of per-flag threading prose compressed to a
          short list — one clause per flag naming the delegation key it becomes and whether it is
@@ -462,23 +462,23 @@ invocation site.
          intra-batch `dependency_graph` build (single jq pass over `specs/state.json`
          `dependencies[]`, narrowed to `validated_tasks`); `waves` as one row of all validated
          tasks; `batch_session_id` from `common_session_id`; and the `Skill` invocation plus its
-         JSON delegation-context block, both with the **identical key set** in use today.
-- [ ] Decide and record the fate of the Step 1.5 Pre-Dispatch Review call
+         JSON delegation-context block, both with the **identical key set** in use today. *(completed)*
+- [x] Decide and record the fate of the Step 1.5 Pre-Dispatch Review call
       (`orchestrate-predispatch-review.sh`). It is advisory-loud and non-blocking, and it is the
       only visibility surface Non-Negotiable 3 relies on for out-of-batch/nonexistent dependency
       edges. **Default: retain it as a single one-line invocation** inside the compact block (a
       `bash ...predispatch-review.sh "${validated_tasks[@]}"` line plus one sentence saying it is
       advisory, never blocking). Dropping it silently removes a guardrail surface — if it is
-      dropped, say so explicitly and repoint Non-Negotiable 3.
-- [ ] Delete the consolidated-output invocation, the `validated_count` precomputation prose, the
+      dropped, say so explicitly and repoint Non-Negotiable 3. *(completed)*
+- [x] Delete the consolidated-output invocation, the `validated_count` precomputation prose, the
       commit-reconciliation narrative, the re-run-sequence derivation, and the
-      "After consolidated output, STOP" line — all superseded by Phase 3's Stage MT-5 ownership.
-- [ ] Confirm the `MAX_TASKS=8` guard's own text no longer lives here (it is in
+      "After consolidated output, STOP" line — all superseded by Phase 3's Stage MT-5 ownership. *(completed)*
+- [x] Confirm the `MAX_TASKS=8` guard's own text no longer lives here (it is in
       `orchestrate-state-machine.md` from Phase 1). Decide whether the executable guard itself
       stays in the compact block: **default yes**, kept as the 6-line bash guard, because it is
-      an executing behavior and the state-machine doc is documentation, not code.
-- [ ] Do not touch the Anti-Bypass Constraint, CHECKPOINT 1, STAGE 2, CHECKPOINT 2,
-      CHECKPOINT 3, `## Output`, or `## Error Handling` in this phase — Phase 6 owns those.
+      an executing behavior and the state-machine doc is documentation, not code. *(completed)*
+- [x] Do not touch the Anti-Bypass Constraint, CHECKPOINT 1, STAGE 2, CHECKPOINT 2,
+      CHECKPOINT 3, `## Output`, or `## Error Handling` in this phase — Phase 6 owns those. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -511,22 +511,22 @@ measurement taken before Phases 1-3 and must be re-derived, not trusted.
 
 ---
 
-### Phase 5: Post-deletion dangling-reference sweep [NOT STARTED]
+### Phase 5: Post-deletion dangling-reference sweep [COMPLETED]
 
 **Goal**: Catch every reference the Phase 2/3 inventories missed, now that the deletion is real.
 
 **Tasks**:
 
-- [ ] `grep -rn 'MULTI-TASK DISPATCH' agent-system/extensions/core/` — expect zero hits, or only
-      hits that read as history ("the former MULTI-TASK DISPATCH block") and are intentional.
-- [ ] `grep -rn 'orchestrate\.md.*Step [0-9]\|orchestrate\.md.*#### Step' agent-system/extensions/core/`
-      — expect zero.
-- [ ] `grep -rn 'commands/orchestrate\.md' agent-system/extensions/core/` — review every
-      remaining hit and confirm each still describes something the file actually contains.
-- [ ] Recount and correct SKILL.md's `force_phases` "N threading sites" number (deferred from
-      Phase 3) against the post-deletion tree.
-- [ ] Repeat the same sweep against the repo's own `docs/` and `README.md` surfaces if any
-      reference `commands/orchestrate.md` step numbers.
+- [x] `grep -rn 'MULTI-TASK DISPATCH' agent-system/extensions/core/` — expect zero hits, or only
+      hits that read as history ("the former MULTI-TASK DISPATCH block") and are intentional. *(completed)*
+- [x] `grep -rn 'orchestrate\.md.*Step [0-9]\|orchestrate\.md.*#### Step' agent-system/extensions/core/`
+      — expect zero. *(completed)*
+- [x] `grep -rn 'commands/orchestrate\.md' agent-system/extensions/core/` — review every
+      remaining hit and confirm each still describes something the file actually contains. *(completed)*
+- [x] Recount and correct SKILL.md's `force_phases` "N threading sites" number (deferred from
+      Phase 3) against the post-deletion tree. *(completed)*
+- [x] Repeat the same sweep against the repo's own `docs/` and `README.md` surfaces if any
+      reference `commands/orchestrate.md` step numbers. *(completed)*
 
 **Timing**: 0.75 hours
 

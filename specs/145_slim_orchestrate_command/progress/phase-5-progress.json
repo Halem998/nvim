@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Post-deletion dangling-reference sweep",
+  "started_at": "2026-09-02T02:05:00Z",
+  "last_updated": "2026-09-02T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "MULTI-TASK DISPATCH grep sweep", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Step-N pointer grep sweep", "status": "done", "files_touched": []},
+    {"id": 3, "description": "commands/orchestrate.md reference review", "status": "done", "files_touched": []},
+    {"id": 4, "description": "force_phases threading-site recount", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "repo docs/README.md sweep", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Found and fixed a real regression discovered by run-all.sh: scripts/test-session-runtime-files.sh Case 2 asserted (via grep) that commands/orchestrate.md still contained file_session_id/mt_state_file_valid comparison logic deleted in Phase 4. Rewrote Case 2 to verify the structural guarantee that makes the retired check unnecessary (SKILL.md Stage MT-1 always initializes mt_state_file fresh) instead of grepping for logic that no longer exists in orchestrate.md. Verified fix: run-all.sh now reports 'all discovered suites passed'.",
+    "Found and fixed two index-entries.json line_count drifts caused by this task's own edits: patterns/batch-orchestration-guardrails.md (926 -> 923) and patterns/orchestrate-batch-results-template.md (163 -> 164). Left the three pre-existing mismatches (postflight-control.md, state-schema.json, zotero-item-creation.md) untouched per the task's explicit out-of-scope instruction.",
+    "Redeployed source store twice during this phase to pick up fixes; verify-deploy.sh now reports 3 of 29(30) failures, matching exactly the documented pre-existing set (gate3 x3 remaining mismatches, gate10 state.json schema, gate12 state-writer boundary) plus the intermittent gate8 flake class (not observed this run -- run-all.sh passed cleanly)."
+  ]
+}

@@ -576,7 +576,9 @@ byte-for-byte as it did before this stage existed.
 
 **End-to-end chain (A2, recorded once here for a future reader tracing the whole feature):**
 `parse-command-args.sh` (flag detection, canonical-order accumulation) → `commands/orchestrate.md`
-(8 threading sites) → this skill's Stage 1 `force_phases` bullet → this Stage 2b's `force_queue` →
+(6 threading sites, post-slimming: the exports comment, the flag-description bullet, the
+single-task and multi-task `Skill` args strings, and their two JSON delegation blocks) → this
+skill's Stage 1 `force_phases` bullet → this Stage 2b's `force_queue` →
 Stage 3's 3c (`forced_phase` / `force_invoked` / `resolve_cycle_artifact_number()` →
 `ARTIFACT_NUMBER`) → Stage 4's handler `context` object (carries `artifact_number:
 $ARTIFACT_NUMBER`, per this file's Stage 4 preamble sentence) → Stage 5's "Shared postflight

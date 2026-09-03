@@ -12,7 +12,8 @@
 #
 # Two-engine rationale: `/orchestrate` selects between the single-task engine and the multi-task
 # (Stage MT-4) engine purely by `len(TASK_NUMBERS)` — see `commands/orchestrate.md` STAGE 0
-# (`== 1` falls through to single-task CHECKPOINT 1; `> 1` goes to MULTI-TASK DISPATCH). A
+# (`== 1` falls through to single-task CHECKPOINT 1; `> 1` goes to the multi-task dispatch block).
+# A
 # dry-run's entire value is being a *prediction of what the live path will actually do*, so the
 # classifier must branch on that SAME `len(task_numbers)` test — never assume one engine's
 # semantics for the other's invocation shape. The engine tables below are unified on every row

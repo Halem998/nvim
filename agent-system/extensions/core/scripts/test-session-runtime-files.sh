@@ -129,10 +129,18 @@ fi
 # =====================================================================
 # Case 2: foreign-session detection
 # =====================================================================
-# Faithful transcription of the multi-state session_id hard-fail check (formerly
-# commands/orchestrate.md's Step 5, now superseded by skill-orchestrate/SKILL.md Stage MT-5
-# ownership): a file whose CONTENT session_id differs from the current invocation's
-# batch_session_id must be treated as invalid (never consumed).
+# Historical context: commands/orchestrate.md used to re-read mt_state_file AFTER
+# skill-orchestrate returned, and hard-failed on a session_id mismatch against its own
+# batch_session_id. That external re-read is gone: batch-output ownership moved to
+# skill-orchestrate/SKILL.md Stage MT-5, which runs INSIDE the same invocation that creates
+# mt_state_file, using the session_id it just registered — commands/orchestrate.md no longer
+# reads the file at all post-dispatch. The foreign-session scenario this check used to guard
+# against is now structurally impossible rather than defended against at read time, PROVIDED
+# Stage MT-1 always initializes mt_state_file fresh, unconditionally, every invocation (no
+# resume-on-exists branch that could pick up a stale file from a different session). This case
+# verifies both halves: the abstract mismatch-detection algorithm still behaves correctly (kept
+# as a regression-documenting transcription of the retired check's semantics), and the
+# structural guarantee that makes the external check unnecessary is still true in SKILL.md.
 FOREIGN_FILE="$TMPROOT/specs/.orchestrator-multi-state-${SID_A}.json"
 jq -n --arg sid "$SID_B" '{"session_id": $sid, "cycle_count": 99, "completed_tasks": [999]}' > "$FOREIGN_FILE"
 
@@ -149,13 +157,13 @@ fi
 case2_ok=true
 [ "$mt_state_file_valid" = "false" ] || { case2_ok=false; info "transcribed check incorrectly accepted a foreign session_id (file has '$SID_B', invocation is '$SID_A')"; }
 
-# Companion grep assertion: the live orchestrate.md still contains the actual comparison.
-grep -q 'file_session_id' "$ORCHESTRATE_MD" || { case2_ok=false; info "orchestrate.md no longer reads file_session_id"; }
-grep -qE 'file_session_id.*=.*batch_session_id' "$ORCHESTRATE_MD" || { case2_ok=false; info "orchestrate.md no longer compares file_session_id against batch_session_id"; }
-grep -q 'mt_state_file_valid' "$ORCHESTRATE_MD" || { case2_ok=false; info "orchestrate.md no longer gates on mt_state_file_valid"; }
+# Companion grep assertions: the structural guarantee lives in SKILL.md now, not orchestrate.md.
+grep -q 'Initialize `mt_state_file' "$LOOP_GUARD_SKILL" || { case2_ok=false; info "SKILL.md Stage MT-1 no longer documents unconditional mt_state_file initialization"; }
+grep -qE 'with fields: .session_id' "$LOOP_GUARD_SKILL" || { case2_ok=false; info "SKILL.md Stage MT-1 no longer initializes mt_state_file's session_id field from the invocation"; }
+grep -q 'file_session_id' "$ORCHESTRATE_MD" && { case2_ok=false; info "orchestrate.md unexpectedly still reads file_session_id -- has post-dispatch re-read logic been reintroduced?"; }
 
 if [ "$case2_ok" = true ]; then
-  pass "2: foreign-session content is rejected by the transcribed check, and the live check still exists in orchestrate.md"
+  pass "2: foreign-session content is rejected by the transcribed check, and mt_state_file is always freshly initialized in SKILL.md (making the scenario structurally unreachable)"
 else
   fail "2: foreign-session-detection case failed (see INFO lines above)"
 fi
