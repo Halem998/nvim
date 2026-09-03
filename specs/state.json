@@ -615,11 +615,12 @@
   ],
   "completed_projects": [],
   "repository_health": {
-    "last_assessed": "2026-08-25T22:45:30Z",
+    "last_assessed": "2026-09-03T16:25:15Z",
     "todo_count": 44,
     "fixme_count": 2,
     "build_errors": 0,
-    "status": "healthy"
+    "status": "healthy",
+    "phantom_paths": 0
   },
   "memory_health": {
     "last_distilled": "2026-08-09T00:00:00Z",
