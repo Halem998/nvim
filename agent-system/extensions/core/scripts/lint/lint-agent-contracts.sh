@@ -312,12 +312,9 @@ check_c_no_task_references_bullet() {
 # file's full terminal-metadata behavior, not inferred from absence alone:
 #   - core/agents/code-reviewer-agent.md: console-only bullet-summary return, no file-based
 #     metadata exchange anywhere in the file.
-#   - core/agents/synthesis-agent.md: Output Contract states the lead uses only its compact
-#     console summary for postflight metadata; never writes .return-meta.json.
 #   - literature/agents/literature-agent.md: zero occurrences of ".return-meta.json" anywhere.
 EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS=(
   "agent-system/extensions/core/agents/code-reviewer-agent.md"
-  "agent-system/extensions/core/agents/synthesis-agent.md"
   "agent-system/extensions/literature/agents/literature-agent.md"
 )
 

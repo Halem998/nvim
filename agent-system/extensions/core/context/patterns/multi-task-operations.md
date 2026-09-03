@@ -350,13 +350,7 @@ Skill results (text summaries):
 
 ---
 
-## 7. Team Mode Is Not a Flag Here
-
-`--team` is not a flag on `/research`, `/plan`, or `/implement`, in single-task or multi-task
-form. There is no combined multi-task-plus-team mode on these commands. Team mode is
-`/orchestrate`'s flag, served by `skill-orchestrate`'s Stage 3.6/3.6a fan-out — see this
-document's own multi-task-`/orchestrate`-scoped "`--team` Flag Not Supported" section below for
-how `/orchestrate`'s own multi-task mode relates to it.
+## 7. Flag Compatibility
 
 ### Flag Compatibility Table
 
@@ -636,15 +630,6 @@ footprint-aware wave-computation logic is needed for tasks created together in t
   Stage MT-3 (step 4.5): before dispatching a wave/cycle with 2+ tasks, compare `file_scope`
   pairwise and defer the lower-priority task if an overlap has no `dependencies[]` edge.
 
-**Note on `--team`**: multi-task `/orchestrate` (this document's subject) does not support
-`--team` (see "`--team` Flag Not Supported" above), so there is no multi-task `/orchestrate
---team` footprint concern at the task level. The analogous `--team` footprint concern at the
-**within-task, phase-level** used to be handled by the now-deleted per-mode team-implement
-skill's own `infer_from_file_overlap(phase, phases)`. That phase-level application is retired
-with no successor: single-task `skill-orchestrate`'s Stage 3.6a team fan-out does not run
-file-overlap inference at all — it derives teammate waves from the plan's own **Dependency
-Analysis** table, falling back to per-phase **Depends on**: fields.
-
 ### Failed Predecessor Handling
 
 A failed task in Wave N causes its **direct dependents** to be skipped in Wave N+1 (and transitively in later waves). Failure does NOT propagate sideways -- other tasks in Wave N that succeeded do NOT become failed.
@@ -660,10 +645,6 @@ This ensures a clean failure boundary: only the dependency chain of the failed t
 
 The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) applies uniformly to all tasks in the batch. Each `skill-orchestrate` invocation receives the same `focus_prompt` value. Per-task focus prompts are not supported; run separate `/orchestrate` commands for different focus areas.
 
-### `--team` Flag Not Supported
-
-`/orchestrate` does not support the `--team` flag. Team mode adds vertical parallelism (multiple agents per task), which conflicts with the wave orchestration model where each task's lifecycle must complete fully before dependents begin. Mixing team parallelism with wave sequencing would require complex state tracking beyond the current design scope.
-
 ### Dispatch Model Comparison
 
 | Property | `/research`, `/plan`, `/implement` | `/orchestrate` |
@@ -672,7 +653,6 @@ The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) 
 | Dispatch model | Pure parallel (all tasks at once) | Wave dispatch (topological order) |
 | Dependency awareness | None (each phase is independent) | Yes (intra-batch dependency graph) |
 | Failed task impact | No cross-task impact | Blocks direct dependents in later waves |
-| Team mode support | No | Single-task only (`--team`) |
 | Batch session ID | Single ID, per-task suffix | Single ID, per-task suffix |
 | Per-task skill | Routed by task_type | Always `skill-orchestrate` |
 | Parallelism | All validated tasks simultaneously | Tasks within each wave simultaneously |
@@ -682,7 +662,6 @@ The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) 
 ## See Also
 
 - `checkpoint-execution.md` -- Three-checkpoint command flow (GATE IN, DELEGATE, GATE OUT)
-- `team-orchestration.md` -- Wave-based parallel agent spawning (precedent for parallel Skill/Task calls)
 - `skill-lifecycle.md` -- Self-contained skill lifecycle management
 - `routing.md` -- `parse_ranges()` function and task-type-based routing tables
 - `.claude/commands/orchestrate.md` -- Full orchestrate command implementation with MULTI-TASK DISPATCH section

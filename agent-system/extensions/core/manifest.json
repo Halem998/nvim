@@ -28,8 +28,7 @@
       "meta-builder-agent.md",
       "planner-agent.md",
       "reviser-agent.md",
-      "spawn-agent.md",
-      "synthesis-agent.md"
+      "spawn-agent.md"
     ],
     "commands": [
       "errors.md",

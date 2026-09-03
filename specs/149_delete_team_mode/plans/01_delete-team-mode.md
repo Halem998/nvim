@@ -279,32 +279,50 @@ never exported (or vice versa). The six sites are one indivisible objective.
 
 ---
 
-### Phase 4: Delete synthesis-agent, its exclusive docs, and all registrations [NOT STARTED]
+### Phase 4: Delete synthesis-agent, its exclusive docs, and all registrations [COMPLETED]
 
 **Goal**: `synthesis-agent` and the two team-exclusive context docs are gone with no dangling
 registration or cross-reference.
 
 **Tasks**:
-- [ ] Gate: `grep -rn "synthesis-agent" agent-system/extensions/core` must show only the
+- [x] Gate: `grep -rn "synthesis-agent" agent-system/extensions/core` must show only the
       registration/doc sites listed below -- zero dispatch callers. If a live caller exists,
       STOP and record why (explicit MUST NOT)
-- [ ] Delete `agents/synthesis-agent.md`
-- [ ] Delete `context/formats/team-metadata-extension.md`
-- [ ] Delete `context/patterns/team-orchestration.md`
-- [ ] Remove the `"synthesis-agent.md"` entry from `manifest.json`
-- [ ] Remove both `index-entries.json` entries (the `team-metadata-extension.md` and
+- [x] Delete `agents/synthesis-agent.md`
+- [x] Delete `context/formats/team-metadata-extension.md`
+- [x] Delete `context/patterns/team-orchestration.md`
+- [x] Remove the `"synthesis-agent.md"` entry from `manifest.json`
+- [x] Remove both `index-entries.json` entries (the `team-metadata-extension.md` and
       `team-orchestration.md` blocks, each carrying a `load_when.agents: ["synthesis-agent"]`)
-- [ ] Remove the dangling "See Also" bullet pointing at `team-orchestration.md` in
+- [x] Remove the dangling "See Also" bullet pointing at `team-orchestration.md` in
       `context/patterns/multi-task-operations.md`, and the `Team mode support | No | Single-task
       only` table row in the same file (the row compares dispatch models and becomes meaningless,
-      not merely dangling)
-- [ ] Remove the "Related Patterns" bullet pointing at `team-orchestration.md` in
-      `context/patterns/context-protective-lead.md`
-- [ ] `grep -rn "synthesis-agent\|team-orchestration.md\|team-metadata-extension.md"
+      not merely dangling) *(deviation: altered — a full re-grep of this file surfaced far more
+      team-mode content than the plan's narrow two-item enumeration: a whole "## 7. Team Mode Is
+      Not a Flag Here" section, a "### `--team` Flag Not Supported" section, and a "Note on
+      `--team`" paragraph, none of which are in any documented false-positive class and all of
+      which would fail the Phase 8 acceptance grep's `--team`/`teammate` patterns. All were
+      removed/reworded in this same commit rather than deferred)*
+- [x] Remove the "Related Patterns" bullet pointing at `team-orchestration.md` in
+      `context/patterns/context-protective-lead.md` *(deviation: altered — this file's scope was
+      also far larger than the plan's single-bullet enumeration: Principle 5, the anti-pattern
+      table, "Example 3: Team Synthesis", the whole "Synthesis Delegation Pattern" section, a
+      Handoff Pattern paragraph, a Context Budget table row, and two checklist items all used
+      "team"/"teammate" framing for what is a generic delegate-synthesis principle. Reworded to
+      hypothetical/generic language (no team-specific mechanism currently exists to illustrate
+      it) rather than left as dangling claims about a deleted feature)*
+- [x] Fix `scripts/lint/lint-agent-contracts.sh`'s `EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS`
+      array and its preceding comment, both of which named `core/agents/synthesis-agent.md` by
+      path — a site the report did not enumerate, surfaced by this phase's own opening
+      `grep -rn "synthesis-agent"` gate. Left unfixed, the array would reference a deleted file
+      (harmless at runtime since the discovery loop no longer visits it, but a stale claim);
+      removed for cleanliness *(not in original plan enumeration, added per the Scope Hypothesis
+      contingency)*
+- [x] `grep -rn "synthesis-agent\|team-orchestration.md\|team-metadata-extension.md"
       agent-system/extensions/` returns zero hits in core (the `merge-sources/claudemd.md` row is
       Phase 7's; note it if it still shows)
-- [ ] `jq empty manifest.json index-entries.json` and `bash scripts/tests/test-index-entries-schema.sh`
-- [ ] `bash scripts/lint/lint-routing-wiring.sh` and `bash scripts/tests/test-deploy-orphans.sh`
+- [x] `jq empty manifest.json index-entries.json` and `bash scripts/tests/test-index-entries-schema.sh`
+- [x] `bash scripts/lint/lint-routing-wiring.sh` and `bash scripts/tests/test-deploy-orphans.sh`
 
 **Timing**: 45 minutes
 

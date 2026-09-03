@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Delete synthesis-agent, its exclusive docs, and all registrations",
+  "started_at": "2026-09-02T00:30:00Z",
+  "last_updated": "2026-09-02T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate: grep synthesis-agent for zero live dispatch callers", "status": "done", "files_touched": [], "note": "grep -rn synthesis-agent agent-system/extensions/core showed only registration sites (manifest.json, index-entries.json x2, agents/synthesis-agent.md itself, scripts/lint/lint-agent-contracts.sh exclusion array, merge-sources/claudemd.md, context/reference/skill-agent-mapping.md) -- zero dispatch callers, since Phase 1 already removed the only caller. Gate passed."},
+    {"id": 2, "description": "Delete agents/synthesis-agent.md, context/formats/team-metadata-extension.md, context/patterns/team-orchestration.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/synthesis-agent.md", "agent-system/extensions/core/context/formats/team-metadata-extension.md", "agent-system/extensions/core/context/patterns/team-orchestration.md"]},
+    {"id": 3, "description": "Remove manifest.json and index-entries.json registrations", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Fix multi-task-operations.md and context-protective-lead.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/multi-task-operations.md", "agent-system/extensions/core/context/patterns/context-protective-lead.md"], "note": "Scope was much larger than the plan's two enumerated bullets -- see plan checklist deviation annotations for the full list of sections removed/reworded in each file."},
+    {"id": 5, "description": "Fix lint-agent-contracts.sh dangling exclusion entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"], "note": "Not in original plan enumeration; surfaced by the phase's own opening grep gate."},
+    {"id": 6, "description": "Verification: jq validity, schema test, routing-wiring lint, deploy-orphans test", "status": "done", "files_touched": [], "note": "All green: jq empty on both JSON files, test-index-entries-schema.sh (9 passed/0 failed), lint-routing-wiring.sh (259 passed/0 failed), test-deploy-orphans.sh (5 passed/0 failed, including Assertion E confirming the real manifest deploys with zero orphans post-deletion), lint-agent-contracts.sh (101 passed/0 failed/0 warnings)."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.7", "description": "multi-task-operations.md See Also bullet + table row", "type": "altered", "reason": "Actual team-mode scope in this file was a whole section (## 7) plus a subsection (### --team Flag Not Supported) plus a Note paragraph, none in any false-positive class."},
+    {"task_id": "4.8", "description": "context-protective-lead.md Related Patterns bullet", "type": "altered", "reason": "Actual team-mode scope in this file spanned Principle 5, an anti-pattern row, an entire example, an entire section (Synthesis Delegation Pattern), a handoff paragraph, a budget table row, and two checklist items."}
+  ]
+}

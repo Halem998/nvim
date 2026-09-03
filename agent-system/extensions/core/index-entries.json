@@ -491,28 +491,6 @@
       }
     },
     {
-      "path": "formats/team-metadata-extension.md",
-      "domain": "core",
-      "subdomain": "formats",
-      "summary": "Metadata extensions for team mode",
-      "line_count": 119,
-      "keywords": [
-        "format",
-        "team",
-        "metadata"
-      ],
-      "topics": [
-        "orchestration"
-      ],
-      "load_when": {
-        "agents": [
-          "synthesis-agent"
-        ],
-        "commands": [],
-        "task_types": []
-      }
-    },
-    {
       "path": "guides/extension-development.md",
       "domain": "core",
       "subdomain": "guides",
@@ -1204,28 +1182,6 @@
         "commands": []
       },
       "on_demand": true
-    },
-    {
-      "path": "patterns/team-orchestration.md",
-      "domain": "core",
-      "subdomain": "patterns",
-      "summary": "Team mode orchestration patterns",
-      "line_count": 146,
-      "keywords": [
-        "patterns",
-        "team",
-        "orchestration"
-      ],
-      "topics": [
-        "orchestration"
-      ],
-      "load_when": {
-        "agents": [
-          "synthesis-agent"
-        ],
-        "commands": [],
-        "task_types": []
-      }
     },
     {
       "path": "patterns/thin-wrapper-skill.md",
