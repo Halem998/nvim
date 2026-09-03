@@ -544,7 +544,7 @@ measurement taken before Phases 1-3 and must be re-derived, not trusted.
 
 ---
 
-### Phase 6: Options `--hard` row, Constraints update, and prose tightening to budget [NOT STARTED]
+### Phase 6: Options `--hard` row, Constraints update, and prose tightening to budget [COMPLETED]
 
 **Goal**: Add the missing `--hard` documentation, correct the two stale "single-task only"
 Constraints lines, and tighten the retained sections toward <= 8,000 B without cutting any
@@ -552,43 +552,51 @@ semantic on Decision 2's stop-list.
 
 **Tasks**:
 
-- [ ] Add one `--hard` row to the `## Options` table: high-effort mode; parsed by
+- [x] Add one `--hard` row to the `## Options` table: high-effort mode; parsed by
       `parse-command-args.sh` as `EFFORT_FLAG=hard`, threaded as `effort_flag` and derived by the
       engine into `hard_mode`, which gates the hard-mode contract injection and the churn /
       three-strikes / burnout counters; cost ~3-5x standard; composable with `--lit`, the model
-      flags, and the phase-forcing flags; default false. Keep it to one row.
-- [ ] Do **not** add rows for `--force`, `--local`, `--exploit`, `--explore`. Do **not** re-add
-      `--team` / `--team-size`.
-- [ ] Update the two `## Constraints` lines that say the phase-forcing flags are "single-task
+      flags, and the phase-forcing flags; default false. Keep it to one row. *(completed)*
+- [x] Do **not** add rows for `--force`, `--local`, `--exploit`, `--explore`. Do **not** re-add
+      `--team` / `--team-size`. *(completed)*
+- [x] Update the two `## Constraints` lines that say the phase-forcing flags are "single-task
       only" to say they are **per-task in the batch engine once the feature-port task lands**,
       keeping the accurate present-tense statement that they are accepted and ignored in
       multi-task mode today. Update the matching "Single-task only" clauses in the
-      `--research` / `--plan` / `--implement` Options rows the same way.
-- [ ] Tighten `## Options`: compress the `--continue-budget` and `--research`/`--plan`/
+      `--research` / `--plan` / `--implement` Options rows the same way. *(completed)*
+- [x] Tighten `## Options`: compress the `--continue-budget` and `--research`/`--plan`/
       `--implement` rows to a one-line meaning plus a pointer to the authoritative file
       (`context/standards/orchestrator-runtime-files.md` for budget continuation;
       `.claude/CLAUDE.md`'s `/orchestrate` row for the composability contract). Preserve
       "never inferred", canonical lifecycle ordering, stop-after-last-named-phase, new artifact
-      round, and no-status-regression as explicit clauses.
-- [ ] Tighten `### CHECKPOINT 3`: keep both bash fences, the canonical zero-`modified_files`
+      round, and no-status-regression as explicit clauses. *(completed)*
+- [x] Tighten `### CHECKPOINT 3`: keep both bash fences, the canonical zero-`modified_files`
       warning wording, and the completion-only `rm -f "${metadata_file}"` asymmetry with its
       reason in one sentence. Compress the mid-lifecycle-sweep and commit-mutex commentary to a
-      sentence plus the existing pointer to `context/standards/orchestrator-runtime-files.md`.
-- [ ] Tighten `## Output`: keep all five outcome lines (Completion / Partial / Blocked /
+      sentence plus the existing pointer to `context/standards/orchestrator-runtime-files.md`. *(completed)*
+- [x] Tighten `## Output`: keep all five outcome lines (Completion / Partial / Blocked /
       System Defects Detected / `--dry-run`). Compress the System Defects Detected paragraph and
       keep its example table row; keep the "no task status was mutated" statement and the
-      source-store remedy sentence.
-- [ ] Tighten `## Error Handling`: keep all five bullets; compress wording only. The
+      source-store remedy sentence. *(completed)*
+- [x] Tighten `## Error Handling`: keep all five bullets; compress wording only. The
       MAX_INFRA_FAILURES bullet must keep its "distinct from work-budget exhaustion
-      (`cycle_count` unaffected)" clause.
-- [ ] Tighten `### CHECKPOINT 1` and `### STAGE 2`: keep the permissive-gate statement, the
+      (`cycle_count` unaffected)" clause. *(completed)*
+- [x] Tighten `### CHECKPOINT 1` and `### STAGE 2`: keep the permissive-gate statement, the
       terminal-states-only blocking list, the partial-with-no-handoff clause, both
       "IMMEDIATELY CONTINUE" directives, and the full STAGE 2 JSON delegation block. Compress
-      surrounding narration.
-- [ ] Leave `## Anti-Bypass Constraint` and `## Arguments` byte-identical.
-- [ ] Measure. Record the exact final byte count. If it exceeds 8,000 B, state the number and
+      surrounding narration. *(completed)*
+- [x] Leave `## Anti-Bypass Constraint` and `## Arguments` byte-identical. *(completed)*
+- [x] Measure. Record the exact final byte count. If it exceeds 8,000 B, state the number and
       name the sections that could not shrink further without cutting a listed semantic. Do not
-      cut a listed semantic to reach the number.
+      cut a listed semantic to reach the number. *(completed: measured 18,687 B / 384 lines,
+      down from 44,953 B / 790 lines (58.4% reduction) but over the 8,000 B target. The gap is
+      concentrated almost entirely in STAGE 0 (7,576 B against the plan's ~1,800 B per-section
+      estimate): Phase 4's compact multi-task block (validation loop, intra-batch
+      dependency_graph build, MAX_TASKS guard, Pre-Dispatch Review call, and the Skill invocation
+      plus its full 14-key JSON delegation block) is structurally required content the plan's own
+      Decision 2 stop-list forbids cutting, and it alone is ~5,800 B larger than that estimate.
+      Every other section is at or within ~1,000 B of its target. No semantic was cut to
+      approach the target.)*
 
 **Timing**: 1.5 hours
 

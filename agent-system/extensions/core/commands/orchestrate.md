@@ -22,12 +22,14 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 ## Constraints
 
 - Multi-task mode uses dependency-aware wave dispatch.
-- `--research`/`--plan`/`--implement` (phase-forcing flags) are single-task only: in multi-task
-  mode they are accepted and ignored, with a loud notice, rather than partially wiring
-  per-task phase forcing into wave dispatch.
-- No confirmation gates between lifecycle phases
-- Terminates automatically on success, MAX_CYCLES exceeded, MAX_INFRA_FAILURES exceeded (repeated Agent-tool transport/API failures — a distinct connectivity-vs-work-budget diagnosis), or unrecoverable blocker
-- In multi-task mode, failure in one task does not block other tasks in the same wave, but DOES block dependent tasks in later waves
+- `--research`/`--plan`/`--implement` (phase-forcing flags): accepted and ignored today in
+  multi-task mode, with a loud notice — **per-task in the batch engine once the feature-port
+  task lands**, not partially wired now.
+- No confirmation gates between lifecycle phases.
+- Terminates on success, `MAX_CYCLES` exceeded, `MAX_INFRA_FAILURES` exceeded (repeated Agent-tool
+  transport/API failures — distinct from work-budget exhaustion), or an unrecoverable blocker.
+- Multi-task mode: a failed task never blocks siblings in its own wave, but DOES block dependents
+  in later waves.
 
 ## Options
 
@@ -35,18 +37,19 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing | false |
-| `--allow-self-modifying` | Opt-in bypass of the self-modification admission gate for this invocation only; requires deliberate human intent — never a general-purpose weakening | false |
-| `--allow-scope-collision` | Opt-in bypass of the CROSS-BATCH `file_scope_collision` admission gate for this invocation only; never bypasses an `in_batch` collision — requires deliberate human intent — never a general-purpose weakening | false |
-| `--continue-budget` | Explicit, operator-typed authorization to continue past an exhausted `MAX_CYCLES` work-cycle budget. Never inferred automatically (not from `session_id`, not from mtime) — a genuinely exhausted budget without this flag refuses immediately with an honest message instead of silently no-op looping. See `context/standards/orchestrator-runtime-files.md`'s "`cycle_count` semantics and the budget-continuation override" section | false |
+| `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
+| `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
+| `--continue-budget` | Authorization to continue past an exhausted `MAX_CYCLES` budget. **Never inferred automatically** (not from `session_id`, not from mtime) — without it, refuses with an honest message. See `orchestrator-runtime-files.md`'s budget-continuation-override section | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
-| `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches (blocker escalation, drift inspection, churn audit, plan revision) retain their frontmatter model | false |
+| `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, model flags, and the phase-forcing flags | false |
+| `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches retain their frontmatter model | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
 | `--fable` | Use Fable model (claude-fable-5) | false |
-| `--research` | Force a research round to run even if the task has already progressed past it (e.g. re-research a `[PLANNED]` task). Composable with `--plan`/`--implement`; the composed sequence is ordered by canonical lifecycle order (research, plan, implement) regardless of the order the flags are typed, and STOPS after the last named phase rather than continuing to status-derived dispatch. Opens a new `MM_` artifact round and never regresses the task's status. Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
-| `--plan` | Force a plan round to run even if the task has already progressed past it. Composable with `--research`/`--implement` on the same terms as `--research` above (canonical ordering, stop-after-last-named-phase, new artifact round, no status regression). Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
-| `--implement` | Force an implement round to run even if the task has already progressed past it. Composable with `--research`/`--plan` on the same terms as `--research` above (canonical ordering, stop-after-last-named-phase, new artifact round, no status regression). Single-task only — accepted and ignored (with a loud notice) in multi-task mode | false |
+| `--research` | Force a research round even if the task progressed past it. Composable with `--plan`/`--implement`: canonical lifecycle order (research, plan, implement) regardless of typed order, STOPS after the last named phase, opens a new `MM_` artifact round, never regresses status. Accepted and ignored (loud notice) in multi-task mode today — per-task in the batch engine once the feature-port task lands | false |
+| `--plan` | Force a plan round even if the task progressed past it. Composable on the same terms as `--research` above. Accepted and ignored (loud notice) in multi-task mode today — per-task once the feature-port task lands | false |
+| `--implement` | Force an implement round even if the task progressed past it. Composable on the same terms as `--research` above. Accepted and ignored (loud notice) in multi-task mode today — per-task once the feature-port task lands | false |
 
 ## Anti-Bypass Constraint
 
@@ -67,34 +70,26 @@ focus_prompt="${FOCUS_PROMPT:-}"
 ```
 
 Each parsed flag becomes a delegation-context key, threaded unchanged into both the single-task
-STAGE 2 JSON and the multi-task Skill invocation below. All are **consumer-side-only**: none is
-ever forwarded to `orchestrate-batch-admit.sh` itself.
+STAGE 2 JSON and the multi-task Skill invocation below. All are **consumer-side-only** — never
+forwarded to `orchestrate-batch-admit.sh`:
 
-- `allow_self_modifying` (`ALLOW_SELF_MODIFYING_FLAG`, default `false`) — opt-in bypass of the
-  self-modification admission gate for this invocation only.
-- `allow_scope_collision` (`ALLOW_SCOPE_COLLISION_FLAG`, default `false`) — opt-in bypass of the
-  CROSS-BATCH `file_scope_collision` gate only (never `in_batch`).
-- `continue_budget` (`CONTINUE_BUDGET_FLAG`, default `false`) — explicit, operator-typed
-  authorization to continue past an exhausted `MAX_CYCLES` budget; read by `skill-orchestrate`'s
-  own Stage 2. **Never inferred automatically** (not from `session_id`, not from mtime) — a
-  genuinely exhausted budget without this flag refuses immediately with an honest message. See
-  `context/standards/orchestrator-runtime-files.md`'s "`cycle_count` semantics and the
-  budget-continuation override" section.
-- `clean_flag` (`CLEAN_FLAG`, default `false`) — suppresses `skill-orchestrate`'s own automatic
-  memory retrieval (Stage 3.5).
-- `effort_flag` (`EFFORT_FLAG`, default `""`) — reasoning-depth guidance for every lifecycle
-  dispatch.
-- `model_flag` (`MODEL_FLAG`, default `""`, not `null`) — selects the model family for every
-  lifecycle dispatch.
-- `force_phases` (`FORCE_PHASES_FLAG`, default `""`) — the composable `--research`/`--plan`/
-  `--implement` surface (A2). Single-task mode: read only by `skill-orchestrate`'s own Stage 2b.
-  Multi-task mode: threaded for diagnostics only — Stage MT-1 emits an accepted-and-ignored
-  notice and never fans it into per-task dispatch.
+- `allow_self_modifying` (default `false`) — opt-in bypass of the self-modification gate, this
+  invocation only.
+- `allow_scope_collision` (default `false`) — opt-in bypass of the CROSS-BATCH
+  `file_scope_collision` gate only (never `in_batch`).
+- `continue_budget` (default `false`) — authorization to continue past an exhausted `MAX_CYCLES`
+  budget, read by `skill-orchestrate`'s Stage 2. **Never inferred automatically** (not from
+  `session_id`, not from mtime) — without it, an exhausted budget refuses with an honest message.
+  See `orchestrator-runtime-files.md`'s budget-continuation-override section.
+- `clean_flag` (default `false`) — suppresses Stage 3.5's automatic memory retrieval.
+- `effort_flag` (default `""`) / `model_flag` (default `""`, not `null`) — reasoning-depth
+  guidance and model-family selection for every lifecycle dispatch.
+- `force_phases` (default `""`) — the composable `--research`/`--plan`/`--implement` surface (A2).
+  Single-task: read only by `skill-orchestrate`'s Stage 2b. Multi-task: diagnostics only — Stage
+  MT-1 emits an accepted-and-ignored notice, never fanned into per-task dispatch.
 
-**Dry-run short-circuit** (checked immediately after `parse-command-args.sh` is sourced, and
-**before** the `len(TASK_NUMBERS)` branch below): `SESSION_ID` may be unset at this point — the
-flag is parsed before CHECKPOINT 1: GATE IN, which is where a session id is normally minted — so
-`--session` is passed to the report script only when non-empty.
+**Dry-run short-circuit** (before the `len(TASK_NUMBERS)` branch): `SESSION_ID` may be unset here
+(minted at CHECKPOINT 1), so `--session` is passed to the report only when non-empty.
 
 ```bash
 if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
@@ -107,18 +102,15 @@ if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
 fi
 ```
 
-The report uses the SAME read-only admission analysis the live path uses — naming
-`scripts/orchestrate-batch-admit.sh` (file_scope collisions) and
-`scripts/orchestrate-triage-classify.sh` (handoff-triage routing) by path — so the printed wave
-numbers are the same ones a live run would actually dispatch. Neither schema is restated here;
-see each script's own header comment for its field-by-field contract.
+The report uses the SAME read-only admission analysis the live path uses (naming
+`scripts/orchestrate-batch-admit.sh` and `scripts/orchestrate-triage-classify.sh` by path), so
+the printed verdicts match what a live run would actually dispatch. Neither schema is restated
+here — see each script's own header comment.
 
-**Dry-run prohibition block**: in dry-run mode, this command MUST NOT continue to multi-task
+**Dry-run prohibition block**: in dry-run mode this command MUST NOT continue to multi-task
 dispatch below, MUST NOT reach CHECKPOINT 1 (GATE IN), MUST NOT invoke the Skill or Agent tools,
-MUST NOT acquire a task lock, and MUST NOT run CHECKPOINT 3 (COMMIT). This mirrors the Anti-Bypass
-Constraint above: just as that constraint prohibits running lifecycle phases without delegating
-through `skill-orchestrate`, this constraint prohibits a `--dry-run` invocation from reaching ANY
-lifecycle phase at all — the STOP HERE above is absolute, not advisory.
+MUST NOT acquire a task lock, and MUST NOT run CHECKPOINT 3 (COMMIT) — mirroring the Anti-Bypass
+Constraint above, the STOP HERE is absolute, not advisory.
 
 If `len(TASK_NUMBERS) == 1`: extract `task_number=$(echo "$TASK_NUMBERS" | awk '{print $1}')` and fall through to CHECKPOINT 1: GATE IN.
 
@@ -148,17 +140,16 @@ done
 
 Report skipped tasks as warnings. If no validated tasks remain, ABORT with error.
 
-**Pre-Dispatch Review** (advisory-loud, never blocking — retained as a one-line call; it is the
-only visibility surface for out-of-batch/nonexistent `dependencies[]` edges before they are
-narrowed away below): `--dry-run` remains the abort-before-dispatch surface for a human who wants
-the full picture; this call never aborts on its own account.
+**Pre-Dispatch Review** (advisory-loud, never blocking — the only visibility surface for
+out-of-batch/nonexistent `dependencies[]` edges before they are narrowed away below; `--dry-run`
+remains the abort-before-dispatch surface for a human who wants the full picture):
 
 ```bash
 bash .claude/scripts/orchestrate-predispatch-review.sh "${validated_tasks[@]}"
 ```
 
-Build the intra-batch dependency graph — restricted to dependencies on tasks also in
-`validated_tasks` (the raw, unfiltered edges were already reviewed above):
+Build the intra-batch dependency graph (dependencies on tasks also in `validated_tasks` — the
+raw, unfiltered edges were already reviewed above):
 
 ```bash
 declare -A predecessors
@@ -181,8 +172,7 @@ for task_num in "${validated_tasks[@]}"; do
 done
 ```
 
-**MAX_TASKS Guard** (see `docs/architecture/orchestrate-state-machine.md`'s
-`### Batch Size Cap (MAX_TASKS)` for the documented contract this executes):
+**MAX_TASKS Guard** (contract: `orchestrate-state-machine.md`'s `### Batch Size Cap`):
 
 ```bash
 task_count=${#validated_tasks[@]}
@@ -194,9 +184,9 @@ if [ "$task_count" -gt "$MAX_TASKS" ]; then
 fi
 ```
 
-`waves` is a **diagnostic echo, not a schedule the engine consumes** — `skill-orchestrate`
-re-derives eligibility fresh every cycle from `dependency_graph` and current task statuses (Stage
-MT-3 step 4.5), never from a pre-computed wave. It is passed as one row of all validated tasks:
+`waves` is a **diagnostic echo, not a schedule the engine consumes** — eligibility is re-derived
+fresh every cycle from `dependency_graph` (Stage MT-3 step 4.5). Passed as one row of all
+validated tasks:
 
 ```bash
 waves_json=$(jq -n --argjson t "$(printf '%s\n' "${validated_tasks[@]}" | jq -R 'tonumber' | jq -s '.')" '[$t]')
@@ -207,8 +197,7 @@ batch_session_id="$(common_session_id)"
 ```
 
 Invoke a single `skill-orchestrate` instance with all task context — it manages wave-by-wave
-dispatch, per-task postflight, in-flight session registry annotation (register at Stage MT-1,
-release at Stage MT-5), and writes results to
+dispatch, per-task postflight, session-registry annotation, and writes results to
 `specs/.orchestrator-multi-state-${batch_session_id}.json`:
 
 ```
@@ -238,12 +227,11 @@ The delegation context passed to the skill must include:
 }
 ```
 
-The skill emits the consolidated batch output itself (Stage MT-5) once its lifecycle-cycling loop
-exits — see `context/patterns/orchestrate-batch-results-template.md`.
+The skill emits the consolidated batch output itself (Stage MT-5) — see
+`orchestrate-batch-results-template.md`.
 
 **After the Skill invocation returns, STOP. Do not continue to CHECKPOINT 1** — multi-task mode
-is fully handled inside this single `skill-orchestrate` call, including its own consolidated
-output.
+is fully handled inside this single call.
 
 ---
 
@@ -255,22 +243,19 @@ source .claude/scripts/command-gate-in.sh "$task_number" "orchestrate"
 # Displays: [ORCHESTRATE] Task {N}: {project_name}
 ```
 
-**Permissive gate**: Unlike `/implement`, this command does NOT require a plan file.
-The state machine handles all lifecycle phases starting from wherever the task currently is.
+**Permissive gate**: unlike `/implement`, no plan file is required — the state machine handles
+all lifecycle phases from wherever the task currently is.
 
-**Only blocks on terminal states**: `completed`, `abandoned`, `expanded`.
-All non-terminal states (not_started, researched, planned, implementing, partial, blocked) are
-valid entry points for the orchestrator — without exception, this includes a `partial` task with
-no handoff and no blockers (the normal shape left by a base-mode dispatch), which the state
-machine dispatches implement for rather than treating as a dead end.
+**Only blocks on terminal states** (`completed`, `abandoned`, `expanded`). Every other status
+(not_started, researched, planned, implementing, partial, blocked) is a valid entry point —
+without exception, a `partial` task with no handoff and no blockers (the normal shape left by a
+base-mode dispatch) dispatches implement rather than being treated as a dead end.
 
 **On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 2.
 
 ### STAGE 2: DELEGATE
 
-**EXECUTE NOW**: After CHECKPOINT 1 completes, immediately invoke the Skill tool.
-
-Invoke `skill-orchestrate` via the Skill tool:
+**EXECUTE NOW**: immediately invoke the Skill tool.
 
 ```
 skill: "skill-orchestrate"
@@ -314,20 +299,16 @@ bash .claude/scripts/command-gate-out.sh "$task_number" "orchestrate" "$SESSION_
 ### CHECKPOINT 3: COMMIT
 
 Apply the `implement`-equivalent scope from `.claude/context/standards/git-staging-scope.md`
-(task dir + self-reported `modified_files`) and commit via `.claude/scripts/git-commit-scoped.sh`,
-the single sanctioned implementation of path-scoped, mutex-serialized committing — under-stage,
-never a repo-wide add. The helper injects the canonical ephemeral-runtime-file exclusion set from
-that same standard automatically for the task-directory pathspec below. This is the single most
-exposed staging site to the mid-lifecycle-sweep hazard `.claude/context/standards/
-orchestrator-runtime-files.md` documents: this checkpoint runs every cycle of a still-running
-`/orchestrate` loop, well before the loop guard's own termination-only cleanup fires. Serializing
-through the commit mutex also matters here because this per-cycle checkpoint can run concurrently
-with another in-flight task's own commit sharing the same index.
+(task dir + self-reported `modified_files`) and commit via `.claude/scripts/git-commit-scoped.sh`
+— the single sanctioned implementation of path-scoped, mutex-serialized committing (under-stage,
+never a repo-wide add; injects the canonical ephemeral-runtime-file exclusion set automatically).
+This checkpoint runs every cycle of a still-running loop, well before the loop guard's own
+termination-only cleanup, and its commit mutex serializes against another in-flight task's commit
+sharing the same index — see `orchestrator-runtime-files.md`'s mid-lifecycle-sweep hazard.
 
 The zero-`modified_files` warning below is the canonical, un-suffixed wording from
-`.claude/context/standards/git-staging-scope.md`'s "Fail-Safe Direction" section — this is the
-single-task site, so it never carries the task-number suffix reserved for the multi-task per-task
-site. Do not invent a second wording here.
+`git-staging-scope.md`'s "Fail-Safe Direction" section (single-task site — never the task-number
+suffix reserved for the multi-task per-task site). Do not invent a second wording here.
 
 ```bash
 task_dir="specs/${PADDED_NUM}_${PROJECT_NAME}"
@@ -349,13 +330,10 @@ bash .claude/scripts/git-commit-scoped.sh \
   --session "{SESSION_ID}" \
   --honest-index-rows "{N}" \
   -- "${stage_paths[@]}"
-# Deletion is scoped to the completion branch ONLY. .return-meta.json was staged and committed
-# above (its modified_files were already read into stage_paths above), and this is the completion
-# outcome's own last consumer of the file. Do NOT add this deletion to the partial branch below:
-# a still-running /orchestrate loop's next cycle recovers its outcome via
-# orchestrate-stage5-gates.sh, which reads .return-meta.json as a freshness-windowed fallback
-# (gated on mtime against dispatch_start_ts, so a stale leftover is never mistaken for a fresh
-# outcome) -- deleting it on the paused/partial branch would discard that recovery path.
+# Deletion is completion-branch-only: .return-meta.json is already staged/committed above (its
+# modified_files were read into stage_paths above), and orchestrate-stage5-gates.sh's
+# mtime-freshness-windowed outcome-recovery fallback (used by a still-running loop's next cycle)
+# would lose its source if this ran on the partial branch below -- never add it there.
 rm -f "${metadata_file}"
 ```
 
@@ -366,8 +344,8 @@ bash .claude/scripts/git-commit-scoped.sh \
   --session "{SESSION_ID}" \
   --honest-index-rows "{N}" \
   -- "${stage_paths[@]}"
-# NOTE: deliberately no .return-meta.json deletion here -- see the completion branch's comment
-# above. The paused/partial outcome keeps the file for the next cycle's outcome recovery.
+# No .return-meta.json deletion here -- the paused/partial outcome keeps the file for the next
+# cycle's outcome recovery (see the completion branch's comment above).
 ```
 
 Commit failure is non-blocking (log and continue).
@@ -381,11 +359,10 @@ Commit failure is non-blocking (log and continue).
 **Blocked**: `Task #{N} requires manual intervention` | Blocker description | Suggested actions
 
 **System Defects Detected**: rendered only when `metadata.detected_defects` in the task's
-`.return-meta.json` is non-empty. It renders on a **Completion** outcome as readily as on a
-**Partial** one — a detection is an observation about the agent system, never a verdict on the
-task. This applies to `/orchestrate --hard` runs identically: hard mode writes the same
-`metadata.detected_defects` key from its own Stage 8 metadata merge. Same table shape as the
-batch section above, so the two renderings stay visually consistent:
+`.return-meta.json` is non-empty — on a **Completion** outcome as readily as a **Partial** one,
+since a detection is an observation about the agent system, never a verdict on the task
+(`/orchestrate --hard` writes the same key from its own Stage 8 metadata merge). Same table shape
+as the batch section, for visual consistency:
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
 |------|--------------|-------------------------|------------------|--------|
@@ -398,8 +375,10 @@ record is already in `specs/events.jsonl`. No task status was mutated because of
 
 ## Error Handling
 
-- **GATE IN Failure**: Task not found or in terminal state — return error with guidance
-- **DELEGATE Failure**: Keep current status, log error; loop guard preserved for resume
-- **GATE OUT Failure**: Missing artifacts — log warning, continue with available
-- **MAX_CYCLES Reached**: Report status, provide `/orchestrate {N}` resume instruction
-- **MAX_INFRA_FAILURES Reached**: Report a connectivity problem distinct from work-budget exhaustion (`cycle_count` unaffected), provide `/orchestrate {N}` resume instruction once connectivity is confirmed
+- **GATE IN Failure**: task not found or terminal — error with guidance
+- **DELEGATE Failure**: keep current status, log error; loop guard preserved for resume
+- **GATE OUT Failure**: missing artifacts — warn, continue with what's available
+- **MAX_CYCLES Reached**: report status, provide `/orchestrate {N}` resume instruction
+- **MAX_INFRA_FAILURES Reached**: report a connectivity problem distinct from work-budget
+  exhaustion (`cycle_count` unaffected), provide `/orchestrate {N}` resume once connectivity is
+  confirmed
