@@ -1,0 +1,355 @@
+#!/usr/bin/env bash
+# orchestrate-build-dispatch.sh — Per-dispatch context file builder for /orchestrate.
+#
+# Purpose: every dispatch site in skill-orchestrate/SKILL.md (single-task Stage 4 and the
+# multi-task MT-4 loops) used to author its own Agent-tool prompt inline: the task description,
+# the memory-context block, the literature briefing, the hard-mode contract block, the effort
+# note, the plan/report path, and the handoff anchor were all string-interpolated by the lead
+# itself. This script is the single canonical replacement: it performs Stage 3.5 (Dispatch Prep)
+# in full, gathers every additional per-dispatch input the inline recipes used to interpolate,
+# writes `specs/{NNN}_{slug}/.dispatch/{seq}.md`, and prints a one-line JSON return so the calling
+# dispatch site's own prompt can shrink to a fixed one-sentence pointer: "Read {dispatch_file}
+# first and execute it exactly."
+#
+# This is a TRANSPORT change only -- it must never change what a dispatched agent receives
+# semantically. A generated dispatch file must carry every input the inline recipe it replaces
+# would have interpolated.
+#
+# Precedent / style: follows the doc-header, usage, and exit-code conventions of
+# orchestrate-triage-classify.sh and orchestrate-recover-outcome.sh.
+#
+# Usage:
+#   orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
+#     [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
+#     [--dispatch-start-ts TS]
+#
+# where <phase> is one of: research | plan | implement
+#
+# Caller-owned, never generated here (per this task's Non-Goals -- see the plan this script
+# implements): `--seq N` (minted by the caller's own dispatch_seq counter, e.g.
+# skill_orchestrate_mint_dispatch_seq) and `--dispatch-start-ts` (the caller's own `date -u +%s`
+# capture immediately before the Agent tool call). This script only RECORDS both values into the
+# dispatch file; it never mints or stamps either one itself.
+#
+# Output: a single line of compact JSON on stdout:
+#   {"dispatch_file": "<absolute path>", "model": "<haiku|sonnet|opus|fable|>"}
+# `model` is empty (never the string "null") when --model was not passed.
+#
+# Exit codes:
+#   0 - dispatch file written successfully; JSON printed on stdout
+#   1 - task not found in state.json, or task is in a terminal state (propagated from
+#       skill_validate_input, which itself exits 1 in both cases)
+#   2 - usage error (missing/invalid arguments)
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+  cat <<'USAGE'
+Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
+         [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
+         [--dispatch-start-ts TS]
+
+<phase> is one of: research | plan | implement
+USAGE
+}
+
+if [ "$#" -lt 2 ]; then
+  usage >&2
+  exit 2
+fi
+
+task_number="$1"; shift
+phase="$1"; shift
+
+case "$phase" in
+  research|plan|implement) ;;
+  *)
+    echo "ERROR: orchestrate-build-dispatch.sh: phase must be research|plan|implement, got '$phase'" >&2
+    usage >&2
+    exit 2
+    ;;
+esac
+
+session_id=""
+dispatch_seq=""
+clean_flag="false"
+lit_flag="false"
+hard_mode="false"
+effort_flag=""
+model_flag=""
+focus_prompt=""
+territory=""
+dispatch_start_ts=""
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --session) session_id="${2:-}"; shift 2 ;;
+    --seq) dispatch_seq="${2:-}"; shift 2 ;;
+    --clean) clean_flag="true"; shift ;;
+    --lit) lit_flag="true"; shift ;;
+    --hard) hard_mode="true"; effort_flag="hard"; shift ;;
+    --fast) effort_flag="fast"; shift ;;
+    --model) model_flag="${2:-}"; shift 2 ;;
+    --focus) focus_prompt="${2:-}"; shift 2 ;;
+    --territory) territory="${2:-}"; shift 2 ;;
+    --dispatch-start-ts) dispatch_start_ts="${2:-}"; shift 2 ;;
+    --help|-h) usage; exit 0 ;;
+    *)
+      echo "ERROR: orchestrate-build-dispatch.sh: unrecognized argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ -z "$session_id" ] || [ -z "$dispatch_seq" ]; then
+  echo "ERROR: orchestrate-build-dispatch.sh: --session and --seq are required" >&2
+  usage >&2
+  exit 2
+fi
+
+if ! [[ "$task_number" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: orchestrate-build-dispatch.sh: task_number must be numeric, got '$task_number'" >&2
+  exit 2
+fi
+
+# ─── Task identity: skill-base.sh's skill_validate_input is the single source (no separate
+# DESCRIPTION/description case-alias reconciliation needed -- this script IS the source) ───────
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/skill-base.sh"
+cd "$SKILL_REPO_ROOT"
+
+skill_validate_input "$task_number"
+description="$DESCRIPTION"
+task_type="$TASK_TYPE"
+
+handoff_path_abs="${TASK_DIR_ABS}/.orchestrator-handoff.json"
+
+if [ -z "$description" ]; then
+  echo "[orchestrate-build-dispatch] WARNING: empty description at dispatch prep (phase=$phase) — memory retrieval and literature briefing will be skipped" >&2
+fi
+
+# ─── Artifact round resolution (mirrors SKILL.md's resolve_cycle_artifact_number()) ────────────
+case "$phase" in
+  research) artifact_mode="current"; artifact_dir="reports/" ;;
+  plan)     artifact_mode="prev";    artifact_dir="plans/" ;;
+  implement) artifact_mode="prev";   artifact_dir="summaries/" ;;
+esac
+skill_read_artifact_number "$task_number" "$PADDED_NUM" "$PROJECT_NAME" "$artifact_dir" "$artifact_mode"
+# ARTIFACT_NUMBER / ARTIFACT_PADDED now exported by skill_read_artifact_number.
+
+# ─── Phase-specific inputs ──────────────────────────────────────────────────────────────────────
+research_artifact=""
+plan_path=""
+continuation="null"
+
+if [ "$phase" = "plan" ]; then
+  research_artifact=$(jq -r --argjson num "$task_number" \
+    '[.active_projects[] | select(.project_number == $num) | .artifacts // [] | .[] | select(.type == "report")] | .[0].path // ""' \
+    specs/state.json)
+fi
+
+if [ "$phase" = "implement" ]; then
+  plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1) || plan_path=""
+  # Shared helper (scripts/lib/continuation-pointer-lib.sh) — the SAME resolution
+  # orchestrate-triage-classify.sh's continuation_ok predicate now also calls, collapsing the two
+  # previously hand-copied implementations into one.
+  # shellcheck disable=SC1091
+  source "${SCRIPT_DIR}/lib/continuation-pointer-lib.sh"
+  continuation=$(resolve_continuation_pointer "$handoff_path_abs")
+fi
+
+# ─── Stage 3.5 output 1: memory_context (Auto retrieval), skipped when --clean ─────────────────
+memory_context=""
+if [ "$clean_flag" != "true" ]; then
+  memory_arg3=""
+  [ "$phase" = "research" ] && memory_arg3="$focus_prompt"
+  memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/memory-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
+fi
+
+# ─── Stage 3.5 output 2: lit_context (headless — orchestrator_mode is always true here, so the
+# two interactive directives (PROMPT_NEEDED's interactive branch, and any AskUserQuestion) are
+# unreachable by construction; PROMPT_NEEDED itself is handled defensively below even though
+# literature-lit-flag-resolve.sh never emits it when --orchestrator-mode true is passed) ────────
+lit_context=""
+if [ "$lit_flag" = "true" ]; then
+  lit_rationale_file=$(mktemp)
+  directive=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/literature-lit-flag-resolve.sh" \
+    --lit-flag "true" \
+    --orchestrator-mode "true" \
+    --query "$description" 2>"$lit_rationale_file") || directive="GLOBAL_MISSING"
+  lit_rationale="$(cat "$lit_rationale_file" 2>/dev/null || true)"
+  rm -f "$lit_rationale_file"
+
+  case "$directive" in
+    LIT_DISABLED)
+      lit_context=""
+      ;;
+    GLOBAL_MISSING)
+      echo "[orchestrate-build-dispatch] No literature available this run: no per-repo sub-index and no global Literature index found. ($lit_rationale)" >&2
+      lit_context=""
+      ;;
+    SUBINDEX_PRESENT)
+      lit_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/literature-briefing-invoke.sh" --query "$description") || lit_context=""
+      ;;
+    AUTONOMOUS_GLOBAL|PROMPT_NEEDED)
+      lit_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/literature-briefing-invoke.sh" --global "$description") || lit_context=""
+      echo "[orchestrate-build-dispatch] [lit:auto] No per-repo sub-index found; autonomous context (orchestrator_mode=true) — running a global-corpus search instead of prompting. ($lit_rationale)" >&2
+      ;;
+    SPARSE_PROMPT_NEEDED)
+      lit_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/literature-briefing-invoke.sh" --query "$description") || lit_context=""
+      echo "[orchestrate-build-dispatch] [lit:auto] Per-repo sub-index is sparse or has a topic-scoped coverage delta; autonomous context (orchestrator_mode=true) — proceeding with the existing sub-index rather than prompting. ($lit_rationale)" >&2
+      ;;
+    *)
+      echo "[orchestrate-build-dispatch] WARNING: unrecognized literature directive '$directive'; treating as GLOBAL_MISSING" >&2
+      lit_context=""
+      ;;
+  esac
+fi
+
+# ─── Stage 3.5 output 3: effort_note ────────────────────────────────────────────────────────────
+effort_note=""
+if [ -n "$effort_flag" ]; then
+  effort_note="Reasoning-depth guidance: this dispatch runs in --${effort_flag} mode."
+fi
+
+# ─── Stage 3.5 output 4: hard_contracts_block (gated on --hard) ────────────────────────────────
+hard_contracts_block=""
+if [ "$hard_mode" = "true" ]; then
+  case "$phase" in
+    research) core_contracts=(anti-analysis.md reference-grounding.md adversarial-verification.md) ;;
+    plan)     core_contracts=(reference-grounding.md wrap-up.md anti-analysis.md) ;;
+    implement)
+      core_contracts=(anti-analysis.md wrap-up.md)
+      [ -n "$territory" ] && core_contracts+=(territory.md)
+      core_contracts+=(recovery.md phase-closure.md pre-edit-gate.md)
+      ;;
+  esac
+
+  # shellcheck disable=SC1091
+  source "${SCRIPT_DIR}/lib/manifest-routing-lib.sh"
+  routing_lookup_flat "hard_contracts" "$task_type"
+  if [ -n "$_ROUTE_LAST_VALUE" ]; then
+    while IFS= read -r entry; do
+      case "$entry" in
+        replace:*)
+          core_basename="${entry#replace:}"; core_basename="${core_basename%%:*}"
+          override_path="${entry#replace:*:}"
+          for i in "${!core_contracts[@]}"; do
+            [ "${core_contracts[$i]}" = "$core_basename" ] && core_contracts[i]="$override_path"
+          done
+          ;;
+        *)
+          core_contracts+=("$entry")
+          ;;
+      esac
+    done < <(echo "$_ROUTE_LAST_VALUE" | jq -r '.[]')
+  fi
+
+  hard_contracts_block="<hard-mode-contracts>"$'\n'
+  for c in "${core_contracts[@]}"; do
+    hard_contracts_block+="- context/contracts/${c}"$'\n'
+  done
+  hard_contracts_block+="</hard-mode-contracts>"
+fi
+
+# ─── model resolution: pass-through, empty (never "null") when unset ───────────────────────────
+model="$model_flag"
+
+# ─── Write specs/{NNN}_{slug}/.dispatch/{seq}.md ────────────────────────────────────────────────
+dispatch_dir="${TASK_DIR_ABS}/.dispatch"
+mkdir -p "$dispatch_dir"
+dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
+
+{
+  echo "# Dispatch Context: Task ${task_number}, phase=${phase}"
+  echo ""
+  echo "Generated by scripts/orchestrate-build-dispatch.sh — never hand-edit. Read this file in"
+  echo "full before doing anything else; it names every input, output path, and contract this"
+  echo "one dispatch carries."
+  echo ""
+  echo "## Identity"
+  echo ""
+  echo "- task_number: ${task_number}"
+  echo "- phase: ${phase}"
+  echo "- task_type: ${task_type}"
+  echo "- session_id: ${session_id}"
+  echo "- dispatch_seq: ${dispatch_seq}"
+  if [ -n "$dispatch_start_ts" ]; then
+    echo "- dispatch_start_ts: ${dispatch_start_ts}"
+  fi
+  echo ""
+  echo "## Description"
+  echo ""
+  echo "${description}"
+  if [ -n "$focus_prompt" ]; then
+    echo ""
+    echo "User focus: ${focus_prompt}"
+  fi
+  echo ""
+  echo "## Artifact Round"
+  echo ""
+  echo "- artifact_number: ${ARTIFACT_NUMBER}"
+  echo "- artifact_padded: ${ARTIFACT_PADDED}"
+  echo "- output_dir: ${TASK_DIR}/${artifact_dir}"
+  echo ""
+  if [ "$phase" = "plan" ]; then
+    echo "## Research Artifact"
+    echo ""
+    echo "- research_artifact: ${research_artifact}"
+    echo ""
+  fi
+  if [ "$phase" = "implement" ]; then
+    echo "## Plan"
+    echo ""
+    echo "- plan_path: ${plan_path}"
+    echo ""
+    echo "## Continuation"
+    echo ""
+    echo '```json'
+    echo "${continuation}"
+    echo '```'
+    echo ""
+  fi
+  echo "## Handoff"
+  echo ""
+  echo "- handoff_path: ${handoff_path_abs}"
+  echo "- task_dir: ${TASK_DIR_ABS}"
+  echo ""
+  if [ -n "$territory" ]; then
+    echo "## Territory"
+    echo ""
+    echo '```json'
+    echo "${territory}"
+    echo '```'
+    echo ""
+  fi
+  if [ -n "$memory_context" ]; then
+    echo "$memory_context"
+    echo ""
+  fi
+  if [ -n "$lit_context" ]; then
+    echo "$lit_context"
+    echo ""
+  fi
+  if [ -n "$effort_note" ]; then
+    echo "$effort_note"
+    echo ""
+  fi
+  if [ -n "$hard_contracts_block" ]; then
+    echo "$hard_contracts_block"
+    echo ""
+  fi
+  echo "## User-Decision Contract"
+  echo ""
+  echo "See \`context/standards/user-decision-contract.md\` for the full contract — when to set"
+  echo "\`user_decision\` on \`.return-meta.json\`, the blocking/non-blocking distinction, and how"
+  echo "postflight relays it. Set it only when a choice genuinely requires the user's judgment"
+  echo "(a preference the artifacts cannot infer, an external cost or risk the user must accept,"
+  echo "or an ambiguity research cannot resolve) — never as a routine field."
+} > "$dispatch_file"
+
+jq -n -c --arg dispatch_file "$dispatch_file" --arg model "$model" \
+  '{dispatch_file: $dispatch_file, model: $model}'

@@ -98,6 +98,7 @@ cat > "$TARGET/.gitignore" <<'GITIGNORE_EOF'
 # check -- a bare, never-onboarded git repo would fail Check A for reasons unrelated to what
 # this harness actually tests (deploy propagation).
 **/.lock/
+**/.dispatch/
 **/.orchestrator-loop-guard
 **/.continuation-loop-guard
 **/.orchestrator-churn-state.json

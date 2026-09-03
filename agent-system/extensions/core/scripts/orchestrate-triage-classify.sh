@@ -167,6 +167,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/continuation-pointer-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
@@ -272,12 +273,16 @@ while [ "$idx" -lt "$lookup_count" ]; do
   # flat continuation_path form is the one canonical, writable form every live writer emits. Do
   # not re-narrow this to one form without updating every reader in lockstep (see
   # docs/architecture/handoff-schema.md's "One Write Form, Deprecated-But-Accepted Read Form" subsection).
-  continuation_ok=$(jq -r '
-    ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
-    (.continuation_path // null) as $flat |
-    if ($nested != null) or ($flat != null) then "true" else "false" end
-  ' "$handoff_path" 2>/dev/null) || true
-  [ "$continuation_ok" = "true" ] || continuation_ok="false"
+  # Shared helper (scripts/lib/continuation-pointer-lib.sh) -- the SAME resolution
+  # orchestrate-build-dispatch.sh's implement-phase gatherer also calls, collapsing what were
+  # two independently hand-copied implementations into one. This predicate only needs the
+  # boolean: non-"null" means a pointer was found in either accepted form.
+  continuation_resolved=$(resolve_continuation_pointer "$handoff_path")
+  if [ "$continuation_resolved" = "null" ]; then
+    continuation_ok="false"
+  else
+    continuation_ok="true"
+  fi
 
   mtime=$(stat -c %Y "$handoff_path" 2>/dev/null || stat -f %m "$handoff_path" 2>/dev/null || echo "")
   if [ -n "$mtime" ]; then

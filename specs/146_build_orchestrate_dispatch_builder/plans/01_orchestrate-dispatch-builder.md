@@ -243,29 +243,29 @@ and update every occurrence found, not the two assumed here.
 
 ---
 
-### Phase 3: `orchestrate-build-dispatch.sh` — CLI and Stage 3.5 replication [NOT STARTED]
+### Phase 3: `orchestrate-build-dispatch.sh` — CLI and Stage 3.5 replication [COMPLETED]
 
 **Goal**: Create the script with its full CLI surface and the four Stage 3.5 outputs plus model
 resolution, reproducing Stage 3.5's semantics exactly.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` with the
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` with the *(completed)*
       documented signature: `<task_number> <phase> --session SID --seq N [--clean] [--lit] [--hard]
       [--fast] [--model M] [--focus "..."] [--territory "..."]`, plus `--dispatch-start-ts` for the
       caller-stamped window timestamp. Follow the doc-header/usage/exit-code conventions of
       `orchestrate-triage-classify.sh` and `orchestrate-recover-outcome.sh`.
-- [ ] Set the exec bit; use the repo's standard strict-mode idiom for a single-shot script.
-- [ ] Resolve `memory_context`: `bash .claude/scripts/memory-retrieve.sh "$description"
+- [x] Set the exec bit; use the repo's standard strict-mode idiom for a single-shot script. *(completed)*
+- [x] Resolve `memory_context`: `bash .claude/scripts/memory-retrieve.sh "$description" *(completed)*
       "$task_type" "$memory_arg3"`, gated on `clean_flag != "true"`, with `memory_arg3="$focus_prompt"`
       only for `phase=research` and `""` otherwise. Never emit an empty tag.
-- [ ] Resolve `lit_context` by executing `context/patterns/lit-stage4a-flow.md`'s six-directive
+- [x] Resolve `lit_context` by executing `context/patterns/lit-stage4a-flow.md`'s six-directive *(completed)*
       resolution via `literature-lit-flag-resolve.sh`, branching on
       `LIT_DISABLED|SUBINDEX_PRESENT|GLOBAL_MISSING|PROMPT_NEEDED|AUTONOMOUS_GLOBAL|SPARSE_PROMPT_NEEDED`.
       The script runs headless: hard-code `orchestrator_mode: true` semantics so the two interactive
       directives always resolve to the `[lit:auto]` fallback and `AskUserQuestion` is never
       attempted.
-- [ ] Emit `effort_note` as one line, only when `effort_flag` is non-empty.
-- [ ] Build `hard_contracts_block` only when `hard_mode == "true"`: source
+- [x] Emit `effort_note` as one line, only when `effort_flag` is non-empty. *(completed)*
+- [x] Build `hard_contracts_block` only when `hard_mode == "true"`: source *(completed)*
       `scripts/lib/manifest-routing-lib.sh`, use the phase-keyed `core_contracts` array (research:
       anti-analysis / reference-grounding / adversarial-verification; plan: reference-grounding /
       wrap-up / anti-analysis; implement: anti-analysis / wrap-up [+ territory when set] / recovery
@@ -275,9 +275,9 @@ resolution, reproducing Stage 3.5's semantics exactly.
       all other entries additively in manifest order. Wrap the result in `<hard-mode-contracts>`
       with one `- context/contracts/{file}` line per entry. Call the routing functions directly
       (never via command substitution) and read `$_ROUTE_LAST_VALUE`/`$_ROUTE_LAST_VIA`.
-- [ ] Resolve `model` as pass-through of `model_flag` (`haiku`/`sonnet`/`opus`/`fable`), empty when
+- [x] Resolve `model` as pass-through of `model_flag` (`haiku`/`sonnet`/`opus`/`fable`), empty when *(completed)*
       unset — never the string `"null"`.
-- [ ] Preserve the injection order for the four block outputs: `memory_context`, `lit_context`,
+- [x] Preserve the injection order for the four block outputs: `memory_context`, `lit_context`, *(completed)*
       `effort_note`, `hard_contracts_block`, each skipped when empty.
 
 **Timing**: 2 hours
@@ -299,27 +299,27 @@ resolution, reproducing Stage 3.5's semantics exactly.
 
 ---
 
-### Phase 4: `orchestrate-build-dispatch.sh` — per-dispatch gatherers and file writer [NOT STARTED]
+### Phase 4: `orchestrate-build-dispatch.sh` — per-dispatch gatherers and file writer [COMPLETED]
 
 **Goal**: Gather the additional per-dispatch inputs the inline recipes interpolate, write
 `specs/{NNN}_{slug}/.dispatch/{seq}.md`, and print the one-line JSON return.
 
 **Tasks**:
-- [ ] Read `description` and `task_type` directly from `specs/state.json`
+- [x] Read `description` and `task_type` directly from `specs/state.json` *(completed: used skill_validate_input (skill-base.sh) rather than re-deriving the jq -- equivalent effect, DRYer)*
       (`.active_projects[] | select(.project_number == $num)`). This removes the
       `DESCRIPTION`/`description` case-alias reconciliation entirely — the script becomes the single
       source and callers no longer pre-extract it.
-- [ ] Resolve the artifact round by sourcing `scripts/skill-base.sh` and calling
+- [x] Resolve the artifact round by sourcing `scripts/skill-base.sh` and calling *(completed)*
       `skill_read_artifact_number` directly (do not re-implement its fallback-count logic).
       Phase-to-mode map: `research` -> `mode=current`, `artifact_dir=reports/`; `plan` ->
       `mode=prev`, `artifact_dir=plans/`; `implement` -> `mode=prev`, `artifact_dir=summaries/`.
       `mode=prev` is `next_artifact_number - 1` floored at 1 — the planner and implementer share the
       round research opened. Record both `ARTIFACT_NUMBER` and `ARTIFACT_PADDED` in the file.
-- [ ] For `phase=plan`, resolve the latest report path with the existing state.json jq pattern
+- [x] For `phase=plan`, resolve the latest report path with the existing state.json jq pattern *(completed)*
       (first `.artifacts[]` entry of `type=="report"`, `// ""`).
-- [ ] For `phase=implement`, resolve the latest plan path with
+- [x] For `phase=implement`, resolve the latest plan path with *(completed)*
       `ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1`.
-- [ ] For `phase=implement`, resolve the continuation pointer from `.orchestrator-handoff.json`
+- [x] For `phase=implement`, resolve the continuation pointer from `.orchestrator-handoff.json` *(completed: extracted to scripts/lib/continuation-pointer-lib.sh, shared with orchestrate-triage-classify.sh's continuation_ok)*
       accepting **both** forms — nested `continuation_context.handoff_path` (deprecated) and flat
       top-level `continuation_path` (the live form) — normalized to
       `{handoff_path, orchestrator_mode: true}` or `null`. **Extract this into a shared helper**
@@ -327,19 +327,19 @@ resolution, reproducing Stage 3.5's semantics exactly.
       predicate also uses, collapsing the two existing hand-copied implementations into one. If
       extraction proves out of reach within the phase, reuse the jq expression verbatim and record
       why in the phase notes — but the shared helper is the intended outcome.
-- [ ] Record `handoff_path` (`${task_dir_abs}/.orchestrator-handoff.json`), the caller-supplied
+- [x] Record `handoff_path` (`${task_dir_abs}/.orchestrator-handoff.json`), the caller-supplied *(completed)*
       `--seq N`, and the caller-supplied `--dispatch-start-ts`. The script neither mints the sequence
       nor stamps its own timestamp; both stay caller-owned.
-- [ ] Pass `--territory "..."` through as an opaque JSON string when set; never reconstruct it.
-- [ ] Append the user-decision contract reference unconditionally — outside the `hard_mode`
+- [x] Pass `--territory "..."` through as an opaque JSON string when set; never reconstruct it. *(completed)*
+- [x] Append the user-decision contract reference unconditionally — outside the `hard_mode` *(completed)*
       conditional — pointing at `context/standards/user-decision-contract.md` (Phase 1), with a
       short inline reminder of when to set the field. Do not restate the contract.
-- [ ] `mkdir -p "${TASK_DIR}/.dispatch"` and write `{seq}.md` with a stable section order:
+- [x] `mkdir -p "${TASK_DIR}/.dispatch"` and write `{seq}.md` with a stable section order: *(completed)*
       identity (task, phase, agent-facing framing), description, task_type, artifact round and
       output path, phase-specific inputs (report path / plan path / continuation pointer), handoff
       path and dispatch sequence, territory, then the four Stage 3.5 blocks in their preserved
       order, then the user-decision contract reference.
-- [ ] Print exactly one line of JSON: `{"dispatch_file": "...", "model": "..."}`.
+- [x] Print exactly one line of JSON: `{"dispatch_file": "...", "model": "..."}`. *(completed)*
 
 **Timing**: 2 hours
 
@@ -365,28 +365,28 @@ resolution, reproducing Stage 3.5's semantics exactly.
 
 ---
 
-### Phase 5: Parity test and anti-drift test [NOT STARTED]
+### Phase 5: Parity test and anti-drift test [COMPLETED]
 
 **Goal**: Prove mechanically that a generated dispatch file carries every input the inline recipe
 would have interpolated, and that the continuation-pointer resolution cannot drift again.
 
 **Tasks**:
-- [ ] Add `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`
+- [x] Add `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` *(completed)*
       (auto-discovered by `run-all.sh`; set the exec bit — a lost exec bit degrades to a loud SKIP,
       not a false pass).
-- [ ] Parity assertions: for each of `research`, `plan`, `implement`, generate a dispatch file
+- [x] Parity assertions: for each of `research`, `plan`, `implement`, generate a dispatch file *(completed)*
       against a fixture task and assert the presence and non-emptiness of every enumerated input —
       description, task_type, artifact round + padded form + output dir, phase-specific path
       (report / plan / continuation), handoff path, dispatch seq, dispatch start ts, territory when
       supplied, memory block when not `--clean`, lit block when `--lit`, effort note when
       `--fast`/`--hard`, hard-contracts block when `--hard`, user-decision contract reference
       always. Enumerate explicitly; do not spot-check.
-- [ ] Negative assertions: `--clean` suppresses the memory block; absent `--lit` suppresses the lit
+- [x] Negative assertions: `--clean` suppresses the memory block; absent `--lit` suppresses the lit *(completed)*
       block; no empty tag is ever emitted; `model` is empty (not `"null"`) when `--model` is unset.
-- [ ] Anti-drift assertion: compare the continuation-pointer resolution used by the script against
+- [x] Anti-drift assertion: compare the continuation-pointer resolution used by the script against *(completed: shared-helper call in both, structurally asserted plus functional equivalence check)*
       `orchestrate-triage-classify.sh`'s `continuation_ok` predicate — a shared-helper call in both
       (preferred), or a byte-comparison of the jq expression, failing loudly on divergence.
-- [ ] Headless assertion: with `--lit` and no sub-index present, the run completes without
+- [x] Headless assertion: with `--lit` and no sub-index present, the run completes without *(completed)*
       attempting an interactive prompt and falls back to `[lit:auto]`.
 
 **Timing**: 1.5 hours

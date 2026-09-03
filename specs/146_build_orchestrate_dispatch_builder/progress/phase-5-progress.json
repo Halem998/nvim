@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Parity test and anti-drift test",
+  "started_at": "2026-09-02T22:20:00Z",
+  "last_updated": "2026-09-02T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add test-orchestrate-build-dispatch.sh, auto-discovered by run-all.sh, exec bit set", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Parity assertions for research/plan/implement, all enumerated inputs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Negative assertions: --clean, no --lit, no empty tags, model emptiness", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Anti-drift assertion vs orchestrate-triage-classify.sh's continuation_ok", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Headless assertion: --lit with no sub-index never prompts, falls back to [lit:auto]", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Copy full skill-base.sh/manifest-routing-lib.sh/continuation-pointer-lib.sh into an isolated fixture repo (test-skill-base-lifecycle.sh's pattern)", "result": "unnecessary", "reason": "Discovered the SUT's SKILL_REPO_ROOT is honored from an already-exported env var (skill-base.sh's ${SKILL_REPO_ROOT:-...} default pattern), so only the three ${SKILL_REPO_ROOT}-qualified collaborator scripts (memory-retrieve.sh, literature-lit-flag-resolve.sh, literature-briefing-invoke.sh) needed fixture stubs; the SUT's own skill-base.sh/lib/*.sh neighbors resolve to their real, unmodified copies via SCRIPT_DIR -- a much lighter fixture."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Regression-bite check performed manually (not part of the permanent suite): removed the implement-phase plan_path gatherer line from a scratch copy, swapped it into the deployed script location, re-ran the suite (48 passed / 1 failed, exactly the removed gatherer's assertion), then restored the original and re-ran (49 passed / 0 failed). Confirms the parity test actually bites.",
+    "Fixing this phase's own new lib dependency (continuation-pointer-lib.sh) exposed that test-orchestrate-triage-classify.sh's isolated sandbox fixture did not copy the new library file, and that two deploy-integration tests (test-deploy-orphans.sh, test-deploy-propagation.sh) hand-author a scratch .gitignore fixture that needed the new **/.dispatch/ line added alongside the other three ephemeral patterns. All three were fixed as part of this phase's own full-suite gate (bash .claude/scripts/tests/run-all.sh went from 59 passed/3 failed to 62 passed/0 failed)."
+  ]
+}

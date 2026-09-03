@@ -1,0 +1,37 @@
+{
+  "phase": 4,
+  "phase_name": "orchestrate-build-dispatch.sh -- per-dispatch gatherers and file writer",
+  "started_at": "2026-09-02T21:15:00Z",
+  "last_updated": "2026-09-02T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "description/task_type via skill_validate_input", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "artifact round via skill_read_artifact_number", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "plan-phase research_artifact path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "implement-phase plan_path (sort -V, latest)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "continuation pointer, shared helper extraction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/continuation-pointer-lib.sh", "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh", "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 6, "description": "handoff_path/dispatch_seq/dispatch_start_ts recorded, caller-owned", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "territory passthrough opaque", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 8, "description": "user-decision contract reference appended unconditionally", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 9, "description": "write .dispatch/{seq}.md with stable section order", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 10, "description": "print one-line JSON {dispatch_file, model}", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Plan called for reading description/task_type directly via a fresh jq query against state.json",
+      "type": "altered",
+      "reason": "Used skill-base.sh's existing skill_validate_input function instead, which does exactly this (plus TASK_DIR/TASK_DIR_ABS resolution) in one call -- avoids a second, redundant jq implementation with identical semantics.",
+      "annotation": "*(completed: used skill_validate_input (skill-base.sh) rather than re-deriving the jq -- equivalent effect, DRYer)*"
+    },
+    {
+      "task_id": "4.5",
+      "description": "Shared continuation-pointer helper extraction",
+      "type": "none",
+      "reason": "Successfully extracted into scripts/lib/continuation-pointer-lib.sh (Class C, sourced-only) and wired into both orchestrate-build-dispatch.sh and orchestrate-triage-classify.sh's continuation_ok predicate -- the plan's intended (non-fallback) outcome.",
+      "annotation": "*(completed: extracted to scripts/lib/continuation-pointer-lib.sh, shared with orchestrate-triage-classify.sh's continuation_ok)*"
+    }
+  ]
+}

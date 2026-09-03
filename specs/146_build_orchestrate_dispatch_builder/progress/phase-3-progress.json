@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "orchestrate-build-dispatch.sh -- CLI and Stage 3.5 replication",
+  "started_at": "2026-09-02T21:15:00Z",
+  "last_updated": "2026-09-02T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create script with documented CLI signature, exec bit, strict mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "memory_context resolution gated on --clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "lit_context via literature-lit-flag-resolve.sh six-directive branch, headless", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "effort_note when effort_flag non-empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "hard_contracts_block via routing_lookup_flat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "model pass-through resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "Preserve injection order of the four blocks", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3/4-boundary",
+      "description": "Phase 3 (Stage 3.5 replication) and Phase 4 (per-dispatch gatherers + file writer) were implemented together in one script-authoring pass, then verified separately against each phase's own criteria.",
+      "type": "altered",
+      "reason": "Both phases target the same single new file; writing it once and verifying against both phase's criteria afterward avoided a redundant rewrite while still exercising every criterion in this plan.",
+      "annotation": "n/a -- both phases' individual task checklists are checked off against the finished, verified script"
+    }
+  ]
+}
