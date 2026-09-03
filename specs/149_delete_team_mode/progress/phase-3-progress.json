@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Remove team flags from parse-command-args.sh (atomic)",
+  "started_at": "2026-09-02T01:15:00Z",
+  "last_updated": "2026-09-02T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "All six sites removed in one atomic batch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/parse-command-args.sh"], "note": "Confirmed exactly 6 sites matching the report's hypothesis. Post-edit grep -c TEAM returns 0. Export line reduced to exactly the 16 names the plan predicted, byte-for-byte. EXPLOIT_FLAG/EXPLORE_FLAG and their 'team research' doc comment left untouched per the MUST NOT. bash -n clean. Smoke test confirms TEAM_MODE is unset after sourcing. scripts/tests/run-all.sh: 62 passed/0 failed/0 skipped. test-force-phases.sh run individually: 19 passed/0 failed."}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

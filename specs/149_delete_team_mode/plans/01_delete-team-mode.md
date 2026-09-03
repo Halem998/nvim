@@ -225,29 +225,29 @@ before-count must equal the sites actually edited and the after-count must be 0.
 
 ---
 
-### Phase 3: Remove team flags from parse-command-args.sh (atomic) [NOT STARTED]
+### Phase 3: Remove team flags from parse-command-args.sh (atomic) [COMPLETED]
 
 **Goal**: The shared arg parser no longer parses `--team`/`--team-size` or exports the three
 `TEAM_*` names, with every other export byte-identical.
 
 **Tasks**:
-- [ ] Snapshot the current `export` line verbatim for a byte-level before/after diff
-- [ ] Delete the three `TEAM_MODE` / `TEAM_SIZE` / `TEAM_SIZE_EXPLICIT` doc-comment lines
-- [ ] Delete the three default assignments
-- [ ] Delete the `--team` parse block
-- [ ] Delete the two-armed `--team-size=N` / `--team-size N` parse block
-- [ ] Delete the two `sed` stages that strip `--team-size` and `--team` from the `FOCUS_PROMPT`
+- [x] Snapshot the current `export` line verbatim for a byte-level before/after diff
+- [x] Delete the three `TEAM_MODE` / `TEAM_SIZE` / `TEAM_SIZE_EXPLICIT` doc-comment lines
+- [x] Delete the three default assignments
+- [x] Delete the `--team` parse block
+- [x] Delete the two-armed `--team-size=N` / `--team-size N` parse block
+- [x] Delete the two `sed` stages that strip `--team-size` and `--team` from the `FOCUS_PROMPT`
       pipeline
-- [ ] Remove exactly the three `TEAM_*` names from the final `export` line, leaving
+- [x] Remove exactly the three `TEAM_*` names from the final `export` line, leaving
       `TASK_NUMBERS REMAINING_ARGS EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG
       LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG
       ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT` untouched
-- [ ] Leave `EXPLOIT_FLAG` / `EXPLORE_FLAG` and their "team research" doc comment exactly as-is
+- [x] Leave `EXPLOIT_FLAG` / `EXPLORE_FLAG` and their "team research" doc comment exactly as-is
       (explicitly out of scope per the task's MUST NOT)
-- [ ] `bash agent-system/extensions/core/scripts/parse-command-args.sh` smoke: parse a
+- [x] `bash agent-system/extensions/core/scripts/parse-command-args.sh` smoke: parse a
       representative arg string and diff the emitted exports against the pre-edit snapshot minus
       the three team names
-- [ ] `bash scripts/tests/run-all.sh` green (in particular `test-force-phases.sh`, which sources
+- [x] `bash scripts/tests/run-all.sh` green (in particular `test-force-phases.sh`, which sources
       the same parser)
 
 **Timing**: 30 minutes

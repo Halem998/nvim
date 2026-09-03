@@ -11,12 +11,6 @@
 # Exported Variables:
 #   TASK_NUMBERS   — space-separated list of task numbers (ranges expanded)
 #   REMAINING_ARGS — remaining args string after task numbers removed
-#   TEAM_MODE      — "true" or "false"
-#   TEAM_SIZE      — integer 2-4 (default 2)
-#   TEAM_SIZE_EXPLICIT — "true" or "false" (default "false"; set "true" only when a --team-size
-#                    flag was actually matched in the arguments, so a consumer can distinguish a
-#                    user-typed value from this parser's own pre-flag default. TEAM_SIZE's own
-#                    default and every existing consumer are unaffected by this addition.)
 #   EFFORT_FLAG    — "fast", "hard", or ""
 #   MODEL_FLAG     — "haiku", "sonnet", "opus", "fable", or ""
 #   CLEAN_FLAG     — "true" or "false"
@@ -86,9 +80,6 @@ parse_command_args() {
   REMAINING_ARGS="$remaining"
 
   # Step 4: Scan for flags (superset — all commands, all flags)
-  TEAM_MODE="false"
-  TEAM_SIZE=2
-  TEAM_SIZE_EXPLICIT="false"
   EFFORT_FLAG=""
   MODEL_FLAG=""
   CLEAN_FLAG="false"
@@ -103,16 +94,6 @@ parse_command_args() {
   CONTINUE_BUDGET_FLAG="false"
   FORCE_PHASES_FLAG=""
 
-  if [[ "$remaining" =~ --team ]]; then
-    TEAM_MODE="true"
-  fi
-  if [[ "$remaining" =~ --team-size[[:space:]]*=?[[:space:]]*([0-9]+) ]]; then
-    TEAM_SIZE="${BASH_REMATCH[1]}"
-    TEAM_SIZE_EXPLICIT="true"
-  elif [[ "$remaining" =~ --team-size[[:space:]]+([0-9]+) ]]; then
-    TEAM_SIZE="${BASH_REMATCH[1]}"
-    TEAM_SIZE_EXPLICIT="true"
-  fi
   if [[ "$remaining" =~ --fast ]]; then
     EFFORT_FLAG="fast"
   fi
@@ -173,8 +154,6 @@ parse_command_args() {
 
   # Step 5: Strip all recognized flags to produce FOCUS_PROMPT
   FOCUS_PROMPT=$(echo "$remaining" \
-    | sed 's/--team-size[[:space:]]*=*[[:space:]]*[0-9]*//g' \
-    | sed 's/--team//g' \
     | sed 's/--fast//g' \
     | sed 's/--hard//g' \
     | sed 's/--haiku//g' \
@@ -202,7 +181,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE TEAM_SIZE_EXPLICIT EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG CONTINUE_BUDGET_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"
