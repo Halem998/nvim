@@ -756,177 +756,20 @@ conditions use, so the run's own summary names it.
 
 ---
 
-### Stage 3.5: Dispatch Prep (shared, runs immediately before every Agent dispatch)
+### Stage 3.5: Dispatch Prep — superseded by `scripts/orchestrate-build-dispatch.sh`
 
-This is the SINGLE canonical copy of the memory-retrieval and literature-briefing procedure for
-`/orchestrate`. Every dispatch site in Stage 4 (single-task) and Stage MT-4 (multi-task)
-references this stage with a short pointer line rather than inlining a second copy — see the
-"Shared-snippet convention" mitigation in this task's plan. **Never duplicate this procedure at a
-dispatch site.**
-
-**Inputs**:
-
-| Input | Source |
-|-------|--------|
-| `phase` | `research` \| `plan` \| `implement` — passed by the calling dispatch site |
-| `description` | task description (see case-alias below) |
-| `task_type` | `TASK_TYPE` (single-task) / per-task `task_type` (multi-task) |
-| `focus_prompt` | `focus_prompt` from the delegation context |
-| `clean_flag` | Stage 1 / Stage MT-1 (this invocation's `--clean` state) |
-| `effort_flag` | Stage 1 / Stage MT-1 (this invocation's `--fast` state) |
-| `model_flag` | Stage 1 / Stage MT-1 (this invocation's `--haiku`/`--sonnet`/`--opus`/`--fable` state) |
-| `lit_flag` | Stage 1 / Stage MT-1 |
-| `orchestrator_mode` | always `true` for every `/orchestrate` dispatch |
-| `hard_mode` | Stage 1 / Stage MT-1 (derived from `effort_flag == "hard"`) |
-| `territory` | optional; set by the hard-mode `planned`/`implementing` handler's H1 branch (Stage 4) before invoking this stage for `phase=implement`, so `territory.md` is appended by (a) above. No other call site sets it — base mode (`hard_mode = false`) does not gain a `territory` dispatch key (see Stage MT-3's existing "Decision record" for that rationale, which is unaffected by this hard-mode caller) |
-
-**Case alias (do not "simplify" away)**: single-task Stage 1 extracts the task description into
-the uppercase `DESCRIPTION` shell variable (from `state.json` via `jq`), while the shared lit flow
-(`lit-stage4a-flow.md`) and `memory-retrieve.sh` both expect the lowercase `description`. Multi-
-task mode already reads the per-task value into lowercase `description` (Stage MT-4, per Phase 3
-of this task's plan). This alias reconciles both call shapes in one line:
-
-```bash
-description="${DESCRIPTION:-${description:-}}"
-```
-
-**Empty-description warning (loud, non-blocking)**: both `memory-retrieve.sh` and
-`lit-stage4a-flow.md` hard-require a non-empty `description` to do anything useful. An empty value
-here most often means the multi-task `descriptions` capture (Phase 3) regressed — surface it
-immediately rather than silently no-op-ing:
-
-```bash
-if [ -z "$description" ]; then
-  echo "[orchestrate] WARNING: empty description at dispatch prep (phase=$phase) — memory retrieval and literature briefing will be skipped" >&2
-fi
-```
-
-**Memory retrieval (Auto), skipped when `clean_flag` is true**: reproduces the same Stage 4a
-memory-retrieval pattern every lifecycle skill shares, except the 3rd
-`memory-retrieve.sh` argument is selected by `phase`, preserving the existing per-phase asymmetry:
-
-| `phase` | 3rd `memory-retrieve.sh` argument |
-|---------|-----------------------------------|
-| `research` | `"$focus_prompt"` |
-| `plan` | `""` |
-| `implement` | `""` |
-
-```bash
-if [ "$clean_flag" != "true" ]; then
-  memory_arg3=""
-  [ "$phase" = "research" ] && memory_arg3="$focus_prompt"
-  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
-fi
-```
-
-`memory-retrieve.sh` emits its own `<memory-context>` wrapper around its output (verified against
-the script's own tail) — do NOT re-wrap `memory_context` here. The script exits 1 with empty
-stdout when `clean_flag` is true (skipped), `memory-index.json` is missing/empty, no keywords
-matched, or it otherwise errored; in every one of those cases `memory_context` is simply empty and
-nothing is injected.
-
-**Literature detection and injection (shared block)**: follow `@.claude/context/patterns/lit-stage4a-flow.md`
-in full to resolve `--lit` and set `lit_context`: call `literature-lit-flag-resolve.sh`, branch on
-all six directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
-`AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`). Because `skill-orchestrate` always sets
-`orchestrator_mode: true`, the two interactive directives that would otherwise issue
-`AskUserQuestion` are unreachable here — the deterministic `[lit:auto]` autonomous fallback always
-applies instead. This stage supplies the shared flow's three preconditions: `lit_flag`,
-`description`, and `orchestrator_mode`.
-
-**Independence note**: `lit_flag` is independent of `clean_flag`. `--clean --lit` suppresses
-memory retrieval but still injects literature briefing; literature briefing is gated solely on
-`lit_flag == "true"`.
-
-**Effort-depth note**: when `effort_flag` is non-empty, set a one-line `effort_note` to be
-appended to the dispatch prompt as reasoning-depth guidance, mirroring `commands/research.md`'s
-existing "pass it as prompt context to the skill/agent for reasoning depth guidance" instruction.
-An empty `effort_flag` produces no note (`effort_note` stays empty).
-
-**Model-override resolution**: when `model_flag` is non-empty, set the `model` output to it
-unchanged (`haiku`/`sonnet`/`opus`/`fable` pass through verbatim — this stage does not translate
-or validate the value). When `model_flag` is empty, `model` stays empty and no `model` parameter
-is emitted at any call site, so the agent's frontmatter default applies. The emptiness test is on
-the **empty string**, never on the literal `null`. Only dispatch sites that call this stage
-receive the override: the six auxiliary/diagnostic dispatches (Stage 5a Drift Inspection, Stage
-5b churn/divergence audit, Stage 6 Blocker Escalation) do not call Stage 3.5 and therefore keep
-their frontmatter defaults, by design and with no exemption list to write or maintain.
-
-**Hard-mode contract injection (gated on `hard_mode == "true"`)**: when `hard_mode` is `"false"`
-(the default path), `hard_contracts_block` stays empty and this whole subsection is skipped — no
-`<hard-mode-contracts>` tag pair is ever emitted. When `hard_mode` is `"true"`:
-
-(a) Start from a fixed, ordered `core_contracts` array selected by `$phase` — the exact three
-lists from this task's plan Decision 2, with `territory.md` appended only when the `territory`
-input is non-empty (per Decision 3, no call site sets it today, so this branch never fires in
-practice):
-
-```bash
-case "$phase" in
-  research) core_contracts=(anti-analysis.md reference-grounding.md adversarial-verification.md) ;;
-  plan)     core_contracts=(reference-grounding.md wrap-up.md anti-analysis.md) ;;
-  implement)
-    core_contracts=(anti-analysis.md wrap-up.md)
-    [ -n "$territory" ] && core_contracts+=(territory.md)
-    core_contracts+=(recovery.md phase-closure.md pre-edit-gate.md)
-    ;;
-esac
-```
-
-(b) Resolve extension-declared entries via `routing_lookup_flat` (never `routing_lookup` — see
-Decision 5 and `manifest-routing-lib.sh`'s own doc comment for why these are siblings, not a
-wrapper). On a hit, apply every `replace:{core-basename}:{override-path}` entry as an in-place
-substitution of the matching `core_contracts` element (matched by exact basename), then append
-every remaining non-`replace:` entry additively, in the order the manifest lists them. On a miss,
-`core_contracts` stands unchanged:
-
-```bash
-source .claude/scripts/lib/manifest-routing-lib.sh
-routing_lookup_flat "hard_contracts" "$task_type"
-if [ -n "$_ROUTE_LAST_VALUE" ]; then
-  while IFS= read -r entry; do
-    case "$entry" in
-      replace:*)
-        core_basename="${entry#replace:}"; core_basename="${core_basename%%:*}"
-        override_path="${entry#replace:*:}"
-        for i in "${!core_contracts[@]}"; do
-          [ "${core_contracts[$i]}" = "$core_basename" ] && core_contracts[$i]="$override_path"
-        done
-        ;;
-      *)
-        core_contracts+=("$entry")
-        ;;
-    esac
-  done < <(echo "$_ROUTE_LAST_VALUE" | jq -r '.[]')
-fi
-```
-
-(c) Build `hard_contracts_block` as a `<hard-mode-contracts>` tag wrapping one
-`- context/contracts/{file}` line per resolved `core_contracts` entry, in resolved order:
-
-```bash
-hard_contracts_block="<hard-mode-contracts>"$'\n'
-for c in "${core_contracts[@]}"; do
-  hard_contracts_block+="- context/contracts/${c}"$'\n'
-done
-hard_contracts_block+="</hard-mode-contracts>"
-```
-
-**Outputs and injection contract**: this stage produces `memory_context`, `lit_context`,
-`effort_note`, and `hard_contracts_block`. The calling dispatch site appends them, in that
-order, to the END of its own prompt string — `memory_context` first, then `lit_context`, then
-`effort_note`, then `hard_contracts_block` — skipping any of the four that is empty. Never
-inject an empty `<memory-context>`, `<literature-briefing>`, or `<hard-mode-contracts>` tag pair.
-None of the four outputs is ever added to the dispatch's `context` JSON object.
-This stage also produces a fifth output, `model`, of a different kind than the four above: it is
-passed as the Agent tool's `model` parameter at each call site, exactly like `subagent_type`, and
-is **never** appended to the prompt string and **never** added to the dispatch's `context` JSON
-object.
-Unlike the three lifecycle skills, `skill-orchestrate` injects no format specification
-(`report-format.md`/`plan-format.md`) into its dispatch prompts today (a real, separate,
-pre-existing gap — see Non-Goals in this task's plan) — so these blocks are simply the first
-content appended after the dispatch site's own base prompt text, with no format block for them
-to follow.
+No dispatch prep happens inline in this file any more. `scripts/orchestrate-build-dispatch.sh`
+is the sole implementation: it performs what this stage used to describe in prose (memory
+retrieval, literature briefing, the effort note, the hard-mode contract block, and model
+resolution) plus every additional per-dispatch input (task description and task_type, the
+artifact round, phase-specific report/plan paths, the normalized continuation pointer, the
+handoff path and dispatch sequence, territory when set, and the user-decision contract
+reference), and writes the result to `specs/{NNN}_{slug}/.dispatch/{seq}.md`. Every Stage 4
+(single-task) and Stage MT-4 (multi-task) dispatch site below calls this script once and uses a
+fixed pointer prompt — see any Stage 4 handler for the call shape. Auxiliary/diagnostic
+dispatches (H4 adversarial-verification re-dispatch, Stage 5a drift inspection, Stage 5b
+churn/divergence audit, Stage 6 blocker escalation) do not call this script and keep their inline
+prompts, unchanged.
 
 ---
 
@@ -3283,11 +3126,12 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 
-**Stage 3.5 is per-task, not per-batch**: each of the three dispatch loops below runs
-**Stage 3.5: Dispatch Prep** once INSIDE its own loop body, for each task individually — never
-hoisted above the loop and computed once for the whole batch. Different tasks in the same batch
-can carry different `task_type`/`description` values, so a single hoisted call would silently
-reuse one task's memory/literature context for every sibling in the batch.
+**Dispatch prep is per-task, not per-batch**: each of the three dispatch loops below calls
+`scripts/orchestrate-build-dispatch.sh` once INSIDE its own loop body, for each task
+individually — never hoisted above the loop and computed once for the whole batch. Different
+tasks in the same batch can carry different `task_type`/`description` values, so a single
+hoisted call would silently reuse one task's memory/literature context for every sibling in the
+batch.
 
 > **BATCHING RULE**: ALL Agent tool calls for the current cycle's dispatch batch MUST be issued in a SINGLE orchestrator message with multiple tool-use content blocks. Do NOT issue calls across multiple messages — Claude Code processes all calls in a single message concurrently; multiple messages force sequential execution.
 
@@ -3431,38 +3275,54 @@ read-modify-write per task, so two tasks dispatched in the same batched message 
 the counter:
 ```bash
 task_dispatch_seq=$(jq -r '(.dispatch_seq_counter // 0) + 1' "$mt_state_file")
-jq --arg t "$task_num" --argjson ts "$(date -u +%s)" --argjson seq "$task_dispatch_seq" \
+task_dispatch_start_ts=$(date -u +%s)
+jq --arg t "$task_num" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
   '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq' \
   "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
 ```
 
 For each task in `research_tasks`:
-- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
-  per-task description Stage MT-2 captured, consumed both by this loop's existing `$description`
-  prompt interpolation and by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-- Run **Stage 3.5: Dispatch Prep** with `phase=research` for this task (the same single canonical
-  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
-  `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = research_agents[task_num]` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Research task $task_num: $description" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
+  Dispatch Prep's sole implementation; the script re-derives this task's description directly
+  from `specs/state.json`, so no separate per-task description read is needed here any more):
+  ```bash
+  build_args=(--session "${session_id}_${task_num}" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
+  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" research "${build_args[@]}")
+  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+  ```
+- Invoke Agent tool: `subagent_type = research_agents[task_num]` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase research. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `plan_tasks`:
-- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
-  per-task description Stage MT-2 captured, consumed by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
 - `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-- Run **Stage 3.5: Dispatch Prep** with `phase=plan` for this task (the same single canonical
-  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
-  `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = "planner-agent"` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Create implementation plan for task $task_num" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
+- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
+  Dispatch Prep's sole implementation; the script re-derives this task's description directly
+  from `specs/state.json`, so no separate per-task description read is needed here any more):
+  ```bash
+  build_args=(--session "${session_id}_${task_num}" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
+  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" plan "${build_args[@]}")
+  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+  ```
+- Invoke Agent tool: `subagent_type = "planner-agent"` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase plan. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }`
 
 For each task in `implement_tasks`:
-- Read `description=$(jq -r --arg t "$task_num" '.descriptions[$t] // ""' "$mt_state_file")` — the
-  per-task description Stage MT-2 captured, consumed by Stage 3.5 Dispatch Prep below.
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window AND mint dispatch_seq (see the shared snippet above), and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)
@@ -3472,10 +3332,23 @@ For each task in `implement_tasks`:
   single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
   `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Run **Stage 3.5: Dispatch Prep** with `phase=implement` for this task (the same single canonical
-  procedure defined in Stage 3.5 — do not inline a second copy) to produce `memory_context`,
-  `lit_context`, `effort_note`, and `hard_contracts_block`.
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]` (pass Stage 3.5's `model` (if non-empty) as the Agent tool's `model` parameter), prompt = "Implement task $task_num following the plan" with `memory_context`, then `lit_context`, then `effort_note`, then `hard_contracts_block` from Stage 3.5 appended, each skipped when empty, context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task)
+- Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (Stage 3.5
+  Dispatch Prep's sole implementation; the script re-derives this task's description and its own
+  continuation pointer directly from `specs/state.json`/`task_dir/.orchestrator-handoff.json`, so
+  no separate per-task description read is needed here — the `continuation` bash variable above
+  is still resolved separately because the agent's `context` JSON below also needs it directly):
+  ```bash
+  build_args=(--session "$session_id" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
+  [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
+  [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+  [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
+  [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
+  [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
+  dispatch_json=$(bash .claude/scripts/orchestrate-build-dispatch.sh "$task_num" implement "${build_args[@]}")
+  dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
+  dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
+  ```
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]` (pass `dispatch_model` (if non-empty) as the Agent tool's `model` parameter), prompt = "You are dispatched by /orchestrate for task $task_num, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract.", context = `{ task_number: task_num, task_type, session_id: "$session_id", orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs, dispatch_seq: task_dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read; `session_id` here is the bare value deliberately — see the Task-lock acquire invariant above — because `general-implementation-agent`'s per-phase `task-lock.sh heartbeat` call presents this exact field's value against `holder.json`, and a suffixed value would desync the heartbeat from the lock acquired for this task; note this is also why `--session "$session_id"` above, not the per-task-suffixed form, is passed to the dispatch-build script for this loop only)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 

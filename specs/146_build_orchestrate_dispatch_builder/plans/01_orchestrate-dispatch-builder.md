@@ -453,24 +453,24 @@ Confirm the count before editing and after: this phase leaves exactly the 3 MT-4
 
 ---
 
-### Phase 7: Replace the 3 MT-4 loops, delete the Stage 3.5 prose [NOT STARTED]
+### Phase 7: Replace the 3 MT-4 loops, delete the Stage 3.5 prose [COMPLETED]
 
 **Goal**: Finish the call-site migration and remove Stage 3.5's prose from the engine in favor of a
 pointer to the script.
 
 **Tasks**:
-- [ ] Replace the 3 MT-4 loop bodies (`research_tasks`, `plan_tasks`, `implement_tasks`) with the
+- [x] Replace the 3 MT-4 loop bodies (`research_tasks`, `plan_tasks`, `implement_tasks`) with the *(completed: also removed the now-dead per-task description read (script re-derives it from state.json))*
       same one-call + fixed-pointer-prompt shape as Phase 6, threading the per-task
       `dispatch_seq` minted from `mt_state_file.dispatch_seq_counter`.
-- [ ] Confirm the artifact-round threading gap closes here: MT-4 dispatches now carry an explicit
+- [x] Confirm the artifact-round threading gap closes here: MT-4 dispatches now carry an explicit *(completed: confirmed -- orchestrate-build-dispatch.sh's artifact-round gatherer (Phase 4) applies uniformly to every phase call, MT-4 included)*
       artifact round via the dispatch file rather than relying on the agent to derive one.
-- [ ] Delete the `### Stage 3.5: Dispatch Prep` section body, replacing it with a short pointer
+- [x] Delete the `### Stage 3.5: Dispatch Prep` section body, replacing it with a short pointer *(completed)*
       naming `scripts/orchestrate-build-dispatch.sh` as the sole implementation and stating that no
       dispatch prep happens inline any more.
-- [ ] Update any cross-reference elsewhere in `SKILL.md` that says "see Stage 3.5 above" so it
+- [x] Update any cross-reference elsewhere in `SKILL.md` that says "see Stage 3.5 above" so it *(completed)*
       points at the script instead; leave the SKILL.md statement enumerating auxiliary dispatches
       that "do not call Stage 3.5" accurate (reword to reference the script).
-- [ ] Record the `SKILL.md` byte size before and after for the Stage A budget line.
+- [x] Record the `SKILL.md` byte size before and after for the Stage A budget line. *(completed: 277015 -> 270380 bytes, -6635 bytes net)*
 
 **Timing**: 1.5 hours
 
