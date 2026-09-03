@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "User-decision contract and schema-doc fields",
+  "started_at": "2026-09-02T20:40:00Z",
+  "last_updated": "2026-09-02T20:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create user-decision-contract.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 2, "description": "Add user_decision subsection to return-metadata-file.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 3, "description": "Add user_decision subsection to handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 4, "description": "Confirm producer-ownership stated", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Validate sample .return-meta.json with user_decision against validate-return-meta.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

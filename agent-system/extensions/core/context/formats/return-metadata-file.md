@@ -409,6 +409,24 @@ survive any later writer's read-modify-write update to this file untouched.
 
 **Path form**: entries are repo-relative paths, matching `modified_files`'s path convention.
 
+### user_decision (optional)
+
+**Type**: object at the **top level** of `.return-meta.json` — a sibling of `modified_files` and
+`memory_candidates`, not nested under `completion_data`.
+
+**Include if**: the agent hit a choice that genuinely requires the user's judgment (a preference
+the artifacts cannot infer, an external cost or risk the user must accept, or an ambiguity
+research cannot resolve). Absent in every other case — this is not a routine field.
+
+Shape: `{question, options: [...], recommended, blocking: true|false}`. See
+`context/standards/user-decision-contract.md` for the full contract — when to set it, when NOT
+to, the blocking/non-blocking distinction, and how postflight relays it as an `ask_user` verdict.
+This subsection does not restate that contract.
+
+**Producer ownership**: consistent with the "Multiple Sequential Writers" section above,
+`user_decision` is producer-owned by the agent that sets it, and MUST survive any later writer's
+read-modify-write update to this file untouched.
+
 ### errors (optional)
 
 **Type**: array of objects

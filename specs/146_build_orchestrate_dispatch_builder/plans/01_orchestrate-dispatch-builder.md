@@ -1,7 +1,7 @@
 # Implementation Plan: Task #146
 
 - **Task**: 146 - Build orchestrate-build-dispatch.sh: per-dispatch context files, pointer prompts, and the user-decision contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 14 hours
 - **Dependencies**: 145 (completed)
 - **Research Inputs**: `specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md`
@@ -144,13 +144,13 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: User-decision contract and schema-doc fields [NOT STARTED]
+### Phase 1: User-decision contract and schema-doc fields [COMPLETED]
 
 **Goal**: Write the user-decision contract once, in a location that is not hard-mode-gated, and add
 `user_decision` as an optional field to both schema documents by reference.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/standards/user-decision-contract.md` stating:
+- [x] Create `agent-system/extensions/core/context/standards/user-decision-contract.md` stating: *(completed)*
       the orchestrator never asks the user on its own and never decides; agents decide and record
       each decision with its reasoning in their artifact; an agent sets
       `user_decision: {question, options: [...], recommended, blocking: true|false}` only when a
@@ -160,17 +160,17 @@ Phases within the same wave can execute in parallel.
       stops cleanly at a resumable point; the postflight script relays the field as a verdict; the
       lead puts the question once, batched at cycle end. Include the field's exact JSON shape and a
       short "when NOT to raise one" list.
-- [ ] Add a `### user_decision (optional)` subsection to
-      `context/formats/return-metadata-file.md`, sited alongside the other optional top-level
+- [x] Add a `### user_decision (optional)` subsection to
+      `context/formats/return-metadata-file.md`, *(completed)* sited alongside the other optional top-level
       fields (`memory_candidates`, `reflection`, `proposed_file_scope`). Give the shape and a
       one-line pointer to the contract file; do not restate the contract.
-- [ ] Add a `### user_decision (optional)` subsection to `docs/architecture/handoff-schema.md`
+- [x] Add a `### user_decision (optional)` subsection to `docs/architecture/handoff-schema.md` *(completed)*
       alongside `decisions_made`, with an explicit note distinguishing the two: `decisions_made` is
       informational/historical, `user_decision` is a live forward-looking request.
-- [ ] Confirm `user_decision` is producer-owned and survives a later writer's read-modify-write,
+- [x] Confirm `user_decision` is producer-owned and survives a later writer's read-modify-write, *(completed)*
       consistent with `return-metadata-file.md`'s "Multiple Sequential Writers" section; state this
       in the new subsection.
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-return-meta.sh` (or the deployed
+- [x] Run `bash agent-system/extensions/core/scripts/validate-return-meta.sh` (or the deployed *(completed: not field-allowlisted, validator passed sample with user_decision intact)*
       equivalent) against a sample `.return-meta.json` carrying `user_decision`; if the validator
       is field-allowlisted, add the field to its allowlist.
 

@@ -1,29 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/146_build_orchestrate_dispatch_builder/plans/01_orchestrate-dispatch-builder.md",
-      "summary": "Nine-phase plan building orchestrate-build-dispatch.sh, migrating all 11 physical dispatch sites in skill-orchestrate/SKILL.md to fixed pointer prompts, writing the user-decision contract, sweeping agent contracts by routing table, and registering the .dispatch/ ephemeral class."
-    }
-  ],
-  "next_steps": "Run /implement 146 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788411861_6cba1b_146",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 14,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6, 8], [7], [9]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a refactor introduces a new ephemeral runtime-file class under specs/{NNN}_{SLUG}/, sequence the registration phase (orchestrator-runtime-files.md class table, .gitignore, git-staging-scope.md's ephemeral_excludes arrays -- note there are multiple copies -- and check-runtime-file-tracking.sh's EPHEMERAL_PROBES, which must probe a file INSIDE a directory class) strictly BEFORE the phase whose code first writes such a file. Registering afterward leaves a window in which the new file can be staged and committed by an intervening scoped commit. This also holds for the reverse direction: a per-task class that accumulates rather than being a singleton needs an explicit disposition decision at plan time, since no existing reaper recurses into per-task directories.",
-      "category": "PATTERN",
-      "source_artifact": "specs/146_build_orchestrate_dispatch_builder/plans/01_orchestrate-dispatch-builder.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["ephemeral-runtime-files", "gitignore", "phase-ordering", "git-staging-scope", "check-runtime-file-tracking"]
-    }
-  ]
+    "session_id": "sess_1788411861_6cba1b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 9
+  }
 }
