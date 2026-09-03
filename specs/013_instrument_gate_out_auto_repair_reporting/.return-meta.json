@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 13,
+  "session_id": "sess_1788456363_df3984_13",
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md",
+      "summary": "Traces the exact call chain (command-gate-out.sh -> skill_validate_task_artifacts -> validate-artifact.sh --fix), confirms --fix's blast radius is limited to inserting TBD metadata placeholders, proposes propagating fix/error/warning counts via caller-visible global variables (matching skill-base.sh's existing convention) and a one-line always-on report in command-gate-out.sh, and decides --fix should remain in-place-mutating with reasoning."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 13 to create implementation plan"
+}
