@@ -113,7 +113,7 @@
       "project_number": 13,
       "project_name": "instrument_gate_out_auto_repair_reporting",
       "title": "Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "dependencies": [],
@@ -123,12 +123,17 @@
       ],
       "description": "The acceptance criterion \"gate-out reports zero format errors and zero auto-repaired fields\" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.\n\nTRACED PATH: command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs; its only related line is a comment. The real repair path is\n    command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh \"$f\" \"$type\" --fix 2>/dev/null\nvalidate-artifact.sh DOES emit a terminal line of the form \"[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining\" and exits 2. But skill_validate_task_artifacts discards stderr, collapses every non-zero exit into a single generic non-blocking WARNING carrying no numeric detail, and always returns 0. command-gate-out.sh therefore receives no signal at all.\n\nPRIMARY HAZARD (the reason this is not merely cosmetic): --fix MUTATES THE ARTIFACT IN PLACE. A repair both happens and goes uncounted, so an artifact can be silently rewritten with nothing anywhere recording that it was. The instrumentation gap and the silent-mutation hazard are the same defect seen from two ends.\n\nWORK:\n  1. Propagate validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts instead of discarding them.\n  2. Give command-gate-out.sh a reportable surface for those counts.\n  3. Decide explicitly whether --fix should remain in-place-mutating on the gate-out path, or whether a repair should be reported and left for a human. State the decision and its reasoning.\n\nACCEPTANCE: a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count, and a task needing none reports zero. Both directions must be demonstrated - a report that can only ever say zero is not instrumentation.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:26:30Z",
-      "last_updated": "2026-09-03T17:36:59Z",
+      "last_updated": "2026-09-03T17:43:33Z",
       "artifacts": [
         {
           "path": "specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md",
           "type": "report",
           "summary": "research report"
+        },
+        {
+          "path": "specs/013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md",
+          "type": "plan",
+          "summary": "implementation plan"
         }
       ],
       "session_id": "sess_1788456363_df3984_13"

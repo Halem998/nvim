@@ -20,7 +20,7 @@ next_project_number: 151
 
 ### Core Agent System
 
-13 [PLANNING] — The acceptance criterion "gate-out reports zero format errors and
+13 [PLANNED] — The acceptance criterion "gate-out reports zero format errors and
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [PLANNING] — update-plan-status.sh reports every non-conforming plan Status li
@@ -1005,11 +1005,12 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md]
+- **Plan**: [013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md]
 
 **Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
 
