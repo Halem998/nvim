@@ -30,7 +30,7 @@ next_project_number: 151
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 134 [NOT STARTED] — Close the third and last uncovered gate in the /tag release prefl
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
-146 [RESEARCHED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
+146 [PLANNED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line  (see above)
   └─ 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
     └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -177,11 +177,12 @@ TEAM. The `team` field on dispatch rows and the --team/--team-size inputs are wi
 ---
 
 ### 146. Build orchestrate-build-dispatch.sh: per-dispatch context files, pointer prompts, and the user-decision contract
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 145
 - **Research**: [146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md]
+- **Plan**: [146_build_orchestrate_dispatch_builder/plans/01_orchestrate-dispatch-builder.md]
 
 **Description**: Build orchestrate-build-dispatch.sh: per-dispatch context files, fixed pointer prompts, and the agent-side user-decision contract. Stage A.2 of specs/PATH.md (thin-lead path). SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

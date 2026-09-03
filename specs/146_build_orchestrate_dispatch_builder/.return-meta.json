@@ -1,41 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md",
-      "summary": "Full trace of Stage 3.5 Dispatch Prep and all 11 physical dispatch-site call points in skill-orchestrate/SKILL.md, the additional per-dispatch inputs orchestrate-build-dispatch.sh must gather (artifact-round resolution, continuation-pointer dual-form normalization, territory, handoff/dispatch_seq threading), the user-decision contract's target files (no existing precedent found), the routing-table-driven scope for the agent-contract sweep, and the .dispatch/ runtime-file registration surfaces including a flagged gap in reaper coverage."
+      "type": "plan",
+      "path": "specs/146_build_orchestrate_dispatch_builder/plans/01_orchestrate-dispatch-builder.md",
+      "summary": "Nine-phase plan building orchestrate-build-dispatch.sh, migrating all 11 physical dispatch sites in skill-orchestrate/SKILL.md to fixed pointer prompts, writing the user-decision contract, sweeping agent contracts by routing table, and registering the .dispatch/ ephemeral class."
     }
   ],
-  "next_steps": "Run /plan 146 to create implementation plan",
-  "findings_count": 8,
+  "next_steps": "Run /implement 146 to execute the plan",
   "metadata": {
     "session_id": "sess_1788411861_6cba1b_146",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 14,
+    "dependency_waves": [[1, 2], [3], [4], [5], [6, 8], [7], [9]]
   },
   "memory_candidates": [
     {
-      "content": "In skill-orchestrate/SKILL.md, task-description counts like 'five single-task Stage 4 sites' refer to logical dispatch recipes, not physical text occurrences of 'Run **Stage 3.5**' (there are 8 physical single-task occurrences + 3 MT-4 loops = 11 total, vs. 5+3=8 logical). When a plan/task description gives a site count for this file, verify by grep before trusting the number, since not_started/researching share one recipe and researched/planning share another.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "dispatch-sites", "Stage 3.5", "SKILL.md", "count-verification"]
-    },
-    {
-      "content": "manifest-routing-lib.sh has two deliberately-separate lookup functions: routing_lookup (two-level {op:{task_type:value}} manifest blocks) and routing_lookup_flat (one-level {task_type:value} blocks, e.g. hard_contracts). routing_lookup_flat is NOT a wrapper over routing_lookup with a fabricated op key -- using the wrong one silently corrupts resolution. Both must be called directly (never via command substitution), reading results from $_ROUTE_LAST_VALUE/$_ROUTE_LAST_VIA.",
+      "content": "When a refactor introduces a new ephemeral runtime-file class under specs/{NNN}_{SLUG}/, sequence the registration phase (orchestrator-runtime-files.md class table, .gitignore, git-staging-scope.md's ephemeral_excludes arrays -- note there are multiple copies -- and check-runtime-file-tracking.sh's EPHEMERAL_PROBES, which must probe a file INSIDE a directory class) strictly BEFORE the phase whose code first writes such a file. Registering afterward leaves a window in which the new file can be staged and committed by an intervening scoped commit. This also holds for the reverse direction: a per-task class that accumulates rather than being a singleton needs an explicit disposition decision at plan time, since no existing reaper recurses into per-task directories.",
       "category": "PATTERN",
-      "source_artifact": "specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["manifest-routing-lib.sh", "routing_lookup_flat", "routing_lookup", "hard_contracts", "extension-manifest"]
-    },
-    {
-      "content": "orchestrator-runtime-files.md's ephemeral/durable-provenance split only covers SINGLETON runtime files (overwritten in place or rm -f'd once at Stage 8). A per-dispatch file that accumulates one copy per cycle (e.g. a future .dispatch/{seq}.md) has no existing reaper: reap-session-runtime-files.sh explicitly does not recurse into specs/{NNN}_{SLUG}/, and task-lock.sh reap only handles .lock/. Any new per-task growing-file class needs an explicit disposition decision (bulk rm -rf at Stage 8 vs. a new age-based sweep), not an assumption that it fits the existing singleton lifecycle.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-runtime-files", "reaper", "ephemeral", "per-task-dir", "gitignore"]
+      "source_artifact": "specs/146_build_orchestrate_dispatch_builder/plans/01_orchestrate-dispatch-builder.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["ephemeral-runtime-files", "gitignore", "phase-ordering", "git-staging-scope", "check-runtime-file-tracking"]
     }
   ]
 }
