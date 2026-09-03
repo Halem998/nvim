@@ -1,22 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 145,
+  "session_id": "sess_1788399440_184d69_145",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md",
-      "summary": "Byte-range inventory of commands/orchestrate.md, a byte-budget contradiction in the <=8,000 B target, a live-multi-task-dispatch regression risk from deleting Steps 1-5, a three-way relocation verdict for contract text, an Options-table flag-gap analysis, and a full cross-reference repoint inventory."
+      "type": "plan",
+      "path": "specs/145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md",
+      "summary": "7-phase plan to slim commands/orchestrate.md from 44,953 B toward <=8,000 B: relocate two orphaned contract units, move batch-output ownership to Stage MT-5, delete MULTI-TASK DISPATCH, install a compact STAGE 0 dispatch core, document --hard, and repoint 25+ cross-references."
     }
   ],
-  "next_steps": "Run /plan 145 to create implementation plan",
   "metadata": {
-    "session_id": "sess_1788399440_184d69_145",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "phase_count": 7,
+    "estimated_hours": 7.5,
+    "dependency_waves": 6
   },
-  "memory_candidates": [],
-  "modified_files": [
-    "specs/145_slim_orchestrate_command/reports/01_slim-orchestrate-command.md",
-    "specs/145_slim_orchestrate_command/.return-meta.json"
-  ]
+  "memory_candidates": [
+    {
+      "content": "When a command hands a downstream engine a pre-computed schedule (wave table, ordering, plan array), verify who actually READS it before treating its deletion as a behavioral regression. In the /orchestrate batch path, commands/orchestrate.md computed a Kahn's-algorithm `waves[]` array (~200 lines) that skill-orchestrate wrote into its state file and never read: the sole admission gate (Stage MT-3 step 4.5) re-derives eligible tasks fresh every cycle from current statuses plus the dependency graph. Only `dependency_graph` was load-bearing, and it was itself just a narrowed read of state.json `dependencies[]`. The general pattern: in a cycling engine that re-evaluates eligibility per cycle, any precomputed static schedule is vestigial by construction. The distinguishing test is a repo-wide grep for readers of the field, not a reading of the producing code's apparent importance.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/145_slim_orchestrate_command/plans/01_slim-orchestrate-command.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["vestigial-precomputation", "wave-schedule", "cycling-engine", "dependency-graph", "deletion-safety", "consumer-grep"]
+    }
+  ],
+  "next_steps": "Run /implement 145 to execute the plan"
 }
