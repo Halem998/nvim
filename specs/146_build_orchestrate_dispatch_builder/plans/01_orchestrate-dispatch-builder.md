@@ -1,7 +1,7 @@
 # Implementation Plan: Task #146
 
 - **Task**: 146 - Build orchestrate-build-dispatch.sh: per-dispatch context files, pointer prompts, and the user-decision contract
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 14 hours
 - **Dependencies**: 145 (completed)
 - **Research Inputs**: `specs/146_build_orchestrate_dispatch_builder/reports/01_orchestrate-build-dispatch.md`
