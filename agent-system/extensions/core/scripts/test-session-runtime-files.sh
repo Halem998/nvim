@@ -129,9 +129,10 @@ fi
 # =====================================================================
 # Case 2: foreign-session detection
 # =====================================================================
-# Faithful transcription of commands/orchestrate.md Step 5's hard-fail check: a file whose
-# CONTENT session_id differs from the current invocation's batch_session_id must be treated as
-# invalid (never consumed).
+# Faithful transcription of the multi-state session_id hard-fail check (formerly
+# commands/orchestrate.md's Step 5, now superseded by skill-orchestrate/SKILL.md Stage MT-5
+# ownership): a file whose CONTENT session_id differs from the current invocation's
+# batch_session_id must be treated as invalid (never consumed).
 FOREIGN_FILE="$TMPROOT/specs/.orchestrator-multi-state-${SID_A}.json"
 jq -n --arg sid "$SID_B" '{"session_id": $sid, "cycle_count": 99, "completed_tasks": [999]}' > "$FOREIGN_FILE"
 

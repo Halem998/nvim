@@ -3,9 +3,9 @@
 # for /orchestrate.
 #
 # Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
-# still visible before commands/orchestrate.md Step 2 discards out-of-batch edges to build its
-# intra-batch-only Kahn wave graph — and reports FIVE classes of pre-dispatch defect, by task
-# number and path, BEFORE that discard happens:
+# still visible before commands/orchestrate.md's compact STAGE 0 multi-task block discards
+# out-of-batch edges to build its intra-batch-only dependency graph — and reports FIVE classes of
+# pre-dispatch defect, by task number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
 #     classified into intra_batch (no finding), out_of_batch_live, out_of_batch_terminal, or

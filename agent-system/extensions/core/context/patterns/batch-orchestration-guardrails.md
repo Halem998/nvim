@@ -165,7 +165,7 @@ is nine rows today, not ten.)
 | # | Path (relative to the core extension root) | Reachability evidence | Decision-relevance evidence |
 |---|---|---|---|
 | 1 | `skills/skill-orchestrate/SKILL.md` | The multi-task dispatch state machine itself — Stages MT-1 through MT-5 ARE the MT batch-dispatch path, covering both effort modes (the formerly-separate hard-mode engine, which used to inherit and extend MT-1..MT-5 for `/orchestrate --hard` batch runs, has been merged into this same file and deleted) | A defect here silently mis-routes eligibility, wave/cycle admission, or postflight status — the core decision surface, for both effort modes now that there is only one file |
-| 2 | `commands/orchestrate.md` | The command entry point that builds the wave schedule and invokes the admission predicate for MT dispatch (Step 3) | A defect silently changes which wave a task lands in, or skips the admission call entirely |
+| 2 | `commands/orchestrate.md` | The command entry point that parses flags and invokes `skill-orchestrate` for MT dispatch; the admission predicate itself is invoked solely at Stage MT-3 step 4.5 (row 1) | A defect here silently breaks flag threading into the delegation context, e.g. dropping a key `skill-orchestrate` reads |
 | 3 | `scripts/skill-base.sh` | Sourced by preflight/postflight for every dispatched task in a batch | A defect silently corrupts the preflight/postflight/completion-claim gate for every task in the batch, not just one |
 | 4 | `scripts/task-lock.sh` | Acquired/released per task inside MT dispatch (Stage MT-4) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
 | 5 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
@@ -407,8 +407,9 @@ via the same contract single-task `/implement` uses (`context/standards/git-stag
 
 This subsection is the single, authoritative statement of the inter-cycle redeploy checkpoint
 contract. Every other file that mentions the checkpoint (`regeneration-is-manual-only.md`,
-`skills/skill-orchestrate/SKILL.md`, `commands/orchestrate.md`, `scripts/deploy-headless.sh`,
-`scripts/verify-deploy.sh`) cross-references this subsection by path rather than restating it.
+`skills/skill-orchestrate/SKILL.md`, `docs/architecture/orchestrate-state-machine.md`,
+`scripts/deploy-headless.sh`, `scripts/verify-deploy.sh`) cross-references this subsection by path
+rather than restating it.
 
 **Trigger**: the union of every task dispatched this cycle's actual `modified_files`, compared
 against the `scope_roots x critical_paths` expansion of
@@ -466,7 +467,8 @@ Direction 3 without first re-deriving this cycle-synchronicity argument.
   redeploy, and we proceeded deliberately." It is announced via a banner, a machine marker, and a
   durable `mt_state_file.verify_deploy_baseline_notices` record (see
   `skills/skill-orchestrate/SKILL.md`'s Stage MT-3 step 7 and Stage MT-5 for the mechanism, and
-  `commands/orchestrate.md`'s Consolidated Output template for the rendering). A baseline must
+  `context/patterns/orchestrate-batch-results-template.md` for the rendering, emitted by
+  Stage MT-5). A baseline must
   never become a mechanism for quietly swallowing failures — branch (c) exists to make a
   pre-existing failure MORE visible, never less.
 
@@ -714,18 +716,13 @@ defer-not-fail is for.
 
 The report therefore prints the dependency-ordered solo re-run sequence; the human runs it.
 
-**Converting `commands/orchestrate.md`'s Kahn's-algorithm pseudocode into an executable script**
-is rejected (recorded alongside the file_scope_collision two-pass work above, since both were
-weighed together while adding plain multi-task resequencing). Cost of converting: the pseudocode
-block's own comments explicitly warn against treating it as literal, executable logic, and
-`commands/orchestrate.md` sits on the orchestrator-critical inclusion list (see
-`context/reference/orchestrator-critical-paths.json`) — turning the illustration into a real
-script would itself trip the self-modification hazard gate documented above for zero behavioral
-gain, since `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 already auto-sequences the
-`in_batch` case correctly without any such script. Cost of NOT converting: wave assignment stays
-agent-executed pseudocode with no script-level test surface of its own — a future correctness bug
-in wave assignment is caught only by the SKILL.md-level behavioral tests, not by a dedicated unit
-test.
+**Converting `commands/orchestrate.md`'s former Kahn's-algorithm pseudocode into an executable
+script** was rejected while the pseudocode still existed (recorded alongside the
+file_scope_collision two-pass work above, since both were weighed together while adding plain
+multi-task resequencing); the pseudocode has since been deleted outright rather than converted,
+so this rejection is history, not a live constraint. `skill-orchestrate/SKILL.md` Stage MT-3 step
+4.5 is now the sole implementation of wave/cycle sequencing, re-deriving eligibility fresh every
+cycle rather than consuming any pre-computed wave schedule.
 
 **Adding `file_scope` overlap as a pre-computed `in_degree`/wave-assignment input** (rather than
 a purely reactive, dispatch-time defer) is likewise rejected. Cost of adding: it duplicates, in a
@@ -828,15 +825,15 @@ These five hold at any batch size and are never relaxed for throughput:
    loudly and exclude the dependent task by default. **Status: the warn-loudly and
    distinguish-subcases clauses are now satisfied; the exclude-by-default clause remains as
    documented in the Open Design Fork below.** `scripts/orchestrate-predispatch-review.sh` runs
-   before `commands/orchestrate.md` Step 2 discards out-of-batch edges to build its
-   intra-batch-only Kahn graph, and classifies every raw `dependencies[]` entry on every
+   before `commands/orchestrate.md`'s compact STAGE 0 multi-task block discards out-of-batch edges
+   to build its intra-batch-only dependency graph, and classifies every raw `dependencies[]` entry on every
    candidate into one of four buckets — `intra_batch` (no finding), `out_of_batch_live`,
    `out_of_batch_terminal`, and `nonexistent` — warning loudly by task number and target for all
    three non-`intra_batch` subcases, including the terminal one (this Non-Negotiable draws no
    exception for a terminal target). This is a REVIEW stage only: it never excludes on its own
    account. It does not newly exclude an `out_of_batch_live` or `nonexistent` predecessor from
-   live dispatch either — `dependency_graph` (built by `commands/orchestrate.md` Steps 2-3) is
-   intra-batch-only, so an out-of-batch edge is simply absent from it, and
+   live dispatch either — `dependency_graph` (built by `commands/orchestrate.md`'s compact
+   STAGE 0 multi-task block) is intra-batch-only, so an out-of-batch edge is simply absent from it, and
    `skills/skill-orchestrate/SKILL.md` Stage MT-3's eligibility check sees no predecessor to
    wait on. Closing that residual live-path exclusion gap is exactly the Open Design Fork
    question below, left unresolved by this warn-only stage on purpose.
@@ -899,10 +896,10 @@ This document states principles only. The mechanisms are defined, exactly once e
   its pairwise-set application, used by all three admission layers above.
 - **Lock protocol**: `task-lock.md` — the lockfile schema, acquire/heartbeat/release contract, and
   the cross-task `file_scope` overlap check performed at lock-acquisition time.
-- **Wave/cycle dispatch**: `commands/orchestrate.md` (Dependency Graph Construction and
-  Topological Wave Assignment steps, and their runtime wave-split check) and
-  `skills/skill-orchestrate/SKILL.md` (the Lifecycle-Cycling Loop's runtime wave-split step, and
-  the Phase-Aware Dispatch and Per-Task Postflight stage that maps a self-reported implementation
+- **Wave/cycle dispatch**: `commands/orchestrate.md` (the compact STAGE 0 dependency-graph build)
+  and `skills/skill-orchestrate/SKILL.md` (the Lifecycle-Cycling Loop, which re-derives eligibility
+  fresh every cycle rather than consuming a pre-computed wave schedule, and its runtime
+  wave-split step, and the Phase-Aware Dispatch and Per-Task Postflight stage that maps a self-reported implementation
   status to a postflight update).
 - **Handoff schema**: `docs/architecture/handoff-schema.md` — the `plan_markers_verified` field
   referenced under the Blocking vs. Advisory and Non-Negotiables sections above, and the token

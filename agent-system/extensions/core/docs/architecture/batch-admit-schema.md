@@ -9,9 +9,7 @@ NOT bump the version.
 **File location**: n/a — this is a stdout stream contract, not a file. The script emits NDJSON
 directly; nothing is written to disk.
 **Written by**: `.claude/scripts/orchestrate-batch-admit.sh`
-**Read by**: `commands/orchestrate.md` Step 3 (pre-computed wave schedule, illustrative only — see
-that file's own framing of what actually executes),
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate — the sole
+**Read by**: `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate — the sole
 EXECUTING admission gate on the MT dispatch path, covering both effort modes now that the
 formerly-separate hard-mode engine's own transcribed copy of this contract has been deleted along
 with that file — see "Version History" below),
@@ -294,8 +292,7 @@ below.
 
 ## Why `--invocation-count` Exists
 
-Both live callers (`commands/orchestrate.md` Step 3, illustrative only, and
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, the sole EXECUTING gate) dispatch in
+The sole live caller (`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, the sole EXECUTING gate) dispatches in
 wave/cycle-sized SUBSETS of the invocation's full candidate set — `wave_tasks` and
 `eligible_tasks` respectively. As of v3, `--invocation-count` is evaluated against that SAME
 subset — this cycle's actual co-dispatch count, not the whole invocation's full candidate count.
@@ -339,9 +336,7 @@ stronger than the status-transition argument above and is what actually bounds t
 multiple-self-modifying case. A bounded `consecutive_no_dispatch_cycles` counter backs the narrow
 non-convergence mode still possible when NEITHER exit condition converges in time (e.g. a
 tie-breaker defect), breaking the loop with `partial` status rather than silently spinning to
-`MAX_CYCLES_MT`. `commands/orchestrate.md`'s pre-computed wave-schedule caller does not need an
-equivalent mechanism because each wave is dispatched at most once per invocation; the
-recurring-cycle shape is unique to the SKILL.md multi-task loop.
+`MAX_CYCLES_MT`. The recurring-cycle shape is unique to the SKILL.md multi-task loop.
 
 ## Why This Check Is Evidence-Gated Between Blocking and Advisory
 
@@ -471,9 +466,8 @@ consumer's `defer` handling assumed every defer was a collision and branched on
 branch would be misread as an ordinary in-batch collision (a "retry next wave" outcome) rather
 than the invocation-scoped exclusion it actually is — and since the self-modifying candidate's
 own eligibility does not change on its own, that misread produces a non-converging retry loop,
-never a merely incorrect one-off classification. All in-repo consumers (`commands/orchestrate.md`
-Step 3, `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, and
-`scripts/orchestrate-dry-run-report.sh` Step 4) were updated to the v2 discriminator in the same
+never a merely incorrect one-off classification. All in-repo consumers (`skills/skill-orchestrate/SKILL.md`
+Stage MT-3 step 4.5 and `scripts/orchestrate-dry-run-report.sh` Step 4) were updated to the v2 discriminator in the same
 change that introduced it — there is no transitional period where v1 and v2 consumers coexist
 against a v2 script.
 
@@ -494,7 +488,6 @@ Every in-repo consumer's status as of v3:
 
 | Consumer | Status |
 |---|---|
-| `commands/orchestrate.md` Step 3 | Updated (illustrative block only — see that file's own framing of what executes) |
 | `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 | Updated — the sole EXECUTING gate |
 | The former standalone hard-mode orchestrator's own `## Multi-Task Mode` transcription (file since deleted; the contract now lives solely in `skill-orchestrate/SKILL.md` above) | Updated at the time — explicit transcription added, closing a prior zero-reference gap |
 | `scripts/orchestrate-dry-run-report.sh` Step 4 | Verified v3-compatible, NOT edited (outside this change's declared file scope) — pins no `$schema` string literal and already branches on `defer_reason` |
@@ -534,7 +527,6 @@ Every in-repo consumer's status as of v4:
 
 | Consumer | Status |
 |---|---|
-| `commands/orchestrate.md` Step 3 | Updated — `--session-id "$batch_session_id"` added to the illustrative block (still not code this file itself runs; see that file's own framing) |
 | `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 | Updated — the sole EXECUTING gate; gained `--session-id "$session_id"` AND a new explicit `session_active` defer_reason branch (append to `defer_ledger`, distinct warning) — without the latter, this consumer would have shared `orchestrate-dry-run-report.sh`'s mis-bucketing defect on the one path that actually ACTS on verdicts, not just reports them |
 | The former standalone hard-mode orchestrator's own `## Multi-Task Mode` transcription (file since deleted; see the v3 row above) | Updated at the time — per this file's own explicit CO-MAINTENANCE requirement with the base skill's Stage MT-3 step 4.5, gained the same `--session-id "$session_id"` forwarding and `session_active` defer_reason branch |
 | `scripts/orchestrate-dry-run-report.sh` Step 4 | Fixed (this convergence found a REAL bug, not a clean pass): the pre-v4 code checked `self_modifying` explicitly, then fell through UNCONDITIONALLY into `file_scope_collision` field reads — a `session_active` verdict would have been mis-bucketed as an in-batch wave-deferral Note instead of the Excluded entry it actually is. Added an explicit `session_active` branch, `--session-id` passthrough (forwarded to both its own `orchestrate-batch-admit.sh` call and its `orchestrate-predispatch-review.sh` subprocess call), and `corroborated_by` rendering |

@@ -33,11 +33,14 @@
 # .orchestrator-handoff.json — nothing else (Context Flatness Constraint).
 #
 # Composition (each read-only, called at most once per invocation over the validated set):
-#   1. Batch validation — mirrors commands/orchestrate.md MULTI-TASK DISPATCH Step 1: not-found
+#   1. Batch validation — mirrors commands/orchestrate.md's compact STAGE 0 multi-task
 #      and terminal-status candidates become reported skips, never silent drops.
-#   2. MAX_TASKS=8 guard (verbatim from orchestrate.md Step 4) — a trim is reported explicitly,
+#   2. MAX_TASKS=8 guard (verbatim from docs/architecture/orchestrate-state-machine.md's
+#      ### Batch Size Cap (MAX_TASKS) section) — a trim is reported explicitly,
 #      never applied silently.
-#   3. Dependency graph + Kahn's-algorithm wave assignment — mirrors orchestrate.md Steps 2-3,
+#   3. Dependency graph + Kahn's-algorithm wave assignment — this reporter's own
+#      reimplementation, kept for reporting purposes; orchestrate.md itself no longer computes a
+#      wave schedule (Stage MT-3 step 4.5 re-derives eligibility fresh every cycle instead),
 #      intra-batch only. A circular batch is reported as a named error with an empty admitted
 #      set, rather than aborting the whole report.
 #   4. orchestrate-batch-admit.sh, called ONCE for the validated set with
@@ -68,7 +71,8 @@
 #      emitted by the classifier (see its header); this reporter still excludes it defensively if
 #      it is ever emitted, so an unexpected group value never falls through silently.
 #   8. orchestrate-predispatch-review.sh, called ONCE for the validated set in its default
-#      report-only mode — the SAME invocation shape commands/orchestrate.md Step 1.5 uses, so
+#      report-only mode — the SAME invocation shape commands/orchestrate.md's compact STAGE 0
+#      multi-task block uses, so
 #      this reporter's section 7 output is byte-for-byte what the live path would also print.
 #      Purely additive to this composition: its findings never become an exclusion, a skip, or a
 #      note above — they are printed verbatim as their own report section (see section 7 below).
@@ -109,7 +113,8 @@
 # title line and before "-- Header --". This is deliberately an UNNUMBERED banner rather than a
 # new numbered section, so sections 1-7's existing order and numbering stay byte-for-byte — several
 # documents already name this reporter's section shape. The banner and marker strings are
-# byte-identical to the live path's (`commands/orchestrate.md` Step 5), modulo substituted counts;
+# byte-identical to the live path's (`skill-orchestrate/SKILL.md` Stage MT-5), modulo substituted
+# counts;
 # this reporter never invents dry-run-specific wording. This does NOT claim verdict-set identity
 # with a live run — see the static-vs-cycling divergence note in section 5 above.
 #
@@ -172,7 +177,7 @@ if [ ! -f "$STATE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Step 1: Batch validation (mirrors orchestrate.md MULTI-TASK DISPATCH Step 1)
+# Step 1: Batch validation (mirrors orchestrate.md's compact STAGE 0 multi-task block)
 # ---------------------------------------------------------------------------
 declare -a input_order=("${task_args[@]}")
 declare -A t_status=()
@@ -209,7 +214,8 @@ if [ "${#validated_tasks[@]}" -eq 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2: MAX_TASKS guard (verbatim from orchestrate.md Step 4) — reported, never silent
+# Step 2: MAX_TASKS guard (verbatim from docs/architecture/orchestrate-state-machine.md's
+# ### Batch Size Cap (MAX_TASKS) section) — reported, never silent
 # ---------------------------------------------------------------------------
 validated_count=${#validated_tasks[@]}
 if [ "$validated_count" -gt "$MAX_TASKS" ]; then
@@ -515,7 +521,8 @@ fi
 
 # ---------------------------------------------------------------------------
 # Step 8: orchestrate-predispatch-review.sh (called once for the validated set, default
-# report-only mode) — the SAME invocation shape commands/orchestrate.md Step 1.5 uses. Purely
+# report-only mode) — the SAME invocation shape commands/orchestrate.md's compact STAGE 0
+# multi-task block uses. Purely
 # additive: its output is captured here and printed verbatim as section 7 below; it never
 # contributes to t_exclude_reason, t_skip_reason, notes, or the admitted-set composition above.
 # ---------------------------------------------------------------------------

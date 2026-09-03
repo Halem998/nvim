@@ -291,7 +291,7 @@ the addition in the summary rather than dropping it.
 
 ---
 
-### Phase 2: Repoint non-SKILL cross-references [NOT STARTED]
+### Phase 2: Repoint non-SKILL cross-references [COMPLETED]
 
 **Goal**: Repoint or delete every reference outside `skill-orchestrate/SKILL.md` that names a
 `commands/orchestrate.md` Step number or the `MULTI-TASK DISPATCH` section, so nothing dangles
@@ -299,36 +299,36 @@ after Phase 4. Pointer-only edits; no behavior changes.
 
 **Tasks**:
 
-- [ ] `docs/architecture/batch-admit-schema.md` (lines ~12, 297, 342, 474, 497, 538): six sites
+- [x] `docs/architecture/batch-admit-schema.md` (lines ~12, 297, 342, 474, 497, 538): six sites
       naming "Step 3" as a reader/consumer of the admission-verdict schema, several tagged
       "illustrative only". Repoint each to `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (the
-      actual executing consumer) and drop the now-meaningless "illustrative only" qualifier.
-- [ ] `context/patterns/batch-orchestration-guardrails.md` (lines ~168, 255, 410, 469, 717-721,
+      actual executing consumer) and drop the now-meaningless "illustrative only" qualifier. *(completed)*
+- [x] `context/patterns/batch-orchestration-guardrails.md` (lines ~168, 255, 410, 469, 717-721,
       831, 838, 902): eight sites. Repoint the table row at 168 ("the command entry point that
       builds the wave schedule... (Step 3)") to name Stage MT-3 step 4.5. Update the
       "Rejected Approaches" entry at 717-721 to record that the Kahn's-algorithm pseudocode has
       since been deleted rather than converted to a script, so the rejection is history not a
-      live constraint.
-- [ ] `context/patterns/multi-task-operations.md`: repoint line ~629's "Step 3" mirror pointer
+      live constraint. *(completed)*
+- [x] `context/patterns/multi-task-operations.md`: repoint line ~629's "Step 3" mirror pointer
       (drop it — the content it mirrors stays here); update line ~667's `## See Also` entry to
-      drop "with MULTI-TASK DISPATCH section".
-- [ ] `context/patterns/file-footprint-overlap.md` (lines ~108-109): drop `Step 3` from the list
-      of consumers of the shared overlap predicate, leaving the remaining consumers intact.
-- [ ] `context/patterns/orchestrate-batch-results-template.md` (line 4): rewrite the header so it
+      drop "with MULTI-TASK DISPATCH section". *(completed)*
+- [x] `context/patterns/file-footprint-overlap.md` (lines ~108-109): drop `Step 3` from the list
+      of consumers of the shared overlap predicate, leaving the remaining consumers intact. *(completed)*
+- [x] `context/patterns/orchestrate-batch-results-template.md` (line 4): rewrite the header so it
       names Stage MT-5 as the emitting call site instead of "`commands/orchestrate.md`'s
       MULTI-TASK DISPATCH path... at Step 5", and update the closing "Read this file at the
-      Step 5 call site" sentence to name Stage MT-5.
-- [ ] `context/standards/orchestrator-runtime-files.md` (line ~43): "The batch commit step in
+      Step 5 call site" sentence to name Stage MT-5. *(completed)*
+- [x] `context/standards/orchestrator-runtime-files.md` (line ~43): "The batch commit step in
       `commands/orchestrate.md`" is already stale independent of this task (that batch commit was
-      retired). Fix it opportunistically to name the per-task commits at Stage MT-4 step 5.5.
-- [ ] Comment-only script sites, kept accurate: `scripts/orchestrate-dry-run-report.sh`
+      retired). Fix it opportunistically to name the per-task commits at Stage MT-4 step 5.5. *(completed)*
+- [x] Comment-only script sites, kept accurate: `scripts/orchestrate-dry-run-report.sh`
       (lines ~36, 38, 71, 112, 175, 212, 518 — reword "mirrors commands/orchestrate.md
       MULTI-TASK DISPATCH Step N" to name the state-machine doc / Stage MT-3, and point the
       `MAX_TASKS=8` "verbatim from orchestrate.md Step 4" comment at the new
       `### Batch Size Cap (MAX_TASKS)` section), `scripts/orchestrate-predispatch-review.sh`
-      (line ~6), `scripts/test-session-runtime-files.sh` (line ~132).
-- [ ] Leave `scripts/lint/lint-task-lookup-adoption.sh:284` and
-      `docs/examples/research-flow-example.md` alone — generic, non-step-numbered, single-task.
+      (line ~6), `scripts/test-session-runtime-files.sh` (line ~132). *(completed)*
+- [x] Leave `scripts/lint/lint-task-lookup-adoption.sh:284` and
+      `docs/examples/research-flow-example.md` alone — generic, non-step-numbered, single-task. *(completed)*
 
 **Timing**: 1.75 hours
 

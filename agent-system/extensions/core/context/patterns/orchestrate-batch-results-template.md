@@ -1,11 +1,12 @@
 # Orchestrate Batch Results Template
 
 This file holds the `## Batch Orchestrate Results` consolidated-output template that
-`/orchestrate`'s (`commands/orchestrate.md`) MULTI-TASK DISPATCH path emits at Step 5. It was
-extracted verbatim from that command body's former inline fence. The template MUST be followed
-exactly — every interleaved "rendered only when X" / "populated from Y" gating rule on each of
-its ten `###`-level subsections is part of the contract, not commentary. Read this file at the
-Step 5 call site before emitting the consolidated output.
+`skill-orchestrate/SKILL.md` Stage MT-5 emits after the multi-task lifecycle-cycling loop exits.
+It was extracted verbatim from `commands/orchestrate.md`'s former inline fence, before batch-output
+ownership moved to Stage MT-5. The template MUST be followed exactly — every interleaved "rendered
+only when X" / "populated from Y" gating rule on each of its ten `###`-level subsections is part
+of the contract, not commentary. Read this file at the Stage MT-5 call site before emitting the
+consolidated output.
 
 ```markdown
 ## Batch Orchestrate Results

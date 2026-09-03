@@ -626,9 +626,9 @@ footprint-aware wave-computation logic is needed for tasks created together in t
   files, e.g. `/orchestrate 785,787` where 785 and 787 were created independently): no
   creation-time comparison exists between them, so `dependencies[]` may be silent about a real
   file conflict. This residual gap is closed by the runtime wave-split check documented in
-  `.claude/commands/orchestrate.md` Step 3 and mirrored in `.claude/skills/skill-orchestrate/SKILL.md`
-  Stage MT-3 (step 4.5): before dispatching a wave/cycle with 2+ tasks, compare `file_scope`
-  pairwise and defer the lower-priority task if an overlap has no `dependencies[]` edge.
+  `.claude/skills/skill-orchestrate/SKILL.md` Stage MT-3 (step 4.5): before dispatching a
+  wave/cycle with 2+ tasks, compare `file_scope` pairwise and defer the lower-priority task if an
+  overlap has no `dependencies[]` edge.
 
 ### Failed Predecessor Handling
 
@@ -664,4 +664,4 @@ The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) 
 - `checkpoint-execution.md` -- Three-checkpoint command flow (GATE IN, DELEGATE, GATE OUT)
 - `skill-lifecycle.md` -- Self-contained skill lifecycle management
 - `routing.md` -- `parse_ranges()` function and task-type-based routing tables
-- `.claude/commands/orchestrate.md` -- Full orchestrate command implementation with MULTI-TASK DISPATCH section
+- `.claude/commands/orchestrate.md` -- Full orchestrate command implementation

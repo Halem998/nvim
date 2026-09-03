@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Repoint non-SKILL cross-references",
+  "started_at": "2026-09-02T00:15:00Z",
+  "last_updated": "2026-09-02T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "batch-admit-schema.md 6 sites", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 2, "description": "batch-orchestration-guardrails.md 9 sites", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "multi-task-operations.md 2 pointers", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/multi-task-operations.md"]},
+    {"id": 4, "description": "file-footprint-overlap.md drop Step 3 consumer", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]},
+    {"id": 5, "description": "orchestrate-batch-results-template.md name MT-5", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 6, "description": "orchestrator-runtime-files.md stale batch-commit ref", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 7, "description": "comment-only script sites (3 scripts)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh", "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh", "agent-system/extensions/core/scripts/test-session-runtime-files.sh"]},
+    {"id": 8, "description": "leave lint-task-lookup-adoption.sh and research-flow-example.md alone", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Additional pre-existing dangling site discovered, deferred to Phase 5 sweep as designed: scripts/orchestrate-triage-classify.sh:14-15 references 'MULTI-TASK DISPATCH' by name; not in Phase 2's file list, will be caught by Phase 5's grep sweep once Phase 4 deletes the section.",
+    "test-session-runtime-files.sh Case 2 asserts (via grep) that commands/orchestrate.md still contains file_session_id/mt_state_file_valid comparison logic. That logic is deleted in Phase 4 per the plan's Step-5-superseded-by-Stage-MT-5 decision. This test will need updating in Phase 4 or Phase 5 to avoid a false failure -- flagged for follow-up, not yet broken since Phase 4 hasn't run."
+  ]
+}
