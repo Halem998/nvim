@@ -1,11 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/144_narrow_coarse_file_scope_declarations/summaries/01_narrow-file-scope-declarations-summary.md",
+      "summary": "Execution summary covering all six phases; Phase 6 verification-only closeout with the pre-existing-findings accounting."
+    },
+    {
+      "type": "plan",
+      "path": "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md",
+      "summary": "Six-phase plan, all phases [COMPLETED], plan-level Status [COMPLETED]."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote the Component 4a over-declaring guidance, added the proposed_file_scope/--file-scope-add additive write-back mechanism, narrowed 9 coarse file_scope declarations in specs/state.json, and verified in Phase 6 that Check 8 is clean, the three genuine cross-task collisions (147/148/150 and 143/148/150) still serialize, and no regression was introduced outside file_scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "specs/state.json",
+    "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo treats bash .claude/scripts/verify-deploy.sh's 30-check run as the canonical 'full gate set' for a meta task's final verification phase — there is no separate dedicated gate-runner script. When a plan's phase demands 'full gate run green' and pre-existing unrelated findings prevent that, the correct closeout is to enumerate each failing check, trace every individual finding to a pre-existing cause unrelated to the task's own file changes, and record the actual (non-green) result with that accounting rather than force a false green claim.",
+      "category": "PATTERN",
+      "source_artifact": "specs/144_narrow_coarse_file_scope_declarations/summaries/01_narrow-file-scope-declarations-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verify-deploy.sh", "full gate", "pre-existing findings", "meta task verification", "Check 8"]
+    },
+    {
+      "content": "validate-state.sh's Check 8 (coarse file_scope blast-radius detection, threshold >=3) is deliberately WARN-only/advisory: a clean Check 8 line inside validate-state.sh's own output (reading PASS, not appearing among the run's FAILs) is the correct way to confirm no gate conversion was introduced, rather than inferring WARN-only status from the script's overall exit code, which can still be non-zero due to unrelated FAILs.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/144_narrow_coarse_file_scope_declarations/summaries/01_narrow-file-scope-declarations-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["validate-state.sh", "Check 8", "file_scope", "WARN-only", "gate conversion"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788390027_14a27d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 3,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #144
 
 - **Task**: 144 - Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md`
@@ -422,29 +422,49 @@ plan specified.)*
 
 ---
 
-### Phase 6: Deploy, Verify Check 8, and Confirm the Genuine Collisions Survive [NOT STARTED]
+### Phase 6: Deploy, Verify Check 8, and Confirm the Genuine Collisions Survive [COMPLETED]
 
 **Goal**: Prove the acceptance criteria: Check 8 clean or justified, the three real collisions
 still serializing, and a green full gate.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's standard
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's standard
       deploy path) so the `.claude/` deploy artifact carries the Phase 3-4 script changes.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and record the result.
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-state.sh`; confirm Check 8 reports
+      *(completed: deploy landed successfully; the deploy step itself is separate from
+      verification below)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and record the result.
+      *(completed: FAIL — 3 of 30 checks failed. All 3 failing checks are pre-existing and
+      predate this dispatch — see verification note below for the full breakdown.)*
+- [x] Run `bash agent-system/extensions/core/scripts/validate-state.sh`; confirm Check 8 reports
       no coarse declarations, or record an explicit written justification for each survivor.
-- [ ] Confirm Check 8 remains WARN-only: the run's exit status must not have become failing
-      because of Check 8, and no gate conversion was introduced.
-- [ ] Assert the preserved collisions explicitly, not incidentally: 147, 148, and 150 all still
+      *(completed: Check 8 — "No coarse (blast radius >= 3) file_scope declarations found" —
+      PASS, no survivors)*
+- [x] Confirm Check 8 remains WARN-only: the run's exit status must not have become failing
+      because of Check 8, and no gate conversion was introduced. *(completed: Check 8 reports
+      PASS in `validate-state.sh`'s output; the run's 2 FAILs are the pre-existing
+      `abandon_reason`/`blocks_note` unknown-field findings, unrelated to Check 8)*
+- [x] Assert the preserved collisions explicitly, not incidentally: 147, 148, and 150 all still
       declare `orchestrate-cycle-plan.sh` (or its test companion), and 143, 148, and 150 all
       still declare `orchestrate-cycle-postflight.sh` (or its test companion). Query
-      `specs/state.json` directly for each of the six memberships.
-- [ ] Confirm the two pre-existing unrelated FAILs (`abandon_reason`, `blocks_note`) are
+      `specs/state.json` directly for each of the six memberships. *(completed: queried
+      `specs/state.json` directly via jq for project_numbers 143/147/148/150 — all six
+      memberships confirmed present: 147, 148, 150 each declare
+      `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` (147/150 also declare its
+      test companion, 148 declares both); 143, 148, 150 each declare
+      `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` (all three also
+      declare its test companion))*
+- [x] Confirm the two pre-existing unrelated FAILs (`abandon_reason`, `blocks_note`) are
       unchanged in count and membership — evidence that this pass touched nothing outside
-      `file_scope`.
-- [ ] Confirm `context/patterns/file-footprint-overlap.md` is untouched
-      (`git diff --stat` shows no change to it).
-- [ ] Run the full gate set for the repository and record the outcome.
+      `file_scope`. *(completed: `abandon_reason` — 12 projects (141, 94, 53, 46, 31, 42, 64, 73,
+      100, 115, 132, 138); `blocks_note` — 3 projects (106, 107, 109); matches the counts recorded
+      before this dispatch)*
+- [x] Confirm `context/patterns/file-footprint-overlap.md` is untouched
+      (`git diff --stat` shows no change to it). *(completed: `git diff --stat` against both the
+      `.claude/` deploy copy and the `agent-system/extensions/core/` source-store copy of
+      `context/patterns/file-footprint-overlap.md` show no changes)*
+- [x] Run the full gate set for the repository and record the outcome. *(completed: full gate set
+      = `verify-deploy.sh`'s 30-check run per this repo's convention — FAIL, 3/30, all 3 failing
+      checks pre-existing; see verification note below)*
 
 **Timing**: 1 hour
 
@@ -459,10 +479,21 @@ still serializing, and a green full gate.
 
 **Verification**:
 - `validate-state.sh` Check 8 line reads clean, or each survivor has a recorded justification.
-- The six collision memberships each return a match.
-- `verify-deploy.sh` green; full gate run green.
+  *(actual: clean, no coarse declarations, no survivors)*
+- The six collision memberships each return a match. *(actual: confirmed, all six)*
+- `verify-deploy.sh` green; full gate run green. *(actual: NOT green — FAIL, 3 of 30 checks
+  failed. This bar cannot be met on this tree: all 3 failures are pre-existing findings that
+  predate this dispatch and are unrelated to `file_scope`/Check 8 —
+  (1) doc-lint: 4 `index-entries.json` `line_count` mismatches (`patterns/postflight-control.md`
+  318/405, `reference/state-management-schema.md` 519/520, `schemas/state-schema.json` 267/271,
+  `project/literature/patterns/zotero-item-creation.md` 208/234); (2) `validate-state.sh --deep`:
+  the 2 unknown-entry-field findings (`abandon_reason` on 12 projects, `blocks_note` on 3
+  projects); (3) state-writer boundary lint: 4 hand-rolled `state.json` write violations in
+  `agent-system/extensions/core/scripts/tests/test-force-phases.sh` (lines 261, 307, 317, 327).
+  None of these files were touched by this task's Phases 1-6, and none is a regression this pass
+  introduced.)*
 - `git diff --stat` shows no change to `file-footprint-overlap.md` and no change converting
-  Check 8 into a gate.
+  Check 8 into a gate. *(actual: confirmed on both counts)*
 
 ---
 

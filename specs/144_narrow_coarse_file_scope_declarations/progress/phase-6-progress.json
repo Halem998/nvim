@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, Verify Check 8, and Confirm the Genuine Collisions Survive",
+  "started_at": "2026-09-02T00:00:00Z",
+  "last_updated": "2026-09-02T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh so .claude/ carries Phase 3-4 script changes", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run verify-deploy.sh and record the result", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run validate-state.sh; confirm Check 8 clean or justified survivors", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm Check 8 remains WARN-only, no gate conversion", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Assert the six preserved-collision memberships directly against specs/state.json", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm the two pre-existing unrelated FAILs unchanged in count and membership", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm file-footprint-overlap.md untouched via git diff --stat", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run the full gate set and record the outcome", "status": "done", "files_touched": [
+      "specs/144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "note": "Verification-only phase; no source files modified other than the plan file's own checklist annotations. verify-deploy.sh cannot report green on this tree: 3 of 30 checks fail, all 3 pre-existing and predating this dispatch (doc-lint index-entries.json line_count x4, validate-state.sh --deep unknown-entry-field x2, state-writer-boundary-lint hand-rolled writes in test-force-phases.sh x4 = 10 individual findings). No regression introduced by Phases 1-6."
+}

@@ -6,12 +6,12 @@ next_project_number: 151
 
 ## Task Order
 
-*Updated 2026-09-02. Generated from state.json dependency graph.*
+*Updated 2026-09-03. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,14,22,29,39,43,44,45,51,74,89,91,127,129,134,137,139,144,149 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 13,14,22,29,39,43,44,45,51,74,89,91,127,129,134,137,139,149 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,75,76,136,140,145 | 29,74,91,139,149 | core-agent-system, extensions |
 | 3 | 146 | 145 | core-agent-system |
 | 4 | 147 | 146 | core-agent-system |
@@ -37,7 +37,6 @@ next_project_number: 151
 137 [NOT STARTED] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-144 [PLANNED] — Narrow the coarse whole-directory file_scope declarations that ma
 149 [NOT STARTED] — Delete team mode from the agent system. Decided 2026-09-02 (specs
   └─ 145 [NOT STARTED] — Slim commands/orchestrate.md to the flag table and the dispatch, 
     └─ 146 [NOT STARTED] — Build orchestrate-build-dispatch.sh: per-dispatch context files, 
@@ -232,12 +231,13 @@ Team mode is deleted by this task's predecessor, so the `--team`/`--team-size` r
 ---
 
 ### 144. Narrow coarse file scope declarations
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [144_narrow_coarse_file_scope_declarations/reports/01_narrow-coarse-file-scope.md]
 - **Plan**: [144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md]
+- **Summary**: [144_narrow_coarse_file_scope_declarations/plans/01_narrow-file-scope-declarations.md]
 
 **Description**: Narrow the coarse whole-directory file_scope declarations that manufacture false collisions and needlessly serialize multi-task orchestration.
 
