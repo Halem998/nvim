@@ -2,9 +2,10 @@ return {
   "lervag/vimtex",
   init = function()
     -- Viewer settings
-    vim.g.vimtex_view_method = 'sioyek'            -- Sioyek PDF viewer for academic documents
-    -- Note: Not setting vimtex_view_sioyek_options allows VimTeX to handle window management
-    -- It will open new windows when needed but reuse for the same document
+    vim.g.vimtex_view_method = 'skim'              -- Skim PDF viewer (Sioyek cask disabled in Homebrew, 2026-09)
+    vim.g.vimtex_view_skim_sync = 1                -- Forward search: jump Skim to the cursor's line
+    vim.g.vimtex_view_skim_activate = 1            -- Bring Skim to the front on forward search
+    vim.g.vimtex_view_skim_reading_bar = 1         -- Highlight the synced line in Skim
     vim.g.vimtex_context_pdf_viewer = 'okular'     -- External PDF viewer for the Vimtex menu
 
     -- Formatting settings
